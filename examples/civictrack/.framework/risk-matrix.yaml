@@ -1,0 +1,26 @@
+low:
+  examples:
+    - docs_update
+    - local_refactor
+    - add_tests
+  autonomy: medium
+  human_review_required: false
+
+medium:
+  examples:
+    - endpoint_change
+    - validation_change
+    - notification_change
+  autonomy: medium
+  human_review_required: true
+
+high:
+  examples:
+    - auth_change
+    - upload_change
+    - audit_model_change
+    - dependency_change
+  autonomy: low
+  human_review_required: true
+  extra_checks:
+    - security_review_checklist

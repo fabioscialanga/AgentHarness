@@ -1,0 +1,20 @@
+unit_tests:
+  required_for:
+    - feature_change
+    - bugfix
+    - validation_change
+
+integration_smoke:
+  required_for:
+    - api_change
+    - persistence_change
+    - notification_change
+
+regression_tests:
+  required_for:
+    - bugfix
+    - incident_fix
+
+block_if_missing:
+  - bugfix_without_regression_test
+  - feature_without_unit_test

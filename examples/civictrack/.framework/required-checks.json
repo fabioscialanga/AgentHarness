@@ -1,0 +1,10 @@
+{
+  "required_checks": [
+    "format",
+    "lint",
+    "type_check",
+    "unit_tests",
+    "integration_smoke",
+    "no_hardcoded_secrets"
+  ]
+}

@@ -1,0 +1,17 @@
+hard_blocks:
+  - hardcoded_secrets
+  - auth_removed_without_review
+  - unsafe_logging_of_pii
+  - upload_constraints_removed
+
+required_reviews:
+  - auth_changes
+  - dependency_changes
+  - upload_handling_changes
+  - audit_model_changes
+
+checks:
+  - input_validation
+  - safe_logging
+  - upload_constraints
+  - external_call_error_handling

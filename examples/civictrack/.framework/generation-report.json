@@ -1,0 +1,19 @@
+{
+  "project_name": "civictrack",
+  "generated_artifacts": [
+    "README.md",
+    "PROJECT.md",
+    "project.yaml",
+    "AGENTS.md",
+    "docs/ARCHITECTURE_SUMMARY.md",
+    "docs/DELIVERY_MODEL.md",
+    "workflows/*",
+    "checklists/*",
+    "policies/*",
+    ".framework/*"
+  ],
+  "notes": [
+    "Example repository created as a generic open source sample.",
+    "No application code scaffold generated yet; this example focuses on project-definition artifacts."
+  ]
+}

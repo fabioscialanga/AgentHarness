@@ -1,0 +1,93 @@
+project_name: civictrack
+project_slug: civictrack
+project_type: open_source_web_api
+opensource: true
+license: MIT
+
+stack:
+  language: python
+  framework: fastapi
+  database: postgres
+  package_manager: uv
+  orm: sqlmodel
+  api_style: rest
+
+modules:
+  - api
+  - domain
+  - validation
+  - notifications
+  - persistence
+  - audit
+
+external_services:
+  - smtp_optional
+  - webhook_optional
+
+testing:
+  framework: pytest
+  required: true
+  minimum:
+    - unit
+    - integration_smoke
+  bugfix_requires_regression_test: true
+
+quality:
+  lint: true
+  format: true
+  type_check: true
+  required_checks:
+    - format
+    - lint
+    - type_check
+    - unit_tests
+    - no_hardcoded_secrets
+
+security:
+  level: medium
+  pii_present: true
+  secrets_policy: env_only
+  dependency_policy: approved_only
+  upload_validation_required: true
+  required_checks:
+    - no_hardcoded_secrets
+    - dependency_scan
+    - input_validation
+    - safe_logging
+    - upload_constraints
+
+agent_policy:
+  autonomy: medium
+  allowed_tools:
+    - read_files
+    - edit_files
+    - run_tests
+    - search
+  forbidden_actions:
+    - deploy_prod
+    - disable_auth
+    - commit_secrets
+    - remove_audit_logging
+    - disable_input_validation
+  review_required_for:
+    - auth_changes
+    - dependency_changes
+    - ci_pipeline_changes
+    - upload_handling_changes
+    - audit_model_changes
+
+deliverables:
+  generate:
+    - agents_md
+    - architecture_summary
+    - delivery_model
+    - workflows
+    - checklists
+    - test_bootstrap
+    - policy_files
+
+workflows_enabled:
+  - create-feature
+  - fix-bug
+  - refactor-module
+  - add-tests

@@ -1,0 +1,13 @@
+default_autonomy: medium
+
+risk_levels:
+  low:
+    review_required: false
+  medium:
+    review_required: true
+  high:
+    review_required: true
+    extra_focus:
+      - security
+      - auditability
+      - backwards_compatibility
