@@ -94,6 +94,7 @@ AgentHarness now includes a real Python validator that checks:
 Example usage:
 - `PYTHONPATH=src python3 -m agentharness validate examples/civictrack`
 - `PYTHONPATH=src python3 -m agentharness validate examples/civictrack --json`
+- after `pip install -e .`: `agentharness validate examples/civictrack`
 
 ## Framework output generator
 
