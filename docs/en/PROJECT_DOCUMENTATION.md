@@ -188,34 +188,38 @@ This is intentionally an example project, not a production product.
 
 ## 10. Current maturity level
 
-This repository is in bootstrap phase.
+This repository is still early, but it is no longer only conceptual.
 
-That means:
-- the conceptual direction is defined
-- the initial repository shape exists
-- one worked example is present
-- the actual framework engine is not built yet
+Today it already includes:
+- a working Python CLI
+- a real validator for AgentHarness-style projects
+- a generator for the main `.framework` outputs
+- a bootstrap command for creating new contract-first projects
+- one complete worked example (`examples/civictrack`)
+- automated tests covering the core flows
 
 This is an important strength and an important limitation.
 
 Strength:
-- the repository already expresses a coherent philosophy
+- the repository expresses a coherent philosophy
 - the example makes the idea concrete
+- there is already an installable, verifiable operational core
 
 Limitation:
-- there is not yet a validator, generator, CLI, or execution runtime
-- much of the value is still encoded as documentation and project structure
+- there is not yet a full runtime for directly driving coding agents end to end
+- CI integration and deeper automation are not finished yet
+- the framework still needs to prove how much value it adds beyond project structure and documentation
 
 ## 11. Near-term roadmap
 
 Recommended next steps:
-1. Define the canonical schema for `project.yaml`.
-2. Add validation rules and schema checks.
-3. Define the generation contract for framework outputs.
-4. Decide which artifacts are authored manually vs generated automatically.
-5. Add a small validator or bootstrap CLI.
-6. Add more examples with different risk profiles.
-7. Prove that the framework improves consistency, not just documentation quality.
+1. Strengthen the install and quickstart path for new users.
+2. Further stabilize the canonical schema for `project.yaml`.
+3. Expand validation rules and schema checks.
+4. Clarify which artifacts remain manual versus generated automatically.
+5. Add more examples with different risk profiles and stacks.
+6. Integrate the commands more cleanly with CI and automated verification.
+7. Prove through benchmarks and real use cases that the framework improves consistency, reviewability, and control.
 
 ## 12. Who this is for
 

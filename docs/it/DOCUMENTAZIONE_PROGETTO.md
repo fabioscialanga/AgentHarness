@@ -188,34 +188,38 @@ CivicTrack mostra:
 
 ## 10. Livello di maturità attuale
 
-Questo repository è in fase di bootstrap.
+Questo repository è ancora in fase iniziale, ma non è più solo concettuale.
 
-Significa che:
-- la direzione concettuale è definita
-- la forma iniziale del repository esiste
-- è presente un esempio concreto
-- il motore vero e proprio del framework non è ancora costruito
+Oggi esistono già:
+- una CLI Python funzionante
+- un validatore reale per progetti nello stile AgentHarness
+- un generatore per gli output principali in `.framework`
+- un comando di bootstrap per creare nuovi progetti contract-first
+- un esempio concreto completo (`examples/civictrack`)
+- test automatici che coprono i flussi base
 
 Questa è al tempo stesso una forza e un limite.
 
 Forza:
-- il repository esprime già una filosofia coerente
+- il repository esprime una filosofia coerente
 - l'esempio rende l'idea concreta
+- esiste già un nucleo operativo verificabile e installabile
 
 Limite:
-- non esistono ancora validator, generator, CLI o runtime esecutivo
-- gran parte del valore è ancora codificata come documentazione e struttura di progetto
+- non esiste ancora un runtime completo per guidare direttamente coding agent end-to-end
+- l'integrazione CI e l'automazione più profonda non sono ancora pronte
+- il framework deve ancora dimostrare quanto valore aggiunge oltre la sola struttura documentale
 
 ## 11. Roadmap di breve periodo
 
 Prossimi passi consigliati:
-1. Definire lo schema canonico di `project.yaml`.
-2. Aggiungere regole di validazione e controlli di schema.
-3. Definire il contratto di generazione per gli output del framework.
-4. Decidere quali artefatti sono scritti a mano e quali generati automaticamente.
-5. Aggiungere un piccolo validator o una CLI di bootstrap.
-6. Aggiungere altri esempi con profili di rischio diversi.
-7. Dimostrare che il framework migliora la coerenza, non solo la qualità della documentazione.
+1. Rafforzare il percorso di installazione e quickstart per nuovi utenti.
+2. Stabilizzare ulteriormente lo schema canonico di `project.yaml`.
+3. Ampliare le regole di validazione e i controlli di schema.
+4. Chiarire quali artefatti restano manuali e quali vengono generati automaticamente.
+5. Aggiungere più esempi con profili di rischio e stack diversi.
+6. Integrare meglio i comandi con CI e verifiche automatiche.
+7. Dimostrare con benchmark e casi d'uso che il framework migliora davvero coerenza, reviewabilità e controllo.
 
 ## 12. Per chi è pensato
 
