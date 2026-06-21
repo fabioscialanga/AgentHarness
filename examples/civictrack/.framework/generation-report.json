@@ -13,7 +13,8 @@
     ".framework/*"
   ],
   "notes": [
-    "Example repository created as a generic open source sample.",
-    "No application code scaffold generated yet; this example focuses on project-definition artifacts."
+    "Framework outputs were generated from project.yaml by AgentHarness.",
+    "Required checks were derived from quality, security, and testing declarations.",
+    "Generated 10 required checks."
   ]
 }

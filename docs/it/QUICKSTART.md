@@ -14,6 +14,7 @@ Invece di partire da un prompt vago, fornisce all'agente un contratto di progett
 Oggi il repository fornisce già un nucleo operativo funzionante:
 - `agentharness validate` controlla se un progetto nello stile AgentHarness è coerente
 - `agentharness generate` rigenera i metadata principali in `.framework` a partire da `project.yaml`
+- `agentharness verify` controlla insieme validità del contratto e drift negli artefatti `.framework` generati
 - `agentharness bootstrap` crea lo skeleton iniziale di un nuovo progetto contract-first
 
 ## Per chi è utile
@@ -64,7 +65,14 @@ Questo ricostruisce:
 - `.framework/risk-matrix.yaml`
 - `.framework/generation-report.json`
 
-### 3. Crea un nuovo progetto
+### 3. Verifica l'esempio end-to-end
+```bash
+agentharness verify examples/civictrack --json
+```
+
+Questo conferma che i file `.framework` versionati corrispondano ancora agli output derivati da `project.yaml`.
+
+### 4. Crea un nuovo progetto
 ```bash
 agentharness bootstrap ./my-project \
   --project-name "My Project" \

@@ -7,6 +7,8 @@ from pathlib import Path
 from .bootstrap import BootstrapOptions, bootstrap_project
 from .generation import generate_framework_outputs
 from .validation import validate_project_directory
+from .verification import verify_project_directory
+from .verify import verify_run
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -36,6 +38,44 @@ def build_parser() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="Print the generation result as JSON",
+    )
+
+    verify_parser = subparsers.add_parser(
+        "verify",
+        help="Verify a project directory and detect drift in generated .framework artifacts",
+    )
+    verify_parser.add_argument("path", type=Path, help="Path to the project directory")
+    verify_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the verification result as JSON",
+    )
+    verify_parser.add_argument(
+        "--write-report",
+        action="store_true",
+        help="Write .framework/verification-report.json with the verification result",
+    )
+
+    verify_run_parser = subparsers.add_parser(
+        "verify-run",
+        help="Verify claim-based agent run evidence against explicit claims",
+    )
+    verify_run_parser.add_argument("--run", type=Path, required=True, help="Path to the run JSON artifact")
+    verify_run_parser.add_argument("--claims", type=Path, required=True, help="Path to the claims JSON document")
+    verify_run_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the claim verification result as JSON",
+    )
+    verify_run_parser.add_argument(
+        "--write-report",
+        action="store_true",
+        help="Write a verify-run report next to the run artifact unless --report-path is set",
+    )
+    verify_run_parser.add_argument(
+        "--report-path",
+        type=Path,
+        help="Optional explicit output path for the verify-run report JSON",
     )
 
     bootstrap_parser = subparsers.add_parser(
@@ -94,6 +134,72 @@ def _print_generation_result(result, as_json: bool) -> None:
         print(f"- {item}")
 
 
+def _print_verification_result(result, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), indent=2))
+        return
+
+    status = "PASS" if result.ok else "FAIL"
+    print(f"[{status}] {result.project_dir}")
+    print("Compared generated files:")
+    for item in result.compared_files:
+        print(f"- {item}")
+    if result.errors:
+        print("Errors:")
+        for item in result.errors:
+            print(f"- {item}")
+    if result.notes:
+        print("Notes:")
+        for item in result.notes:
+            print(f"- {item}")
+    if result.report_written:
+        print(f"Report written: {result.report_written}")
+
+
+def _print_verify_run_result(result, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), indent=2))
+        return
+
+    status = "PASS" if result.ok else "FAIL"
+    print(f"[{status}] run {result.run_id}")
+    print(f"Run artifact: {result.run_path}")
+    print(f"Claims document: {result.claims_path}")
+
+    grouped = {
+        "supported": [],
+        "unsupported": [],
+        "inconclusive": [],
+        "invalid": [],
+    }
+    for item in result.results:
+        grouped.setdefault(item.status, []).append(item)
+
+    for group_name in ("supported", "unsupported", "inconclusive", "invalid"):
+        items = grouped.get(group_name, [])
+        if not items:
+            continue
+        print(group_name.upper())
+        for item in items:
+            evidence = f" | evidence: {', '.join(item.evidence)}" if item.evidence else ""
+            print(f"- {item.claim_id}: {item.reason}{evidence}")
+
+    summary = result.summary
+    print(
+        "Summary: "
+        f"{summary.get('supported', 0)} supported, "
+        f"{summary.get('unsupported', 0)} unsupported, "
+        f"{summary.get('inconclusive', 0)} inconclusive, "
+        f"{summary.get('invalid', 0)} invalid"
+    )
+    if result.notes:
+        print("Notes:")
+        for note in result.notes:
+            print(f"- {note}")
+    if result.report_written:
+        print(f"Report written: {result.report_written}")
+
+
 def _print_bootstrap_result(result, as_json: bool) -> None:
     if as_json:
         print(json.dumps(result.to_dict(), indent=2))
@@ -122,6 +228,24 @@ def main(argv: list[str] | None = None) -> int:
         result = generate_framework_outputs(args.path)
         _print_generation_result(result, args.json)
         return 0
+
+    if args.command == "verify":
+        result = verify_project_directory(
+            args.path,
+            write_report=args.write_report,
+        )
+        _print_verification_result(result, args.json)
+        return 0 if result.ok else 1
+
+    if args.command == "verify-run":
+        result = verify_run(
+            args.run,
+            args.claims,
+            write_report=args.write_report,
+            report_path=args.report_path,
+        )
+        _print_verify_run_result(result, args.json)
+        return 0 if result.ok else 1
 
     if args.command == "bootstrap":
         options = BootstrapOptions(

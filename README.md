@@ -38,7 +38,10 @@ AgentHarness already includes a working Python CLI with three concrete commands:
 2. `agentharness generate`
 - regenerates core `.framework` artifacts from `project.yaml`
 
-3. `agentharness bootstrap`
+3. `agentharness verify`
+- verifies a project against its contract and detects drift in checked-in `.framework` artifacts
+
+4. `agentharness bootstrap`
 - creates a new contract-first project skeleton and validates it
 
 The repository also includes:
@@ -76,6 +79,11 @@ agentharness validate examples/civictrack --json
 ### Regenerate framework metadata
 ```bash
 agentharness generate examples/civictrack --json
+```
+
+### Verify the example end to end
+```bash
+agentharness verify examples/civictrack --json
 ```
 
 ### Bootstrap a new project

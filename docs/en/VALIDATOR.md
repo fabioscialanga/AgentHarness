@@ -50,6 +50,24 @@ The generator rebuilds core `.framework` files from `project.yaml`:
 
 This means AgentHarness can now both validate project intent and regenerate some of the machine-facing artifacts that depend on it.
 
+## Verification companion
+
+AgentHarness now also includes a verification command:
+
+- `PYTHONPATH=src python3 -m agentharness verify examples/civictrack`
+- `PYTHONPATH=src python3 -m agentharness verify examples/civictrack --json`
+- `PYTHONPATH=src python3 -m agentharness verify examples/civictrack --write-report`
+
+`verify` is intentionally narrow in v1.
+It does two things together:
+- runs the same structural validation as `validate`
+- regenerates the expected `.framework` outputs in a temporary location and compares them with the checked-in files
+
+This catches a very practical failure mode:
+the repository contract changed, but the generated framework artifacts were not refreshed.
+
+When `--write-report` is used, AgentHarness writes `.framework/verification-report.json` with the verification result.
+
 ## Why this matters
 
 This validator-plus-generator combination turns AgentHarness from a documentation-only concept into a framework with real executable control points.

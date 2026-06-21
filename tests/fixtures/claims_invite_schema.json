@@ -1,0 +1,67 @@
+{
+  "run_id": "run_invite_schema_001",
+  "claims": [
+    {
+      "id": "claim_scope_allowed",
+      "type": "files_changed",
+      "statement": "Ho toccato solo API, test e OpenAPI",
+      "expected": {
+        "allowed_paths": [
+          "src/api/*",
+          "tests/*",
+          "openapi.yaml"
+        ]
+      }
+    },
+    {
+      "id": "claim_scope_forbidden",
+      "type": "forbidden_paths",
+      "statement": "Non ho toccato cartelle vietate",
+      "expected": {
+        "forbidden_paths": [
+          "infra/*",
+          "src/payments/*"
+        ]
+      }
+    },
+    {
+      "id": "claim_schema",
+      "type": "schema_match",
+      "statement": "L'OpenAPI aggiornato ha lo shape minimo richiesto",
+      "expected": {
+        "output_path": "openapi.yaml",
+        "schema": {
+          "type": "object",
+          "required": [
+            "openapi",
+            "info",
+            "paths"
+          ],
+          "properties": {
+            "openapi": {
+              "type": "string"
+            },
+            "info": {
+              "type": "object",
+              "required": [
+                "title",
+                "version"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              }
+            },
+            "paths": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

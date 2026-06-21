@@ -1,0 +1,39 @@
+{
+  "run_id": "run_invite_001",
+  "claims": [
+    {
+      "id": "claim_scope",
+      "type": "files_changed",
+      "statement": "Ho modificato solo API e test",
+      "expected": {
+        "allowed_paths": [
+          "src/api/*",
+          "tests/*"
+        ],
+        "forbidden_paths": [
+          "infra/*"
+        ]
+      }
+    },
+    {
+      "id": "claim_tests",
+      "type": "tests_executed",
+      "statement": "Ho eseguito i test richiesti",
+      "expected": {
+        "required_commands": [
+          "pytest tests/test_invite.py"
+        ]
+      }
+    },
+    {
+      "id": "claim_openapi",
+      "type": "artifact_present",
+      "statement": "Ho aggiornato l'OpenAPI",
+      "expected": {
+        "required_outputs": [
+          "openapi.yaml"
+        ]
+      }
+    }
+  ]
+}

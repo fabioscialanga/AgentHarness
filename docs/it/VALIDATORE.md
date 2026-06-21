@@ -50,6 +50,24 @@ Il generatore ricostruisce i file principali in `.framework` a partire da `proje
 
 Questo significa che AgentHarness adesso può sia validare l'intento di progetto sia rigenerare alcuni artefatti machine-facing che dipendono da esso.
 
+## Verifica complementare
+
+AgentHarness ora include anche un comando di verifica:
+
+- `PYTHONPATH=src python3 -m agentharness verify examples/civictrack`
+- `PYTHONPATH=src python3 -m agentharness verify examples/civictrack --json`
+- `PYTHONPATH=src python3 -m agentharness verify examples/civictrack --write-report`
+
+`verify` è volutamente ristretto nella v1.
+Fa insieme due cose:
+- esegue la stessa validazione strutturale di `validate`
+- rigenera in una directory temporanea gli output `.framework` attesi e li confronta con i file versionati
+
+Questo intercetta un failure mode molto pratico:
+il contratto del repository è cambiato, ma gli artefatti generati del framework non sono stati aggiornati.
+
+Quando usi `--write-report`, AgentHarness scrive `.framework/verification-report.json` con il risultato della verifica.
+
 ## Perché è importante
 
 Questa combinazione validatore + generatore trasforma AgentHarness da concetto solo documentale a framework con veri punti di controllo eseguibili.

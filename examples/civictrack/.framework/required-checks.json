@@ -4,11 +4,11 @@
     "lint",
     "type_check",
     "unit_tests",
-    "integration_smoke",
     "no_hardcoded_secrets",
     "dependency_scan",
     "input_validation",
     "safe_logging",
-    "upload_constraints"
+    "upload_constraints",
+    "integration_smoke"
   ]
 }

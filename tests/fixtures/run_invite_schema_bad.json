@@ -1,0 +1,24 @@
+{
+  "run_id": "run_invite_schema_001",
+  "workspace": "workspace_bad_schema",
+  "task": "Implement endpoint POST /users/invite with broken OpenAPI update",
+  "artifacts": {
+    "changed_files": [
+      "src/api/invite.py",
+      "tests/test_invite.py",
+      "openapi.yaml"
+    ],
+    "commands": [
+      {
+        "cmd": "pytest tests/test_invite.py",
+        "exit_code": 0
+      }
+    ],
+    "outputs": [
+      {
+        "type": "file",
+        "path": "openapi.yaml"
+      }
+    ]
+  }
+}

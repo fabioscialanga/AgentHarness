@@ -9,6 +9,7 @@ from pathlib import Path
 from agentharness.bootstrap import BootstrapOptions, bootstrap_project
 from agentharness.generation import generate_framework_outputs
 from agentharness.validation import validate_project_directory
+from agentharness.verification import verify_project_directory
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE_DIR = REPO_ROOT / "examples" / "civictrack"
@@ -98,6 +99,42 @@ class BootstrapTests(unittest.TestCase):
                         project_slug="Bad Project",
                     ),
                 )
+
+
+class VerificationTests(unittest.TestCase):
+    def test_civictrack_example_passes_verification(self) -> None:
+        result = verify_project_directory(EXAMPLE_DIR)
+        self.assertTrue(result.ok, msg=f"Unexpected errors: {result.errors}")
+        self.assertEqual(result.missing_files, [])
+        self.assertEqual(result.drifted_files, [])
+
+    def test_verify_reports_generated_artifact_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            copied = Path(tmp_dir) / "civictrack"
+            shutil.copytree(EXAMPLE_DIR, copied)
+
+            broken_checks = copied / ".framework" / "required-checks.json"
+            broken_checks.write_text('{"required_checks": ["format"]}\n', encoding="utf-8")
+
+            result = verify_project_directory(copied)
+            self.assertFalse(result.ok)
+            self.assertIn(".framework/required-checks.json", result.drifted_files)
+
+    def test_verify_can_write_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            copied = Path(tmp_dir) / "civictrack"
+            shutil.copytree(EXAMPLE_DIR, copied)
+
+            result = verify_project_directory(copied, write_report=True)
+            self.assertTrue(result.ok, msg=f"Unexpected errors: {result.errors}")
+            self.assertIsNotNone(result.report_written)
+
+            report_written = result.report_written
+            assert report_written is not None
+            report_path = Path(report_written)
+            self.assertTrue(report_path.is_file())
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertTrue(payload["ok"])
 
 
 if __name__ == "__main__":

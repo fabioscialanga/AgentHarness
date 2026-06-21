@@ -1,0 +1,25 @@
+{
+  "run_id": "run_invite_001",
+  "workspace": "/repo",
+  "task": "Implement endpoint POST /users/invite",
+  "artifacts": {
+    "changed_files": [
+      "src/api/invite.py",
+      "tests/test_invite.py"
+    ],
+    "commands": [
+      {
+        "cmd": "pytest tests/test_invite.py",
+        "exit_code": 0,
+        "stdout_path": ".agentharness/evidence/run_invite_001/pytest.stdout",
+        "stderr_path": ".agentharness/evidence/run_invite_001/pytest.stderr"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "file",
+        "path": "openapi.yaml"
+      }
+    ]
+  }
+}

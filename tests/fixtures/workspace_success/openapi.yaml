@@ -1,0 +1,8 @@
+openapi: 3.1.0
+info:
+  title: Invite API
+  version: "1.0.0"
+paths:
+  /users/invite:
+    post:
+      summary: Invite a user
