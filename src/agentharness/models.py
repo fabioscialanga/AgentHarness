@@ -90,6 +90,8 @@ class ClaimsDocument:
 @dataclass
 class ClaimResult:
     claim_id: str
+    claim_type: str
+    statement: str
     status: str
     reason: str
     evidence: list[str] = field(default_factory=list)
@@ -97,6 +99,8 @@ class ClaimResult:
     def to_dict(self) -> dict[str, Any]:
         return {
             "claim_id": self.claim_id,
+            "claim_type": self.claim_type,
+            "statement": self.statement,
             "status": self.status,
             "reason": self.reason,
             "evidence": self.evidence,
@@ -110,6 +114,7 @@ class VerifyRunResult:
     claims_path: Path
     results: list[ClaimResult]
     notes: list[str] = field(default_factory=list)
+    gating_errors: list[str] = field(default_factory=list)
     report_written: str | None = None
 
     @property
@@ -121,7 +126,15 @@ class VerifyRunResult:
 
     @property
     def ok(self) -> bool:
-        return self.summary.get("unsupported", 0) == 0 and self.summary.get("invalid", 0) == 0
+        return (
+            not self.gating_errors
+            and self.summary.get("unsupported", 0) == 0
+            and self.summary.get("invalid", 0) == 0
+        )
+
+    @property
+    def blocking_claim_ids(self) -> list[str]:
+        return [item.claim_id for item in self.results if item.status in {"unsupported", "invalid"}]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -130,7 +143,9 @@ class VerifyRunResult:
             "claims_path": str(self.claims_path),
             "ok": self.ok,
             "summary": self.summary,
+            "blocking_claim_ids": self.blocking_claim_ids,
             "results": [item.to_dict() for item in self.results],
             "notes": self.notes,
+            "gating_errors": self.gating_errors,
             "report_written": self.report_written,
         }

@@ -166,6 +166,11 @@ def _print_verify_run_result(result, as_json: bool) -> None:
     print(f"Run artifact: {result.run_path}")
     print(f"Claims document: {result.claims_path}")
 
+    if result.gating_errors:
+        print("Gating errors:")
+        for error in result.gating_errors:
+            print(f"- {error}")
+
     grouped = {
         "supported": [],
         "unsupported": [],
@@ -182,7 +187,7 @@ def _print_verify_run_result(result, as_json: bool) -> None:
         print(group_name.upper())
         for item in items:
             evidence = f" | evidence: {', '.join(item.evidence)}" if item.evidence else ""
-            print(f"- {item.claim_id}: {item.reason}{evidence}")
+            print(f"- {item.claim_id} [{item.claim_type}]: {item.statement} -> {item.reason}{evidence}")
 
     summary = result.summary
     print(
@@ -192,6 +197,8 @@ def _print_verify_run_result(result, as_json: bool) -> None:
         f"{summary.get('inconclusive', 0)} inconclusive, "
         f"{summary.get('invalid', 0)} invalid"
     )
+    if result.blocking_claim_ids:
+        print(f"Blocking claims: {', '.join(result.blocking_claim_ids)}")
     if result.notes:
         print("Notes:")
         for note in result.notes:

@@ -50,11 +50,15 @@ def verify_run(
 
     results = []
     notes: list[str] = []
+    gating_errors: list[str] = []
 
     if claims_document.run_id and run.run_id and claims_document.run_id != run.run_id:
-        notes.append(
-            "Claims document run_id does not match run artifact run_id; claims were still evaluated against the provided run."
+        mismatch = (
+            "Claims document run_id does not match run artifact run_id; "
+            "verification is rejected because the claims are bound to a different run."
         )
+        notes.append(mismatch)
+        gating_errors.append(mismatch)
 
     for claim in claims_document.claims:
         results.append(evaluate_claim(run, claim))
@@ -65,6 +69,7 @@ def verify_run(
         claims_path=resolved_claims_path,
         results=results,
         notes=notes,
+        gating_errors=gating_errors,
     )
 
     if write_report:

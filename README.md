@@ -15,10 +15,10 @@ English | Italiano
 - Esempio CivicTrack (Italiano): `docs/it/ESEMPIO_CIVICTRACK.md`
 
 ## What AgentHarness is for
-AgentHarness is a framework for making agent-driven engineering more structured, testable, and reviewable.
+AgentHarness is a framework for making agent-driven engineering more structured, testable, reviewable, and harder to fake.
 
 The goal is not to build another coding assistant.
-The goal is to give coding agents a project contract so they operate with clearer context, rules, checks, and review boundaries.
+The goal is to give coding agents a project contract and a verification layer so they operate with clearer context, rules, checks, review boundaries, and evidence requirements.
 
 In practice, AgentHarness helps turn project intent into:
 - a human-readable project brief
@@ -26,11 +26,12 @@ In practice, AgentHarness helps turn project intent into:
 - workflows for common engineering tasks
 - policies for autonomy, testing, and security
 - generated framework metadata used for verification
+- claim-based run evidence that can be accepted or rejected mechanically
 
 If you want the deeper model, read `docs/en/PROJECT_DOCUMENTATION.md` or `docs/it/DOCUMENTAZIONE_PROGETTO.md`.
 
 ## What works today
-AgentHarness already includes a working Python CLI with three concrete commands:
+AgentHarness already includes a working Python CLI with five concrete commands:
 
 1. `agentharness validate`
 - validates that an AgentHarness-style project is internally consistent
@@ -41,7 +42,10 @@ AgentHarness already includes a working Python CLI with three concrete commands:
 3. `agentharness verify`
 - verifies a project against its contract and detects drift in checked-in `.framework` artifacts
 
-4. `agentharness bootstrap`
+4. `agentharness verify-run`
+- verifies an agent run against explicit claims and only accepts claims that are supported by evidence
+
+5. `agentharness bootstrap`
 - creates a new contract-first project skeleton and validates it
 
 The repository also includes:
@@ -84,6 +88,14 @@ agentharness generate examples/civictrack --json
 ### Verify the example end to end
 ```bash
 agentharness verify examples/civictrack --json
+```
+
+### Verify claim-based agent evidence
+```bash
+agentharness verify-run \
+  --run tests/fixtures/run_invite_schema_success.json \
+  --claims tests/fixtures/claims_invite_schema.json \
+  --json
 ```
 
 ### Bootstrap a new project
@@ -144,4 +156,4 @@ If you want to test whether the framework adds real value, use the benchmark pac
 - `benchmarks/support-ticket-api/SCORECARD.md`
 
 ## Positioning in one sentence
-AgentHarness turns project spec into controlled agent execution.
+AgentHarness turns project spec into controlled agent execution and accepts only the claims an agent can prove.
