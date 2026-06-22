@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
+from . import __version__
 from .checks import evaluate_claim
-from .models import ClaimsDocument, RunRecord, VerifyRunResult
+from .models import ClaimResult, ClaimsDocument, RunRecord, VerifyRunResult
+from .reexecution import ExecutionPolicy, default_execution_policy
 
 
 def load_run(path: str | Path) -> RunRecord:
@@ -17,7 +21,7 @@ def load_run(path: str | Path) -> RunRecord:
 
 
 def load_claims(path: str | Path) -> ClaimsDocument:
-    claims_path = Path(path)
+    claims_path = Path(path).resolve()
     payload = json.loads(claims_path.read_text(encoding="utf-8"))
     return ClaimsDocument.from_dict(payload)
 
@@ -104,33 +108,69 @@ def _is_safe_run_namespace(run_id: str) -> bool:
     return True
 
 
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def verify_run(
     run_path: str | Path,
     claims_path: str | Path,
     *,
     write_report: bool = False,
     report_path: str | Path | None = None,
+    reexecute_mode: str = "auto",
+    reexecution_timeout: int = 60,
+    execution_policy: ExecutionPolicy | None = None,
 ) -> VerifyRunResult:
     resolved_run_path = Path(run_path).resolve()
     resolved_claims_path = Path(claims_path).resolve()
 
+    run_sha256 = _sha256_file(resolved_run_path)
+    claims_sha256 = _sha256_file(resolved_claims_path)
     run = load_run(resolved_run_path)
     claims_document = load_claims(resolved_claims_path)
+    policy = execution_policy or default_execution_policy(
+        mode=reexecute_mode,
+        timeout_seconds=reexecution_timeout,
+    )
 
     results = []
     gating_errors = _validate_run_documents(run, claims_document)
     notes = list(gating_errors)
 
-    for claim in claims_document.claims:
-        results.append(evaluate_claim(run, claim))
+    if gating_errors:
+        results = [
+            ClaimResult(
+                claim_id=claim.id,
+                claim_type=claim.type,
+                statement=claim.statement,
+                status="invalid",
+                reason="Verification aborted because the run or claims envelope failed gating checks",
+                truth_source="none",
+                audit={"gating_errors": gating_errors},
+            )
+            for claim in claims_document.claims
+        ]
+    else:
+        for claim in claims_document.claims:
+            results.append(evaluate_claim(run, claim, execution_policy=policy))
 
     result = VerifyRunResult(
         run_id=run.run_id,
         run_path=resolved_run_path,
         claims_path=resolved_claims_path,
         results=results,
+        run_sha256=run_sha256,
+        claims_sha256=claims_sha256,
+        tool_version=__version__,
+        evaluated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         notes=notes,
         gating_errors=gating_errors,
+        audit_trail={
+            "policy": policy.to_dict(),
+            "run_sha256": run_sha256,
+            "claims_sha256": claims_sha256,
+        },
     )
 
     if write_report:

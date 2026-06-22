@@ -63,7 +63,20 @@ AgentHarness is not:
 
 The design assumes human review remains necessary for important changes.
 
-## 6. Operating model
+## 6. Claim verification and the trust gap
+
+`agentharness verify-run` is the part of the project that tries to close the trust gap between what an agent says it did and what the repository can defend.
+
+For `tests_executed`, the tool now uses a strict hierarchy of truth sources:
+- controlled reexecution for allowed commands, this is the strongest source
+- parsed evidence inside the reserved `.agentharness/evidence/<run_id>/` namespace, only when reexecution cannot establish the verdict
+- `inconclusive` when the tool cannot defend the truth of the claim
+
+This matters because file presence alone is not proof. A non-trusted actor can fabricate a run record and matching evidence files. AgentHarness therefore prefers rerunning the allowed command in a controlled working directory with a timeout and a sanitized environment. When that is not possible, the weaker parsed-evidence path is surfaced explicitly in the report.
+
+The report records the truth source per claim, plus hashes for the run record, claims document, and evidence files that were read or produced.
+
+## 7. Operating model
 
 The operating model starts from explicit project artifacts and turns them into execution guidance for agents.
 
@@ -155,10 +168,10 @@ Examples could include:
 ## 8. Repository structure
 
 Current repository structure:
-- `README.md` — top-level overview
-- `docs/en/` — English documentation
-- `docs/it/` — Italian documentation
-- `examples/civictrack/` — worked example showing the framework style
+- `README.md`: top-level overview
+- `docs/en/`: English documentation
+- `docs/it/`: Italian documentation
+- `examples/civictrack/`: worked example showing the framework style
 
 Inside `examples/civictrack/`:
 - `PROJECT.md`

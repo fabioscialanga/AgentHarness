@@ -63,7 +63,20 @@ AgentHarness non è:
 
 Il design assume che la review umana resti necessaria per i cambiamenti importanti.
 
-## 6. Modello operativo
+## 6. Verifica dei claim e trust gap
+
+`agentharness verify-run` è la parte del progetto che prova a chiudere il divario di fiducia tra ciò che un agente dichiara di aver fatto e ciò che il repository può difendere.
+
+Per `tests_executed`, il tool usa ora una gerarchia severa di fonti di verità:
+- riesecuzione controllata dei comandi ammessi, è la fonte più forte
+- evidenza parsata dentro il namespace riservato `.agentharness/evidence/<run_id>/`, solo quando la riesecuzione non riesce a stabilire il verdetto
+- `inconclusive` quando il tool non può difendere la verità del claim
+
+Questo conta perché la sola presenza di file non è prova. Un attore non fidato può fabbricare sia il run record sia file di evidenza coerenti. Per questo AgentHarness preferisce rieseguire il comando ammesso in una working directory controllata, con timeout e ambiente sanitizzato. Quando questo non è possibile, il report espone in modo esplicito il percorso più debole basato su evidenza parsata.
+
+Il report registra la fonte di verità per claim, insieme agli hash del run record, del documento dei claim e dei file di evidenza letti o prodotti.
+
+## 7. Modello operativo
 
 Il modello operativo parte da artefatti di progetto espliciti e li trasforma in guida di esecuzione per agenti.
 
@@ -155,10 +168,10 @@ Esempi possibili:
 ## 8. Struttura del repository
 
 Struttura attuale del repository:
-- `README.md` — panoramica di alto livello
-- `docs/en/` — documentazione in inglese
-- `docs/it/` — documentazione in italiano
-- `examples/civictrack/` — esempio concreto che mostra lo stile del framework
+- `README.md`: panoramica di alto livello
+- `docs/en/`: documentazione in inglese
+- `docs/it/`: documentazione in italiano
+- `examples/civictrack/`: esempio concreto che mostra lo stile del framework
 
 Dentro `examples/civictrack/` trovi:
 - `PROJECT.md`

@@ -15,6 +15,7 @@ Oggi il repository fornisce già un nucleo operativo funzionante:
 - `agentharness validate` controlla se un progetto nello stile AgentHarness è coerente
 - `agentharness generate` rigenera i metadata principali in `.framework` a partire da `project.yaml`
 - `agentharness verify` controlla insieme validità del contratto e drift negli artefatti `.framework` generati
+- `agentharness verify-run` controlla i claim di un agente con prova severa di default, preferisce la riesecuzione controllata per i comandi di test ammessi e restituisce `inconclusive` quando la verità non è difendibile
 - `agentharness bootstrap` crea lo skeleton iniziale di un nuovo progetto contract-first
 
 ## Per chi è utile
@@ -72,7 +73,27 @@ agentharness verify examples/civictrack --json
 
 Questo conferma che i file `.framework` versionati corrispondano ancora agli output derivati da `project.yaml`.
 
-### 4. Crea un nuovo progetto
+### 4. Verifica evidenza claim-based di un run
+```bash
+agentharness verify-run \
+  --run tests/fixtures/run_invite_schema_success.json \
+  --claims tests/fixtures/claims_invite_schema.json \
+  --json
+```
+
+Questo usa prova severa di default. Quando possibile, AgentHarness riesegue i comandi di test ammessi. Se non riesce a difendere la verità di un claim, restituisce `inconclusive` invece di un successo falso.
+
+### 5. Smaschera un finto test verde dichiarato dall'agente
+```bash
+agentharness verify-run \
+  --run tests/fixtures/run_invite_lie.json \
+  --claims tests/fixtures/claims_invite_lie.json \
+  --json
+```
+
+Questo esempio deve fallire. Il fixture dichiara un comando pytest verde, ma AgentHarness lo riesegue e cattura il vero exit code non zero in `.agentharness/evidence/<run_id>/reexecuted/`.
+
+### 6. Crea un nuovo progetto
 ```bash
 agentharness bootstrap ./my-project \
   --project-name "My Project" \
@@ -104,7 +125,7 @@ Se sei nuovo nel repo, segui questo ordine:
 AgentHarness è ancora in una fase iniziale.
 
 Cosa esiste oggi:
-- comandi CLI funzionanti per validate, generate e bootstrap
+- comandi CLI funzionanti per validate, generate, verify, verify-run e bootstrap
 - un progetto di esempio completo
 - test che coprono i flussi base
 

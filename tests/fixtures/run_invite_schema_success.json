@@ -10,7 +10,7 @@
     ],
     "commands": [
       {
-        "cmd": "pytest tests/test_invite.py",
+        "cmd": "pytest tests/test_invite.py -q",
         "exit_code": 0,
         "stdout_path": ".agentharness/evidence/run_invite_schema_001/pytest.stdout",
         "stderr_path": ".agentharness/evidence/run_invite_schema_001/pytest.stderr"

@@ -43,7 +43,9 @@ AgentHarness already includes a working Python CLI with five concrete commands:
 - verifies a project against its contract and detects drift in checked-in `.framework` artifacts
 
 4. `agentharness verify-run`
-- verifies an agent run against explicit claims and only accepts claims that are supported by workspace-scoped evidence
+- verifies an agent run against explicit claims and only accepts claims that are backed by controlled proof
+- defaults to strict proof for `tests_executed` and `artifact_present`
+- prefers controlled reexecution for allowed test commands, falls back to parsed evidence only when reexecution cannot establish the verdict, and returns `inconclusive` when truth cannot be defended
 - rejects malformed run/claim envelopes, out-of-scope filesystem evidence, mismatched run binding, and command evidence parked outside the reserved `.agentharness/evidence/<run_id>/` namespace
 
 5. `agentharness bootstrap`
@@ -99,6 +101,16 @@ agentharness verify-run \
   --json
 ```
 
+### Catch an agent that declared a fake green test run
+```bash
+agentharness verify-run \
+  --run tests/fixtures/run_invite_lie.json \
+  --claims tests/fixtures/claims_invite_lie.json \
+  --json
+```
+
+The second example is designed to fail. The run record declares a green pytest command, but the allowed command is reexecuted and AgentHarness captures the real non-zero exit code under `.agentharness/evidence/<run_id>/reexecuted/`.
+
 ### Bootstrap a new project
 ```bash
 agentharness bootstrap ./my-project \
@@ -124,13 +136,13 @@ Reliable agentic engineering needs a harness around the model:
 AgentHarness focuses on that harness.
 
 ## Main repository building blocks
-- `PROJECT.md` — human-readable project intent
-- `project.yaml` — structured machine-readable project config
-- `AGENTS.md` — agent operating rules
-- `workflows/` — task templates
-- `checklists/` — definition of done, review, security, testing
-- `policies/` — autonomy, quality, and security rules
-- `.framework/` — generated metadata, risk matrices, required checks
+- `PROJECT.md`: human-readable project intent
+- `project.yaml`: structured machine-readable project config
+- `AGENTS.md`: agent operating rules
+- `workflows/`: task templates
+- `checklists/`: definition of done, review, security, testing
+- `policies/`: autonomy, quality, and security rules
+- `.framework/`: generated metadata, risk matrices, required checks
 
 ## Repository status
 This repository is still early, but it is no longer documentation-only.
@@ -157,4 +169,4 @@ If you want to test whether the framework adds real value, use the benchmark pac
 - `benchmarks/support-ticket-api/SCORECARD.md`
 
 ## Positioning in one sentence
-AgentHarness turns project spec into controlled agent execution and accepts only the claims an agent can prove.
+AgentHarness turns project spec into controlled agent execution and only accepts the claims it can prove through controlled reexecution or coherent evidence.

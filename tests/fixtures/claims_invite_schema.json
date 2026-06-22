@@ -30,9 +30,8 @@
       "statement": "Ho eseguito i test richiesti per il cambiamento OpenAPI",
       "expected": {
         "required_commands": [
-          "pytest tests/test_invite.py"
-        ],
-        "require_evidence_files": true
+          "pytest tests/test_invite.py -q"
+        ]
       }
     },
     {

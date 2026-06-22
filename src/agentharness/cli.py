@@ -77,6 +77,18 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional explicit output path for the verify-run report JSON",
     )
+    verify_run_parser.add_argument(
+        "--reexecute-tests",
+        choices=("auto", "never"),
+        default="auto",
+        help="How verify-run should establish test truth: auto prefers controlled reexecution, never disables reexecution and relies on parsed evidence only",
+    )
+    verify_run_parser.add_argument(
+        "--reexecution-timeout",
+        type=int,
+        default=60,
+        help="Timeout in seconds for controlled test command reexecution",
+    )
 
     bootstrap_parser = subparsers.add_parser(
         "bootstrap",
@@ -187,7 +199,8 @@ def _print_verify_run_result(result, as_json: bool) -> None:
         print(group_name.upper())
         for item in items:
             evidence = f" | evidence: {', '.join(item.evidence)}" if item.evidence else ""
-            print(f"- {item.claim_id} [{item.claim_type}]: {item.statement} -> {item.reason}{evidence}")
+            truth_source = f" | truth: {item.truth_source}" if item.truth_source else ""
+            print(f"- {item.claim_id} [{item.claim_type}]: {item.statement} -> {item.reason}{truth_source}{evidence}")
 
     summary = result.summary
     print(
@@ -250,6 +263,8 @@ def main(argv: list[str] | None = None) -> int:
             args.claims,
             write_report=args.write_report,
             report_path=args.report_path,
+            reexecute_mode=args.reexecute_tests,
+            reexecution_timeout=args.reexecution_timeout,
         )
         _print_verify_run_result(result, args.json)
         return 0 if result.ok else 1

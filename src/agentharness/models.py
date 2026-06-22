@@ -11,6 +11,7 @@ class CommandArtifact:
     exit_code: int | None = None
     stdout_path: str | None = None
     stderr_path: str | None = None
+    working_dir: str | None = None
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "CommandArtifact":
@@ -19,6 +20,7 @@ class CommandArtifact:
             exit_code=payload.get("exit_code"),
             stdout_path=payload.get("stdout_path"),
             stderr_path=payload.get("stderr_path"),
+            working_dir=payload.get("working_dir"),
         )
 
 
@@ -95,6 +97,8 @@ class ClaimResult:
     status: str
     reason: str
     evidence: list[str] = field(default_factory=list)
+    truth_source: str = "none"
+    audit: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -104,6 +108,8 @@ class ClaimResult:
             "status": self.status,
             "reason": self.reason,
             "evidence": self.evidence,
+            "truth_source": self.truth_source,
+            "audit": self.audit,
         }
 
 
@@ -113,9 +119,14 @@ class VerifyRunResult:
     run_path: Path
     claims_path: Path
     results: list[ClaimResult]
+    run_sha256: str
+    claims_sha256: str
+    tool_version: str
+    evaluated_at: str
     notes: list[str] = field(default_factory=list)
     gating_errors: list[str] = field(default_factory=list)
     report_written: str | None = None
+    audit_trail: dict[str, Any] = field(default_factory=dict)
 
     @property
     def summary(self) -> dict[str, int]:
@@ -130,17 +141,22 @@ class VerifyRunResult:
             not self.gating_errors
             and self.summary.get("unsupported", 0) == 0
             and self.summary.get("invalid", 0) == 0
+            and self.summary.get("inconclusive", 0) == 0
         )
 
     @property
     def blocking_claim_ids(self) -> list[str]:
-        return [item.claim_id for item in self.results if item.status in {"unsupported", "invalid"}]
+        return [item.claim_id for item in self.results if item.status in {"unsupported", "inconclusive", "invalid"}]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
             "run_path": str(self.run_path),
             "claims_path": str(self.claims_path),
+            "run_sha256": self.run_sha256,
+            "claims_sha256": self.claims_sha256,
+            "tool_version": self.tool_version,
+            "evaluated_at": self.evaluated_at,
             "ok": self.ok,
             "summary": self.summary,
             "blocking_claim_ids": self.blocking_claim_ids,
@@ -148,4 +164,5 @@ class VerifyRunResult:
             "notes": self.notes,
             "gating_errors": self.gating_errors,
             "report_written": self.report_written,
+            "audit_trail": self.audit_trail,
         }

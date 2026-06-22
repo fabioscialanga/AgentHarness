@@ -15,6 +15,7 @@ Today, the repository already provides a working operational core:
 - `agentharness validate` checks whether an AgentHarness-style project is internally consistent
 - `agentharness generate` regenerates core `.framework` metadata from `project.yaml`
 - `agentharness verify` checks contract validity plus drift in generated `.framework` artifacts
+- `agentharness verify-run` checks agent claims with strict proof by default, prefers controlled reexecution for allowed test commands, and returns `inconclusive` when truth cannot be defended
 - `agentharness bootstrap` scaffolds a new contract-first project skeleton
 
 ## Who it is for
@@ -72,7 +73,27 @@ agentharness verify examples/civictrack --json
 
 This confirms that the checked-in `.framework` files still match the outputs derived from `project.yaml`.
 
-### 4. Bootstrap a new project
+### 4. Verify claim-based run evidence
+```bash
+agentharness verify-run \
+  --run tests/fixtures/run_invite_schema_success.json \
+  --claims tests/fixtures/claims_invite_schema.json \
+  --json
+```
+
+This uses strict proof by default. Allowed test commands are reexecuted when possible. If AgentHarness cannot defend the truth of a claim, it returns `inconclusive` instead of a false success.
+
+### 5. Catch a fabricated green test run
+```bash
+agentharness verify-run \
+  --run tests/fixtures/run_invite_lie.json \
+  --claims tests/fixtures/claims_invite_lie.json \
+  --json
+```
+
+This example is expected to fail. The fixture declares a passing pytest command, but AgentHarness reexecutes it and captures the real failing exit code in `.agentharness/evidence/<run_id>/reexecuted/`.
+
+### 6. Bootstrap a new project
 ```bash
 agentharness bootstrap ./my-project \
   --project-name "My Project" \
@@ -104,7 +125,7 @@ If you are new to the repo, follow this order:
 AgentHarness is still early.
 
 What exists today:
-- working CLI commands for validate, generate, and bootstrap
+- working CLI commands for validate, generate, verify, verify-run, and bootstrap
 - one worked example project
 - tests covering the core flows
 
