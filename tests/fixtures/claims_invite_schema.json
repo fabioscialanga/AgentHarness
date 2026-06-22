@@ -25,6 +25,17 @@
       }
     },
     {
+      "id": "claim_tests_schema",
+      "type": "tests_executed",
+      "statement": "Ho eseguito i test richiesti per il cambiamento OpenAPI",
+      "expected": {
+        "required_commands": [
+          "pytest tests/test_invite.py"
+        ],
+        "require_evidence_files": true
+      }
+    },
+    {
       "id": "claim_schema",
       "type": "schema_match",
       "statement": "L'OpenAPI aggiornato ha lo shape minimo richiesto",

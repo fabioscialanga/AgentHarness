@@ -35,6 +35,57 @@ def write_verify_run_report(result: VerifyRunResult, output_path: str | Path | N
     return report_path
 
 
+def _validate_run_documents(run: RunRecord, claims_document: ClaimsDocument) -> list[str]:
+    errors: list[str] = []
+
+    if not run.run_id.strip():
+        errors.append("Run artifact is missing a non-empty run_id.")
+    if not claims_document.run_id.strip():
+        errors.append("Claims document is missing a non-empty run_id.")
+    if not claims_document.claims:
+        errors.append("Claims document must contain at least one claim.")
+
+    if run.run_id.strip() and claims_document.run_id.strip() and claims_document.run_id != run.run_id:
+        errors.append(
+            "Claims document run_id does not match run artifact run_id; "
+            "verification is rejected because the claims are bound to a different run."
+        )
+
+    seen_claim_ids: set[str] = set()
+    duplicate_claim_ids: set[str] = set()
+    for claim in claims_document.claims:
+        if claim.id in seen_claim_ids:
+            duplicate_claim_ids.add(claim.id)
+        seen_claim_ids.add(claim.id)
+    if duplicate_claim_ids:
+        errors.append(
+            "Claims document contains duplicate claim ids: " + ", ".join(sorted(duplicate_claim_ids))
+        )
+
+    blank_changed_files = [index for index, path in enumerate(run.changed_files, start=1) if not path.strip()]
+    if blank_changed_files:
+        errors.append(
+            "Run artifact contains blank changed_files entries at positions: "
+            + ", ".join(str(index) for index in blank_changed_files)
+        )
+
+    blank_command_slots = [index for index, command in enumerate(run.commands, start=1) if not command.cmd.strip()]
+    if blank_command_slots:
+        errors.append(
+            "Run artifact contains commands with empty cmd fields at positions: "
+            + ", ".join(str(index) for index in blank_command_slots)
+        )
+
+    blank_output_slots = [index for index, output in enumerate(run.outputs, start=1) if not output.path.strip()]
+    if blank_output_slots:
+        errors.append(
+            "Run artifact contains outputs with empty path fields at positions: "
+            + ", ".join(str(index) for index in blank_output_slots)
+        )
+
+    return errors
+
+
 def verify_run(
     run_path: str | Path,
     claims_path: str | Path,
@@ -49,16 +100,8 @@ def verify_run(
     claims_document = load_claims(resolved_claims_path)
 
     results = []
-    notes: list[str] = []
-    gating_errors: list[str] = []
-
-    if claims_document.run_id and run.run_id and claims_document.run_id != run.run_id:
-        mismatch = (
-            "Claims document run_id does not match run artifact run_id; "
-            "verification is rejected because the claims are bound to a different run."
-        )
-        notes.append(mismatch)
-        gating_errors.append(mismatch)
+    gating_errors = _validate_run_documents(run, claims_document)
+    notes = list(gating_errors)
 
     for claim in claims_document.claims:
         results.append(evaluate_claim(run, claim))

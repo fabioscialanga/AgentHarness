@@ -7,7 +7,7 @@ from typing import Any
 
 import yaml
 
-from .models import Claim, ClaimResult, RunRecord
+from .models import Claim, ClaimResult, CommandArtifact, RunRecord
 
 
 SUPPORTED_CLAIM_TYPES = {
@@ -156,6 +156,7 @@ def _check_forbidden_paths(run: RunRecord, claim: Claim) -> ClaimResult:
 def _check_tests_executed(run: RunRecord, claim: Claim) -> ClaimResult:
     required_commands = [str(item) for item in claim.expected.get("required_commands", [])]
     required_command_patterns = [str(item) for item in claim.expected.get("required_command_patterns", [])]
+    require_evidence_files = bool(claim.expected.get("require_evidence_files", False))
     executed_commands = {command.cmd: command for command in run.commands}
     command_list = list(run.commands)
 
@@ -189,13 +190,51 @@ def _check_tests_executed(run: RunRecord, claim: Claim) -> ClaimResult:
             evidence=[*failed, *failed_patterns],
         )
 
+    matched_commands: list[CommandArtifact] = [executed_commands[command] for command in required_commands]
+    for pattern in required_command_patterns:
+        for command in command_list:
+            if fnmatch(command.cmd, pattern) and command.exit_code == 0:
+                matched_commands.append(command)
+                break
+
+    evidence_paths: list[str] = []
+    if require_evidence_files:
+        if not matched_commands:
+            return ClaimResult(
+                claim_id=claim.id,
+                claim_type=claim.type,
+                statement=claim.statement,
+                status="unsupported",
+                reason="Required command evidence could not be resolved",
+            )
+
+        evidence_errors: list[str] = []
+        for command in matched_commands:
+            command_evidence, command_errors = _collect_command_evidence(run.workspace, command)
+            evidence_paths.extend(command_evidence)
+            evidence_errors.extend(command_errors)
+
+        if evidence_errors:
+            return ClaimResult(
+                claim_id=claim.id,
+                claim_type=claim.type,
+                statement=claim.statement,
+                status="unsupported",
+                reason="Required command evidence is missing or out of workspace scope",
+                evidence=evidence_errors,
+            )
+
     return ClaimResult(
         claim_id=claim.id,
         claim_type=claim.type,
         statement=claim.statement,
         status="supported",
-        reason="All required commands were found with exit_code 0",
-        evidence=[*required_commands, *required_command_patterns],
+        reason=(
+            "All required commands were found with exit_code 0"
+            if not require_evidence_files
+            else "All required commands were found with exit_code 0 and persisted evidence files"
+        ),
+        evidence=evidence_paths or [*required_commands, *required_command_patterns],
     )
 
 
@@ -214,18 +253,27 @@ def _check_artifact_present(run: RunRecord, claim: Claim) -> ClaimResult:
             evidence=missing,
         )
 
+    scoped_paths: list[str] = []
     if must_exist_on_disk:
-        missing_on_disk = [
-            path for path in required_outputs if not _resolve_output_path(run.workspace, path).is_file()
-        ]
+        missing_on_disk: list[str] = []
+        for path in required_outputs:
+            resolved_output_path, path_error = _resolve_workspace_path(run.workspace, path)
+            if path_error:
+                missing_on_disk.append(f"{path}: {path_error}")
+                continue
+            assert resolved_output_path is not None
+            if not resolved_output_path.is_file():
+                missing_on_disk.append(str(resolved_output_path))
+                continue
+            scoped_paths.append(str(resolved_output_path))
         if missing_on_disk:
             return ClaimResult(
                 claim_id=claim.id,
                 claim_type=claim.type,
                 statement=claim.statement,
                 status="unsupported",
-                reason="Required output was declared in run artifacts but is missing on disk",
-                evidence=[str(_resolve_output_path(run.workspace, path)) for path in missing_on_disk],
+                reason="Required output was declared in run artifacts but is missing on disk or outside workspace scope",
+                evidence=missing_on_disk,
             )
 
     return ClaimResult(
@@ -238,17 +286,35 @@ def _check_artifact_present(run: RunRecord, claim: Claim) -> ClaimResult:
             if not must_exist_on_disk
             else "All required outputs were found in run artifacts and exist on disk"
         ),
-        evidence=[
-            str(_resolve_output_path(run.workspace, path)) if must_exist_on_disk else path
-            for path in required_outputs
-        ],
+        evidence=scoped_paths or required_outputs,
     )
 
 
 def _check_schema_match(run: RunRecord, claim: Claim) -> ClaimResult:
     output_path = str(claim.expected.get("output_path"))
     schema = claim.expected.get("schema", {})
-    resolved_output_path = _resolve_output_path(run.workspace, output_path)
+    produced_paths = {output.path for output in run.outputs}
+    if output_path not in produced_paths:
+        return ClaimResult(
+            claim_id=claim.id,
+            claim_type=claim.type,
+            statement=claim.statement,
+            status="unsupported",
+            reason="Schema target file was not declared in run outputs",
+            evidence=[output_path],
+        )
+
+    resolved_output_path, path_error = _resolve_workspace_path(run.workspace, output_path)
+    if path_error:
+        return ClaimResult(
+            claim_id=claim.id,
+            claim_type=claim.type,
+            statement=claim.statement,
+            status="unsupported",
+            reason=f"Schema target path is outside workspace scope: {path_error}",
+            evidence=[output_path],
+        )
+    assert resolved_output_path is not None
 
     if not resolved_output_path.is_file():
         return ClaimResult(
@@ -293,11 +359,42 @@ def _check_schema_match(run: RunRecord, claim: Claim) -> ClaimResult:
     )
 
 
-def _resolve_output_path(workspace: Path, output_path: str) -> Path:
-    candidate = Path(output_path)
+def _collect_command_evidence(workspace: Path, command: CommandArtifact) -> tuple[list[str], list[str]]:
+    evidence_candidates = [path for path in (command.stdout_path, command.stderr_path) if path]
+    if not evidence_candidates:
+        return [], [f"{command.cmd}: no stdout_path/stderr_path provided"]
+
+    evidence_paths: list[str] = []
+    errors: list[str] = []
+    for candidate in evidence_candidates:
+        assert candidate is not None
+        resolved_path, path_error = _resolve_workspace_path(workspace, candidate)
+        if path_error:
+            errors.append(f"{command.cmd}: {candidate} ({path_error})")
+            continue
+        assert resolved_path is not None
+        if not resolved_path.is_file():
+            errors.append(f"{command.cmd}: {resolved_path} (missing file)")
+            continue
+        evidence_paths.append(str(resolved_path))
+
+    if not evidence_paths:
+        return [], errors
+    return evidence_paths, errors
+
+
+def _resolve_workspace_path(workspace: Path, artifact_path: str) -> tuple[Path | None, str | None]:
+    candidate = Path(artifact_path)
     if candidate.is_absolute():
-        return candidate
-    return workspace / candidate
+        return None, "absolute paths are not allowed"
+
+    resolved_workspace = workspace.resolve()
+    resolved_candidate = (resolved_workspace / candidate).resolve()
+    try:
+        resolved_candidate.relative_to(resolved_workspace)
+    except ValueError:
+        return None, "path escapes the declared workspace"
+    return resolved_candidate, None
 
 
 def _load_structured_document(path: Path) -> Any:

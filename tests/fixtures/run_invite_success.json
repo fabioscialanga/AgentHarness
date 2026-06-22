@@ -1,6 +1,6 @@
 {
   "run_id": "run_invite_001",
-  "workspace": "/repo",
+  "workspace": "workspace_invite",
   "task": "Implement endpoint POST /users/invite",
   "artifacts": {
     "changed_files": [

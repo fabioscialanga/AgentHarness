@@ -43,7 +43,8 @@ AgentHarness already includes a working Python CLI with five concrete commands:
 - verifies a project against its contract and detects drift in checked-in `.framework` artifacts
 
 4. `agentharness verify-run`
-- verifies an agent run against explicit claims and only accepts claims that are supported by evidence
+- verifies an agent run against explicit claims and only accepts claims that are supported by workspace-scoped evidence
+- rejects malformed run/claim envelopes, out-of-scope filesystem evidence, and mismatched run binding
 
 5. `agentharness bootstrap`
 - creates a new contract-first project skeleton and validates it

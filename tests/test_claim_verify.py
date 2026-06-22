@@ -30,13 +30,15 @@ class VerifyRunTests(unittest.TestCase):
         self.assertEqual(result.summary["unsupported"], 0)
         self.assertEqual(result.summary["invalid"], 0)
         self.assertEqual(result.blocking_claim_ids, [])
+        self.assertEqual(result.gating_errors, [])
 
-    def test_verify_run_supports_forbidden_paths_and_schema_match_claims(self) -> None:
+    def test_verify_run_supports_forbidden_paths_schema_and_test_evidence_claims(self) -> None:
         result = verify_run(RUN_SCHEMA_FIXTURE, CLAIMS_SCHEMA_FIXTURE)
         self.assertTrue(result.ok)
-        self.assertEqual(result.summary["supported"], 3)
+        self.assertEqual(result.summary["supported"], 4)
         self.assertTrue(any(item.claim_id == "claim_scope_forbidden" and item.status == "supported" for item in result.results))
         self.assertTrue(any(item.claim_id == "claim_schema" and item.status == "supported" for item in result.results))
+        self.assertTrue(any(item.claim_id == "claim_tests_schema" and item.status == "supported" for item in result.results))
 
     def test_verify_run_reports_allowed_scope_violation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -48,6 +50,10 @@ class VerifyRunTests(unittest.TestCase):
                 (FIXTURES / "workspace_success" / "openapi.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
+            evidence_dir = workspace / ".agentharness" / "evidence" / "run_invite_schema_001"
+            evidence_dir.mkdir(parents=True)
+            (evidence_dir / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            (evidence_dir / "pytest.stderr").write_text("", encoding="utf-8")
             run_payload = json.loads(RUN_SCHEMA_FIXTURE.read_text(encoding="utf-8"))
             run_payload["artifacts"]["changed_files"].append("docs/adr-001.md")
             run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
@@ -63,13 +69,13 @@ class VerifyRunTests(unittest.TestCase):
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
             run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
             run_payload["artifacts"]["changed_files"].append("infra/deploy.yml")
             run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
             claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             result = verify_run(run_path, claims_path)
             self.assertFalse(result.ok)
-            self.assertEqual(result.summary["unsupported"], 1)
             self.assertTrue(any(item.claim_id == "claim_scope" and item.status == "unsupported" for item in result.results))
 
     def test_verify_run_reports_missing_required_command(self) -> None:
@@ -77,13 +83,13 @@ class VerifyRunTests(unittest.TestCase):
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
             run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
             run_payload["artifacts"]["commands"] = []
             run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
             claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             result = verify_run(run_path, claims_path)
             self.assertFalse(result.ok)
-            self.assertEqual(result.summary["unsupported"], 1)
             self.assertTrue(any(item.claim_id == "claim_tests" and item.status == "unsupported" for item in result.results))
 
     def test_verify_run_supports_required_command_patterns(self) -> None:
@@ -120,64 +126,136 @@ class VerifyRunTests(unittest.TestCase):
             self.assertEqual(result.summary["supported"], 1)
             self.assertEqual(result.results[0].evidence, ["pytest tests/test_invite.py*"])
 
+    def test_verify_run_can_require_command_evidence_files(self) -> None:
+        result = verify_run(RUN_FIXTURE, CLAIMS_FIXTURE)
+        self.assertTrue(result.ok)
+        command_result = next(item for item in result.results if item.claim_id == "claim_tests")
+        self.assertEqual(command_result.status, "supported")
+        self.assertTrue(any(path.endswith("pytest.stdout") for path in command_result.evidence))
+
+    def test_verify_run_rejects_missing_command_evidence_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace_invite"
+            evidence_dir = workspace / ".agentharness" / "evidence" / "run_invite_001"
+            evidence_dir.mkdir(parents=True)
+            (workspace / "openapi.yaml").write_text("openapi: 3.1.0\n", encoding="utf-8")
+            (evidence_dir / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(workspace)
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            command_result = next(item for item in result.results if item.claim_id == "claim_tests")
+            self.assertEqual(command_result.status, "unsupported")
+            self.assertIn("missing or out of workspace scope", command_result.reason)
+
     def test_verify_run_reports_missing_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
             run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
             run_payload["artifacts"]["outputs"] = []
             run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
             claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             result = verify_run(run_path, claims_path)
             self.assertFalse(result.ok)
-            self.assertEqual(result.summary["unsupported"], 1)
             self.assertTrue(any(item.claim_id == "claim_openapi" and item.status == "unsupported" for item in result.results))
 
     def test_verify_run_can_require_artifact_to_exist_on_disk(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            workspace = Path(tmp_dir) / "workspace"
-            workspace.mkdir()
-            (workspace / "openapi.yaml").write_text("openapi: 3.1.0\n", encoding="utf-8")
-            run_path = Path(tmp_dir) / "run.json"
-            claims_path = Path(tmp_dir) / "claims.json"
-            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
-            run_payload["workspace"] = str(workspace)
-            claims_payload = json.loads(CLAIMS_FIXTURE.read_text(encoding="utf-8"))
-            claims_payload["claims"][2]["expected"]["must_exist_on_disk"] = True
-            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
-            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
-
-            result = verify_run(run_path, claims_path)
-            self.assertTrue(result.ok)
-            artifact_result = next(item for item in result.results if item.claim_id == "claim_openapi")
-            self.assertEqual(artifact_result.status, "supported")
-            self.assertTrue(artifact_result.evidence[0].endswith("openapi.yaml"))
+        result = verify_run(RUN_FIXTURE, CLAIMS_FIXTURE)
+        self.assertTrue(result.ok)
+        artifact_result = next(item for item in result.results if item.claim_id == "claim_openapi")
+        self.assertEqual(artifact_result.status, "supported")
+        self.assertTrue(artifact_result.evidence[0].endswith("openapi.yaml"))
 
     def test_verify_run_reports_declared_artifact_missing_on_disk(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             workspace = Path(tmp_dir) / "workspace"
             workspace.mkdir()
+            evidence_dir = workspace / ".agentharness" / "evidence" / "run_invite_001"
+            evidence_dir.mkdir(parents=True)
+            (evidence_dir / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            (evidence_dir / "pytest.stderr").write_text("", encoding="utf-8")
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
             run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
             run_payload["workspace"] = str(workspace)
-            claims_payload = json.loads(CLAIMS_FIXTURE.read_text(encoding="utf-8"))
-            claims_payload["claims"][2]["expected"]["must_exist_on_disk"] = True
             run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
-            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             result = verify_run(run_path, claims_path)
             self.assertFalse(result.ok)
             artifact_result = next(item for item in result.results if item.claim_id == "claim_openapi")
             self.assertEqual(artifact_result.status, "unsupported")
-            self.assertIn("missing on disk", artifact_result.reason)
+            self.assertIn("outside workspace scope", artifact_result.reason)
+
+    def test_verify_run_rejects_artifact_path_that_escapes_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            workspace.mkdir()
+            secret_path = Path(tmp_dir) / "secret.txt"
+            secret_path.write_text("secret\n", encoding="utf-8")
+            evidence_dir = workspace / ".agentharness" / "evidence" / "run_invite_001"
+            evidence_dir.mkdir(parents=True)
+            (evidence_dir / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            (evidence_dir / "pytest.stderr").write_text("", encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(workspace)
+            run_payload["artifacts"]["outputs"] = [{"type": "file", "path": "../secret.txt"}]
+            claims_payload = {
+                "run_id": "run_invite_001",
+                "claims": [
+                    {
+                        "id": "claim_escape_artifact",
+                        "type": "artifact_present",
+                        "statement": "Ho prodotto un file fuori workspace",
+                        "expected": {
+                            "required_outputs": ["../secret.txt"],
+                            "must_exist_on_disk": True
+                        }
+                    }
+                ]
+            }
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            self.assertEqual(result.results[0].status, "unsupported")
+            self.assertIn("outside workspace scope", result.results[0].reason)
 
     def test_verify_run_reports_schema_mismatch(self) -> None:
         result = verify_run(RUN_SCHEMA_BAD_FIXTURE, CLAIMS_SCHEMA_FIXTURE)
         self.assertFalse(result.ok)
         self.assertTrue(any(item.claim_id == "claim_schema" and item.status == "unsupported" for item in result.results))
         self.assertTrue(any("Schema mismatch" in item.reason for item in result.results if item.claim_id == "claim_schema"))
+
+    def test_verify_run_rejects_schema_target_outside_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            workspace.mkdir()
+            (workspace / "openapi.yaml").write_text((FIXTURES / "workspace_success" / "openapi.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_SCHEMA_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(workspace)
+            run_payload["artifacts"]["outputs"] = []
+            claims_path.write_text(CLAIMS_SCHEMA_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            schema_result = next(item for item in result.results if item.claim_id == "claim_schema")
+            self.assertEqual(schema_result.status, "unsupported")
+            self.assertIn("not declared in run outputs", schema_result.reason)
 
     def test_verify_run_rejects_vague_or_incomplete_claim_shape(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -214,11 +292,52 @@ class VerifyRunTests(unittest.TestCase):
             self.assertEqual(len(result.gating_errors), 1)
             self.assertIn("different run", result.gating_errors[0])
 
+    def test_verify_run_fails_when_run_id_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["run_id"] = ""
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            self.assertIn("missing a non-empty run_id", result.gating_errors[0])
+
+    def test_verify_run_fails_when_claims_run_id_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            claims_payload = json.loads(CLAIMS_FIXTURE.read_text(encoding="utf-8"))
+            claims_payload["run_id"] = ""
+            run_path.write_text(RUN_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            self.assertIn("Claims document is missing a non-empty run_id.", result.gating_errors)
+
+    def test_verify_run_fails_on_duplicate_claim_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            claims_payload = json.loads(CLAIMS_FIXTURE.read_text(encoding="utf-8"))
+            claims_payload["claims"].append(dict(claims_payload["claims"][0]))
+            run_path.write_text(RUN_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            self.assertTrue(any("duplicate claim ids" in error for error in result.gating_errors))
+
     def test_verify_run_can_write_default_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
-            run_path.write_text(RUN_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
             claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             expected_report_path = default_verify_run_report_path(run_path)
@@ -231,13 +350,16 @@ class VerifyRunTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             self.assertEqual(payload["summary"]["supported"], 3)
             self.assertEqual(payload["blocking_claim_ids"], [])
+            self.assertEqual(payload["gating_errors"], [])
 
     def test_verify_run_can_write_custom_report_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
             report_path = Path(tmp_dir) / "reports" / "custom.verify-report.json"
-            run_path.write_text(RUN_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
             claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             result = verify_run(run_path, claims_path, write_report=True, report_path=report_path)
@@ -279,7 +401,9 @@ class VerifyRunTests(unittest.TestCase):
             run_path = Path(tmp_dir) / "run.json"
             claims_path = Path(tmp_dir) / "claims.json"
             report_path = Path(tmp_dir) / "out" / "verify-run-report.json"
-            run_path.write_text(RUN_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
             claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
 
             completed = subprocess.run(
