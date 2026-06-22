@@ -210,7 +210,11 @@ def _check_tests_executed(run: RunRecord, claim: Claim) -> ClaimResult:
 
         evidence_errors: list[str] = []
         for command in matched_commands:
-            command_evidence, command_errors = _collect_command_evidence(run.workspace, command)
+            command_evidence, command_errors = _collect_command_evidence(
+                run.workspace,
+                run.run_id,
+                command,
+            )
             evidence_paths.extend(command_evidence)
             evidence_errors.extend(command_errors)
 
@@ -359,11 +363,23 @@ def _check_schema_match(run: RunRecord, claim: Claim) -> ClaimResult:
     )
 
 
-def _collect_command_evidence(workspace: Path, command: CommandArtifact) -> tuple[list[str], list[str]]:
+def _collect_command_evidence(
+    workspace: Path,
+    run_id: str,
+    command: CommandArtifact,
+) -> tuple[list[str], list[str]]:
     evidence_candidates = [path for path in (command.stdout_path, command.stderr_path) if path]
     if not evidence_candidates:
         return [], [f"{command.cmd}: no stdout_path/stderr_path provided"]
 
+    evidence_root = (workspace.resolve() / ".agentharness" / "evidence" / run_id).resolve()
+    evidence_namespace_root = (workspace.resolve() / ".agentharness" / "evidence").resolve()
+    try:
+        evidence_root.relative_to(evidence_namespace_root)
+    except ValueError:
+        return [], [
+            f"{command.cmd}: reserved run evidence directory escapes the evidence namespace {evidence_namespace_root}"
+        ]
     evidence_paths: list[str] = []
     errors: list[str] = []
     for candidate in evidence_candidates:
@@ -375,6 +391,13 @@ def _collect_command_evidence(workspace: Path, command: CommandArtifact) -> tupl
         assert resolved_path is not None
         if not resolved_path.is_file():
             errors.append(f"{command.cmd}: {resolved_path} (missing file)")
+            continue
+        try:
+            resolved_path.relative_to(evidence_root)
+        except ValueError:
+            errors.append(
+                f"{command.cmd}: {resolved_path} (not under reserved run evidence directory {evidence_root})"
+            )
             continue
         evidence_paths.append(str(resolved_path))
 

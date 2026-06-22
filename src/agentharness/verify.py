@@ -51,6 +51,15 @@ def _validate_run_documents(run: RunRecord, claims_document: ClaimsDocument) -> 
             "verification is rejected because the claims are bound to a different run."
         )
 
+    if run.run_id.strip() and not _is_safe_run_namespace(run.run_id):
+        errors.append(
+            "Run artifact run_id must be a path-safe evidence namespace without separators or traversal segments."
+        )
+    if claims_document.run_id.strip() and not _is_safe_run_namespace(claims_document.run_id):
+        errors.append(
+            "Claims document run_id must be a path-safe evidence namespace without separators or traversal segments."
+        )
+
     seen_claim_ids: set[str] = set()
     duplicate_claim_ids: set[str] = set()
     for claim in claims_document.claims:
@@ -84,6 +93,15 @@ def _validate_run_documents(run: RunRecord, claims_document: ClaimsDocument) -> 
         )
 
     return errors
+
+
+def _is_safe_run_namespace(run_id: str) -> bool:
+    candidate = run_id.strip()
+    if not candidate or candidate in {".", ".."}:
+        return False
+    if "/" in candidate or "\\" in candidate:
+        return False
+    return True
 
 
 def verify_run(

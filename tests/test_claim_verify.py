@@ -153,6 +153,68 @@ class VerifyRunTests(unittest.TestCase):
             self.assertEqual(command_result.status, "unsupported")
             self.assertIn("missing or out of workspace scope", command_result.reason)
 
+    def test_verify_run_rejects_command_evidence_outside_reserved_run_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace_invite"
+            evidence_dir = workspace / ".agentharness" / "evidence" / "run_invite_001"
+            evidence_dir.mkdir(parents=True)
+            (workspace / "openapi.yaml").write_text("openapi: 3.1.0\n", encoding="utf-8")
+            (workspace / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            (workspace / "pytest.stderr").write_text("", encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(workspace)
+            run_payload["artifacts"]["commands"] = [
+                {
+                    "cmd": "pytest tests/test_invite.py",
+                    "exit_code": 0,
+                    "stdout_path": "pytest.stdout",
+                    "stderr_path": "pytest.stderr",
+                }
+            ]
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            command_result = next(item for item in result.results if item.claim_id == "claim_tests")
+            self.assertEqual(command_result.status, "unsupported")
+            self.assertTrue(
+                any("reserved run evidence directory" in item for item in command_result.evidence)
+            )
+
+    def test_verify_run_rejects_command_evidence_under_wrong_run_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace_invite"
+            wrong_evidence_dir = workspace / ".agentharness" / "evidence" / "different-run"
+            wrong_evidence_dir.mkdir(parents=True)
+            (workspace / "openapi.yaml").write_text("openapi: 3.1.0\n", encoding="utf-8")
+            (wrong_evidence_dir / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            (wrong_evidence_dir / "pytest.stderr").write_text("", encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(workspace)
+            run_payload["artifacts"]["commands"] = [
+                {
+                    "cmd": "pytest tests/test_invite.py",
+                    "exit_code": 0,
+                    "stdout_path": ".agentharness/evidence/different-run/pytest.stdout",
+                    "stderr_path": ".agentharness/evidence/different-run/pytest.stderr",
+                }
+            ]
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            command_result = next(item for item in result.results if item.claim_id == "claim_tests")
+            self.assertEqual(command_result.status, "unsupported")
+            self.assertTrue(
+                any("reserved run evidence directory" in item for item in command_result.evidence)
+            )
+
     def test_verify_run_reports_missing_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             run_path = Path(tmp_dir) / "run.json"
@@ -317,6 +379,38 @@ class VerifyRunTests(unittest.TestCase):
             result = verify_run(run_path, claims_path)
             self.assertFalse(result.ok)
             self.assertIn("Claims document is missing a non-empty run_id.", result.gating_errors)
+
+    def test_verify_run_rejects_run_id_with_path_traversal_namespace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace_invite"
+            escaped_evidence_dir = workspace / ".agentharness" / "evil"
+            escaped_evidence_dir.mkdir(parents=True)
+            (workspace / "openapi.yaml").write_text("openapi: 3.1.0\n", encoding="utf-8")
+            (escaped_evidence_dir / "pytest.stdout").write_text("ok\n", encoding="utf-8")
+            (escaped_evidence_dir / "pytest.stderr").write_text("", encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            claims_payload = json.loads(CLAIMS_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["run_id"] = "../evil"
+            claims_payload["run_id"] = "../evil"
+            run_payload["workspace"] = str(workspace)
+            run_payload["artifacts"]["commands"] = [
+                {
+                    "cmd": "pytest tests/test_invite.py",
+                    "exit_code": 0,
+                    "stdout_path": ".agentharness/evil/pytest.stdout",
+                    "stderr_path": ".agentharness/evil/pytest.stderr",
+                }
+            ]
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("path-safe evidence namespace" in item for item in result.gating_errors)
+            )
 
     def test_verify_run_fails_on_duplicate_claim_ids(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

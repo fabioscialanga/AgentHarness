@@ -44,7 +44,7 @@ AgentHarness already includes a working Python CLI with five concrete commands:
 
 4. `agentharness verify-run`
 - verifies an agent run against explicit claims and only accepts claims that are supported by workspace-scoped evidence
-- rejects malformed run/claim envelopes, out-of-scope filesystem evidence, and mismatched run binding
+- rejects malformed run/claim envelopes, out-of-scope filesystem evidence, mismatched run binding, and command evidence parked outside the reserved `.agentharness/evidence/<run_id>/` namespace
 
 5. `agentharness bootstrap`
 - creates a new contract-first project skeleton and validates it
