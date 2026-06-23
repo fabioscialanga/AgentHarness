@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .benchmark_hidden_evaluators import evaluate_benchmark_task
 from .benchmarking import render_json_template, write_rendered_json_template
 from .bootstrap import BootstrapOptions, bootstrap_project
 from .evaluation import evaluate_run
@@ -150,6 +151,27 @@ def build_parser() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="Print the rendered suite metadata as JSON",
+    )
+
+    benchmark_eval_parser = subparsers.add_parser(
+        "benchmark-evaluate-task",
+        help="Run a task-specific hidden benchmark evaluator and materialize hidden outputs into the run workspace",
+    )
+    benchmark_eval_parser.add_argument(
+        "--run",
+        type=Path,
+        required=True,
+        help="Path to the run JSON artifact whose workspace should be evaluated",
+    )
+    benchmark_eval_parser.add_argument(
+        "--task-id",
+        required=True,
+        help="Benchmark task id, for example support-ticket-api",
+    )
+    benchmark_eval_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the hidden evaluator result as JSON",
     )
 
     resilient_run_parser = subparsers.add_parser(
@@ -348,6 +370,26 @@ def _print_rendered_evaluation_suite_result(result: dict[str, object], as_json: 
     print(f"Cases: {result['case_count']}")
 
 
+def _print_benchmark_task_evaluation_result(result: dict[str, object], as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return
+
+    passed_checks = result.get("passed_checks", [])
+    failed_checks = result.get("failed_checks", [])
+    if not isinstance(passed_checks, list):
+        passed_checks = []
+    if not isinstance(failed_checks, list):
+        failed_checks = []
+
+    status = "PASS" if result.get("critical_ok") else "FAIL"
+    print(f"[{status}] benchmark task {result.get('task_id', '')}")
+    print(f"Summary written: {result.get('summary_path', '')}")
+    print(f"Result written: {result.get('result_path', '')}")
+    print(f"Passed checks: {', '.join(str(item) for item in passed_checks)}")
+    print(f"Failed checks: {', '.join(str(item) for item in failed_checks)}")
+
+
 def _print_resilient_run_result(result, as_json: bool) -> None:
     if as_json:
         print(json.dumps(result.to_dict(), indent=2))
@@ -448,6 +490,12 @@ def main(argv: list[str] | None = None) -> int:
         }
         _print_rendered_evaluation_suite_result(payload, args.json)
         return 0
+
+    if args.command == "benchmark-evaluate-task":
+        result = evaluate_benchmark_task(args.run, args.task_id)
+        payload = result.to_dict()
+        _print_benchmark_task_evaluation_result(payload, args.json)
+        return 0 if result.critical_ok else 1
 
     if args.command == "run-plan":
         result = run_resilience_plan(
