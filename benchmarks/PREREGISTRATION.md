@@ -1,616 +1,670 @@
-# Benchmark pre-registration draft, bozza di pre-registrazione
+# Benchmark pre-registration
 
-Status: draft for approval before any benchmark run.
-Stato: bozza in attesa di approvazione prima di qualunque run di benchmark.
+Status: draft, pending approval before any benchmark run.
+Stato: bozza, in attesa di approvazione prima di qualunque run di benchmark.
 
-## English
+## Quick approval summary
 
-### 1. Purpose
-This document fixes the benchmark design before running any comparison between a no-framework condition and an AgentHarness condition.
+This pre-registration now proposes:
+- primary treatment: B-loop-closed with symmetric repair
+- primary endpoint: held-out task evaluation score, continuous from 0 to 1
+- `verify-run` role: manipulation check, not primary evidence of benefit
+- acceptable minimum suite: 6 tasks
+- recommended suite: 8 tasks
+- replicates: 6 paired A/B replicates per task
+- minimal meaningful effect, proposed default: 0.10 absolute on the task evaluation score
+- explicit limitation: A vs B estimates the effect of the full AgentHarness package, not a pure isolated framework effect
 
-The goal is to estimate whether AgentHarness improves coding-agent execution quality in a way that is reproducible, reviewable, and statistically defensible.
-
-This pre-registration explicitly allows a null result. If the data do not show a defensible improvement, the report must say so.
-
-### 2. Scope of the claim
-The benchmark can support only a limited claim:
-- a small benchmark suite may show a signal, or no signal, for the tested tasks, model, tool access, and runtime settings
-- it cannot prove a universal law about all coding agents or all software tasks
-
-### 3. Treatment choice
-Proposed primary treatment: B-loop-closed.
-
-Definition:
-- Condition A, baseline: the agent receives only the task specification, execution environment description, allowed tools, time budget, and a fixed output contract that requires a run artifact and a claims document
-- Condition B, AgentHarness: the agent receives the same task specification plus the AgentHarness framework context for that task, and must produce a run artifact plus a claims document that `agentharness verify-run` accepts. Unsupported or inconclusive blocking claims trigger one bounded repair pass inside the same run budget
-
-Why this treatment is preferred:
-- it tests the only framework capability that is genuinely distinctive, namely evidence-backed verification instead of narration alone
-- a context-only treatment would mostly test whether more instructions help, which is a weaker and less interesting claim
-- the closed loop makes the framework earn value through outcomes that survive verification, not through nicer looking structure
-
-Bound on the repair loop:
-- maximum 1 automated repair pass after the first `verify-run` result
-- no human rescue beyond the pre-registered intervention policy
-- the total wall-clock budget is identical across conditions
-
-### 4. Explicit confounder statement
-The main confounder is real and must be stated plainly.
-
-Condition B adds two things at once:
-1. more structured context, such as PROJECT.md, policies, workflows, checklists, generated metadata
-2. a verification loop that can reject unsupported claims and trigger bounded correction
-
-Therefore the primary A versus B comparison estimates the effect of AgentHarness as an operational package, not the isolated causal effect of framework context alone.
-
-This benchmark must not claim:
-- that every gain comes from verification only
-- that every gain comes from context only
-- that the framework effect is disentangled from the extra-context effect
-
-Mitigation:
-- both conditions use the same task spec, model, tools, time budget, intervention policy, and final output contract
-- both conditions must emit raw artifacts, run metadata, and claims artifacts in the same schema
-- the report will label the result as a package-effect estimate
-
-Optional future extension, not part of this pre-registration unless approved before any run:
-- add a third condition, B-context, or a matched-claims baseline, to separate context effects from closed-loop verification effects
-
-### 5. Benchmark suite size
-Proposed suite size: 4 independent tasks.
-
-Rationale:
-- one task is not enough for even limited generalization
-- four tasks are still small enough to be operationally feasible, while covering more than one failure mode
-
-Proposed task families:
-1. support-ticket API, existing benchmark task
-2. inventory-adjustment API with transactional business rules
-3. webhook ingestion service with schema validation and idempotency constraints
-4. export/report job with deterministic file output and negative-path validation
-
-Task design requirements:
-- each task must have a written spec
-- each task must define allowed scope and forbidden scope
-- each task must define an objective evaluation suite and a verify-run claims contract
-- each task must be solvable in the same broad budget class
-
-### 6. Number of runs
-Proposed default: 6 paired runs per task, one pair per seed or replicate index.
-
-This gives:
-- 4 tasks
-- 6 paired A/B replicates per task
-- 24 paired comparisons total
-- 48 total benchmark runs
-
-Why this is the default draft:
-- it is materially better than a single run
-- it provides enough pairs for a non-parametric paired test to be meaningful, while staying within plausible cost
-- it still requires honest uncertainty reporting, because 24 pairs is informative but not large
-
-Open cost-sensitive alternative for approval before execution:
-- stronger plan: 8 paired runs per task, 32 pairs total, 64 runs total
-- cheaper plan: 4 paired runs per task, 16 pairs total, only if runtime budget is genuinely constrained, with the limitation stated prominently
-
-No change to N is allowed after the first benchmark run starts.
-
-### 7. Reproducibility controls
-These settings must be fixed and logged for every run:
-- model provider and exact model name
-- agent runtime, for example Claude Code, Cursor, Codex CLI, with exact version when available
-- temperature and other stochasticity controls when exposed
-- seed or replicate index, when the runtime exposes a real seed. If not available, use paired replicate indices and keep launch procedure identical
-- tool access and network policy
-- wall-clock budget
-- maximum repair-pass count
-- workspace template and starting files
-- benchmark task version hash
-- AgentHarness commit SHA
-- benchmark script version hash
-
-### 8. Objective metrics, primary and secondary
-The benchmark will minimize subjective scoring. Most metrics must be objective and regenerated from raw artifacts.
-
-#### 8.1 Primary endpoint
-Primary endpoint: verified task success, binary per run.
-
-A run counts as primary success only if all of the following are true:
-- the agent produced a run artifact and a claims document
-- `agentharness verify-run` returns `ok = true`
-- the task evaluation suite returns `ok = true`
-- no allowed-scope or forbidden-scope claim is unsupported
-- the run finished within the fixed time budget
-
-This endpoint answers a simple question: did the run produce an evidence-backed, in-scope, task-correct outcome.
-
-#### 8.2 Secondary objective metrics
-Secondary objective metrics, computed per run:
-- verify-run overall pass, binary
-- evaluation-suite overall pass, binary
-- proportion of supported claims in `verify-run`
-- count of unsupported claims
-- count of inconclusive claims
-- count of invalid claims
-- business-rule claim pass count
-- scope-adherence claim pass count
-- reexecuted test command pass, binary when applicable
-- number of changed files outside allowed scope, deterministic count
-- elapsed wall-clock time
-- number of repair passes consumed
-- number of human interventions, expected to stay at the pre-registered maximum
-- run artifact completeness, binary, meaning all required raw files are present
-
-Objective metric sources:
-- `agentharness verify-run` report JSON
-- task evaluation report JSON
-- deterministic filesystem checks on required raw artifacts
-- benchmark metadata file
-
-### 9. Residual subjective metrics
-Subjective review is residual only.
-
-Planned use:
-- only for reviewability and clarity properties that are not yet defensible through deterministic checks
-- not as the primary endpoint
-
-Protocol:
-- 2 blinded raters
-- artifacts anonymized and stripped of condition labels and obvious framework markers when possible
-- each rater scores only these items on a 1 to 5 scale:
-  - code reviewability
-  - README operational clarity
-- the reported value is the mean of the two raters
-- inter-rater agreement must be reported descriptively
-
-If blinded anonymization is not credible for a given artifact set, subjective results must be labeled exploratory and cannot overturn the objective result.
-
-### 10. Hypotheses
-Primary hypothesis, directional:
-- H1: Condition B has a higher probability of verified task success than condition A
-
-Null hypothesis:
-- H0: there is no difference, or the observed difference is consistent with noise in this benchmark design
-
-Secondary hypotheses:
-- H1a: Condition B increases the supported-claim rate
-- H1b: Condition B reduces unsupported plus inconclusive blocking claims
-- H1c: Condition B improves scope adherence
-- H1d: any gain in verified success is not offset by an impractical explosion in time cost
-
-### 11. Statistical analysis plan
-Unit of analysis:
-- one run is one observation
-- primary paired structure: task x replicate index
-
-Primary test:
-- paired comparison of the binary primary endpoint using a paired non-parametric procedure on per-pair differences across task-replicate cells
-- for the main scalar comparison, use Wilcoxon signed-rank on task-level paired summaries if the pairing is valid and there are enough non-zero differences
-- if pairing breaks, fall back to Mann-Whitney U and label the analysis as unpaired
-
-Effect size reporting, mandatory:
-- absolute difference in verified success rate, B minus A
-- bootstrap 95 percent confidence interval
-- matched-pair effect summary when pairing is used
-
-Secondary metrics:
-- Wilcoxon signed-rank for paired ordinal or count-like summaries when applicable
-- Mann-Whitney U for non-paired comparisons
-- bootstrap 95 percent confidence interval for each reported effect size
-
-Multiple comparisons:
-- one primary endpoint, no multiplicity correction for the primary endpoint
-- secondary endpoints controlled with Holm correction within the secondary family
-- subjective exploratory outcomes reported separately and not mixed into the primary claim
-
-Missing data and failures:
-- all runs are included
-- missing required raw artifacts count as run failures on artifact completeness
-- crashed or timed-out runs count as primary failures
-- no post-hoc exclusion except pre-registered hard invalidation, such as benchmark harness crash before the agent starts. Any invalidation must be logged with reason
-
-### 12. Decision rule
-AgentHarness will be described as showing evidence of benefit only if all of the following hold:
-1. the primary endpoint favors B over A
-2. the effect size is positive and the bootstrap interval is not centered on a trivial difference
-3. the primary test does not fail under the pre-registered analysis plan
-4. the gain is not explained away by grossly impractical time cost
-5. the report remains honest about the package-effect confounder
-
-If these conditions do not hold, the headline result must be one of:
-- no effect detected
-- mixed evidence
-- improvement with unresolved confounding, depending on the observed pattern
-
-### 13. Raw artifact retention
-Every run must save enough raw material to regenerate the metrics and audit the result.
-
-Required per-run artifacts:
-- prompt.txt
-- task spec snapshot
-- framework-context snapshot for B, baseline-context snapshot for A
-- transcript or agent raw output log
-- stdout.log
-- stderr.log
-- workspace snapshot or manifest of changed files
-- run.json
-- claims.json
-- verify-run-report.json
-- evaluation-report.json
-- metadata.json
-- repair-pass logs, if any
-
-Suggested directory shape:
-- `benchmarks/runs/<task_id>/<condition>/<replicate_id>/...`
-
-### 14. Planned measurement harness design
-No execution code is approved yet. This section records the intended design only.
-
-Harness responsibilities:
-1. materialize a fresh workspace for a single task-condition-replicate cell
-2. render the correct prompt and context package for A or B
-3. launch the coding agent with fixed runtime settings
-4. capture all raw outputs and benchmark metadata
-5. invoke `agentharness verify-run` on the produced `run.json` and `claims.json`
-6. invoke the task evaluation suite on the produced workspace outputs
-7. write a normalized cell summary JSON derived only from raw artifacts and tool reports
-
-Planned command surface:
-- one command to execute a single cell
-- one command to execute a full pre-registered matrix, only after approval
-- one command to anonymize artifacts for blinded review
-- one command to aggregate raw reports into analysis tables
-
-Cell execution logic, planned:
-- baseline A runs once within the fixed budget, with no framework files
-- treatment B runs once, then gets at most one bounded repair pass if `verify-run` returns blocking unsupported or inconclusive claims
-- both conditions use the same total budget and same tool policy
-
-How `verify-run` provides objective metrics:
-- it validates run/claim envelope consistency
-- it checks scope claims, required artifacts, and explicit test-execution claims
-- it reexecutes supported pytest wrappers when possible, which avoids trusting narrated success
-- it returns machine-readable counts of supported, unsupported, inconclusive, and invalid claims
-- its JSON report is the primary source for evidence-backed execution metrics
-
-How deterministic task checks fit in:
-- task-specific correctness that is not generic enough for `verify-run`, such as exact schema or file-content expectations, is captured in an evaluation suite
-- the evaluation suite report remains secondary to raw artifacts, and is also regenerated from those raw artifacts
-
-Blind subjective protocol, planned:
-- a separate anonymizer copies only the files needed for human review
-- condition labels are replaced with random IDs
-- raters score reviewability and README clarity without seeing the original benchmark condition
-
-### 15. Open decisions requiring approval
-1. Treatment confirmation:
-   - proposed default is B-loop-closed
-   - alternative is B-context only
-   - recommendation: approve B-loop-closed if the goal is to test the strongest real claim of AgentHarness
-
-2. Run count confirmation:
-   - proposed default is 4 tasks x 6 paired replicates = 48 total runs
-   - stronger option is 4 tasks x 8 paired replicates = 64 total runs
-   - cheaper option is 4 tasks x 4 paired replicates = 32 total runs, with weaker inference
-
-3. Task-suite confirmation:
-   - keep support-ticket API
-   - approve the other 3 task families before any run starts
-
-4. Baseline contract confirmation:
-   - proposed baseline still emits `run.json` and `claims.json`, so objective measurement is symmetric
-   - this is recommended, because otherwise B would benefit from measurement affordances that A lacks
-
-5. Subjective review confirmation:
-   - approve whether to include the blinded human-review residual at all in phase one
-   - recommendation: keep it, but exploratory and strictly secondary
-
-### 16. Freeze rule
-No benchmark execution may start until this document is approved.
-After approval, treatment definition, metrics, task list, N, and decision rule are frozen.
+Approval is needed before any benchmark execution.
 
 ## Italiano
 
 ### 1. Scopo
-Questo documento fissa il design del benchmark prima di eseguire qualunque confronto tra una condizione senza framework e una condizione con AgentHarness.
+Questo documento congela il design del benchmark prima di qualunque esecuzione.
 
-L'obiettivo è stimare se AgentHarness migliora la qualità di esecuzione di un coding agent in modo riproducibile, revisionabile e statisticamente difendibile.
+Obiettivo:
+- verificare, o smentire, se AgentHarness migliora l'esecuzione di un coding agent in modo riproducibile e statisticamente difendibile
+- ammettere esplicitamente un risultato nullo
 
-Questa pre-registrazione ammette esplicitamente un risultato nullo. Se i dati non mostrano un miglioramento difendibile, il report dovrà dirlo.
+Questo benchmark non serve a proclamare una vittoria. Serve a misurare un segnale reale, oppure a mostrare onestamente che non c'è.
 
-### 2. Portata della claim
-Il benchmark può sostenere solo una claim limitata:
-- una suite piccola può mostrare un segnale, oppure nessun segnale, per i task, il modello, i tool e le impostazioni runtime testate
-- non può dimostrare una legge universale su tutti i coding agent o su tutti i task software
+### 2. Claim supportata
+La claim che questa suite può supportare è limitata:
+- può mostrare un segnale, oppure nessun segnale, per i task, il modello, i tool e il budget testati
+- non può dimostrare una legge universale su tutti i coding agent o tutti i task software
 
-### 3. Scelta del trattamento
-Trattamento primario proposto: B-loop-chiuso.
+### 3. Trattamento proposto
+Scelta proposta: B-loop-chiuso con repair simmetrico.
 
-Definizione:
-- Condizione A, baseline: l'agente riceve solo la specifica del task, la descrizione dell'ambiente di esecuzione, i tool consentiti, il budget di tempo e un contratto di output fisso che richiede un run artifact e un documento di claim
-- Condizione B, AgentHarness: l'agente riceve la stessa specifica del task più il contesto framework AgentHarness per quel task, e deve produrre un run artifact più un documento di claim che `agentharness verify-run` accetta. Claim blocking unsupported o inconclusive attivano un solo repair pass limitato dentro lo stesso budget totale
+Definizione delle condizioni:
 
-Perché questo trattamento è preferito:
-- testa l'unica capacità davvero distintiva del framework, cioè la verifica evidence-backed invece della sola narrazione
-- un trattamento solo contesto misurerebbe soprattutto se più istruzioni aiutano, che è una claim più debole e meno interessante
-- il loop chiuso obbliga il framework a guadagnarsi valore tramite outcome che sopravvivono alla verifica, non tramite una struttura solo più ordinata
+| Condizione | Definizione |
+| --- | --- |
+| A, baseline | l'agente riceve task spec, ambiente, tool consentiti, budget e lo stesso output contract finale, cioè `run.json` più `claims.json` |
+| B, AgentHarness | l'agente riceve la stessa task spec più il contesto AgentHarness, e deve produrre `run.json` più `claims.json` |
 
-Vincolo sul repair loop:
-- massimo 1 repair pass automatico dopo il primo risultato di `verify-run`
-- nessun salvataggio umano oltre la policy di intervento pre-registrata
-- il budget totale wall-clock è identico tra le condizioni
+Regola del repair pass:
+- entrambe le condizioni ricevono esattamente un repair pass limitato
+- entrambe le condizioni restano dentro lo stesso budget wall-clock totale
+- nessuna condizione vede la task evaluation suite durante il run
 
-### 4. Dichiarazione esplicita del confondente
-Il confondente principale è reale e va dichiarato senza ambiguità.
+Guida del repair pass:
+- A riceve un'istruzione generica e framework-neutral di auto-revisione rispetto alla task spec
+- A non riceve mai feedback dei claim di `verify-run`, file framework, né task evaluation suite
+- B riceve il feedback strutturato dei claim di `verify-run`
+- B non riceve mai la task evaluation suite
 
-La condizione B aggiunge due cose insieme:
-1. più contesto strutturato, come PROJECT.md, policy, workflow, checklist, metadata generati
-2. un loop di verifica che può rifiutare claim unsupported e attivare una correzione limitata
+Motivazione della scelta:
+- il numero di tentativi diventa simmetrico
+- la differenza sistematica resta nella qualità del segnale di repair e nel contesto framework
+- il contrasto diventa: repair guidato dalla verifica più contesto framework contro repair generico senza framework
 
-Quindi il confronto primario A contro B stima l'effetto di AgentHarness come pacchetto operativo, non l'effetto causale isolato del solo contesto framework.
+### 4. Confondente esplicito
+Il confondente principale va dichiarato senza giri:
+- B aggiunge più contesto strutturato
+- B aggiunge anche una guida di repair basata sulla verifica
 
-Questo benchmark non deve sostenere:
-- che ogni guadagno derivi solo dalla verifica
-- che ogni guadagno derivi solo dal contesto
-- che l'effetto framework sia già separato dall'effetto del contesto extra
+Lo step di repair è ora simmetrico nel conteggio: entrambe le condizioni ricevono esattamente un repair pass limitato. La differenza residua è la qualità della guida di quel pass, che fa parte del pacchetto framework e qui non viene isolata di proposito.
 
-Mitigazione:
-- entrambe le condizioni usano la stessa task spec, lo stesso modello, gli stessi tool, lo stesso budget di tempo, la stessa policy di intervento e lo stesso contratto finale di output
-- entrambe le condizioni devono emettere raw artifact, metadata di run e artifact di claim nello stesso schema
-- il report etichetterà il risultato come stima di effetto di pacchetto
+Quindi il confronto A vs B misura l'effetto del pacchetto AgentHarness nel suo insieme.
+Non misura in modo pulito:
+- solo l'effetto del contesto extra
+- solo l'effetto della guida di `verify-run`
 
-Estensione futura opzionale, non parte di questa pre-registrazione salvo approvazione prima di qualunque run:
-- aggiungere una terza condizione, B-contesto, oppure una baseline con claim simmetrici, per separare l'effetto del contesto da quello della verifica a loop chiuso
+Cosa diremo nel report:
+- il risultato è una stima di package effect
+- non attribuiremo tutto il guadagno solo alla verifica, né solo al contesto
 
-### 5. Dimensione della suite benchmark
-Dimensione proposta della suite: 4 task indipendenti.
+Mitigazioni:
+- stesso task
+- stesso modello
+- stessi tool
+- stesso budget
+- stessa policy di intervento
+- stesso schema minimo di output per entrambe le condizioni
+- stesso numero di tentativi totali
 
-Motivazione:
-- un task solo non basta nemmeno per una generalizzazione limitata
-- quattro task restano abbastanza pochi da essere sostenibili, ma coprono più di una modalità di fallimento
+Estensione futura possibile, ma non inclusa in questa pre-registrazione salvo approvazione preventiva:
+- aggiungere una terza condizione B-contesto per separare meglio effetti di contesto ed effetti di guidance della verifica
 
-Famiglie di task proposte:
-1. support-ticket API, task benchmark esistente
-2. inventory-adjustment API con regole transazionali di business
-3. servizio di webhook ingestion con validazione schema e vincoli di idempotenza
-4. job di export o report con output file deterministico e validazione dei negative path
+### 5. Suite di task proposta
+Poiché la precisione dell'inferenza A vs B è governata soprattutto dal numero di task e non dalle sole repliche, la suite viene alzata.
 
-Requisiti di design dei task:
-- ogni task deve avere una spec scritta
-- ogni task deve definire scope consentito e scope vietato
-- ogni task deve definire una evaluation suite oggettiva e un contratto di claim per verify-run
-- ogni task deve essere risolvibile nella stessa classe generale di budget
+Numerosità della suite:
+- suite minima accettabile: 6 task
+- suite raccomandata: 8 task, se operativamente fattibile
+- 4 task non sono accettabili come base di una claim headline, ma solo come eventuale pilot dry run non pubblicabile
 
-### 6. Numero di run
-Default proposto: 6 run appaiati per task, una coppia per seed o indice di replica.
+Task families già confermate o candidate:
+1. support-ticket API, già esistente
+2. inventory-adjustment API con business rules transazionali
+3. webhook ingestion service con schema validation e idempotenza
+4. export o report job con output file deterministico e negative-path validation
+5. da definire prima del freeze
+6. da definire prima del freeze
+7. opzionale, se piano a 8 task
+8. opzionale, se piano a 8 task
 
-Questo produce:
-- 4 task
+Requisiti per ogni task:
+- spec scritta
+- scope consentito e scope vietato
+- evaluation suite indipendente e tenuta da parte
+- claims contract per `verify-run`
+- difficoltà compatibile con lo stesso ordine di budget
+
+### 6. Numerosità proposta
+Repliche per task:
 - 6 repliche appaiate A/B per task
-- 24 confronti appaiati totali
-- 48 run benchmark totali
 
-Perché questo è il default di bozza:
-- è materialmente migliore di un run singolo
-- fornisce abbastanza coppie perché un test non parametrico appaiato abbia senso, restando entro un costo plausibile
-- richiede comunque reporting onesto dell'incertezza, perché 24 coppie sono informative ma non grandi
+Opzioni di piano da confermare prima del freeze:
+- raccomandata: 8 task x 6 repliche = 48 confronti appaiati, 96 run totali
+- accettabile: 6 task x 6 repliche = 36 confronti appaiati, 72 run totali
+- non accettabile per un risultato headline: 4 task x 6 repliche = 24 confronti appaiati, 48 run totali, da usare solo come pilot
 
-Alternativa sensibile al costo, da approvare prima dell'esecuzione:
-- piano più forte: 8 run appaiati per task, 32 coppie totali, 64 run totali
-- piano più economico: 4 run appaiati per task, 16 coppie totali, solo se il budget runtime è davvero vincolato, con limitazione dichiarata in evidenza
-
-Nessun cambiamento a N è consentito dopo l'avvio del primo run benchmark.
+Regola ferrea:
+- né il numero di task né il numero di repliche si cambiano dopo l'avvio del primo run benchmark
 
 ### 7. Controlli di riproducibilità
-Queste impostazioni devono essere fissate e loggate per ogni run:
-- provider del modello e nome esatto del modello
-- runtime dell'agente, per esempio Claude Code, Cursor, Codex CLI, con versione esatta quando disponibile
-- temperatura e altri controlli di stocasticità, quando esposti
-- seed o indice di replica, quando il runtime espone un seed reale. Se non è disponibile, usare indici di replica appaiati e mantenere identica la procedura di avvio
-- accesso ai tool e policy di rete
+Da fissare e loggare per ogni run:
+- provider e nome esatto del modello
+- runtime agente e sua versione, quando disponibile
+- temperatura e controlli di stocasticità, se esposti
+- seed reale, se disponibile, altrimenti indice di replica appaiato
+- tool access e network policy
 - budget wall-clock
-- numero massimo di repair pass
-- template del workspace e file iniziali
-- hash della versione del task benchmark
+- massimo numero di repair pass
+- template workspace e file iniziali
+- hash versione task
 - commit SHA di AgentHarness
-- hash della versione dello script benchmark
+- hash versione script benchmark
 
-### 8. Metriche oggettive, primarie e secondarie
-Il benchmark ridurrà al minimo il punteggio soggettivo. La maggior parte delle metriche deve essere oggettiva e rigenerabile dai raw artifact.
-
+### 8. Metriche
 #### 8.1 Endpoint primario
-Endpoint primario: verified task success, binario per run.
+Endpoint primario: task evaluation score, continuo tra 0 e 1, calcolato per run dalla task evaluation suite indipendente e tenuta da parte.
 
-Un run conta come successo primario solo se tutte le condizioni seguenti sono vere:
-- l'agente ha prodotto un run artifact e un documento di claim
-- `agentharness verify-run` restituisce `ok = true`
-- la task evaluation suite restituisce `ok = true`
-- nessun claim di allowed scope o forbidden scope è unsupported
-- il run finisce entro il budget di tempo fissato
+La task evaluation suite:
+- è indipendente da `verify-run`
+- non viene mai mostrata a nessuna delle due condizioni durante il run
+- verifica correttezza task-specific, regole di business, schema esatto e negative path
 
-Questo endpoint risponde a una domanda semplice: il run ha prodotto un outcome evidence-backed, in scope e corretto sul task.
+Lo score è la proporzione di controlli di accettazione indipendenti superati.
+
+Motivazione:
+- è l'unico esito che B non ottimizza direttamente, quindi non è circolare
+- uno score continuo porta informazione graduata e riduce effetti di ceiling e floor rispetto a un solo binario
+
+Secondario binario chiave, derivato dalla stessa suite:
+- task evaluation pass, vero solo se tutti i controlli critici di accettazione passano
 
 #### 8.2 Metriche oggettive secondarie
-Metriche oggettive secondarie, calcolate per run:
-- pass complessivo di verify-run, binario
-- pass complessivo della evaluation suite, binario
-- proporzione di claim supported in `verify-run`
-- conteggio dei claim unsupported
-- conteggio dei claim inconclusive
-- conteggio dei claim invalid
-- conteggio dei claim di business rule superati
-- conteggio dei claim di scope adherence superati
-- pass della riesecuzione del test command, binario quando applicabile
-- numero di file cambiati fuori scope consentito, conteggio deterministico
-- tempo wall-clock trascorso
+Metriche secondarie per run:
+- task evaluation pass
+- numero di controlli indipendenti superati nella evaluation suite
+- numero di controlli indipendenti falliti nella evaluation suite
+- tempo totale
 - numero di repair pass consumati
-- numero di interventi umani, che dovrebbe restare al massimo pre-registrato
-- completezza del run artifact, binaria, cioè presenza di tutti i raw file richiesti
+- completezza artifact grezzi richiesti
+- numero di file cambiati fuori scope, se misurato deterministicamente
 
-Fonti delle metriche oggettive:
-- report JSON di `agentharness verify-run`
-- report JSON della task evaluation
-- controlli deterministici sul filesystem dei raw artifact richiesti
-- file metadata del benchmark
+Manipulation check, non esiti di beneficio:
+- pass complessivo di `verify-run`
+- quota di claim supported
+- conteggio claim unsupported
+- conteggio claim inconclusive
+- conteggio claim invalid
 
-### 9. Metriche soggettive residue
-La review soggettiva è solo residuale.
+Queste metriche di `verify-run` nella condizione B sono parzialmente circolari per disegno, perché B itera per soddisfare il loop di verifica. Vengono riportate solo per mostrare che B ha effettivamente ingaggiato il loop, non come prova primaria di beneficio.
 
-Uso previsto:
-- solo per proprietà di reviewability e chiarezza non ancora difendibili con controlli deterministici
-- non come endpoint primario
+Fonti di verità:
+- report JSON della task evaluation suite
+- report JSON di `verify-run`, ma solo come manipulation check
+- controlli deterministici sul filesystem dei raw artifact
+- metadata del benchmark
+
+#### 8.3 Metriche soggettive residue
+Le metriche soggettive non sono primarie.
+
+Uso limitato a:
+- reviewability del codice
+- chiarezza operativa del README
 
 Protocollo:
 - 2 valutatori in cieco
-- artifact anonimizzati e privati delle etichette di condizione e, quando possibile, di marcatori framework evidenti
-- ogni valutatore assegna un voto solo su questi item da 1 a 5:
-  - reviewability del codice
-  - chiarezza operativa del README
-- il valore riportato è la media dei due valutatori
-- l'accordo inter-valutatore deve essere riportato in modo descrittivo
+- artifact anonimizzati
+- scala 1 a 5
+- media dei due voti
+- accordo tra valutatori riportato in modo descrittivo
 
-Se l'anonimizzazione in cieco non è credibile per un certo set di artifact, i risultati soggettivi vanno etichettati come esplorativi e non possono ribaltare il risultato oggettivo.
+Se il cieco non è credibile, questi risultati restano solo esplorativi.
+
+### 9. Effetto minimo rilevante
+Effetto minimo rilevante, MME:
+- proposta default: 0.10 assoluto sul task evaluation score
+- il valore finale va confermato prima del freeze
+
+Interpretazione:
+- il benchmark non chiede solo se B è migliore di A
+- chiede se B è migliore di A abbastanza da contare davvero
 
 ### 10. Ipotesi
 Ipotesi primaria, direzionale:
-- H1: la condizione B ha una probabilità più alta di verified task success rispetto alla condizione A
+- la condizione B produce un task evaluation score più alto della condizione A di almeno l'effetto minimo rilevante, sulla suite indipendente tenuta da parte
 
 Ipotesi nulla:
-- H0: non c'è differenza, oppure la differenza osservata è compatibile con rumore dentro questo design benchmark
+- nessuna differenza, oppure una differenza più piccola dell'effetto minimo rilevante, oppure una differenza compatibile con il rumore sotto questo design
 
-Ipotesi secondarie:
-- H1a: la condizione B aumenta il supported-claim rate
-- H1b: la condizione B riduce i claim blocking unsupported più inconclusive
-- H1c: la condizione B migliora lo scope adherence
-- H1d: eventuali guadagni nel verified success non sono compensati da un'esplosione impraticabile del costo temporale
+Le ipotesi secondarie su supported-claim rate e riduzione dei claim blocking vengono riclassificate come manipulation check per la condizione B, non come prova di beneficio.
 
-### 11. Piano di analisi statistica
+### 11. Piano statistico
 Unità di analisi:
-- un run è un'osservazione
-- struttura appaiata primaria: task x indice di replica
+- il singolo run è un'osservazione
+- i run sono annidati nei task
+- i task sono i cluster e governano la precisione dell'inferenza A vs B
 
-Test primario:
-- confronto appaiato dell'endpoint primario binario usando una procedura non parametrica appaiata su differenze per coppia task-replica
-- per il confronto scalare principale, usare Wilcoxon signed-rank sui riassunti appaiati a livello task se l'appaiamento è valido e ci sono abbastanza differenze non nulle
-- se l'appaiamento si rompe, usare Mann-Whitney U e dichiarare l'analisi come non appaiata
+Analisi primaria sull'endpoint primario:
+- modello a effetti misti con condizione come effetto fisso e intercetta random per task
+- per il task evaluation score continuo usare un modello lineare a effetti misti
+- per il secondario binario task evaluation pass usare un modello lineare generalizzato a effetti misti, logistico
+- riportare l'effetto aggiustato B meno A con intervallo di confidenza al 95 percento
 
-Reporting dell'effect size, obbligatorio:
-- differenza assoluta nel verified success rate, B meno A
-- intervallo di confidenza bootstrap al 95 percento
-- sintesi dell'effetto su coppie appaiate quando si usa l'appaiamento
+Analisi di robustezza:
+- cluster bootstrap che ricampiona i task con le loro repliche
+- riportare la differenza media B meno A con intervallo di confidenza al 95 percento
+- la precisione dell'inferenza è guidata dal numero di task, non dal numero di repliche
 
-Metriche secondarie:
-- Wilcoxon signed-rank per riassunti appaiati ordinali o count-like, quando applicabile
+Il Wilcoxon signed-rank a livello task viene rimosso come test primario, perché con il numero di task inizialmente previsto non può sostenere una significatività headline. Può apparire solo come sensitivity check chiaramente etichettato e sottodimensionato, mai come base del risultato principale.
+
+Metriche secondarie oggettive:
+- modelli a effetti misti oppure, dove un semplice riassunto appaiato è valido, Wilcoxon signed-rank
 - Mann-Whitney U per confronti non appaiati
-- intervallo di confidenza bootstrap al 95 percento per ogni effect size riportato
-
-Confronti multipli:
-- un endpoint primario, nessuna correzione di molteplicità per l'endpoint primario
-- endpoint secondari controllati con correzione Holm dentro la famiglia secondaria
-- outcome soggettivi esplorativi riportati separatamente e non mischiati nella claim primaria
+- bootstrap CI 95 percento per ogni effect size riportato
+- Holm per controllare la molteplicità nella famiglia secondaria
+- l'unico endpoint primario non prende correzione di molteplicità
 
 Dati mancanti e fallimenti:
-- tutti i run sono inclusi
-- i raw artifact richiesti mancanti contano come fallimento sul criterio di artifact completeness
-- run crashati o andati in timeout contano come fallimenti sull'endpoint primario
-- nessuna esclusione post hoc salvo hard invalidation pre-registrata, per esempio crash dell'harness benchmark prima che l'agente parta. Ogni invalidazione deve essere loggata con motivazione
+- tutti i run si includono
+- un run crashato o in timeout vale 0 sul task evaluation score e conta come fallimento sul pass binario
+- artifact richiesti mancanti contano come fallimento sui criteri relativi
+- niente esclusioni post hoc, salvo hard invalidation dell'harness prima della partenza dell'agente, con motivo loggato
+
+Limite onesto da dichiarare fin d'ora:
+- con 6 task l'inferenza a livello di cluster resta delicata
+- con 8 task è migliore, ma ancora modesta
+- il benchmark può produrre evidenza utile, non una legge universale
 
 ### 12. Regola di decisione
-AgentHarness verrà descritto come supportato da evidenza di beneficio solo se tutte le condizioni seguenti tengono:
-1. l'endpoint primario favorisce B rispetto ad A
-2. l'effect size è positivo e l'intervallo bootstrap non è centrato su una differenza banale
-3. il test primario non fallisce sotto il piano di analisi pre-registrato
-4. il guadagno non è spiegato da un costo temporale grossolanamente impraticabile
-5. il report resta onesto sul confondente di effetto di pacchetto
+AgentHarness viene descritto come supportato da evidenza di beneficio solo se tutte queste condizioni tengono sul task evaluation score indipendente tenuto da parte:
+1. la stima a effetti misti favorisce B rispetto ad A
+2. la stima cluster-bootstrap favorisce B rispetto ad A
+3. l'intervallo di confidenza al 95 percento per l'effetto B meno A sta interamente sopra zero
+4. l'estremo inferiore dell'intervallo è pari o superiore all'effetto minimo rilevante
+5. il risultato non è trainato da un singolo task, verificato con leave-one-task-out
+6. il guadagno non è spiegato da un costo temporale grossolanamente impraticabile
+7. il report continua a dichiarare in modo chiaro il confondente di package effect
 
-Se queste condizioni non tengono, il risultato headline dovrà essere uno tra:
+Se queste condizioni non tengono, il risultato headline deve essere uno tra:
 - nessun effetto rilevato
 - evidenza mista
-- miglioramento con confondimento non risolto, a seconda del pattern osservato
+- miglioramento con confondimento non risolto
 
-### 13. Conservazione dei raw artifact
-Ogni run deve salvare materiale sufficiente per rigenerare le metriche e auditare il risultato.
+Le metriche di manipulation check derivate da `verify-run` non sono mai sufficienti per sostenere una claim di beneficio.
 
-Artifact richiesti per run:
-- prompt.txt
-- snapshot della task spec
-- snapshot del framework context per B, snapshot del baseline context per A
-- transcript o raw output log dell'agente
-- stdout.log
-- stderr.log
-- snapshot del workspace oppure manifest dei file cambiati
-- run.json
-- claims.json
-- verify-run-report.json
-- evaluation-report.json
-- metadata.json
-- log dei repair pass, se presenti
+### 13. Raw artifacts obbligatori
+Ogni run deve salvare almeno:
+- `prompt.txt`
+- snapshot task spec
+- snapshot contesto baseline o framework
+- transcript o raw output log agente
+- `stdout.log`
+- `stderr.log`
+- snapshot workspace oppure manifest file cambiati
+- `run.json`
+- `claims.json`
+- `verify-run-report.json`
+- `evaluation-report.json`
+- `metadata.json`
+- log del repair pass, se presente
 
-Struttura directory suggerita:
-- `benchmarks/runs/<task_id>/<condition>/<replicate_id>/...`
+Directory shape proposta:
+- `benchmarks/runs/<task_id>/<condition>/<replicate_id>/`
 
-### 14. Design previsto dell'harness di misura
-Nessun codice di esecuzione è ancora approvato. Questa sezione registra solo il design previsto.
+### 14. Design dell'harness di misura
+Importante: questa sezione descrive solo il design, non autorizza ancora implementazione o run.
 
 Responsabilità dell'harness:
-1. materializzare un workspace fresco per una singola cella task-condizione-replica
-2. renderizzare il prompt corretto e il pacchetto contesto per A o B
-3. lanciare il coding agent con impostazioni runtime fissate
-4. catturare tutti i raw output e i metadata benchmark
-5. invocare `agentharness verify-run` sul `run.json` e `claims.json` prodotti
-6. invocare la task evaluation suite sugli output workspace prodotti
-7. scrivere un cell summary JSON normalizzato derivato solo da raw artifact e report tool
+1. creare un workspace pulito per una singola cella task-condizione-replica
+2. comporre prompt e pacchetto contesto corretto
+3. lanciare il coding agent con impostazioni fissate
+4. catturare output grezzi e metadata
+5. invocare `agentharness verify-run`
+6. invocare la task evaluation suite indipendente e tenuta da parte
+7. produrre un summary JSON derivato solo da artifact e report reali
 
-Superficie di comando pianificata:
-- un comando per eseguire una singola cella
-- un comando per eseguire una matrice completa pre-registrata, solo dopo approvazione
-- un comando per anonimizzare artifact per review in cieco
-- un comando per aggregare i report grezzi in tabelle di analisi
+Comandi previsti, a livello di design:
+- comando per eseguire una singola cella
+- comando per eseguire l'intera matrice, solo dopo approvazione
+- comando per anonimizzare artifact per review in cieco
+- comando per aggregare i grezzi in tabelle e statistiche
 
-Logica prevista di esecuzione cella:
-- la baseline A esegue una volta sola entro il budget fissato, senza file framework
-- il trattamento B esegue una volta, poi riceve al massimo un repair pass limitato se `verify-run` restituisce claim blocking unsupported o inconclusive
-- entrambe le condizioni usano lo stesso budget totale e la stessa policy tool
+Come `verify-run` entra nel design:
+- verifica envelope run e claim
+- controlla scope, artifact richiesti e test claims
+- riesegue wrapper pytest supportati quando possibile
+- produce conteggi machine-readable di supported, unsupported, inconclusive e invalid
+- serve come manipulation check per confermare che B abbia davvero ingaggiato il loop di verifica
+- non è l'endpoint primario del beneficio
 
-Come `verify-run` fornisce metriche oggettive:
-- valida la coerenza tra run envelope e claim envelope
-- controlla claim di scope, artifact richiesti e claim espliciti di test execution
-- riesegue i wrapper pytest supportati quando possibile, evitando di fidarsi della sola narrazione di successo
-- restituisce conteggi machine-readable di claim supported, unsupported, inconclusive e invalid
-- il suo report JSON è la fonte primaria per le metriche evidence-backed sull'esecuzione
+Come entra la evaluation suite:
+- è l'outcome indipendente tenuto da parte
+- controlla correttezza task-specific non abbastanza catturata genericamente da `verify-run`
+- produce un report JSON rigenerabile dai raw artifact
+- è la fonte primaria per la claim di beneficio
 
-Come si inseriscono i controlli deterministici sul task:
-- correttezza task-specific non abbastanza generica per `verify-run`, come schema esatto o attese su contenuti file, viene catturata in una evaluation suite
-- anche il report della evaluation suite resta secondario rispetto ai raw artifact, ed è rigenerato a partire da quei raw artifact
+### 15. Decisioni aperte da confermare
+1. Trattamento:
+   - proposta: B-loop-chiuso con repair simmetrico per A
+   - alternativa, solo se si cambia prima del freeze: B-contesto
 
-Protocollo cieco soggettivo, pianificato:
-- un anonymizer separato copia solo i file necessari alla review umana
-- le etichette di condizione vengono sostituite da ID casuali
-- i valutatori assegnano il punteggio a reviewability e chiarezza README senza vedere la condizione benchmark originale
+2. Numerosità:
+   - raccomandata: 8 task x 6 repliche
+   - accettabile: 6 task x 6 repliche
+   - 4 task solo come pilot, non come base headline
 
-### 15. Decisioni aperte che richiedono approvazione
-1. Conferma del trattamento:
-   - default proposto è B-loop-chiuso
-   - alternativa è B-contesto soltanto
-   - raccomandazione: approvare B-loop-chiuso se l'obiettivo è testare la claim più forte e reale di AgentHarness
+3. Endpoint primario:
+   - confermare task evaluation score indipendente come endpoint primario
+   - confermare `verify-run` come manipulation check e non come prova primaria di beneficio
 
-2. Conferma del numero di run:
-   - default proposto è 4 task x 6 repliche appaiate = 48 run totali
-   - opzione più forte è 4 task x 8 repliche appaiate = 64 run totali
-   - opzione più economica è 4 task x 4 repliche appaiate = 32 run totali, con inferenza più debole
+4. MME:
+   - confermare 0.10 oppure fissare un altro valore prima del freeze
 
-3. Conferma della task suite:
-   - mantenere support-ticket API
-   - approvare le altre 3 famiglie di task prima che parta qualunque run
+5. Task suite:
+   - per ogni nuovo task definire la sua evaluation suite indipendente prima di qualunque run
 
-4. Conferma del contratto baseline:
-   - la baseline proposta emette comunque `run.json` e `claims.json`, così la misurazione oggettiva è simmetrica
-   - questa scelta è raccomandata, altrimenti B beneficerebbe di affordance di misura che A non ha
+6. Residuo soggettivo:
+   - confermare se includerlo già nella prima fase come secondario esplorativo
 
-5. Conferma sulla review soggettiva:
-   - approvare se includere oppure no il residuo di human review in cieco già in fase uno
-   - raccomandazione: mantenerlo, ma come elemento esplorativo e strettamente secondario
+### 16. Freeze rule
+Nessun benchmark run parte finché questo documento non è approvato.
+Dopo approvazione, si congelano:
+- trattamento
+- task list
+- N
+- metriche
+- MME
+- regola di decisione
 
-### 16. Regola di freeze
-Nessuna esecuzione benchmark può iniziare finché questo documento non viene approvato.
-Dopo l'approvazione, definizione del trattamento, metriche, lista task, N e regola di decisione sono congelati.
+## English
+
+### 1. Purpose
+This document freezes the benchmark design before execution.
+The goal is to test, or falsify, whether AgentHarness improves coding-agent execution in a reproducible and statistically defensible way.
+A null result is explicitly acceptable.
+
+### 2. Supported claim
+This benchmark can support only a limited claim:
+- it may show a signal, or no signal, for the tested tasks, model, tools, and budget
+- it cannot prove a universal law across all coding agents or software tasks
+
+### 3. Proposed treatment
+Proposed choice: B-loop-closed with symmetric repair.
+
+| Condition | Definition |
+| --- | --- |
+| A, baseline | the agent gets task spec, environment, allowed tools, budget, and the same final output contract, namely `run.json` plus `claims.json` |
+| B, AgentHarness | the agent gets the same task spec plus AgentHarness context, and must produce `run.json` plus `claims.json` |
+
+Repair-pass rule:
+- both conditions receive exactly one bounded repair pass
+- both conditions stay inside the same total wall-clock budget
+- neither condition ever sees the held-out task evaluation suite during the run
+
+Repair guidance:
+- A receives a generic, framework-neutral self-review instruction against the task spec
+- A never receives `verify-run` claim feedback, framework files, or the task evaluation suite
+- B receives structured `verify-run` claim feedback
+- B never receives the task evaluation suite
+
+This keeps the number of attempts symmetric and makes the contrast: verification-guided repair plus framework context versus generic repair without framework.
+
+### 4. Explicit confounder
+The main confounder must be stated plainly:
+- B adds more structured context
+- B also adds verification-guided repair
+
+The repair step is now symmetric in count: both conditions receive exactly one bounded repair pass. The remaining difference is the guidance quality of that pass, which is part of the framework package and is intentionally not isolated here.
+
+Therefore A vs B estimates the effect of the full AgentHarness package.
+It does not cleanly isolate:
+- extra-context effects alone
+- verification-guidance effects alone
+
+The report must state this as a package-effect estimate.
+
+Possible future extension, not included unless approved before any run:
+- add a B-context arm to separate context effects from verification-guidance effects
+
+### 5. Proposed task suite
+Because A versus B inference precision is governed mainly by the number of tasks, not just by replicates, the suite size is raised.
+
+Task-count rules:
+- minimum acceptable suite: 6 tasks
+- recommended suite: 8 tasks, if operationally feasible
+- 4 tasks are not acceptable for a headline claim, only for a possible pilot dry run
+
+Confirmed or candidate task families:
+1. support-ticket API
+2. inventory-adjustment API
+3. webhook ingestion service
+4. export or report job
+5. to be defined before freeze
+6. to be defined before freeze
+7. optional, if the 8-task plan is chosen
+8. optional, if the 8-task plan is chosen
+
+Each task must define:
+- written spec
+- allowed and forbidden scope
+- independent held-out evaluation suite
+- `verify-run` claims contract
+- comparable budget class
+
+### 6. Proposed sample size
+Replicates per task:
+- 6 paired A/B replicates per task
+
+Plan options to confirm before freeze:
+- recommended: 8 tasks x 6 replicates = 48 paired comparisons, 96 total runs
+- acceptable: 6 tasks x 6 replicates = 36 paired comparisons, 72 total runs
+- not acceptable for a headline result: 4 tasks x 6 replicates = 24 paired comparisons, 48 total runs, usable only as a pilot
+
+Hard rule:
+- neither task count nor replicate count changes after the first benchmark run starts
+
+### 7. Reproducibility controls
+Log for every run:
+- exact model and provider
+- runtime and version when available
+- temperature and stochastic controls
+- seed if available, otherwise paired replicate index
+- tool and network policy
+- wall-clock budget
+- repair-pass limit
+- workspace template
+- task version hash
+- AgentHarness commit SHA
+- benchmark script version hash
+
+### 8. Metrics
+#### 8.1 Primary endpoint
+Primary endpoint: task evaluation score, continuous from 0 to 1, computed per run by the independent held-out task evaluation suite.
+
+The task evaluation suite:
+- is independent of `verify-run`
+- is never shown to either condition during the run
+- checks task-specific correctness, business rules, exact schema, and negative paths
+
+The score is the proportion of independent acceptance checks passed.
+
+Rationale:
+- this is the only outcome B does not directly optimize against, so it is not circular
+- a continuous score carries graded information and reduces ceiling and floor effects relative to a single binary
+
+Key binary secondary derived from the same suite:
+- task evaluation pass, true only if all critical acceptance checks pass
+
+#### 8.2 Secondary objective metrics
+Secondary metrics per run:
+- task evaluation pass
+- number of independent evaluation checks passed
+- number of independent evaluation checks failed
+- elapsed time
+- repair-pass count
+- required raw-artifact completeness
+- out-of-scope changed-file count, when measured deterministically
+
+Manipulation checks, not benefit outcomes:
+- overall `verify-run` pass
+- supported-claim rate
+- unsupported claim count
+- inconclusive claim count
+- invalid claim count
+
+These `verify-run` metrics are partially circular for condition B by design, because B iterates to satisfy the verification loop. They are reported only to confirm that B genuinely engaged the loop, not as primary evidence of benefit.
+
+Truth sources:
+- task evaluation suite JSON report
+- `verify-run` JSON report, but only as a manipulation check
+- deterministic raw-artifact filesystem checks
+- benchmark metadata
+
+#### 8.3 Residual subjective metrics
+Subjective metrics are never primary.
+
+Limited use:
+- code reviewability
+- README operational clarity
+
+Protocol:
+- 2 blinded raters
+- anonymized artifacts
+- 1 to 5 scale
+- mean of the two ratings
+- inter-rater agreement reported descriptively
+
+If blinding is not credible, these results remain exploratory only.
+
+### 9. Minimal meaningful effect
+Minimal meaningful effect, MME:
+- proposed default: 0.10 absolute on the task evaluation score
+- final value must be confirmed before freeze
+
+Interpretation:
+- the benchmark asks not only whether B is better than A
+- it asks whether B is better than A enough to matter
+
+### 10. Hypotheses
+Primary directional hypothesis:
+- condition B yields a higher task evaluation score than condition A by at least the minimal meaningful effect, on the held-out independent suite
+
+Null hypothesis:
+- no difference, or a difference smaller than the minimal meaningful effect, or a difference compatible with noise under this design
+
+The former secondary hypotheses about supported-claim rate and blocking-claim reduction are reclassified as manipulation checks for condition B, not as evidence of benefit.
+
+### 11. Statistical plan
+Unit of analysis:
+- one run is one observation
+- runs are nested within tasks
+- tasks are the clusters and govern A versus B inference precision
+
+Primary analysis on the primary endpoint:
+- mixed-effects model with condition as a fixed effect and random intercept for task
+- for the continuous task evaluation score, use a linear mixed model
+- for the binary secondary task evaluation pass, use a logistic generalized linear mixed model
+- report the adjusted B minus A effect with a 95 percent confidence interval
+
+Robustness analysis:
+- cluster bootstrap that resamples tasks with their replicates
+- report the mean B minus A difference with a 95 percent confidence interval
+- inference precision is driven by the number of tasks, not the number of replicates
+
+Task-level Wilcoxon signed-rank is removed as a primary test. It may appear only as a clearly labeled, underpowered sensitivity check, never as the basis of the headline result.
+
+Secondary objective metrics:
+- mixed-effects models or, where a simple paired summary is valid, Wilcoxon signed-rank
+- Mann-Whitney U for unpaired comparisons
+- bootstrap 95 percent confidence interval for every reported effect size
+- Holm correction for the secondary family
+- no multiplicity correction for the single primary endpoint
+
+Missing data and failures:
+- all runs are included
+- a crashed or timed-out run gets 0 on the task evaluation score and counts as a failure on the binary pass
+- missing required artifacts count as failures under the relevant criteria
+- no post-hoc exclusion except pre-registered hard invalidation of the harness before agent start, with logged reason
+
+Honest limitation to record now:
+- with 6 tasks, cluster-level inference remains delicate
+- with 8 tasks it is better, but still modest
+- the benchmark can produce useful evidence, not a universal law
+
+### 12. Decision rule
+AgentHarness is described as supported by evidence of benefit only if all of the following hold on the held-out independent task evaluation score:
+1. the mixed-effects estimate favors B over A
+2. the cluster-bootstrap estimate favors B over A
+3. the 95 percent confidence interval for the B minus A effect lies entirely above zero
+4. the lower bound of that interval is at or above the minimal meaningful effect
+5. the result is not driven by a single task, checked by leave-one-task-out
+6. the gain is not explained by grossly impractical time cost
+7. the report continues to state the package-effect confounder plainly
+
+If these conditions do not hold, the headline result must be one of:
+- no effect detected
+- mixed evidence
+- improvement with unresolved confounding
+
+Manipulation-check metrics derived from `verify-run` are never sufficient for a benefit claim.
+
+### 13. Required raw artifacts
+Per run, retain at least:
+- `prompt.txt`
+- task-spec snapshot
+- baseline or framework context snapshot
+- transcript or raw output log
+- `stdout.log`
+- `stderr.log`
+- workspace snapshot or changed-files manifest
+- `run.json`
+- `claims.json`
+- `verify-run-report.json`
+- `evaluation-report.json`
+- `metadata.json`
+- repair-pass log, if any
+
+Suggested layout:
+- `benchmarks/runs/<task_id>/<condition>/<replicate_id>/`
+
+### 14. Measurement harness design
+Design only, no implementation or run approval yet.
+
+The harness should:
+1. create a clean workspace for one task-condition-replicate cell
+2. render the correct prompt and context package
+3. launch the coding agent with fixed settings
+4. capture raw outputs and metadata
+5. invoke `agentharness verify-run`
+6. invoke the independent held-out task evaluation suite
+7. produce a normalized summary JSON derived only from real artifacts and reports
+
+Planned command categories:
+- command for one cell
+- command for the full matrix, only after approval
+- command to anonymize artifacts for blinded review
+- command to aggregate raw outputs into tables and statistics
+
+Role of `verify-run` in the design:
+- checks run and claim envelopes
+- checks scope, required artifacts, and test claims
+- reexecutes supported pytest wrappers when possible
+- emits machine-readable supported, unsupported, inconclusive, and invalid counts
+- serves as a manipulation check that B genuinely engaged the verification loop
+- is not the primary benefit endpoint
+
+Role of the evaluation suite:
+- it is the held-out independent outcome
+- it checks task-specific correctness that `verify-run` does not capture generically enough
+- it produces a JSON report reproducible from raw artifacts
+- it is the primary source for the benefit claim
+
+### 15. Open decisions for approval
+1. Treatment:
+   - proposed: B-loop-closed with symmetric repair for A
+   - alternative, only if changed before freeze: B-context
+
+2. Sample size:
+   - recommended: 8 tasks x 6 replicates
+   - acceptable: 6 tasks x 6 replicates
+   - 4 tasks only as a pilot, not as a headline basis
+
+3. Primary endpoint:
+   - confirm the independent task evaluation score as primary
+   - confirm `verify-run` as a manipulation check, not primary benefit evidence
+
+4. MME:
+   - confirm 0.10 or set a different value before freeze
+
+5. Task suite:
+   - for every new task, define its independent evaluation suite before any run
+
+6. Residual subjective metrics:
+   - confirm whether to include them in phase one as exploratory secondary outputs
+
+### 16. Freeze rule
+No benchmark run starts until this document is approved.
+After approval, the following are frozen:
+- treatment
+- task list
+- sample size
+- metrics
+- MME
+- decision rule
