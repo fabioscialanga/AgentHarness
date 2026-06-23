@@ -105,10 +105,10 @@ Task families già confermate o candidate:
 2. inventory-adjustment API con business rules transazionali
 3. webhook ingestion service con schema validation e idempotenza
 4. export o report job con output file deterministico e negative-path validation
-5. da definire prima del freeze
-6. da definire prima del freeze
-7. da definire prima del freeze
-8. da definire prima del freeze
+5. da definire prima del primo run, sotto il quality gate
+6. da definire prima del primo run, sotto il quality gate
+7. da definire prima del primo run, sotto il quality gate
+8. da definire prima del primo run, sotto il quality gate
 
 Requisiti per ogni task:
 - spec scritta
@@ -249,11 +249,13 @@ Unità di analisi:
 Analisi primaria sull'endpoint primario:
 - modello a effetti misti con condizione come effetto fisso e intercetta random per task
 - per il task evaluation score continuo usare un modello lineare a effetti misti
+- per il modello lineare a effetti misti usare REML e una correzione dei gradi di libertà tipo Satterthwaite o Kenward-Roger
 - per il secondario binario task evaluation pass usare un modello lineare generalizzato a effetti misti, logistico
 - riportare l'effetto aggiustato B meno A con intervallo di confidenza al 95 percento
 
 Analisi di robustezza:
 - cluster bootstrap che ricampiona i task con le loro repliche
+- con pochi cluster considerare la variante wild e riportarla esplicitamente come approssimata
 - riportare la differenza media B meno A con intervallo di confidenza al 95 percento
 - la precisione dell'inferenza è guidata dal numero di task, non dal numero di repliche
 
@@ -273,8 +275,7 @@ Dati mancanti e fallimenti:
 - niente esclusioni post hoc, salvo hard invalidation dell'harness prima della partenza dell'agente, con motivo loggato
 
 Limite onesto da dichiarare fin d'ora:
-- con 6 task l'inferenza a livello di cluster resta delicata
-- con 8 task è migliore, ma ancora modesta
+- con 8 task l'inferenza a livello di cluster resta comunque modesta e va interpretata con cautela
 - il benchmark può produrre evidenza utile, non una legge universale
 
 ### 12. Regola di decisione
@@ -362,7 +363,7 @@ Decisioni congelate:
 
 Prerequisiti pre-run ancora obbligatori:
 5. Task suite:
-   - per ogni nuovo task definire la sua evaluation suite indipendente prima di qualunque run
+   - per ogni nuovo task definire la sua evaluation suite indipendente prima del primo run
    - tutti gli 8 task devono superare il quality gate dichiarato nella sezione 5
    - per ogni task deve essere documentata la disgiunzione tra evaluation suite e claims contract
    - per ogni task deve essere documentato il non leakage del materiale held-out
@@ -374,11 +375,14 @@ Prerequisiti pre-run ancora obbligatori:
 Nessun benchmark run parte finché questo documento non riceve sign-off finale.
 Dopo il sign-off finale, si congelano:
 - trattamento
-- task list
+- numero di task fissato a 8 e regole di costruzione dei task
 - N
 - metriche
 - MME
 - regola di decisione
+
+Le istanze concrete dei task vengono aggiunte sotto il quality gate della sezione 5 prima del primo run.
+Qualunque riduzione a 6 o modifica del numero richiede emendamento formale.
 
 Se gli 8 task non raggiungono il quality gate prima del primo run, il benchmark resta bloccato e richiede un emendamento formale della pre-registrazione.
 Lo stesso vale se non è dimostrata la disgiunzione tra evaluation suite e claims contract, oppure se c'è leakage del materiale held-out.
@@ -446,10 +450,10 @@ Confirmed or candidate task families:
 2. inventory-adjustment API
 3. webhook ingestion service
 4. export or report job
-5. to be defined before freeze
-6. to be defined before freeze
-7. to be defined before freeze
-8. to be defined before freeze
+5. to be defined before the first run, under the quality gate
+6. to be defined before the first run, under the quality gate
+7. to be defined before the first run, under the quality gate
+8. to be defined before the first run, under the quality gate
 
 Each task must define:
 - written spec
@@ -590,11 +594,13 @@ Unit of analysis:
 Primary analysis on the primary endpoint:
 - mixed-effects model with condition as a fixed effect and random intercept for task
 - for the continuous task evaluation score, use a linear mixed model
+- for the linear mixed model, use REML and a degrees-of-freedom correction such as Satterthwaite or Kenward-Roger
 - for the binary secondary task evaluation pass, use a logistic generalized linear mixed model
 - report the adjusted B minus A effect with a 95 percent confidence interval
 
 Robustness analysis:
 - cluster bootstrap that resamples tasks with their replicates
+- with few clusters, consider the wild variant and report it explicitly as approximate
 - report the mean B minus A difference with a 95 percent confidence interval
 - inference precision is driven by the number of tasks, not the number of replicates
 
@@ -614,8 +620,7 @@ Missing data and failures:
 - no post-hoc exclusion except pre-registered hard invalidation of the harness before agent start, with logged reason
 
 Honest limitation to record now:
-- with 6 tasks, cluster-level inference remains delicate
-- with 8 tasks it is better, but still modest
+- with 8 tasks, cluster-level inference remains modest and should be interpreted cautiously
 - the benchmark can produce useful evidence, not a universal law
 
 ### 12. Decision rule
@@ -703,7 +708,7 @@ Frozen decisions:
 
 Mandatory pre-run prerequisites:
 5. Task suite:
-   - every new task must define its independent evaluation suite before any run
+   - every new task must define its independent evaluation suite before the first run
    - all 8 tasks must pass the quality gate declared in section 5
    - every task must document disjunction between the evaluation suite and the claims contract
    - every task must document non-leakage of held-out material
@@ -715,11 +720,14 @@ Mandatory pre-run prerequisites:
 No benchmark run starts until this document receives final sign-off.
 After final sign-off, the following are frozen:
 - treatment
-- task list
+- task count fixed at 8 and the rules for constructing tasks
 - sample size
 - metrics
 - MME
 - decision rule
+
+Concrete task instances are added under the section-5 quality gate before the first run.
+Any reduction to 6 tasks or other change in task count requires a formal amendment.
 
 If the 8-task quality gate is not met before the first run, benchmark execution stays blocked and requires a formal pre-registration amendment.
 The same block applies if disjunction between evaluation suite and claims contract is not demonstrated, or if held-out material leaks into the agent-visible context.
