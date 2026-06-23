@@ -171,6 +171,10 @@ def _project_yaml(options: BootstrapOptions) -> str:
         },
         "agent_policy": {
             "autonomy": "medium",
+            "review_model": "human-reviewed",
+            "max_files_per_task": 5,
+            "allow_db_writes": False,
+            "allow_schema_changes": False,
             "allowed_tools": ["read_files", "edit_files", "run_tests", "search"],
             "forbidden_actions": [
                 "deploy_prod",
@@ -226,8 +230,8 @@ The repository starts with explicit project intent and execution guardrails so a
 2. Adjust `project.yaml` to match the real stack and risk posture.
 3. Refine workflows, policies, and checklists.
 4. Run:
-   - `PYTHONPATH=src python3 -m agentharness generate <project-dir>`
-   - `PYTHONPATH=src python3 -m agentharness validate <project-dir>`
+   - `agentharness generate <project-dir>`
+   - `agentharness validate <project-dir>`
 """
 
 

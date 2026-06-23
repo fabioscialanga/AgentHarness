@@ -257,6 +257,19 @@ def _validate_agent_policy(data: dict[str, Any], result: ValidationResult) -> No
     if autonomy not in {"low", "medium", "high"}:
         result.errors.append("agent_policy.autonomy must be one of: low, medium, high")
 
+    review_model = policy.get("review_model")
+    if review_model is not None and review_model not in {"human-reviewed", "agent-autonomous"}:
+        result.errors.append("agent_policy.review_model must be either 'human-reviewed' or 'agent-autonomous'")
+
+    for bool_field in ("allow_db_writes", "allow_schema_changes"):
+        value = policy.get(bool_field)
+        if value is not None and not isinstance(value, bool):
+            result.errors.append(f"agent_policy.{bool_field} must be a boolean when provided")
+
+    max_files_per_task = policy.get("max_files_per_task")
+    if max_files_per_task is not None and (not isinstance(max_files_per_task, int) or max_files_per_task <= 0):
+        result.errors.append("agent_policy.max_files_per_task must be a positive integer when provided")
+
     for list_field in ("allowed_tools", "forbidden_actions", "review_required_for"):
         try:
             values = _expect_list(policy.get(list_field), f"agent_policy.{list_field}")
@@ -318,6 +331,113 @@ def _validate_deliverables(root: Path, data: dict[str, Any], result: ValidationR
             result.errors.append(f"Deliverable '{item}' is declared but matching files are missing")
 
 
+def _contains_any(text: str, phrases: tuple[str, ...]) -> bool:
+    return any(phrase in text for phrase in phrases)
+
+
+def _validate_agents_contract(root: Path, data: dict[str, Any], result: ValidationResult) -> None:
+    agents_path = root / "AGENTS.md"
+    if not agents_path.is_file():
+        return
+
+    content = agents_path.read_text(encoding="utf-8")
+    normalized = content.lower()
+    section_requirements = {
+        "project identity": "AGENTS.md must include a 'Project identity' section",
+        "core rules": "AGENTS.md must include a 'Core rules' section",
+        "quality gates": "AGENTS.md must include a 'Quality gates' section",
+        "security rules": "AGENTS.md must include a 'Security rules' section",
+        "risk boundaries": "AGENTS.md must include a 'Risk boundaries' section",
+        "working style": "AGENTS.md must include a 'Working style' section",
+    }
+    for marker, error in section_requirements.items():
+        if marker not in normalized:
+            result.errors.append(error)
+
+    bullet_count = sum(1 for line in content.splitlines() if line.strip().startswith(("-", "*")))
+    if bullet_count < 12:
+        result.errors.append(
+            "AGENTS.md is too thin to act as an operational contract; add more explicit rules, gates, and boundaries"
+        )
+
+    project_name = str(data.get("project_name", "")).strip().lower()
+    project_slug = str(data.get("project_slug", "")).strip().lower()
+    if project_name and project_name not in normalized and project_slug and project_slug not in normalized:
+        result.errors.append("AGENTS.md must reference the project identity from project.yaml")
+
+    testing = data.get("testing", {})
+    if isinstance(testing, dict) and testing.get("bugfix_requires_regression_test") and "regression test" not in normalized:
+        result.errors.append(
+            "AGENTS.md must mention regression-test expectations when testing.bugfix_requires_regression_test is true"
+        )
+
+    quality = data.get("quality", {})
+    if isinstance(quality, dict):
+        required_quality_phrases = {
+            "format": quality.get("format"),
+            "lint": quality.get("lint"),
+            "type": quality.get("type_check"),
+        }
+        for phrase, enabled in required_quality_phrases.items():
+            if enabled and phrase not in normalized:
+                result.errors.append(
+                    f"AGENTS.md quality gates must mention '{phrase}' because it is required in project.yaml"
+                )
+
+    security = data.get("security", {})
+    if isinstance(security, dict):
+        if security.get("upload_validation_required") and "upload" not in normalized:
+            result.errors.append(
+                "AGENTS.md must mention upload constraints because security.upload_validation_required is true"
+            )
+        if security.get("pii_present") and not _contains_any(normalized, ("pii", "personal data", "contact data", "sensitive data")):
+            result.errors.append(
+                "AGENTS.md must mention handling of sensitive or personal data because security.pii_present is true"
+            )
+
+    policy = data.get("agent_policy", {})
+    if isinstance(policy, dict):
+        autonomy = policy.get("autonomy")
+        if autonomy == "low" and not _contains_any(normalized, ("human review required", "require human review", "human-reviewed")):
+            result.errors.append(
+                "AGENTS.md must make human review explicit when agent_policy.autonomy is low"
+            )
+
+        expected_reviews = {
+            "auth_changes": ("auth", "permission"),
+            "dependency_changes": ("dependency",),
+            "ci_pipeline_changes": ("ci", "pipeline"),
+            "upload_handling_changes": ("upload",),
+            "audit_model_changes": ("audit",),
+        }
+        review_required_for = policy.get("review_required_for", [])
+        if isinstance(review_required_for, list):
+            for item in review_required_for:
+                if not isinstance(item, str):
+                    continue
+                keywords = expected_reviews.get(item)
+                if keywords and not _contains_any(normalized, keywords):
+                    result.errors.append(
+                        f"AGENTS.md risk boundaries must reflect review_required_for item '{item}' from project.yaml"
+                    )
+
+        expected_forbidden = {
+            "disable_auth": ("auth", "permission"),
+            "remove_audit_logging": ("audit",),
+            "disable_input_validation": ("input validation", "validate all user-controlled inputs"),
+        }
+        forbidden_actions = policy.get("forbidden_actions", [])
+        if isinstance(forbidden_actions, list):
+            for item in forbidden_actions:
+                if not isinstance(item, str):
+                    continue
+                keywords = expected_forbidden.get(item)
+                if keywords and not _contains_any(normalized, keywords):
+                    result.errors.append(
+                        f"AGENTS.md core or security rules must reflect forbidden action '{item}' from project.yaml"
+                    )
+
+
 def _validate_framework_outputs(root: Path, data: dict[str, Any], result: ValidationResult) -> None:
     required_checks_path = root / ".framework/required-checks.json"
     if required_checks_path.is_file():
@@ -357,6 +477,11 @@ def _validate_framework_outputs(root: Path, data: dict[str, Any], result: Valida
             for level in ("low", "medium", "high"):
                 if level not in risk_matrix:
                     result.errors.append(f".framework/risk-matrix.yaml is missing level '{level}'")
+            project_profile = risk_matrix.get("meta", {}).get("project_profile", {}) if isinstance(risk_matrix.get("meta"), dict) else {}
+            if not isinstance(project_profile, dict) or project_profile.get("overall_risk") not in {"low", "medium", "high"}:
+                result.errors.append(
+                    ".framework/risk-matrix.yaml must include meta.project_profile.overall_risk derived from project.yaml"
+                )
         else:
             result.errors.append(".framework/risk-matrix.yaml must be a mapping")
 
@@ -398,6 +523,7 @@ def validate_project_directory(project_dir: str | Path) -> ValidationResult:
     _validate_agent_policy(payload, result)
     _validate_workflows(root, payload, result)
     _validate_deliverables(root, payload, result)
+    _validate_agents_contract(root, payload, result)
     _validate_framework_outputs(root, payload, result)
 
     if result.ok:

@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     verify_parser = subparsers.add_parser(
         "verify",
-        help="Verify a project directory and detect drift in generated .framework artifacts",
+        help="Verify a project directory for semantic contract consistency and drift in generated .framework artifacts",
     )
     verify_parser.add_argument("path", type=Path, help="Path to the project directory")
     verify_parser.add_argument(
@@ -81,7 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--reexecute-tests",
         choices=("auto", "never"),
         default="auto",
-        help="How verify-run should establish test truth: auto prefers controlled reexecution, never disables reexecution and relies on parsed evidence only",
+        help="How verify-run should establish test truth: auto prefers controlled reexecution for allowed pytest wrappers (pytest, python -m pytest, uv run pytest), never disables reexecution and relies on parsed evidence only",
     )
     verify_run_parser.add_argument(
         "--reexecution-timeout",

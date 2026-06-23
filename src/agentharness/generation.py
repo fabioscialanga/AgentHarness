@@ -22,26 +22,6 @@ class GenerationResult:
         }
 
 
-RISK_MATRIX_TEMPLATE = {
-    "low": {
-        "examples": ["docs_update", "local_refactor", "add_tests"],
-        "autonomy": "medium",
-        "human_review_required": False,
-    },
-    "medium": {
-        "examples": ["endpoint_change", "validation_change", "notification_change"],
-        "autonomy": "medium",
-        "human_review_required": True,
-    },
-    "high": {
-        "examples": ["auth_change", "upload_change", "audit_model_change", "dependency_change"],
-        "autonomy": "low",
-        "human_review_required": True,
-        "extra_checks": ["security_review_checklist"],
-    },
-}
-
-
 def _load_yaml(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         payload = yaml.safe_load(handle)
@@ -90,6 +70,112 @@ def _collect_required_checks(payload: dict[str, Any]) -> list[str]:
     return _dedupe(checks)
 
 
+def _coerce_bool(value: Any, default: bool = False) -> bool:
+    return value if isinstance(value, bool) else default
+
+
+def _build_risk_matrix(payload: dict[str, Any]) -> dict[str, Any]:
+    security = payload.get("security", {}) if isinstance(payload.get("security"), dict) else {}
+    policy = payload.get("agent_policy", {}) if isinstance(payload.get("agent_policy"), dict) else {}
+    testing = payload.get("testing", {}) if isinstance(payload.get("testing"), dict) else {}
+
+    autonomy = str(policy.get("autonomy", "medium"))
+    security_level = str(security.get("level", "medium"))
+    pii_present = _coerce_bool(security.get("pii_present"), False)
+    upload_validation_required = _coerce_bool(security.get("upload_validation_required"), False)
+    review_required_for = [item for item in policy.get("review_required_for", []) if isinstance(item, str) and item.strip()]
+    forbidden_actions = [item for item in policy.get("forbidden_actions", []) if isinstance(item, str) and item.strip()]
+    testing_minimum = [item for item in testing.get("minimum", []) if isinstance(item, str) and item.strip()]
+
+    review_model = str(policy.get("review_model") or ("human-reviewed" if review_required_for else "agent-autonomous"))
+    allow_db_writes = _coerce_bool(policy.get("allow_db_writes"), False)
+    allow_schema_changes = _coerce_bool(policy.get("allow_schema_changes"), False)
+    max_files_per_task = policy.get("max_files_per_task")
+
+    score = 0
+    score += {"low": 0, "medium": 1, "high": 2}.get(autonomy, 1)
+    score += {"low": 0, "medium": 1, "high": 2}.get(security_level, 1)
+    score += 1 if pii_present else 0
+    score += 1 if upload_validation_required else 0
+    score += 1 if allow_db_writes else 0
+    score += 1 if allow_schema_changes else 0
+    score += 1 if review_model == "agent-autonomous" else 0
+    score += 1 if len(review_required_for) >= 4 else 0
+    score += 1 if "integration_smoke" in testing_minimum else 0
+
+    if score >= 6:
+        overall_risk = "high"
+    elif score >= 3:
+        overall_risk = "medium"
+    else:
+        overall_risk = "low"
+
+    low_autonomy = "high" if autonomy == "high" and overall_risk == "low" else "medium"
+    medium_autonomy = "low" if overall_risk == "high" else autonomy
+    high_autonomy = "low"
+
+    high_triggers = _dedupe(
+        [
+            *review_required_for,
+            *( ["handles_pii"] if pii_present else []),
+            *( ["upload_surface"] if upload_validation_required else []),
+            *( ["db_writes_enabled"] if allow_db_writes else []),
+            *( ["schema_changes_enabled"] if allow_schema_changes else []),
+            *( ["autonomous_review_model"] if review_model == "agent-autonomous" else []),
+        ]
+    )
+
+    medium_checks = _dedupe(
+        [
+            "unit_tests",
+            *( ["integration_smoke"] if "integration_smoke" in testing_minimum else []),
+            *( ["input_validation"] if upload_validation_required else []),
+            *( ["safe_logging"] if pii_present else []),
+        ]
+    )
+
+    return {
+        "meta": {
+            "project_profile": {
+                "overall_risk": overall_risk,
+                "autonomy": autonomy,
+                "review_model": review_model,
+                "security_level": security_level,
+                "pii_present": pii_present,
+                "upload_validation_required": upload_validation_required,
+                "allow_db_writes": allow_db_writes,
+                "allow_schema_changes": allow_schema_changes,
+                "max_files_per_task": max_files_per_task,
+                "review_required_for": review_required_for,
+                "forbidden_actions": forbidden_actions,
+            },
+            "derivation_notes": [
+                "Risk matrix is derived from project.yaml security, testing, and agent_policy declarations.",
+                "Changing autonomy, review model, review boundaries, or dangerous write permissions changes this file deterministically.",
+            ],
+        },
+        "low": {
+            "examples": ["docs_update", "local_refactor", "add_tests"],
+            "autonomy": low_autonomy,
+            "human_review_required": False,
+            "focus": ["readability", "small diff", "preserve required checks"],
+        },
+        "medium": {
+            "examples": ["endpoint_change", "validation_change", "notification_change"],
+            "autonomy": medium_autonomy,
+            "human_review_required": overall_risk != "low" or bool(review_required_for),
+            "required_checks": medium_checks,
+        },
+        "high": {
+            "examples": ["auth_change", "upload_change", "audit_model_change", "dependency_change"],
+            "autonomy": high_autonomy,
+            "human_review_required": True,
+            "extra_checks": ["security_review_checklist", "human_approval"],
+            "review_triggers": high_triggers,
+        },
+    }
+
+
 def _build_generation_report(payload: dict[str, Any], generated_checks: list[str]) -> dict[str, Any]:
     project_name = payload.get("project_name", "unknown")
     generated_artifacts = [
@@ -110,6 +196,7 @@ def _build_generation_report(payload: dict[str, Any], generated_checks: list[str
         "notes": [
             "Framework outputs were generated from project.yaml by AgentHarness.",
             "Required checks were derived from quality, security, and testing declarations.",
+            "Risk matrix content was derived from security posture and agent policy declarations.",
             f"Generated {len(generated_checks)} required checks.",
         ],
     }
@@ -125,6 +212,7 @@ def generate_framework_outputs(project_dir: str | Path) -> GenerationResult:
 
     payload = _load_yaml(project_yaml_path)
     generated_checks = _collect_required_checks(payload)
+    risk_matrix = _build_risk_matrix(payload)
 
     framework_dir = root / ".framework"
     framework_dir.mkdir(parents=True, exist_ok=True)
@@ -137,7 +225,7 @@ def generate_framework_outputs(project_dir: str | Path) -> GenerationResult:
 
     risk_matrix_path = framework_dir / "risk-matrix.yaml"
     risk_matrix_path.write_text(
-        yaml.safe_dump(RISK_MATRIX_TEMPLATE, sort_keys=False),
+        yaml.safe_dump(risk_matrix, sort_keys=False),
         encoding="utf-8",
     )
 

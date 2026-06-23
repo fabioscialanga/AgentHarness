@@ -591,6 +591,84 @@ class VerifyRunTests(unittest.TestCase):
             third = verify_run(run_path, claims_path)
             self.assertNotEqual(first.run_sha256, third.run_sha256)
 
+    def test_verify_run_reexecutes_uv_run_pytest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
+            run_payload["artifacts"]["commands"] = [
+                {
+                    "cmd": "uv run pytest tests/test_invite.py -q",
+                    "exit_code": 0,
+                }
+            ]
+            claims_payload = {
+                "run_id": "run_invite_001",
+                "claims": [
+                    {
+                        "id": "claim_tests_uv",
+                        "type": "tests_executed",
+                        "statement": "Ho eseguito i test richiesti tramite uv run pytest",
+                        "expected": {
+                            "required_commands": ["uv run pytest tests/test_invite.py -q"],
+                        },
+                    }
+                ],
+            }
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertTrue(result.ok, msg=result.to_dict())
+            self.assertEqual(result.results[0].status, "supported")
+            self.assertEqual(result.results[0].truth_source, "reexecuted")
+
+    def test_verify_run_allows_controlled_relative_working_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            subproject = workspace / "subproject"
+            tests_dir = subproject / "tests"
+            tests_dir.mkdir(parents=True)
+            (tests_dir / "test_invite.py").write_text("def test_it():\n    assert True\n", encoding="utf-8")
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            run_payload = {
+                "run_id": "run_subdir_001",
+                "workspace": str(workspace),
+                "artifacts": {
+                    "changed_files": ["subproject/tests/test_invite.py"],
+                    "commands": [
+                        {
+                            "cmd": "pytest tests/test_invite.py -q",
+                            "exit_code": 0,
+                            "working_dir": "subproject",
+                        }
+                    ],
+                    "outputs": [],
+                },
+            }
+            claims_payload = {
+                "run_id": "run_subdir_001",
+                "claims": [
+                    {
+                        "id": "claim_tests_subdir",
+                        "type": "tests_executed",
+                        "statement": "Ho eseguito i test dalla sottodirectory controllata",
+                        "expected": {
+                            "required_commands": ["pytest tests/test_invite.py -q"],
+                        },
+                    }
+                ],
+            }
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(json.dumps(claims_payload, indent=2) + "\n", encoding="utf-8")
+
+            result = verify_run(run_path, claims_path)
+            self.assertTrue(result.ok, msg=result.to_dict())
+            audit = result.results[0].audit["commands"][0]["reexecution"]
+            self.assertTrue(audit["cwd"].endswith("/subproject"))
+
     def test_cli_verify_run_outputs_json(self) -> None:
         completed = subprocess.run(
             [

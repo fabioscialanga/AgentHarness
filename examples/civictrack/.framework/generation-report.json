@@ -15,6 +15,7 @@
   "notes": [
     "Framework outputs were generated from project.yaml by AgentHarness.",
     "Required checks were derived from quality, security, and testing declarations.",
+    "Risk matrix content was derived from security posture and agent policy declarations.",
     "Generated 10 required checks."
   ]
 }

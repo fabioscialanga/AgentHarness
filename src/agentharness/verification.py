@@ -104,8 +104,8 @@ def verify_project_directory(
     missing_files: list[str] = []
     drifted_files: list[str] = []
     notes = [
-        "Verification compares checked-in .framework artifacts against deterministic outputs regenerated from project.yaml.",
-        "A project only passes verification when both structural validation and generated artifact comparison succeed.",
+        "Verification checks structural validity, semantic contract guardrails, and drift in deterministic .framework artifacts regenerated from project.yaml.",
+        "A project only passes verification when contract validation and generated artifact comparison both succeed.",
     ]
 
     if root.is_dir() and (root / "project.yaml").is_file():

@@ -40,12 +40,12 @@ AgentHarness already includes a working Python CLI with five concrete commands:
 - regenerates core `.framework` artifacts from `project.yaml`
 
 3. `agentharness verify`
-- verifies a project against its contract and detects drift in checked-in `.framework` artifacts
+- verifies a project against its contract, checks semantic consistency in AGENTS.md against project.yaml, and detects drift in checked-in `.framework` artifacts
 
 4. `agentharness verify-run`
-- verifies an agent run against explicit claims and only accepts claims that are backed by controlled proof
+- verifies an agent run against explicit claims and only accepts claims that are backed by controlled proof inside the currently supported verification surface
 - defaults to strict proof for `tests_executed` and `artifact_present`
-- prefers controlled reexecution for allowed test commands, falls back to parsed evidence only when reexecution cannot establish the verdict, and returns `inconclusive` when truth cannot be defended
+- prefers controlled reexecution for allowed pytest wrappers (`pytest`, `python -m pytest`, `uv run pytest`), supports controlled relative working directories inside the workspace, falls back to parsed evidence only when reexecution cannot establish the verdict, and returns `inconclusive` when truth cannot be defended
 - rejects malformed run/claim envelopes, out-of-scope filesystem evidence, mismatched run binding, and command evidence parked outside the reserved `.agentharness/evidence/<run_id>/` namespace
 
 5. `agentharness bootstrap`
@@ -169,4 +169,4 @@ If you want to test whether the framework adds real value, use the benchmark pac
 - `benchmarks/support-ticket-api/SCORECARD.md`
 
 ## Positioning in one sentence
-AgentHarness turns project spec into controlled agent execution and only accepts the claims it can prove through controlled reexecution or coherent evidence.
+AgentHarness turns project spec into a contract-first verification harness: it validates project rules, regenerates deterministic governance artifacts, and accepts agent claims only when the currently supported evidence checks can defend them.

@@ -1,3 +1,30 @@
+meta:
+  project_profile:
+    overall_risk: high
+    autonomy: medium
+    review_model: human-reviewed
+    security_level: medium
+    pii_present: true
+    upload_validation_required: true
+    allow_db_writes: false
+    allow_schema_changes: false
+    max_files_per_task: 5
+    review_required_for:
+    - auth_changes
+    - dependency_changes
+    - ci_pipeline_changes
+    - upload_handling_changes
+    - audit_model_changes
+    forbidden_actions:
+    - deploy_prod
+    - disable_auth
+    - commit_secrets
+    - remove_audit_logging
+    - disable_input_validation
+  derivation_notes:
+  - Risk matrix is derived from project.yaml security, testing, and agent_policy declarations.
+  - Changing autonomy, review model, review boundaries, or dangerous write permissions
+    changes this file deterministically.
 low:
   examples:
   - docs_update
@@ -5,13 +32,22 @@ low:
   - add_tests
   autonomy: medium
   human_review_required: false
+  focus:
+  - readability
+  - small diff
+  - preserve required checks
 medium:
   examples:
   - endpoint_change
   - validation_change
   - notification_change
-  autonomy: medium
+  autonomy: low
   human_review_required: true
+  required_checks:
+  - unit_tests
+  - integration_smoke
+  - input_validation
+  - safe_logging
 high:
   examples:
   - auth_change
@@ -22,3 +58,12 @@ high:
   human_review_required: true
   extra_checks:
   - security_review_checklist
+  - human_approval
+  review_triggers:
+  - auth_changes
+  - dependency_changes
+  - ci_pipeline_changes
+  - upload_handling_changes
+  - audit_model_changes
+  - handles_pii
+  - upload_surface

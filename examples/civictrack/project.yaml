@@ -58,6 +58,10 @@ security:
 
 agent_policy:
   autonomy: medium
+  review_model: human-reviewed
+  max_files_per_task: 5
+  allow_db_writes: false
+  allow_schema_changes: false
   allowed_tools:
     - read_files
     - edit_files

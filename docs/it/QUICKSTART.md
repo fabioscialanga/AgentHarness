@@ -14,8 +14,8 @@ Invece di partire da un prompt vago, fornisce all'agente un contratto di progett
 Oggi il repository fornisce già un nucleo operativo funzionante:
 - `agentharness validate` controlla se un progetto nello stile AgentHarness è coerente
 - `agentharness generate` rigenera i metadata principali in `.framework` a partire da `project.yaml`
-- `agentharness verify` controlla insieme validità del contratto e drift negli artefatti `.framework` generati
-- `agentharness verify-run` controlla i claim di un agente con prova severa di default, preferisce la riesecuzione controllata per i comandi di test ammessi e restituisce `inconclusive` quando la verità non è difendibile
+- `agentharness verify` controlla validità del contratto, coerenza semantica tra AGENTS.md e project.yaml, e drift negli artefatti `.framework` generati
+- `agentharness verify-run` controlla i claim di un agente con prova severa di default, preferisce la riesecuzione controllata per i wrapper pytest supportati (`pytest`, `python -m pytest`, `uv run pytest`) e per working directory relative controllate dentro il workspace, e restituisce `inconclusive` quando la verità non è difendibile
 - `agentharness bootstrap` crea lo skeleton iniziale di un nuovo progetto contract-first
 
 ## Per chi è utile
@@ -54,7 +54,7 @@ agentharness --help
 agentharness validate examples/civictrack --json
 ```
 
-Questo controlla che il contratto del progetto di esempio sia internamente coerente.
+Questo controlla che il contratto del progetto di esempio sia internamente coerente e che AGENTS.md rifletta ancora le regole chiave dichiarate in project.yaml.
 
 ### 2. Rigenera i metadata del framework
 ```bash

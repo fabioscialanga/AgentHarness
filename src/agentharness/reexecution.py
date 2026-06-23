@@ -15,6 +15,8 @@ from typing import Any
 DEFAULT_ALLOWED_COMMAND_PREFIXES: tuple[tuple[str, ...], ...] = (
     ("pytest",),
     ("python", "-m", "pytest"),
+    ("uv", "run", "pytest"),
+    ("uv", "run", "python", "-m", "pytest"),
 )
 DEFAULT_ALLOWED_ENV_NAMES: tuple[str, ...] = (
     "PATH",
@@ -31,7 +33,7 @@ DEFAULT_ALLOWED_ENV_NAMES: tuple[str, ...] = (
 class ExecutionPolicy:
     mode: str = "auto"
     timeout_seconds: int = 60
-    working_dir_mode: str = "workspace-root"
+    working_dir_mode: str = "workspace-relative"
     allowed_command_prefixes: tuple[tuple[str, ...], ...] = DEFAULT_ALLOWED_COMMAND_PREFIXES
     allowed_env_names: tuple[str, ...] = DEFAULT_ALLOWED_ENV_NAMES
 
@@ -140,6 +142,10 @@ def parse_command_tokens(command: str) -> tuple[list[str], str | None]:
 
 def prepare_execution_tokens(tokens: list[str]) -> list[str]:
     normalized = normalize_command_tokens(tokens)
+    if normalized[:3] == ["uv", "run", "pytest"] and importlib.util.find_spec("pytest") is not None:
+        return [sys.executable, "-m", "pytest", *tokens[3:]]
+    if normalized[:5] == ["uv", "run", "python", "-m", "pytest"]:
+        return [sys.executable, "-m", "pytest", *tokens[5:]]
     if normalized and normalized[0] == "pytest" and importlib.util.find_spec("pytest") is not None:
         return [sys.executable, "-m", "pytest", *tokens[1:]]
     return tokens
@@ -170,6 +176,20 @@ def resolve_reexecution_cwd(
         if working_dir and working_dir.strip() not in {"", "."}:
             return None, "working_dir override is not allowed by reexecution policy"
         return workspace_root, None
+
+    if policy.working_dir_mode == "workspace-relative":
+        candidate = (working_dir or ".").strip() or "."
+        working_path = Path(candidate)
+        if working_path.is_absolute():
+            return None, "working_dir must stay relative to the declared workspace"
+        resolved = (workspace_root / working_path).resolve()
+        try:
+            resolved.relative_to(workspace_root)
+        except ValueError:
+            return None, "working_dir escapes the declared workspace"
+        if not resolved.is_dir():
+            return None, "working_dir does not exist inside the declared workspace"
+        return resolved, None
 
     return None, f"unsupported working_dir_mode: {policy.working_dir_mode}"
 
