@@ -184,6 +184,14 @@ def _normalize_item_ref(payload: Any) -> Any:
     return None
 
 
+def _normalize_leave_request_id(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        for key in ("id", "request_id", "leave_request_id"):
+            if key in payload:
+                return payload[key]
+    return None
+
+
 def _extract_history_entries(payload: Any) -> list[Any]:
     if not isinstance(payload, dict):
         return []
@@ -526,6 +534,222 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
     )
 
 
+def _evaluate_leave_request_api(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "leave-request-api"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        module_path, app = _load_fastapi_app(workspace)
+    except Exception as exc:
+        detail = f"app discovery failed: {exc}"
+        for check_id in (
+            "valid_request_created",
+            "overlap_rejected",
+            "personal_leave_limit_enforced",
+            "approval_sets_reviewed_at",
+            "terminal_state_blocks_second_review",
+        ):
+            record(check_id, False, detail)
+        return _persist_hidden_evaluation(
+            HiddenEvaluationResult(
+                task_id=task_id,
+                critical_ok=False,
+                passed_checks=passed_checks,
+                failed_checks=failed_checks,
+                observations=observations,
+                summary_path=evaluation_dir / "summary.txt",
+                result_path=evaluation_dir / "result.json",
+            )
+        )
+
+    try:
+        with _working_directory(workspace), TestClient(app) as client:
+            create_response = client.post(
+                "/requests",
+                json={
+                    "employee_id": "EMP-001",
+                    "leave_type": "vacation",
+                    "start_date": "2026-07-01",
+                    "end_date": "2026-07-03",
+                    "reason": "Family trip",
+                },
+            )
+            create_ok = create_response.status_code in {200, 201}
+            create_payload: Any = create_response.json() if create_ok else {}
+            request_id = _normalize_leave_request_id(create_payload)
+            create_status = create_payload.get("status") if isinstance(create_payload, dict) else None
+            list_response = client.get("/requests", params={"employee_id": "EMP-001", "status": create_status or "pending"})
+            listed_payload: Any = list_response.json() if list_response.status_code == 200 else []
+            listed_ok = isinstance(listed_payload, list) and any(
+                isinstance(item, dict) and _normalize_leave_request_id(item) == request_id for item in listed_payload
+            )
+            record(
+                "valid_request_created",
+                bool(create_ok and request_id is not None and listed_ok),
+                (
+                    f"status_code={create_response.status_code}; module={module_path}; request_id={request_id}; "
+                    f"create_status={create_status}; list_status={list_response.status_code}; listed_ok={listed_ok}"
+                ),
+            )
+
+            overlap_ok = False
+            overlap_detail = "request creation precondition failed"
+            personal_limit_ok = False
+            personal_limit_detail = "request creation precondition failed"
+            approval_ok = False
+            approval_detail = "request creation precondition failed"
+            terminal_ok = False
+            terminal_detail = "request creation precondition failed"
+
+            if request_id is not None:
+                approve_response = client.post(
+                    f"/requests/{request_id}/review",
+                    json={"decision": "approve", "reviewer": "manager1", "note": "Coverage confirmed"},
+                )
+                detail_response = client.get(f"/requests/{request_id}")
+                detail_payload: Any = detail_response.json() if detail_response.status_code == 200 else {}
+                detail_status = detail_payload.get("status") if isinstance(detail_payload, dict) else None
+                reviewed_at = detail_payload.get("reviewed_at") if isinstance(detail_payload, dict) else None
+                reviewer_name = detail_payload.get("reviewer") if isinstance(detail_payload, dict) else None
+                approval_ok = (
+                    approve_response.status_code in {200, 201}
+                    and detail_response.status_code == 200
+                    and detail_status == "approved"
+                    and isinstance(reviewed_at, str)
+                    and bool(reviewed_at.strip())
+                    and reviewer_name == "manager1"
+                )
+                approval_detail = (
+                    f"review_status={approve_response.status_code}; detail_status={detail_response.status_code}; "
+                    f"status={detail_status}; reviewed_at_present={bool(reviewed_at)}; reviewer={reviewer_name}"
+                )
+
+                overlap_create_response = client.post(
+                    "/requests",
+                    json={
+                        "employee_id": "EMP-001",
+                        "leave_type": "vacation",
+                        "start_date": "2026-07-02",
+                        "end_date": "2026-07-04",
+                        "reason": "Overlap test",
+                    },
+                )
+                overlap_create_payload: Any = overlap_create_response.json() if overlap_create_response.status_code in {200, 201} else {}
+                overlap_request_id = _normalize_leave_request_id(overlap_create_payload)
+                overlap_review_status = None
+                overlap_review_payload: Any = None
+                if overlap_request_id is not None:
+                    overlap_review_response = client.post(
+                        f"/requests/{overlap_request_id}/review",
+                        json={"decision": "approve", "reviewer": "manager2", "note": "Try overlap"},
+                    )
+                    overlap_review_status = overlap_review_response.status_code
+                    if overlap_review_response.headers.get("content-type", "").startswith("application/json"):
+                        overlap_review_payload = overlap_review_response.json()
+                overlap_payload_status = overlap_review_payload.get("status") if isinstance(overlap_review_payload, dict) else None
+                overlap_ok = (
+                    overlap_create_response.status_code in {400, 409, 422}
+                    or overlap_review_status in {400, 409, 422}
+                    or overlap_payload_status in {"pending", "rejected"}
+                )
+                overlap_detail = (
+                    f"create_status={overlap_create_response.status_code}; overlap_request_id={overlap_request_id}; "
+                    f"review_status={overlap_review_status}; review_payload_status={overlap_payload_status}"
+                )
+
+                personal_response = client.post(
+                    "/requests",
+                    json={
+                        "employee_id": "EMP-002",
+                        "leave_type": "personal",
+                        "start_date": "2026-07-10",
+                        "end_date": "2026-07-14",
+                        "reason": "Personal travel",
+                    },
+                )
+                personal_payload: Any = personal_response.json() if personal_response.status_code in {200, 201} else {}
+                personal_request_id = _normalize_leave_request_id(personal_payload)
+                personal_review_status = None
+                personal_review_payload: Any = None
+                if personal_request_id is not None:
+                    personal_review_response = client.post(
+                        f"/requests/{personal_request_id}/review",
+                        json={"decision": "approve", "reviewer": "manager2", "note": "Too long"},
+                    )
+                    personal_review_status = personal_review_response.status_code
+                    if personal_review_response.headers.get("content-type", "").startswith("application/json"):
+                        personal_review_payload = personal_review_response.json()
+                personal_payload_status = personal_review_payload.get("status") if isinstance(personal_review_payload, dict) else None
+                personal_limit_ok = (
+                    personal_response.status_code in {400, 409, 422}
+                    or personal_review_status in {400, 409, 422}
+                    or personal_payload_status in {"pending", "rejected"}
+                )
+                personal_limit_detail = (
+                    f"create_status={personal_response.status_code}; personal_request_id={personal_request_id}; "
+                    f"review_status={personal_review_status}; review_payload_status={personal_payload_status}"
+                )
+
+                second_review_response = client.post(
+                    f"/requests/{request_id}/review",
+                    json={"decision": "reject", "reviewer": "manager3", "note": "Second review attempt"},
+                )
+                second_review_payload: Any = None
+                if second_review_response.headers.get("content-type", "").startswith("application/json"):
+                    second_review_payload = second_review_response.json()
+                final_detail_response = client.get(f"/requests/{request_id}")
+                final_detail_payload: Any = final_detail_response.json() if final_detail_response.status_code == 200 else {}
+                final_status = final_detail_payload.get("status") if isinstance(final_detail_payload, dict) else None
+                second_payload_status = second_review_payload.get("status") if isinstance(second_review_payload, dict) else None
+                terminal_ok = (
+                    second_review_response.status_code in {400, 409, 422}
+                    or second_payload_status == "approved"
+                ) and final_status == "approved"
+                terminal_detail = (
+                    f"second_review_status={second_review_response.status_code}; payload_status={second_payload_status}; "
+                    f"final_detail_status={final_detail_response.status_code}; final_status={final_status}"
+                )
+
+            record("overlap_rejected", overlap_ok, overlap_detail)
+            record("personal_leave_limit_enforced", personal_limit_ok, personal_limit_detail)
+            record("approval_sets_reviewed_at", approval_ok, approval_detail)
+            record("terminal_state_blocks_second_review", terminal_ok, terminal_detail)
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        seen_ids = {item.id for item in observations}
+        for check_id in (
+            "valid_request_created",
+            "overlap_rejected",
+            "personal_leave_limit_enforced",
+            "approval_sets_reviewed_at",
+            "terminal_state_blocks_second_review",
+        ):
+            if check_id not in seen_ids:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=not failed_checks,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:
     run = load_run(run_path)
     normalized_task_id = task_id.strip()
@@ -533,4 +757,6 @@ def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluat
         return _evaluate_support_ticket_api(run.workspace)
     if normalized_task_id == "inventory-adjustment-api":
         return _evaluate_inventory_adjustment_api(run.workspace)
+    if normalized_task_id == "leave-request-api":
+        return _evaluate_leave_request_api(run.workspace)
     raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
