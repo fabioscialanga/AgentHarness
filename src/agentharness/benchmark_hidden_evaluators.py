@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import importlib.util
 import json
 import os
@@ -190,6 +192,31 @@ def _normalize_leave_request_id(payload: Any) -> Any:
             if key in payload:
                 return payload[key]
     return None
+
+
+def _normalize_event_id(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        for key in ("event_id", "id"):
+            if key in payload:
+                return payload[key]
+    return None
+
+
+def _extract_event_list(payload: Any) -> list[Any]:
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in ("items", "events", "data"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+
+
+def _sign_webhook_payload(payload: dict[str, Any], secret: str) -> tuple[str, str]:
+    body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    digest = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+    return body.decode("utf-8"), digest
 
 
 def _extract_history_entries(payload: Any) -> list[Any]:
@@ -750,6 +777,164 @@ def _evaluate_leave_request_api(workspace: Path) -> HiddenEvaluationResult:
     )
 
 
+def _evaluate_webhook_ingestion_service(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "webhook-ingestion-service"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+    secret = os.environ.setdefault("WEBHOOK_SECRET", "agentharness-test-secret")
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        module_path, app = _load_fastapi_app(workspace)
+    except Exception as exc:
+        detail = f"app discovery failed: {exc}"
+        for check_id in (
+            "valid_signed_event_stored",
+            "invalid_signature_rejected",
+            "duplicate_delivery_idempotent",
+            "type_normalized_correctly",
+            "missing_fields_rejected",
+        ):
+            record(check_id, False, detail)
+        return _persist_hidden_evaluation(
+            HiddenEvaluationResult(
+                task_id=task_id,
+                critical_ok=False,
+                passed_checks=passed_checks,
+                failed_checks=failed_checks,
+                observations=observations,
+                summary_path=evaluation_dir / "summary.txt",
+                result_path=evaluation_dir / "result.json",
+            )
+        )
+
+    try:
+        with _working_directory(workspace), TestClient(app) as client:
+            ingest_path = "/webhooks"
+            base_payload = {
+                "event_id": "evt_001",
+                "source": "billing",
+                "occurred_at": "2026-07-01T10:00:00Z",
+                "type": "partner.created",
+                "payload": {"customer_id": "cust_123", "amount": 42},
+            }
+            body_text, digest = _sign_webhook_payload(base_payload, secret)
+            headers = {"content-type": "application/json", "x-signature": digest}
+            create_response = client.post(ingest_path, content=body_text, headers=headers)
+            create_ok = create_response.status_code in {200, 201}
+            create_payload: Any = create_response.json() if create_response.headers.get("content-type", "").startswith("application/json") else {}
+            event_id = _normalize_event_id(create_payload) or base_payload["event_id"]
+
+            lookup_response = client.get(f"/events/{event_id}")
+            lookup_payload: Any = lookup_response.json() if lookup_response.status_code == 200 else {}
+            normalized_status = lookup_payload.get("normalized_status") if isinstance(lookup_payload, dict) else None
+            raw_payload_ok = isinstance(lookup_payload, dict) and isinstance(lookup_payload.get("payload"), dict)
+            valid_signed_ok = create_ok and lookup_response.status_code == 200 and raw_payload_ok
+            record(
+                "valid_signed_event_stored",
+                valid_signed_ok,
+                (
+                    f"status_code={create_response.status_code}; module={module_path}; event_id={event_id}; "
+                    f"lookup_status={lookup_response.status_code}; normalized_status={normalized_status}; raw_payload_ok={raw_payload_ok}"
+                ),
+            )
+
+            bad_headers = {"content-type": "application/json", "x-signature": "bad-signature"}
+            invalid_payload = {
+                "event_id": "evt_bad_sig",
+                "source": "billing",
+                "occurred_at": "2026-07-01T10:01:00Z",
+                "type": "partner.updated",
+                "payload": {"customer_id": "cust_999"},
+            }
+            invalid_response = client.post(ingest_path, content=json.dumps(invalid_payload), headers=bad_headers)
+            invalid_lookup_response = client.get(f"/events/{invalid_payload['event_id']}")
+            invalid_signature_ok = invalid_response.status_code in {400, 401, 403, 422} and invalid_lookup_response.status_code in {404, 400}
+            record(
+                "invalid_signature_rejected",
+                invalid_signature_ok,
+                f"post_status={invalid_response.status_code}; lookup_status={invalid_lookup_response.status_code}",
+            )
+
+            duplicate_response = client.post(ingest_path, content=body_text, headers=headers)
+            list_response = client.get("/events", params={"normalized_status": normalized_status or "created", "source": "billing"})
+            listed_payload = _extract_event_list(list_response.json() if list_response.status_code == 200 else [])
+            duplicate_count = sum(1 for item in listed_payload if isinstance(item, dict) and _normalize_event_id(item) == event_id)
+            duplicate_idempotent_ok = duplicate_response.status_code in {200, 201, 202, 409} and duplicate_count == 1
+            record(
+                "duplicate_delivery_idempotent",
+                duplicate_idempotent_ok,
+                f"duplicate_status={duplicate_response.status_code}; list_status={list_response.status_code}; duplicate_count={duplicate_count}",
+            )
+
+            type_payload = {
+                "event_id": "evt_002",
+                "source": "crm",
+                "occurred_at": "2026-07-01T10:05:00Z",
+                "type": "partner.cancelled",
+                "payload": {"customer_id": "cust_555"},
+            }
+            type_body_text, type_digest = _sign_webhook_payload(type_payload, secret)
+            type_response = client.post(ingest_path, content=type_body_text, headers={"content-type": "application/json", "x-signature": type_digest})
+            type_lookup = client.get(f"/events/{type_payload['event_id']}")
+            type_lookup_payload: Any = type_lookup.json() if type_lookup.status_code == 200 else {}
+            mapped_status = type_lookup_payload.get("normalized_status") if isinstance(type_lookup_payload, dict) else None
+            type_normalized_ok = type_response.status_code in {200, 201} and mapped_status == "cancelled"
+            record(
+                "type_normalized_correctly",
+                type_normalized_ok,
+                f"create_status={type_response.status_code}; lookup_status={type_lookup.status_code}; normalized_status={mapped_status}",
+            )
+
+            missing_payload = {
+                "event_id": "evt_missing",
+                "source": "crm",
+                "occurred_at": "2026-07-01T10:06:00Z",
+                "payload": {"customer_id": "cust_777"},
+            }
+            missing_body_text, missing_digest = _sign_webhook_payload(missing_payload, secret)
+            missing_response = client.post(ingest_path, content=missing_body_text, headers={"content-type": "application/json", "x-signature": missing_digest})
+            missing_lookup = client.get(f"/events/{missing_payload['event_id']}")
+            missing_fields_ok = missing_response.status_code in {400, 422} and missing_lookup.status_code in {404, 400}
+            record(
+                "missing_fields_rejected",
+                missing_fields_ok,
+                f"post_status={missing_response.status_code}; lookup_status={missing_lookup.status_code}",
+            )
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        seen_ids = {item.id for item in observations}
+        for check_id in (
+            "valid_signed_event_stored",
+            "invalid_signature_rejected",
+            "duplicate_delivery_idempotent",
+            "type_normalized_correctly",
+            "missing_fields_rejected",
+        ):
+            if check_id not in seen_ids:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=not failed_checks,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:
     run = load_run(run_path)
     normalized_task_id = task_id.strip()
@@ -759,4 +944,6 @@ def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluat
         return _evaluate_inventory_adjustment_api(run.workspace)
     if normalized_task_id == "leave-request-api":
         return _evaluate_leave_request_api(run.workspace)
+    if normalized_task_id == "webhook-ingestion-service":
+        return _evaluate_webhook_ingestion_service(run.workspace)
     raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
