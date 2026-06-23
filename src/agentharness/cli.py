@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .benchmarking import render_json_template, write_rendered_json_template
 from .bootstrap import BootstrapOptions, bootstrap_project
 from .evaluation import evaluate_run
 from .generation import generate_framework_outputs
@@ -122,6 +123,33 @@ def build_parser() -> argparse.ArgumentParser:
         "--trace-jsonl",
         type=Path,
         help="Optional JSONL trace path for structured evaluation events",
+    )
+
+    render_eval_suite_parser = subparsers.add_parser(
+        "render-evaluation-suite",
+        help="Render a run-bound held-out evaluation suite template by replacing __RUN_ID__ placeholders",
+    )
+    render_eval_suite_parser.add_argument(
+        "--template",
+        type=Path,
+        required=True,
+        help="Path to the held-out evaluation suite template JSON",
+    )
+    render_eval_suite_parser.add_argument(
+        "--run-id",
+        required=True,
+        help="Run id to inject into the template",
+    )
+    render_eval_suite_parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Output path for the rendered evaluation suite JSON",
+    )
+    render_eval_suite_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the rendered suite metadata as JSON",
     )
 
     resilient_run_parser = subparsers.add_parser(
@@ -309,6 +337,17 @@ def _print_evaluation_result(result, as_json: bool) -> None:
         print(f"Trace written: {result.trace_path}")
 
 
+def _print_rendered_evaluation_suite_result(result: dict[str, object], as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return
+
+    print(f"[OK] {result['output_path']}")
+    print(f"Suite id: {result['suite_id']}")
+    print(f"Run id: {result['run_id']}")
+    print(f"Cases: {result['case_count']}")
+
+
 def _print_resilient_run_result(result, as_json: bool) -> None:
     if as_json:
         print(json.dumps(result.to_dict(), indent=2))
@@ -392,6 +431,23 @@ def main(argv: list[str] | None = None) -> int:
         )
         _print_evaluation_result(result, args.json)
         return 0 if result.ok else 1
+
+    if args.command == "render-evaluation-suite":
+        output_path = write_rendered_json_template(
+            args.template,
+            run_id=args.run_id,
+            output_path=args.output,
+        )
+        rendered = render_json_template(args.template, run_id=args.run_id)
+        cases = rendered.get("cases", [])
+        payload = {
+            "output_path": str(output_path),
+            "suite_id": rendered.get("suite_id", ""),
+            "run_id": rendered.get("run_id", ""),
+            "case_count": len(cases) if isinstance(cases, list) else 0,
+        }
+        _print_rendered_evaluation_suite_result(payload, args.json)
+        return 0
 
     if args.command == "run-plan":
         result = run_resilience_plan(
