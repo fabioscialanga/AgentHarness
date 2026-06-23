@@ -277,6 +277,7 @@ Dati mancanti e fallimenti:
 Limite onesto da dichiarare fin d'ora:
 - con 8 task l'inferenza a livello di cluster resta comunque modesta e va interpretata con cautela
 - il benchmark può produrre evidenza utile, non una legge universale
+- le prime celle possono essere usate solo come controllo interno del base rate e del rischio di ceiling, senza modificare N, MME o il piano inferenziale
 
 ### 12. Regola di decisione
 AgentHarness viene descritto come supportato da evidenza di beneficio solo se tutte queste condizioni tengono sul task evaluation score indipendente tenuto da parte:
@@ -622,6 +623,7 @@ Missing data and failures:
 Honest limitation to record now:
 - with 8 tasks, cluster-level inference remains modest and should be interpreted cautiously
 - the benchmark can produce useful evidence, not a universal law
+- the earliest cells may be used only as an internal check on base rate and ceiling risk, without changing N, MME, or the inferential plan
 
 ### 12. Decision rule
 AgentHarness is described as supported by evidence of benefit only if all of the following hold on the held-out independent task evaluation score:
