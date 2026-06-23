@@ -1,0 +1,29 @@
+{
+  "plan_id": "cookbook_plan_001",
+  "workspace": "workspace",
+  "steps": [
+    {
+      "id": "provider_call",
+      "description": "try primary provider then fallback",
+      "success_exit_codes": [0],
+      "targets": [
+        {
+          "name": "primary",
+          "command": "python3 primary.py",
+          "retry": {
+            "max_attempts": 2,
+            "backoff_seconds": 0.01,
+            "retry_on_exit_codes": [1]
+          }
+        },
+        {
+          "name": "fallback",
+          "command": "python3 fallback.py",
+          "retry": {
+            "max_attempts": 1
+          }
+        }
+      ]
+    }
+  ]
+}

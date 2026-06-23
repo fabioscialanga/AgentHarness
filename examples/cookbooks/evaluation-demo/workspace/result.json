@@ -1,0 +1,5 @@
+{
+  "status": "ready",
+  "normalized_email": "citizen@example.org",
+  "tags": ["triage", "email-clean"]
+}

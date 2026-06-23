@@ -126,6 +126,7 @@ class VerifyRunResult:
     notes: list[str] = field(default_factory=list)
     gating_errors: list[str] = field(default_factory=list)
     report_written: str | None = None
+    trace_path: str | None = None
     audit_trail: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -164,5 +165,6 @@ class VerifyRunResult:
             "notes": self.notes,
             "gating_errors": self.gating_errors,
             "report_written": self.report_written,
+            "trace_path": self.trace_path,
             "audit_trail": self.audit_trail,
         }

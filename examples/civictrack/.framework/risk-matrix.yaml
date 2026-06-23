@@ -21,6 +21,14 @@ meta:
     - commit_secrets
     - remove_audit_logging
     - disable_input_validation
+    structured_logging: json
+    jsonl_traces_enabled: true
+    default_retry_attempts: 3
+    fallback_chain:
+    - primary-model
+    - secondary-model
+    - default-response
+    evaluation_enabled: true
   derivation_notes:
   - Risk matrix is derived from project.yaml security, testing, and agent_policy declarations.
   - Changing autonomy, review model, review boundaries, or dangerous write permissions

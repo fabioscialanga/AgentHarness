@@ -8,6 +8,7 @@ from pathlib import Path
 from . import __version__
 from .checks import evaluate_claim
 from .models import ClaimResult, ClaimsDocument, RunRecord, VerifyRunResult
+from .observability import EventLogger, default_trace_path
 from .reexecution import ExecutionPolicy, default_execution_policy
 
 
@@ -121,6 +122,7 @@ def verify_run(
     reexecute_mode: str = "auto",
     reexecution_timeout: int = 60,
     execution_policy: ExecutionPolicy | None = None,
+    trace_path: str | Path | None = None,
 ) -> VerifyRunResult:
     resolved_run_path = Path(run_path).resolve()
     resolved_claims_path = Path(claims_path).resolve()
@@ -133,10 +135,23 @@ def verify_run(
         mode=reexecute_mode,
         timeout_seconds=reexecution_timeout,
     )
+    logger: EventLogger | None = None
+    if trace_path:
+        logger = EventLogger.create(output_path=trace_path, run_id=run.run_id)
+    elif run.workspace.exists():
+        logger = EventLogger.create(output_path=default_trace_path(run.workspace, "verify-run"), run_id=run.run_id)
 
     results = []
     gating_errors = _validate_run_documents(run, claims_document)
     notes = list(gating_errors)
+
+    if logger:
+        logger.emit(
+            "verify_run_started",
+            run_path=str(resolved_run_path),
+            claims_path=str(resolved_claims_path),
+            policy=policy.to_dict(),
+        )
 
     if gating_errors:
         results = [
@@ -153,7 +168,18 @@ def verify_run(
         ]
     else:
         for claim in claims_document.claims:
-            results.append(evaluate_claim(run, claim, execution_policy=policy))
+            claim_result = evaluate_claim(run, claim, execution_policy=policy)
+            results.append(claim_result)
+            if logger:
+                logger.emit(
+                    "verify_run_claim_finished",
+                    claim_id=claim.id,
+                    claim_type=claim.type,
+                    status=claim_result.status,
+                    reason=claim_result.reason,
+                    truth_source=claim_result.truth_source,
+                    evidence=claim_result.evidence,
+                )
 
     result = VerifyRunResult(
         run_id=run.run_id,
@@ -166,12 +192,21 @@ def verify_run(
         evaluated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         notes=notes,
         gating_errors=gating_errors,
+        trace_path=str(logger.output_path) if logger else None,
         audit_trail={
             "policy": policy.to_dict(),
             "run_sha256": run_sha256,
             "claims_sha256": claims_sha256,
         },
     )
+
+    if logger:
+        logger.emit(
+            "verify_run_finished",
+            ok=result.ok,
+            summary=result.summary,
+            blocking_claim_ids=result.blocking_claim_ids,
+        )
 
     if write_report:
         written_path = write_verify_run_report(result, report_path)

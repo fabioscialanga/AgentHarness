@@ -9,6 +9,8 @@
     "input_validation",
     "safe_logging",
     "upload_constraints",
-    "integration_smoke"
+    "integration_smoke",
+    "structured_traces",
+    "evaluation_suite"
   ]
 }

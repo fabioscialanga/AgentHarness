@@ -1,0 +1,2 @@
+The support ticket is ready for triage.
+The customer email normalized successfully.

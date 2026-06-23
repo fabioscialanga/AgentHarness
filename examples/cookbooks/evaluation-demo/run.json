@@ -1,0 +1,13 @@
+{
+  "run_id": "cookbook_eval_001",
+  "workspace": "workspace",
+  "task": "Summarize a support ticket and emit a small JSON result",
+  "artifacts": {
+    "changed_files": [],
+    "commands": [],
+    "outputs": [
+      {"type": "file", "path": "answer.txt"},
+      {"type": "file", "path": "result.json"}
+    ]
+  }
+}

@@ -109,6 +109,9 @@ def _validate_required_top_level(data: dict[str, Any], result: ValidationResult)
         "quality",
         "security",
         "agent_policy",
+        "observability",
+        "resilience",
+        "evaluation",
         "deliverables",
         "workflows_enabled",
     ):
@@ -280,6 +283,94 @@ def _validate_agent_policy(data: dict[str, Any], result: ValidationResult) -> No
             result.errors.append(f"agent_policy.{list_field} must not be empty")
         elif any(not isinstance(item, str) or not item.strip() for item in values):
             result.errors.append(f"agent_policy.{list_field} must contain only non-empty strings")
+
+
+def _validate_observability(data: dict[str, Any], result: ValidationResult) -> None:
+    observability = data.get("observability")
+    try:
+        observability = _expect_mapping(observability, "observability")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        return
+
+    if observability.get("logging_format") not in {"json", "text"}:
+        result.errors.append("observability.logging_format must be either 'json' or 'text'")
+    if not isinstance(observability.get("emit_jsonl_traces"), bool):
+        result.errors.append("observability.emit_jsonl_traces must be a boolean")
+    trace_dir = observability.get("trace_dir")
+    if not isinstance(trace_dir, str) or not trace_dir.strip():
+        result.errors.append("observability.trace_dir must be a non-empty string")
+
+
+def _validate_resilience(data: dict[str, Any], result: ValidationResult) -> None:
+    resilience = data.get("resilience")
+    try:
+        resilience = _expect_mapping(resilience, "resilience")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        return
+
+    retry_defaults = resilience.get("retry_defaults")
+    try:
+        retry_defaults = _expect_mapping(retry_defaults, "resilience.retry_defaults")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        retry_defaults = {}
+    fallback_defaults = resilience.get("fallback_defaults")
+    try:
+        fallback_defaults = _expect_mapping(fallback_defaults, "resilience.fallback_defaults")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        fallback_defaults = {}
+
+    max_attempts = retry_defaults.get("max_attempts")
+    if not isinstance(max_attempts, int) or max_attempts <= 0:
+        result.errors.append("resilience.retry_defaults.max_attempts must be a positive integer")
+    backoff_seconds = retry_defaults.get("backoff_seconds")
+    if not isinstance(backoff_seconds, (int, float)) or backoff_seconds < 0:
+        result.errors.append("resilience.retry_defaults.backoff_seconds must be a non-negative number")
+    retry_on = retry_defaults.get("retry_on")
+    try:
+        retry_on = _expect_list(retry_on, "resilience.retry_defaults.retry_on")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        retry_on = []
+    if any(not isinstance(item, str) or not item.strip() for item in retry_on):
+        result.errors.append("resilience.retry_defaults.retry_on must contain only non-empty strings")
+
+    fallback_chain = fallback_defaults.get("fallback_chain")
+    try:
+        fallback_chain = _expect_list(fallback_chain, "resilience.fallback_defaults.fallback_chain")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        fallback_chain = []
+    if not fallback_chain:
+        result.errors.append("resilience.fallback_defaults.fallback_chain must contain at least one fallback target")
+    elif any(not isinstance(item, str) or not item.strip() for item in fallback_chain):
+        result.errors.append("resilience.fallback_defaults.fallback_chain must contain only non-empty strings")
+
+
+def _validate_evaluation(data: dict[str, Any], result: ValidationResult) -> None:
+    evaluation = data.get("evaluation")
+    try:
+        evaluation = _expect_mapping(evaluation, "evaluation")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        return
+
+    if not isinstance(evaluation.get("enabled"), bool):
+        result.errors.append("evaluation.enabled must be a boolean")
+    suites_dir = evaluation.get("suites_dir")
+    if not isinstance(suites_dir, str) or not suites_dir.strip():
+        result.errors.append("evaluation.suites_dir must be a non-empty string")
+    default_case_types = evaluation.get("default_case_types")
+    try:
+        default_case_types = _expect_list(default_case_types, "evaluation.default_case_types")
+    except ValidationError as exc:
+        result.errors.append(str(exc))
+        default_case_types = []
+    if any(not isinstance(item, str) or not item.strip() for item in default_case_types):
+        result.errors.append("evaluation.default_case_types must contain only non-empty strings")
 
 
 def _validate_workflows(root: Path, data: dict[str, Any], result: ValidationResult) -> None:
@@ -521,6 +612,9 @@ def validate_project_directory(project_dir: str | Path) -> ValidationResult:
     _validate_quality(payload, result)
     _validate_security(payload, result)
     _validate_agent_policy(payload, result)
+    _validate_observability(payload, result)
+    _validate_resilience(payload, result)
+    _validate_evaluation(payload, result)
     _validate_workflows(root, payload, result)
     _validate_deliverables(root, payload, result)
     _validate_agents_contract(root, payload, result)

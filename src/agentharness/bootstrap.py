@@ -191,6 +191,26 @@ def _project_yaml(options: BootstrapOptions) -> str:
                 "audit_model_changes",
             ],
         },
+        "observability": {
+            "logging_format": "json",
+            "emit_jsonl_traces": True,
+            "trace_dir": ".agentharness/traces",
+        },
+        "resilience": {
+            "retry_defaults": {
+                "max_attempts": 3,
+                "backoff_seconds": 1.0,
+                "retry_on": ["timeout", "rate_limit", "parse_error"],
+            },
+            "fallback_defaults": {
+                "fallback_chain": ["primary-model", "secondary-model", "default-response"],
+            },
+        },
+        "evaluation": {
+            "enabled": True,
+            "suites_dir": "evals",
+            "default_case_types": ["text_contains", "json_schema"],
+        },
         "deliverables": {
             "generate": [
                 "agents_md",
@@ -258,6 +278,7 @@ Before considering a task done:
 - run integration smoke tests when interfaces or persistence behavior changes
 - verify no secrets were introduced
 - summarize changed files, tests run, and residual risks
+- keep structured JSON traces when verification or evaluation commands are used
 
 ## Security rules
 - validate all user-controlled inputs
@@ -279,6 +300,8 @@ Human review required for:
 - prefer readability over cleverness
 - if you touch behavior, touch tests
 - keep project rules and assumptions visible in the repository
+- define retries and fallback chains explicitly instead of hiding them in prompts
+- prefer deterministic evaluation cases before subjective model-graded scoring
 """
 
 

@@ -80,6 +80,32 @@ agent_policy:
     - upload_handling_changes
     - audit_model_changes
 
+observability:
+  logging_format: json
+  emit_jsonl_traces: true
+  trace_dir: .agentharness/traces
+
+resilience:
+  retry_defaults:
+    max_attempts: 3
+    backoff_seconds: 1.0
+    retry_on:
+      - timeout
+      - rate_limit
+      - parse_error
+  fallback_defaults:
+    fallback_chain:
+      - primary-model
+      - secondary-model
+      - default-response
+
+evaluation:
+  enabled: true
+  suites_dir: evals
+  default_case_types:
+    - text_contains
+    - json_schema
+
 deliverables:
   generate:
     - agents_md

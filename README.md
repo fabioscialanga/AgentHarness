@@ -31,7 +31,7 @@ In practice, AgentHarness helps turn project intent into:
 If you want the deeper model, read `docs/en/PROJECT_DOCUMENTATION.md` or `docs/it/DOCUMENTAZIONE_PROGETTO.md`.
 
 ## What works today
-AgentHarness already includes a working Python CLI with five concrete commands:
+AgentHarness already includes a working Python CLI with seven concrete commands:
 
 1. `agentharness validate`
 - validates that an AgentHarness-style project is internally consistent
@@ -48,11 +48,21 @@ AgentHarness already includes a working Python CLI with five concrete commands:
 - prefers controlled reexecution for allowed pytest wrappers (`pytest`, `python -m pytest`, `uv run pytest`), supports controlled relative working directories inside the workspace, falls back to parsed evidence only when reexecution cannot establish the verdict, and returns `inconclusive` when truth cannot be defended
 - rejects malformed run/claim envelopes, out-of-scope filesystem evidence, mismatched run binding, and command evidence parked outside the reserved `.agentharness/evidence/<run_id>/` namespace
 
-5. `agentharness bootstrap`
+5. `agentharness evaluate`
+- runs deterministic evaluation suites against a run artifact and files inside its declared workspace
+- supports text assertions (`contains`, `forbidden`, `regex`) and a small JSON schema surface for stable structured outputs
+- emits JSON reports and structured JSONL traces for debugging and audit
+
+6. `agentharness run-plan`
+- executes a retry-aware plan with exponential backoff-ready defaults and explicit fallback targets
+- records every attempt, stdout/stderr artifact, winner selection, and trace event so resilience behavior is reviewable instead of hidden in prompts
+
+7. `agentharness bootstrap`
 - creates a new contract-first project skeleton and validates it
 
 The repository also includes:
 - a worked example project in `examples/civictrack/`
+- runnable cookbooks in `examples/cookbooks/`
 - automated tests for the core flows
 - an A/B benchmark pack for comparing framework vs no-framework execution
 
@@ -111,6 +121,21 @@ agentharness verify-run \
 
 The second example is designed to fail. The run record declares a green pytest command, but the allowed command is reexecuted and AgentHarness captures the real non-zero exit code under `.agentharness/evidence/<run_id>/reexecuted/`.
 
+### Evaluate deterministic output expectations
+```bash
+agentharness evaluate \
+  --run examples/cookbooks/evaluation-demo/run.json \
+  --suite examples/cookbooks/evaluation-demo/suite.json \
+  --json
+```
+
+### Exercise retry + fallback with audit trail
+```bash
+agentharness run-plan \
+  --plan examples/cookbooks/retry-fallback-demo/plan.json \
+  --json
+```
+
 ### Bootstrap a new project
 ```bash
 agentharness bootstrap ./my-project \
@@ -151,11 +176,14 @@ What exists today:
 - a working validator
 - a framework metadata generator
 - a bootstrap command
-- one worked example repository
+- claim-based run verification with controlled reexecution
+- deterministic evaluation suites for text/JSON outputs
+- retry-aware fallback plan execution with audit artifacts
+- one worked example repository plus runnable cookbooks
 - automated tests for the core flows
 
 What does not exist yet:
-- full coding-agent runtime integration
+- full coding-agent runtime integration with external vendors out of the box
 - automatic CI integration out of the box
 - broad project-template coverage across many project types
 

@@ -27,6 +27,7 @@ Before considering a task done:
 - run integration smoke tests when API or persistence behavior changes
 - verify no secrets were introduced
 - summarize files changed, tests run, and residual risks
+- keep structured JSON traces when verify-run, evaluate, or retry/fallback plans are used
 
 ## Security rules
 - Validate all user-controlled inputs.
@@ -48,3 +49,5 @@ Human review required for:
 - Prefer readability over cleverness.
 - If you touch behavior, touch tests.
 - If you fix a bug, protect it with a regression test.
+- Define retries and fallback chains explicitly instead of hiding them in prompts.
+- Prefer deterministic evaluation cases before subjective model-graded scoring.

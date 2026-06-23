@@ -67,6 +67,14 @@ def _collect_required_checks(payload: dict[str, Any]) -> list[str]:
                 else:
                     checks.append(item)
 
+    observability = payload.get("observability", {})
+    if isinstance(observability, dict) and observability.get("emit_jsonl_traces"):
+        checks.append("structured_traces")
+
+    evaluation = payload.get("evaluation", {})
+    if isinstance(evaluation, dict) and evaluation.get("enabled"):
+        checks.append("evaluation_suite")
+
     return _dedupe(checks)
 
 
@@ -78,6 +86,9 @@ def _build_risk_matrix(payload: dict[str, Any]) -> dict[str, Any]:
     security = payload.get("security", {}) if isinstance(payload.get("security"), dict) else {}
     policy = payload.get("agent_policy", {}) if isinstance(payload.get("agent_policy"), dict) else {}
     testing = payload.get("testing", {}) if isinstance(payload.get("testing"), dict) else {}
+    observability = payload.get("observability", {}) if isinstance(payload.get("observability"), dict) else {}
+    resilience = payload.get("resilience", {}) if isinstance(payload.get("resilience"), dict) else {}
+    evaluation = payload.get("evaluation", {}) if isinstance(payload.get("evaluation"), dict) else {}
 
     autonomy = str(policy.get("autonomy", "medium"))
     security_level = str(security.get("level", "medium"))
@@ -148,6 +159,11 @@ def _build_risk_matrix(payload: dict[str, Any]) -> dict[str, Any]:
                 "max_files_per_task": max_files_per_task,
                 "review_required_for": review_required_for,
                 "forbidden_actions": forbidden_actions,
+                "structured_logging": str(observability.get("logging_format", "json")),
+                "jsonl_traces_enabled": _coerce_bool(observability.get("emit_jsonl_traces"), False),
+                "default_retry_attempts": resilience.get("retry_defaults", {}).get("max_attempts") if isinstance(resilience.get("retry_defaults"), dict) else None,
+                "fallback_chain": resilience.get("fallback_defaults", {}).get("fallback_chain", []) if isinstance(resilience.get("fallback_defaults"), dict) else [],
+                "evaluation_enabled": _coerce_bool(evaluation.get("enabled"), False),
             },
             "derivation_notes": [
                 "Risk matrix is derived from project.yaml security, testing, and agent_policy declarations.",
@@ -195,8 +211,8 @@ def _build_generation_report(payload: dict[str, Any], generated_checks: list[str
         "generated_artifacts": generated_artifacts,
         "notes": [
             "Framework outputs were generated from project.yaml by AgentHarness.",
-            "Required checks were derived from quality, security, and testing declarations.",
-            "Risk matrix content was derived from security posture and agent policy declarations.",
+            "Required checks were derived from quality, security, testing, observability, and evaluation declarations.",
+            "Risk matrix content was derived from security posture, observability, resilience defaults, and agent policy declarations.",
             f"Generated {len(generated_checks)} required checks.",
         ],
     }

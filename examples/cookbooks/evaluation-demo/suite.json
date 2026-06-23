@@ -1,0 +1,37 @@
+{
+  "suite_id": "cookbook_eval_suite",
+  "run_id": "cookbook_eval_001",
+  "cases": [
+    {
+      "id": "summary_text",
+      "type": "text_contains",
+      "path": "answer.txt",
+      "description": "The textual answer must say the ticket is ready for triage",
+      "expected": {
+        "contains": ["ready for triage", "customer email normalized"],
+        "forbidden": ["Traceback"]
+      }
+    },
+    {
+      "id": "json_shape",
+      "type": "json_schema",
+      "path": "result.json",
+      "description": "The structured result must have a stable shape",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": ["status", "normalized_email", "tags"],
+          "properties": {
+            "status": {"type": "string"},
+            "normalized_email": {"type": "string"},
+            "tags": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

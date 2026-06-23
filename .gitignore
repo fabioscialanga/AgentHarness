@@ -4,10 +4,16 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Reexecution evidence generated during local verification
+# Local AgentHarness runtime artifacts generated during verification/evaluation/demo runs
 .agentharness/evidence/
 **/.agentharness/evidence/
+.agentharness/traces/
+**/.agentharness/traces/
+.agentharness/resilience/
+**/.agentharness/resilience/
 
 # Local reports and editor noise
 *.verify-report.json
+*.evaluation-report.json
+*.resilience-report.json
 .DS_Store

@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 
 from .bootstrap import BootstrapOptions, bootstrap_project
+from .evaluation import evaluate_run
 from .generation import generate_framework_outputs
+from .resilience import run_resilience_plan
 from .validation import validate_project_directory
 from .verification import verify_project_directory
 from .verify import verify_run
@@ -88,6 +90,64 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=60,
         help="Timeout in seconds for controlled test command reexecution",
+    )
+    verify_run_parser.add_argument(
+        "--trace-jsonl",
+        type=Path,
+        help="Optional JSONL trace path for structured verify-run events",
+    )
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate",
+        help="Run deterministic evaluation cases against a run artifact and its workspace outputs",
+    )
+    evaluate_parser.add_argument("--run", type=Path, required=True, help="Path to the run JSON artifact")
+    evaluate_parser.add_argument("--suite", type=Path, required=True, help="Path to the evaluation suite JSON")
+    evaluate_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the evaluation result as JSON",
+    )
+    evaluate_parser.add_argument(
+        "--write-report",
+        action="store_true",
+        help="Write an evaluation report next to the run artifact unless --report-path is set",
+    )
+    evaluate_parser.add_argument(
+        "--report-path",
+        type=Path,
+        help="Optional explicit output path for the evaluation report JSON",
+    )
+    evaluate_parser.add_argument(
+        "--trace-jsonl",
+        type=Path,
+        help="Optional JSONL trace path for structured evaluation events",
+    )
+
+    resilient_run_parser = subparsers.add_parser(
+        "run-plan",
+        help="Execute a retry-aware plan with fallback targets and audit trail artifacts",
+    )
+    resilient_run_parser.add_argument("--plan", type=Path, required=True, help="Path to the resilience plan JSON")
+    resilient_run_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the resilient execution result as JSON",
+    )
+    resilient_run_parser.add_argument(
+        "--write-report",
+        action="store_true",
+        help="Write a resilience report next to the plan unless --report-path is set",
+    )
+    resilient_run_parser.add_argument(
+        "--report-path",
+        type=Path,
+        help="Optional explicit output path for the resilience report JSON",
+    )
+    resilient_run_parser.add_argument(
+        "--trace-jsonl",
+        type=Path,
+        help="Optional JSONL trace path for structured resilience events",
     )
 
     bootstrap_parser = subparsers.add_parser(
@@ -218,6 +278,58 @@ def _print_verify_run_result(result, as_json: bool) -> None:
             print(f"- {note}")
     if result.report_written:
         print(f"Report written: {result.report_written}")
+    if result.trace_path:
+        print(f"Trace written: {result.trace_path}")
+
+
+def _print_evaluation_result(result, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), indent=2))
+        return
+
+    status = "PASS" if result.ok else "FAIL"
+    print(f"[{status}] evaluation {result.suite_id} for run {result.run_id}")
+    for item in result.results:
+        evidence = f" | evidence: {', '.join(item.evidence)}" if item.evidence else ""
+        print(f"- {item.case_id} [{item.case_type}] -> {item.status}: {item.reason}{evidence}")
+    summary = result.summary
+    print(
+        "Summary: "
+        f"{summary.get('passed', 0)} passed, "
+        f"{summary.get('failed', 0)} failed, "
+        f"{summary.get('invalid', 0)} invalid"
+    )
+    if result.gating_errors:
+        print("Gating errors:")
+        for error in result.gating_errors:
+            print(f"- {error}")
+    if result.report_written:
+        print(f"Report written: {result.report_written}")
+    if result.trace_path:
+        print(f"Trace written: {result.trace_path}")
+
+
+def _print_resilient_run_result(result, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), indent=2))
+        return
+
+    status = "PASS" if result.ok else "FAIL"
+    print(f"[{status}] plan {result.plan_id}")
+    for step in result.steps:
+        winner = step.winner or "none"
+        print(f"- {step.step_id}: {'OK' if step.ok else 'FAIL'} | winner: {winner}")
+        for attempt in step.attempts:
+            retry_note = (
+                f" | retry in {attempt.next_delay_seconds:.3f}s"
+                if attempt.retry_scheduled and attempt.next_delay_seconds is not None
+                else ""
+            )
+            print(
+                f"  - target={attempt.target_name} attempt={attempt.attempt} exit={attempt.exit_code} cwd={attempt.cwd}{retry_note}"
+            )
+    if result.trace_path:
+        print(f"Trace written: {result.trace_path}")
 
 
 def _print_bootstrap_result(result, as_json: bool) -> None:
@@ -265,8 +377,30 @@ def main(argv: list[str] | None = None) -> int:
             report_path=args.report_path,
             reexecute_mode=args.reexecute_tests,
             reexecution_timeout=args.reexecution_timeout,
+            trace_path=args.trace_jsonl,
         )
         _print_verify_run_result(result, args.json)
+        return 0 if result.ok else 1
+
+    if args.command == "evaluate":
+        result = evaluate_run(
+            args.run,
+            args.suite,
+            write_report=args.write_report,
+            report_path=args.report_path,
+            trace_path=args.trace_jsonl,
+        )
+        _print_evaluation_result(result, args.json)
+        return 0 if result.ok else 1
+
+    if args.command == "run-plan":
+        result = run_resilience_plan(
+            args.plan,
+            write_report=args.write_report,
+            report_path=args.report_path,
+            trace_path=args.trace_jsonl,
+        )
+        _print_resilient_run_result(result, args.json)
         return 0 if result.ok else 1
 
     if args.command == "bootstrap":
