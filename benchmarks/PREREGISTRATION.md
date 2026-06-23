@@ -1,7 +1,7 @@
 # Benchmark pre-registration
 
-Status: freeze-ready, pending final sign-off before any benchmark run.
-Stato: freeze-ready, in attesa di rilettura finale e firma prima di qualunque run di benchmark.
+Status: approved before benchmark execution, with task construction still gated by section 5.
+Stato: approvato prima dell'esecuzione del benchmark, con costruzione dei task ancora vincolata dal gate della sezione 5.
 
 ## Quick approval summary
 
@@ -20,7 +20,7 @@ Pre-run quality gate:
 - benchmark execution cannot start until disjunction is demonstrated between the held-out evaluation suite and the visible claims contract
 - benchmark execution cannot start until non-leakage of held-out material into the agent-visible context is demonstrated
 
-Final sign-off is needed before any benchmark execution.
+This pre-registration is now approved. Benchmark execution remains blocked until the section-5 quality gate is satisfied.
 
 ## Italiano
 
@@ -373,8 +373,8 @@ Prerequisiti pre-run ancora obbligatori:
    - se incluso nella fase uno, resta secondario ed esplorativo
 
 ### 16. Freeze rule
-Nessun benchmark run parte finché questo documento non riceve sign-off finale.
-Dopo il sign-off finale, si congelano:
+Nessun benchmark run parte prima che sia soddisfatto il quality gate della sezione 5.
+Con questa approvazione si congelano:
 - trattamento
 - numero di task fissato a 8 e regole di costruzione dei task
 - N
@@ -719,8 +719,8 @@ Mandatory pre-run prerequisites:
    - if included in phase one, they remain exploratory secondary outputs
 
 ### 16. Freeze rule
-No benchmark run starts until this document receives final sign-off.
-After final sign-off, the following are frozen:
+No benchmark run starts until the section-5 quality gate is satisfied.
+With this approval, the following are frozen:
 - treatment
 - task count fixed at 8 and the rules for constructing tasks
 - sample size
