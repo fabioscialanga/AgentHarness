@@ -176,6 +176,24 @@ def _extract_comments(payload: Any) -> list[Any]:
     return []
 
 
+def _normalize_item_ref(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        for key in ("sku", "id", "item_id"):
+            if key in payload:
+                return payload[key]
+    return None
+
+
+def _extract_history_entries(payload: Any) -> list[Any]:
+    if not isinstance(payload, dict):
+        return []
+    for key in ("history", "events", "adjustments"):
+        value = payload.get(key, [])
+        if isinstance(value, list):
+            return value
+    return []
+
+
 def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
     task_id = "support-ticket-api"
     evaluation_dir = _evaluation_dir(workspace, task_id)
@@ -355,9 +373,164 @@ def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
     )
 
 
+def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "inventory-adjustment-api"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        module_path, app = _load_fastapi_app(workspace)
+    except Exception as exc:
+        detail = f"app discovery failed: {exc}"
+        for check_id in (
+            "reserve_within_available",
+            "over_reserve_rejected",
+            "damage_cannot_go_negative",
+            "recount_sets_exact_quantity",
+            "release_cannot_exceed_reserved",
+        ):
+            record(check_id, False, detail)
+        return _persist_hidden_evaluation(
+            HiddenEvaluationResult(
+                task_id=task_id,
+                critical_ok=False,
+                passed_checks=passed_checks,
+                failed_checks=failed_checks,
+                observations=observations,
+                summary_path=evaluation_dir / "summary.txt",
+                result_path=evaluation_dir / "result.json",
+            )
+        )
+
+    try:
+        with _working_directory(workspace), TestClient(app) as client:
+            create_item = client.post(
+                "/items",
+                json={"sku": "SKU-001", "name": "Widget", "on_hand": 10, "reserved": 0},
+            )
+            create_ok = create_item.status_code in {200, 201}
+            create_payload: Any = create_item.json() if create_ok else {}
+            sku = _normalize_item_ref(create_payload)
+            create_detail = f"status_code={create_item.status_code}; module={module_path}; sku={sku}"
+
+            reserve_ok = False
+            reserve_detail = "item creation precondition failed"
+            over_reserve_ok = False
+            over_reserve_detail = "item creation precondition failed"
+            damage_ok = False
+            damage_detail = "item creation precondition failed"
+            recount_ok = False
+            recount_detail = "item creation precondition failed"
+            release_ok = False
+            release_detail = "item creation precondition failed"
+
+            if sku is not None:
+                reserve_response = client.post(
+                    "/reservations",
+                    json={"sku": sku, "order_id": "ORDER-1", "quantity": 4},
+                )
+                detail_after_reserve = client.get(f"/items/{sku}")
+                detail_payload = detail_after_reserve.json() if detail_after_reserve.status_code == 200 else {}
+                reserved_quantity = detail_payload.get("reserved") if isinstance(detail_payload, dict) else None
+                reserve_ok = (
+                    reserve_response.status_code in {200, 201}
+                    and detail_after_reserve.status_code == 200
+                    and reserved_quantity == 4
+                )
+                reserve_detail = (
+                    f"reserve_status={reserve_response.status_code}; detail_status={detail_after_reserve.status_code}; reserved={reserved_quantity}"
+                )
+
+                over_reserve_response = client.post(
+                    "/reservations",
+                    json={"sku": sku, "order_id": "ORDER-2", "quantity": 7},
+                )
+                over_reserve_ok = over_reserve_response.status_code in {400, 409, 422}
+                over_reserve_detail = f"status_code={over_reserve_response.status_code}"
+
+                damage_response = client.post(
+                    "/adjustments",
+                    json={"sku": sku, "reason": "damage", "delta": -20},
+                )
+                damage_ok = damage_response.status_code in {400, 409, 422}
+                damage_detail = f"status_code={damage_response.status_code}"
+
+                recount_response = client.post(
+                    "/adjustments",
+                    json={"sku": sku, "reason": "recount", "counted_quantity": 8},
+                )
+                detail_after_recount = client.get(f"/items/{sku}")
+                detail_after_recount_payload = detail_after_recount.json() if detail_after_recount.status_code == 200 else {}
+                recount_on_hand = detail_after_recount_payload.get("on_hand") if isinstance(detail_after_recount_payload, dict) else None
+                history = _extract_history_entries(detail_after_recount_payload)
+                recount_history_ok = any(
+                    isinstance(entry, dict)
+                    and entry.get("reason") == "recount"
+                    and entry.get("counted_quantity") == 8
+                    for entry in history
+                )
+                recount_ok = (
+                    recount_response.status_code in {200, 201}
+                    and detail_after_recount.status_code == 200
+                    and recount_on_hand == 8
+                    and recount_history_ok
+                )
+                recount_detail = (
+                    f"adjust_status={recount_response.status_code}; detail_status={detail_after_recount.status_code}; on_hand={recount_on_hand}; recount_history={recount_history_ok}"
+                )
+
+                release_response = client.post(
+                    "/releases",
+                    json={"sku": sku, "order_id": "ORDER-1", "quantity": 10},
+                )
+                release_ok = release_response.status_code in {400, 409, 422}
+                release_detail = f"status_code={release_response.status_code}"
+
+            record("reserve_within_available", reserve_ok and create_ok, create_detail + "; " + reserve_detail)
+            record("over_reserve_rejected", over_reserve_ok, over_reserve_detail)
+            record("damage_cannot_go_negative", damage_ok, damage_detail)
+            record("recount_sets_exact_quantity", recount_ok, recount_detail)
+            record("release_cannot_exceed_reserved", release_ok, release_detail)
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        seen_ids = {item.id for item in observations}
+        for check_id in (
+            "reserve_within_available",
+            "over_reserve_rejected",
+            "damage_cannot_go_negative",
+            "recount_sets_exact_quantity",
+            "release_cannot_exceed_reserved",
+        ):
+            if check_id not in seen_ids:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=not failed_checks,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:
     run = load_run(run_path)
     normalized_task_id = task_id.strip()
-    if normalized_task_id != "support-ticket-api":
-        raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
-    return _evaluate_support_ticket_api(run.workspace)
+    if normalized_task_id == "support-ticket-api":
+        return _evaluate_support_ticket_api(run.workspace)
+    if normalized_task_id == "inventory-adjustment-api":
+        return _evaluate_inventory_adjustment_api(run.workspace)
+    raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
