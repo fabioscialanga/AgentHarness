@@ -1,0 +1,143 @@
+{
+  "suite_id": "leave-request-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "valid_request_created",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/leave-request-api/summary.txt",
+      "description": "A valid leave request can be submitted and listed.",
+      "expected": {
+        "contains": [
+          "valid_request_created=pass"
+        ],
+        "forbidden": [
+          "valid_request_created=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "overlap_rejected",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/leave-request-api/summary.txt",
+      "description": "An overlapping approved leave request for the same employee is rejected.",
+      "expected": {
+        "contains": [
+          "overlap_rejected=pass"
+        ],
+        "forbidden": [
+          "overlap_rejected=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "personal_leave_limit_enforced",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/leave-request-api/summary.txt",
+      "description": "Personal leave longer than 3 days is rejected.",
+      "expected": {
+        "contains": [
+          "personal_leave_limit_enforced=pass"
+        ],
+        "forbidden": [
+          "personal_leave_limit_enforced=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "approval_sets_reviewed_at",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/leave-request-api/summary.txt",
+      "description": "Approving or rejecting a request records reviewed_at.",
+      "expected": {
+        "contains": [
+          "approval_sets_reviewed_at=pass"
+        ],
+        "forbidden": [
+          "approval_sets_reviewed_at=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "terminal_state_blocks_second_review",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/leave-request-api/summary.txt",
+      "description": "A request cannot be approved or rejected twice.",
+      "expected": {
+        "contains": [
+          "terminal_state_blocks_second_review=pass"
+        ],
+        "forbidden": [
+          "terminal_state_blocks_second_review=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/leave-request-api/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

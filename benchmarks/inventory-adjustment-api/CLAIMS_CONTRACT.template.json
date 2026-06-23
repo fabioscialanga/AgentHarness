@@ -1,0 +1,52 @@
+{
+  "run_id": "__RUN_ID__",
+  "claims": [
+    {
+      "id": "claim_scope_forbidden",
+      "type": "forbidden_paths",
+      "statement": "The run stayed out of clearly forbidden non-task paths.",
+      "expected": {
+        "forbidden_paths": [
+          "frontend/*",
+          "ui/*",
+          "web/*",
+          "k8s/*",
+          "helm/*",
+          "terraform/*",
+          ".github/workflows/*",
+          "payments/*"
+        ]
+      }
+    },
+    {
+      "id": "claim_tests",
+      "type": "tests_executed",
+      "statement": "The required automated test suite was executed.",
+      "expected": {
+        "required_commands": [
+          "pytest -q"
+        ]
+      }
+    },
+    {
+      "id": "claim_readme",
+      "type": "artifact_present",
+      "statement": "A README with run instructions was produced.",
+      "expected": {
+        "required_outputs": [
+          "README.md"
+        ]
+      }
+    },
+    {
+      "id": "claim_pyproject",
+      "type": "artifact_present",
+      "statement": "A pyproject.toml dependency manifest was produced.",
+      "expected": {
+        "required_outputs": [
+          "pyproject.toml"
+        ]
+      }
+    }
+  ]
+}

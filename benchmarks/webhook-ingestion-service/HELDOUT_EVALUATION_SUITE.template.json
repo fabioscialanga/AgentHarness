@@ -1,0 +1,143 @@
+{
+  "suite_id": "webhook-ingestion-service_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "valid_signed_event_stored",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/webhook-ingestion-service/summary.txt",
+      "description": "A valid signed event is accepted and stored once.",
+      "expected": {
+        "contains": [
+          "valid_signed_event_stored=pass"
+        ],
+        "forbidden": [
+          "valid_signed_event_stored=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "invalid_signature_rejected",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/webhook-ingestion-service/summary.txt",
+      "description": "An invalid signature is rejected and does not persist an event.",
+      "expected": {
+        "contains": [
+          "invalid_signature_rejected=pass"
+        ],
+        "forbidden": [
+          "invalid_signature_rejected=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "duplicate_delivery_idempotent",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/webhook-ingestion-service/summary.txt",
+      "description": "A duplicate delivery for the same event_id does not create duplicate state.",
+      "expected": {
+        "contains": [
+          "duplicate_delivery_idempotent=pass"
+        ],
+        "forbidden": [
+          "duplicate_delivery_idempotent=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "type_normalized_correctly",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/webhook-ingestion-service/summary.txt",
+      "description": "Partner event types map to the required canonical normalized status.",
+      "expected": {
+        "contains": [
+          "type_normalized_correctly=pass"
+        ],
+        "forbidden": [
+          "type_normalized_correctly=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "missing_fields_rejected",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/webhook-ingestion-service/summary.txt",
+      "description": "Missing required webhook fields are rejected cleanly.",
+      "expected": {
+        "contains": [
+          "missing_fields_rejected=pass"
+        ],
+        "forbidden": [
+          "missing_fields_rejected=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/webhook-ingestion-service/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

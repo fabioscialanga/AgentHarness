@@ -1,0 +1,143 @@
+{
+  "suite_id": "inventory-adjustment-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "reserve_within_available",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/inventory-adjustment-api/summary.txt",
+      "description": "A reservation within available stock succeeds and updates reserved quantity correctly.",
+      "expected": {
+        "contains": [
+          "reserve_within_available=pass"
+        ],
+        "forbidden": [
+          "reserve_within_available=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "over_reserve_rejected",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/inventory-adjustment-api/summary.txt",
+      "description": "Attempting to reserve more than available stock is rejected.",
+      "expected": {
+        "contains": [
+          "over_reserve_rejected=pass"
+        ],
+        "forbidden": [
+          "over_reserve_rejected=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "damage_cannot_go_negative",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/inventory-adjustment-api/summary.txt",
+      "description": "Damage adjustments never push on_hand below zero.",
+      "expected": {
+        "contains": [
+          "damage_cannot_go_negative=pass"
+        ],
+        "forbidden": [
+          "damage_cannot_go_negative=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "recount_sets_exact_quantity",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/inventory-adjustment-api/summary.txt",
+      "description": "A recount sets on_hand to the counted quantity rather than applying a delta.",
+      "expected": {
+        "contains": [
+          "recount_sets_exact_quantity=pass"
+        ],
+        "forbidden": [
+          "recount_sets_exact_quantity=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "release_cannot_exceed_reserved",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/inventory-adjustment-api/summary.txt",
+      "description": "Releasing stock cannot exceed the quantity currently reserved.",
+      "expected": {
+        "contains": [
+          "release_cannot_exceed_reserved=pass"
+        ],
+        "forbidden": [
+          "release_cannot_exceed_reserved=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/inventory-adjustment-api/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

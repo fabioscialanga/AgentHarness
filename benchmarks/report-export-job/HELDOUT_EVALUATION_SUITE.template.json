@@ -1,0 +1,143 @@
+{
+  "suite_id": "report-export-job_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "csv_rows_sorted_complete",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/report-export-job/summary.txt",
+      "description": "The CSV contains the expected merchant rows sorted by merchant_id with all required columns.",
+      "expected": {
+        "contains": [
+          "csv_rows_sorted_complete=pass"
+        ],
+        "forbidden": [
+          "csv_rows_sorted_complete=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "net_totals_correct",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/report-export-job/summary.txt",
+      "description": "Net payout equals gross payout minus refunds for each merchant.",
+      "expected": {
+        "contains": [
+          "net_totals_correct=pass"
+        ],
+        "forbidden": [
+          "net_totals_correct=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "date_filter_applied",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/report-export-job/summary.txt",
+      "description": "Only records from the requested export date contribute to the output.",
+      "expected": {
+        "contains": [
+          "date_filter_applied=pass"
+        ],
+        "forbidden": [
+          "date_filter_applied=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "summary_totals_match",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/report-export-job/summary.txt",
+      "description": "summary.json totals match the exported CSV content.",
+      "expected": {
+        "contains": [
+          "summary_totals_match=pass"
+        ],
+        "forbidden": [
+          "summary_totals_match=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "invalid_date_rejected",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/report-export-job/summary.txt",
+      "description": "Invalid date input is rejected with a controlled failure mode.",
+      "expected": {
+        "contains": [
+          "invalid_date_rejected=pass"
+        ],
+        "forbidden": [
+          "invalid_date_rejected=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/report-export-job/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "suite_id": "csv-member-import_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "valid_rows_normalized",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/csv-member-import/summary.txt",
+      "description": "Accepted rows are normalized, especially email casing and trimming.",
+      "expected": {
+        "contains": [
+          "valid_rows_normalized=pass"
+        ],
+        "forbidden": [
+          "valid_rows_normalized=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "duplicate_handling_correct",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/csv-member-import/summary.txt",
+      "description": "Case-insensitive duplicate emails keep the first valid row and count later ones as duplicates.",
+      "expected": {
+        "contains": [
+          "duplicate_handling_correct=pass"
+        ],
+        "forbidden": [
+          "duplicate_handling_correct=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "invalid_rows_rejected_with_reason",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/csv-member-import/summary.txt",
+      "description": "Invalid rows are written to rejected.csv with an explicit reason.",
+      "expected": {
+        "contains": [
+          "invalid_rows_rejected_with_reason=pass"
+        ],
+        "forbidden": [
+          "invalid_rows_rejected_with_reason=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "summary_counts_correct",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/csv-member-import/summary.txt",
+      "description": "summary.json counts match accepted, rejected, and duplicate outcomes.",
+      "expected": {
+        "contains": [
+          "summary_counts_correct=pass"
+        ],
+        "forbidden": [
+          "summary_counts_correct=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "output_files_present",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/csv-member-import/summary.txt",
+      "description": "The import writes the expected accepted, rejected, and summary outputs with the correct business meaning.",
+      "expected": {
+        "contains": [
+          "output_files_present=pass"
+        ],
+        "forbidden": [
+          "output_files_present=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/csv-member-import/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

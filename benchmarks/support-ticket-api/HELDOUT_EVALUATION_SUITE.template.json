@@ -1,0 +1,143 @@
+{
+  "suite_id": "support-ticket-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "create_valid_ticket",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/support-ticket-api/summary.txt",
+      "description": "A valid ticket can be created with the required fields and default open status.",
+      "expected": {
+        "contains": [
+          "create_valid_ticket=pass"
+        ],
+        "forbidden": [
+          "create_valid_ticket=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "list_filters_work",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/support-ticket-api/summary.txt",
+      "description": "List filtering by status, priority, and category returns the expected tickets.",
+      "expected": {
+        "contains": [
+          "list_filters_work=pass"
+        ],
+        "forbidden": [
+          "list_filters_work=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "closed_ticket_reopen_blocked",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/support-ticket-api/summary.txt",
+      "description": "A closed ticket cannot transition back to open.",
+      "expected": {
+        "contains": [
+          "closed_ticket_reopen_blocked=pass"
+        ],
+        "forbidden": [
+          "closed_ticket_reopen_blocked=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "comments_embedded_in_detail",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/support-ticket-api/summary.txt",
+      "description": "Ticket detail returns comments attached to the ticket.",
+      "expected": {
+        "contains": [
+          "comments_embedded_in_detail=pass"
+        ],
+        "forbidden": [
+          "comments_embedded_in_detail=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "invalid_email_rejected",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/support-ticket-api/summary.txt",
+      "description": "Invalid requester_email is rejected cleanly on create.",
+      "expected": {
+        "contains": [
+          "invalid_email_rejected=pass"
+        ],
+        "forbidden": [
+          "invalid_email_rejected=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/support-ticket-api/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

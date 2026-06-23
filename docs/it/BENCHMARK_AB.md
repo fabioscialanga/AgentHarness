@@ -13,18 +13,26 @@ due modalità diverse:
 Questo benchmark serve a capire se il framework produce davvero un miglioramento operativo oppure solo più struttura.
 
 ## Cosa contiene il benchmark pack
-Il benchmark pratico si trova in:
+La suite benchmark ora copre 8 task pack elencati in:
+- `benchmarks/TASK_SUITE.md`
+
+Ogni task pack contiene una specifica visibile e il materiale del quality gate. L'esempio pratico originale resta in:
 - `benchmarks/support-ticket-api/SPEC.md`
 - `benchmarks/support-ticket-api/RUN_PROTOCOL.md`
 - `benchmarks/support-ticket-api/SCORECARD.md`
+
+La policy condivisa del quality gate si trova in:
+- `benchmarks/QUALITY_GATE_POLICY.md`
 
 Prima di eseguire qualunque campagna benchmark, congela il design in:
 - `benchmarks/PREREGISTRATION.md`
 
 Nessun run benchmark dovrebbe partire prima dell'approvazione di quel documento.
 
-## Caso di test scelto
-Il progetto scelto è una piccola API interna di support ticket.
+## Suite benchmark scelta
+Il benchmark ora usa una suite fissa di 8 task interni compatti, mescolando API e job/CLI.
+
+La support-ticket API resta l'esempio ancora, ma il freeze ora copre una suite più ampia elencata in `benchmarks/TASK_SUITE.md`.
 
 Perché è una buona prova:
 - non è banale come una toy app
