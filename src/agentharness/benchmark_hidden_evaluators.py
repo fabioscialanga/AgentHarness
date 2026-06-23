@@ -194,6 +194,14 @@ def _normalize_leave_request_id(payload: Any) -> Any:
     return None
 
 
+def _normalize_refund_request_id(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        for key in ("id", "refund_id", "request_id"):
+            if key in payload:
+                return payload[key]
+    return None
+
+
 def _normalize_event_id(payload: Any) -> Any:
     if isinstance(payload, dict):
         for key in ("event_id", "id"):
@@ -777,6 +785,261 @@ def _evaluate_leave_request_api(workspace: Path) -> HiddenEvaluationResult:
     )
 
 
+def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "refund-approval-api"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        module_path, app = _load_fastapi_app(workspace)
+    except Exception as exc:
+        detail = f"app discovery failed: {exc}"
+        for check_id in (
+            "small_refund_auto_approved",
+            "medium_refund_needs_manager",
+            "large_refund_needs_finance",
+            "invalid_amount_rejected",
+            "terminal_state_blocks_reapproval",
+        ):
+            record(check_id, False, detail)
+        return _persist_hidden_evaluation(
+            HiddenEvaluationResult(
+                task_id=task_id,
+                critical_ok=False,
+                passed_checks=passed_checks,
+                failed_checks=failed_checks,
+                observations=observations,
+                summary_path=evaluation_dir / "summary.txt",
+                result_path=evaluation_dir / "result.json",
+            )
+        )
+
+    try:
+        with _working_directory(workspace), TestClient(app) as client:
+            create_small = client.post(
+                "/refunds",
+                json={
+                    "order_id": "ORD-SMALL-001",
+                    "amount": 45,
+                    "currency": "EUR",
+                    "reason": "duplicate charge",
+                    "requested_by": "agent.small",
+                },
+            )
+            small_ok = create_small.status_code in {200, 201}
+            small_payload: Any = create_small.json() if create_small.headers.get("content-type", "").startswith("application/json") else {}
+            small_id = _normalize_refund_request_id(small_payload)
+            small_status = small_payload.get("status") if isinstance(small_payload, dict) else None
+            small_lookup = client.get(f"/refunds/{small_id}") if small_id is not None else None
+            small_lookup_payload: Any = small_lookup.json() if small_lookup is not None and small_lookup.status_code == 200 else {}
+            lookup_small_status = small_lookup_payload.get("status") if isinstance(small_lookup_payload, dict) else None
+            small_auto_ok = (
+                small_ok
+                and small_id is not None
+                and small_status == "approved"
+                and small_lookup is not None
+                and small_lookup.status_code == 200
+                and lookup_small_status == "approved"
+            )
+            record(
+                "small_refund_auto_approved",
+                small_auto_ok,
+                (
+                    f"status_code={create_small.status_code}; module={module_path}; refund_id={small_id}; "
+                    f"create_status={small_status}; detail_status={small_lookup.status_code if small_lookup is not None else None}; "
+                    f"detail_refund_status={lookup_small_status}"
+                ),
+            )
+
+            medium_ok = False
+            medium_detail = "not evaluated"
+            large_ok = False
+            large_detail = "not evaluated"
+            invalid_amount_ok = False
+            invalid_amount_detail = "not evaluated"
+            terminal_ok = False
+            terminal_detail = "not evaluated"
+
+            create_medium = client.post(
+                "/refunds",
+                json={
+                    "order_id": "ORD-MEDIUM-001",
+                    "amount": 120,
+                    "currency": "EUR",
+                    "reason": "damaged item",
+                    "requested_by": "agent.medium",
+                },
+            )
+            medium_payload: Any = create_medium.json() if create_medium.headers.get("content-type", "").startswith("application/json") else {}
+            medium_id = _normalize_refund_request_id(medium_payload)
+            medium_initial_status = medium_payload.get("status") if isinstance(medium_payload, dict) else None
+            medium_lookup = client.get(f"/refunds/{medium_id}") if medium_id is not None else None
+            medium_lookup_payload: Any = medium_lookup.json() if medium_lookup is not None and medium_lookup.status_code == 200 else {}
+            medium_detail_status = medium_lookup_payload.get("status") if isinstance(medium_lookup_payload, dict) else None
+            medium_pre_review_ok = (
+                create_medium.status_code in {200, 201}
+                and medium_id is not None
+                and medium_initial_status in {"pending_manager", "pending_manager_review", "pending"}
+                and medium_lookup is not None
+                and medium_lookup.status_code == 200
+                and medium_detail_status in {"pending_manager", "pending_manager_review", "pending"}
+            )
+            manager_review_status = None
+            manager_payload_status = None
+            medium_final_status = None
+            if medium_id is not None:
+                manager_review = client.post(
+                    f"/refunds/{medium_id}/manager-review",
+                    json={"decision": "approve", "approver": "manager1", "note": "policy ok"},
+                )
+                manager_review_status = manager_review.status_code
+                manager_review_payload: Any = manager_review.json() if manager_review.headers.get("content-type", "").startswith("application/json") else {}
+                manager_payload_status = manager_review_payload.get("status") if isinstance(manager_review_payload, dict) else None
+                medium_post_review = client.get(f"/refunds/{medium_id}")
+                medium_post_review_payload: Any = medium_post_review.json() if medium_post_review.status_code == 200 else {}
+                medium_final_status = medium_post_review_payload.get("status") if isinstance(medium_post_review_payload, dict) else None
+                medium_ok = medium_pre_review_ok and manager_review.status_code in {200, 201} and medium_final_status == "approved"
+            medium_detail = (
+                f"create_status={create_medium.status_code}; refund_id={medium_id}; initial_status={medium_initial_status}; "
+                f"detail_status={medium_lookup.status_code if medium_lookup is not None else None}; detail_refund_status={medium_detail_status}; "
+                f"manager_status={manager_review_status}; manager_payload_status={manager_payload_status}; final_status={medium_final_status}"
+            )
+
+            create_large = client.post(
+                "/refunds",
+                json={
+                    "order_id": "ORD-LARGE-001",
+                    "amount": 900,
+                    "currency": "EUR",
+                    "reason": "fraud reversal",
+                    "requested_by": "agent.large",
+                },
+            )
+            large_payload: Any = create_large.json() if create_large.headers.get("content-type", "").startswith("application/json") else {}
+            large_id = _normalize_refund_request_id(large_payload)
+            large_initial_status = large_payload.get("status") if isinstance(large_payload, dict) else None
+            finance_before_status = None
+            finance_before_payload_status = None
+            manager_large_status = None
+            after_manager_payload_status = None
+            finance_after_status = None
+            finance_after_payload_status = None
+            final_large_status = None
+            if large_id is not None:
+                finance_before = client.post(
+                    f"/refunds/{large_id}/finance-review",
+                    json={"decision": "approve", "approver": "finance0", "note": "premature"},
+                )
+                finance_before_status = finance_before.status_code
+                finance_before_payload: Any = finance_before.json() if finance_before.headers.get("content-type", "").startswith("application/json") else {}
+                finance_before_payload_status = finance_before_payload.get("status") if isinstance(finance_before_payload, dict) else None
+
+                manager_large = client.post(
+                    f"/refunds/{large_id}/manager-review",
+                    json={"decision": "approve", "approver": "manager2", "note": "needs finance"},
+                )
+                manager_large_status = manager_large.status_code
+                after_manager_payload: Any = manager_large.json() if manager_large.headers.get("content-type", "").startswith("application/json") else {}
+                after_manager_payload_status = after_manager_payload.get("status") if isinstance(after_manager_payload, dict) else None
+
+                finance_after = client.post(
+                    f"/refunds/{large_id}/finance-review",
+                    json={"decision": "approve", "approver": "finance1", "note": "approved by finance"},
+                )
+                finance_after_status = finance_after.status_code
+                finance_after_payload: Any = finance_after.json() if finance_after.headers.get("content-type", "").startswith("application/json") else {}
+                finance_after_payload_status = finance_after_payload.get("status") if isinstance(finance_after_payload, dict) else None
+                large_detail_response = client.get(f"/refunds/{large_id}")
+                large_detail_payload: Any = large_detail_response.json() if large_detail_response.status_code == 200 else {}
+                final_large_status = large_detail_payload.get("status") if isinstance(large_detail_payload, dict) else None
+                large_ok = (
+                    create_large.status_code in {200, 201}
+                    and large_initial_status in {"pending_manager", "pending_manager_review", "pending"}
+                    and finance_before.status_code in {400, 409, 422}
+                    and manager_large.status_code in {200, 201}
+                    and after_manager_payload_status in {"pending_finance", "pending_finance_review", "pending_finance_approval"}
+                    and finance_after.status_code in {200, 201}
+                    and finance_after_payload_status == "approved"
+                    and final_large_status == "approved"
+                )
+            large_detail = (
+                f"create_status={create_large.status_code}; refund_id={large_id}; initial_status={large_initial_status}; "
+                f"finance_before_status={finance_before_status}; finance_before_payload_status={finance_before_payload_status}; "
+                f"manager_status={manager_large_status}; after_manager_status_value={after_manager_payload_status}; "
+                f"final_finance_status={finance_after_status}; final_finance_payload_status={finance_after_payload_status}; final_status={final_large_status}"
+            )
+
+            invalid_amount = client.post(
+                "/refunds",
+                json={
+                    "order_id": "ORD-BAD-001",
+                    "amount": 0,
+                    "currency": "EUR",
+                    "reason": "bad amount",
+                    "requested_by": "agent.bad",
+                },
+            )
+            invalid_amount_ok = invalid_amount.status_code in {400, 422}
+            invalid_amount_detail = f"status_code={invalid_amount.status_code}"
+
+            if medium_id is not None:
+                second_terminal_review = client.post(
+                    f"/refunds/{medium_id}/manager-review",
+                    json={"decision": "reject", "approver": "manager3", "note": "second decision"},
+                )
+                second_terminal_payload: Any = second_terminal_review.json() if second_terminal_review.headers.get("content-type", "").startswith("application/json") else {}
+                second_terminal_status = second_terminal_payload.get("status") if isinstance(second_terminal_payload, dict) else None
+                medium_terminal_detail = client.get(f"/refunds/{medium_id}")
+                medium_terminal_payload: Any = medium_terminal_detail.json() if medium_terminal_detail.status_code == 200 else {}
+                medium_terminal_status = medium_terminal_payload.get("status") if isinstance(medium_terminal_payload, dict) else None
+                terminal_ok = (
+                    second_terminal_review.status_code in {400, 409, 422}
+                    or second_terminal_status == "approved"
+                ) and medium_terminal_status == "approved"
+                terminal_detail = (
+                    f"second_review_status={second_terminal_review.status_code}; payload_status={second_terminal_status}; "
+                    f"detail_status={medium_terminal_detail.status_code}; final_status={medium_terminal_status}"
+                )
+
+            record("medium_refund_needs_manager", medium_ok, medium_detail)
+            record("large_refund_needs_finance", large_ok, large_detail)
+            record("invalid_amount_rejected", invalid_amount_ok, invalid_amount_detail)
+            record("terminal_state_blocks_reapproval", terminal_ok, terminal_detail)
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        seen_ids = {item.id for item in observations}
+        for check_id in (
+            "small_refund_auto_approved",
+            "medium_refund_needs_manager",
+            "large_refund_needs_finance",
+            "invalid_amount_rejected",
+            "terminal_state_blocks_reapproval",
+        ):
+            if check_id not in seen_ids:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=not failed_checks,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
 def _evaluate_webhook_ingestion_service(workspace: Path) -> HiddenEvaluationResult:
     task_id = "webhook-ingestion-service"
     evaluation_dir = _evaluation_dir(workspace, task_id)
@@ -944,6 +1207,8 @@ def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluat
         return _evaluate_inventory_adjustment_api(run.workspace)
     if normalized_task_id == "leave-request-api":
         return _evaluate_leave_request_api(run.workspace)
+    if normalized_task_id == "refund-approval-api":
+        return _evaluate_refund_approval_api(run.workspace)
     if normalized_task_id == "webhook-ingestion-service":
         return _evaluate_webhook_ingestion_service(run.workspace)
     raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
