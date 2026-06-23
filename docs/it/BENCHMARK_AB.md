@@ -18,6 +18,11 @@ Il benchmark pratico si trova in:
 - `benchmarks/support-ticket-api/RUN_PROTOCOL.md`
 - `benchmarks/support-ticket-api/SCORECARD.md`
 
+Prima di eseguire qualunque campagna benchmark, congela il design in:
+- `benchmarks/PREREGISTRATION.md`
+
+Nessun run benchmark dovrebbe partire prima dell'approvazione di quel documento.
+
 ## Caso di test scelto
 Il progetto scelto è una piccola API interna di support ticket.
 
@@ -32,7 +37,7 @@ Perché è una buona prova:
   - reviewabilità
 
 ## Come eseguire il benchmark
-### Scenario A — senza framework
+### Scenario A, senza framework
 Usa solo:
 - la specifica iniziale del progetto
 - istruzioni minime
@@ -46,7 +51,7 @@ Non usare:
 - checklist
 - output `.framework`
 
-### Scenario B — con AgentHarness
+### Scenario B, con AgentHarness
 Usa la stessa specifica di base, ma all'interno del flusso AgentHarness:
 - bootstrap del progetto
 - adattamento di `PROJECT.md`

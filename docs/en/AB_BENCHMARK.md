@@ -18,6 +18,11 @@ The practical benchmark lives in:
 - `benchmarks/support-ticket-api/RUN_PROTOCOL.md`
 - `benchmarks/support-ticket-api/SCORECARD.md`
 
+Before running any benchmark campaign, freeze the design in:
+- `benchmarks/PREREGISTRATION.md`
+
+No benchmark run should start before that document is approved.
+
 ## Selected test case
 The chosen project is a small internal support-ticket API.
 
@@ -32,7 +37,7 @@ Why this is a good test:
   - reviewability
 
 ## How to run the benchmark
-### Scenario A — without a framework
+### Scenario A, without a framework
 Use only:
 - the base project specification
 - minimal instructions
@@ -46,7 +51,7 @@ Do not use:
 - checklists
 - `.framework` outputs
 
-### Scenario B — with AgentHarness
+### Scenario B, with AgentHarness
 Use the same base specification, but run it inside the AgentHarness flow:
 - bootstrap the project
 - adapt `PROJECT.md`
