@@ -17,6 +17,8 @@ This pre-registration now fixes:
 Pre-run quality gate:
 - benchmark execution cannot start until all 8 tasks meet the same quality bar: written spec, allowed and forbidden scope, independent held-out evaluation suite, `verify-run` claims contract, and comparable budget class
 - if task 7 or task 8 fail that quality bar, execution is blocked and the plan must be amended before the first run
+- benchmark execution cannot start until disjunction is demonstrated between the held-out evaluation suite and the visible claims contract
+- benchmark execution cannot start until non-leakage of held-out material into the agent-visible context is demonstrated
 
 Final sign-off is needed before any benchmark execution.
 
@@ -114,11 +116,21 @@ Requisiti per ogni task:
 - evaluation suite indipendente e tenuta da parte
 - claims contract per `verify-run`
 - difficoltà compatibile con lo stesso ordine di budget
+- disgiunzione dimostrata tra evaluation suite e claims contract
+- non leakage dimostrato del materiale tenuto da parte nel contesto visibile all'agente
+
+Regola di disgiunzione, vincolante:
+- i controlli della evaluation suite devono essere disgiunti dai claim che l'agente vede in `verify-run`
+- nessuna asserzione può comparire sia nei claim mostrati all'agente sia nella evaluation suite
+- se un controllo verifica la stessa proprietà di un claim visibile, va riscritto o rimosso
+- senza questa disgiunzione l'endpoint primario non è realmente indipendente da ciò che B ottimizza
 
 Quality gate prima dell'avvio:
 - tutti e 8 i task devono soddisfare i requisiti sopra allo stesso livello di qualità
 - un task aggiunto in modo raffazzonato è considerato peggiore di una suite più piccola ma solida
 - se task 7 o task 8 non raggiungono lo standard, il benchmark non parte finché la pre-registrazione non viene emendata formalmente
+- il benchmark non parte finché non è dimostrata, task per task, la disgiunzione tra evaluation suite e claims contract
+- il benchmark non parte finché non è dimostrato il non leakage del materiale held-out nel contesto visibile all'agente
 
 ### 6. Numerosità fissata
 Repliche per task:
@@ -152,12 +164,14 @@ La task evaluation suite:
 - è indipendente da `verify-run`
 - non viene mai mostrata a nessuna delle due condizioni durante il run
 - verifica correttezza task-specific, regole di business, schema esatto e negative path
+- deve essere disgiunta dai claim visibili in `verify-run`
 
 Lo score è la proporzione di controlli di accettazione indipendenti superati.
 
 Motivazione:
 - è l'unico esito che B non ottimizza direttamente, quindi non è circolare
 - uno score continuo porta informazione graduata e riduce effetti di ceiling e floor rispetto a un solo binario
+- questa indipendenza vale solo se non c'è sovrapposizione assertiva tra evaluation suite e claims visibili
 
 Secondario binario chiave, derivato dalla stessa suite:
 - task evaluation pass, vero solo se tutti i controlli critici di accettazione passano
@@ -186,6 +200,12 @@ Fonti di verità:
 - report JSON di `verify-run`, ma solo come manipulation check
 - controlli deterministici sul filesystem dei raw artifact
 - metadata del benchmark
+
+Verifica di indipendenza da documentare per ogni task:
+- mappa esplicita dei claim visibili in `verify-run`
+- mappa esplicita dei controlli della evaluation suite tenuta da parte
+- dimostrazione di disgiunzione, cioè assenza di asserzioni duplicate o semanticamente equivalenti
+- dimostrazione di non leakage del materiale held-out nel contesto passato all'agente
 
 #### 8.3 Metriche soggettive residue
 Le metriche soggettive non sono primarie.
@@ -344,6 +364,8 @@ Prerequisiti pre-run ancora obbligatori:
 5. Task suite:
    - per ogni nuovo task definire la sua evaluation suite indipendente prima di qualunque run
    - tutti gli 8 task devono superare il quality gate dichiarato nella sezione 5
+   - per ogni task deve essere documentata la disgiunzione tra evaluation suite e claims contract
+   - per ogni task deve essere documentato il non leakage del materiale held-out
 
 6. Residuo soggettivo:
    - se incluso nella fase uno, resta secondario ed esplorativo
@@ -359,6 +381,7 @@ Dopo il sign-off finale, si congelano:
 - regola di decisione
 
 Se gli 8 task non raggiungono il quality gate prima del primo run, il benchmark resta bloccato e richiede un emendamento formale della pre-registrazione.
+Lo stesso vale se non è dimostrata la disgiunzione tra evaluation suite e claims contract, oppure se c'è leakage del materiale held-out.
 
 ## English
 
@@ -434,11 +457,21 @@ Each task must define:
 - independent held-out evaluation suite
 - `verify-run` claims contract
 - comparable budget class
+- demonstrated disjunction between the evaluation suite and the visible claims contract
+- demonstrated non-leakage of held-out material into the agent-visible context
+
+Binding disjunction rule:
+- evaluation-suite checks must be disjoint from the claims the agent sees in `verify-run`
+- no assertion may appear both in the visible claims contract and in the evaluation suite
+- if an evaluation check tests the same property as a visible claim, it must be rewritten or removed
+- without this disjunction the primary endpoint is not truly independent of what condition B optimizes against
 
 Quality gate before launch:
 - all 8 tasks must satisfy the requirements above at the same quality level
 - a rushed eighth task is considered worse than a smaller but solid suite
 - if task 7 or task 8 fail that bar, benchmark execution is blocked until the pre-registration is formally amended
+- benchmark execution is blocked until disjunction is demonstrated, task by task, between the evaluation suite and the claims contract
+- benchmark execution is blocked until non-leakage of held-out material into the agent-visible context is demonstrated
 
 ### 6. Fixed sample size
 Replicates per task:
@@ -472,12 +505,14 @@ The task evaluation suite:
 - is independent of `verify-run`
 - is never shown to either condition during the run
 - checks task-specific correctness, business rules, exact schema, and negative paths
+- must be disjoint from the visible `verify-run` claims
 
 The score is the proportion of independent acceptance checks passed.
 
 Rationale:
 - this is the only outcome B does not directly optimize against, so it is not circular
 - a continuous score carries graded information and reduces ceiling and floor effects relative to a single binary
+- this independence holds only if there is no assertion overlap between the evaluation suite and the visible claims
 
 Key binary secondary derived from the same suite:
 - task evaluation pass, true only if all critical acceptance checks pass
@@ -506,6 +541,12 @@ Truth sources:
 - `verify-run` JSON report, but only as a manipulation check
 - deterministic raw-artifact filesystem checks
 - benchmark metadata
+
+Independence evidence that must be documented for every task:
+- explicit map of visible `verify-run` claims
+- explicit map of held-out evaluation-suite checks
+- demonstration of disjunction, meaning no duplicated or semantically equivalent assertions
+- demonstration of non-leakage of held-out material into the context shown to the agent
 
 #### 8.3 Residual subjective metrics
 Subjective metrics are never primary.
@@ -664,6 +705,8 @@ Mandatory pre-run prerequisites:
 5. Task suite:
    - every new task must define its independent evaluation suite before any run
    - all 8 tasks must pass the quality gate declared in section 5
+   - every task must document disjunction between the evaluation suite and the claims contract
+   - every task must document non-leakage of held-out material
 
 6. Residual subjective metrics:
    - if included in phase one, they remain exploratory secondary outputs
@@ -679,3 +722,4 @@ After final sign-off, the following are frozen:
 - decision rule
 
 If the 8-task quality gate is not met before the first run, benchmark execution stays blocked and requires a formal pre-registration amendment.
+The same block applies if disjunction between evaluation suite and claims contract is not demonstrated, or if held-out material leaks into the agent-visible context.
