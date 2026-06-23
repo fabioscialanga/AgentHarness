@@ -1,21 +1,24 @@
 # Benchmark pre-registration
 
-Status: draft, pending approval before any benchmark run.
-Stato: bozza, in attesa di approvazione prima di qualunque run di benchmark.
+Status: freeze-ready, pending final sign-off before any benchmark run.
+Stato: freeze-ready, in attesa di rilettura finale e firma prima di qualunque run di benchmark.
 
 ## Quick approval summary
 
-This pre-registration now proposes:
+This pre-registration now fixes:
 - primary treatment: B-loop-closed with symmetric repair
 - primary endpoint: held-out task evaluation score, continuous from 0 to 1
 - `verify-run` role: manipulation check, not primary evidence of benefit
-- acceptable minimum suite: 6 tasks
-- recommended suite: 8 tasks
+- chosen suite size: 8 tasks
 - replicates: 6 paired A/B replicates per task
-- minimal meaningful effect, proposed default: 0.10 absolute on the task evaluation score
+- minimal meaningful effect: 0.10 absolute on the task evaluation score
 - explicit limitation: A vs B estimates the effect of the full AgentHarness package, not a pure isolated framework effect
 
-Approval is needed before any benchmark execution.
+Pre-run quality gate:
+- benchmark execution cannot start until all 8 tasks meet the same quality bar: written spec, allowed and forbidden scope, independent held-out evaluation suite, `verify-run` claims contract, and comparable budget class
+- if task 7 or task 8 fail that quality bar, execution is blocked and the plan must be amended before the first run
+
+Final sign-off is needed before any benchmark execution.
 
 ## Italiano
 
@@ -87,13 +90,13 @@ Mitigazioni:
 Estensione futura possibile, ma non inclusa in questa pre-registrazione salvo approvazione preventiva:
 - aggiungere una terza condizione B-contesto per separare meglio effetti di contesto ed effetti di guidance della verifica
 
-### 5. Suite di task proposta
-Poiché la precisione dell'inferenza A vs B è governata soprattutto dal numero di task e non dalle sole repliche, la suite viene alzata.
+### 5. Suite di task fissata
+Poiché la precisione dell'inferenza A vs B è governata soprattutto dal numero di task e non dalle sole repliche, la suite viene fissata a 8 task.
 
-Numerosità della suite:
-- suite minima accettabile: 6 task
-- suite raccomandata: 8 task, se operativamente fattibile
-- 4 task non sono accettabili come base di una claim headline, ma solo come eventuale pilot dry run non pubblicabile
+Decisione congelata:
+- task target: 8
+- 4 task non sono accettabili come base di una claim headline
+- 6 task restano un piano di ripiego metodologicamente difendibile solo tramite emendamento formale prima del primo run, non come cambio informale a metà costruzione
 
 Task families già confermate o candidate:
 1. support-ticket API, già esistente
@@ -102,8 +105,8 @@ Task families già confermate o candidate:
 4. export o report job con output file deterministico e negative-path validation
 5. da definire prima del freeze
 6. da definire prima del freeze
-7. opzionale, se piano a 8 task
-8. opzionale, se piano a 8 task
+7. da definire prima del freeze
+8. da definire prima del freeze
 
 Requisiti per ogni task:
 - spec scritta
@@ -112,14 +115,17 @@ Requisiti per ogni task:
 - claims contract per `verify-run`
 - difficoltà compatibile con lo stesso ordine di budget
 
-### 6. Numerosità proposta
+Quality gate prima dell'avvio:
+- tutti e 8 i task devono soddisfare i requisiti sopra allo stesso livello di qualità
+- un task aggiunto in modo raffazzonato è considerato peggiore di una suite più piccola ma solida
+- se task 7 o task 8 non raggiungono lo standard, il benchmark non parte finché la pre-registrazione non viene emendata formalmente
+
+### 6. Numerosità fissata
 Repliche per task:
 - 6 repliche appaiate A/B per task
 
-Opzioni di piano da confermare prima del freeze:
-- raccomandata: 8 task x 6 repliche = 48 confronti appaiati, 96 run totali
-- accettabile: 6 task x 6 repliche = 36 confronti appaiati, 72 run totali
-- non accettabile per un risultato headline: 4 task x 6 repliche = 24 confronti appaiati, 48 run totali, da usare solo come pilot
+Piano fissato:
+- 8 task x 6 repliche = 48 confronti appaiati, 96 run totali
 
 Regola ferrea:
 - né il numero di task né il numero di repliche si cambiano dopo l'avvio del primo run benchmark
@@ -199,8 +205,7 @@ Se il cieco non è credibile, questi risultati restano solo esplorativi.
 
 ### 9. Effetto minimo rilevante
 Effetto minimo rilevante, MME:
-- proposta default: 0.10 assoluto sul task evaluation score
-- il valore finale va confermato prima del freeze
+- valore fissato: 0.10 assoluto sul task evaluation score
 
 Interpretazione:
 - il benchmark non chiede solo se B è migliore di A
@@ -320,38 +325,40 @@ Come entra la evaluation suite:
 - produce un report JSON rigenerabile dai raw artifact
 - è la fonte primaria per la claim di beneficio
 
-### 15. Decisioni aperte da confermare
+### 15. Decisioni congelate e prerequisiti pre-run
+Decisioni congelate:
 1. Trattamento:
-   - proposta: B-loop-chiuso con repair simmetrico per A
-   - alternativa, solo se si cambia prima del freeze: B-contesto
+   - B-loop-chiuso con repair simmetrico per A
 
 2. Numerosità:
-   - raccomandata: 8 task x 6 repliche
-   - accettabile: 6 task x 6 repliche
-   - 4 task solo come pilot, non come base headline
+   - 8 task x 6 repliche = 96 run totali
 
 3. Endpoint primario:
-   - confermare task evaluation score indipendente come endpoint primario
-   - confermare `verify-run` come manipulation check e non come prova primaria di beneficio
+   - task evaluation score indipendente
+   - `verify-run` classificato come manipulation check, non come prova primaria di beneficio
 
 4. MME:
-   - confermare 0.10 oppure fissare un altro valore prima del freeze
+   - 0.10
 
+Prerequisiti pre-run ancora obbligatori:
 5. Task suite:
    - per ogni nuovo task definire la sua evaluation suite indipendente prima di qualunque run
+   - tutti gli 8 task devono superare il quality gate dichiarato nella sezione 5
 
 6. Residuo soggettivo:
-   - confermare se includerlo già nella prima fase come secondario esplorativo
+   - se incluso nella fase uno, resta secondario ed esplorativo
 
 ### 16. Freeze rule
-Nessun benchmark run parte finché questo documento non è approvato.
-Dopo approvazione, si congelano:
+Nessun benchmark run parte finché questo documento non riceve sign-off finale.
+Dopo il sign-off finale, si congelano:
 - trattamento
 - task list
 - N
 - metriche
 - MME
 - regola di decisione
+
+Se gli 8 task non raggiungono il quality gate prima del primo run, il benchmark resta bloccato e richiede un emendamento formale della pre-registrazione.
 
 ## English
 
@@ -403,13 +410,13 @@ The report must state this as a package-effect estimate.
 Possible future extension, not included unless approved before any run:
 - add a B-context arm to separate context effects from verification-guidance effects
 
-### 5. Proposed task suite
-Because A versus B inference precision is governed mainly by the number of tasks, not just by replicates, the suite size is raised.
+### 5. Fixed task suite
+Because A versus B inference precision is governed mainly by the number of tasks, not just by replicates, the suite size is fixed at 8 tasks.
 
-Task-count rules:
-- minimum acceptable suite: 6 tasks
-- recommended suite: 8 tasks, if operationally feasible
-- 4 tasks are not acceptable for a headline claim, only for a possible pilot dry run
+Frozen decision:
+- target task count: 8
+- 4 tasks are not acceptable as the basis for a headline claim
+- 6 tasks remain a defensible fallback only through a formal amendment before the first run, not as an informal mid-build change
 
 Confirmed or candidate task families:
 1. support-ticket API
@@ -418,8 +425,8 @@ Confirmed or candidate task families:
 4. export or report job
 5. to be defined before freeze
 6. to be defined before freeze
-7. optional, if the 8-task plan is chosen
-8. optional, if the 8-task plan is chosen
+7. to be defined before freeze
+8. to be defined before freeze
 
 Each task must define:
 - written spec
@@ -428,14 +435,17 @@ Each task must define:
 - `verify-run` claims contract
 - comparable budget class
 
-### 6. Proposed sample size
+Quality gate before launch:
+- all 8 tasks must satisfy the requirements above at the same quality level
+- a rushed eighth task is considered worse than a smaller but solid suite
+- if task 7 or task 8 fail that bar, benchmark execution is blocked until the pre-registration is formally amended
+
+### 6. Fixed sample size
 Replicates per task:
 - 6 paired A/B replicates per task
 
-Plan options to confirm before freeze:
-- recommended: 8 tasks x 6 replicates = 48 paired comparisons, 96 total runs
-- acceptable: 6 tasks x 6 replicates = 36 paired comparisons, 72 total runs
-- not acceptable for a headline result: 4 tasks x 6 replicates = 24 paired comparisons, 48 total runs, usable only as a pilot
+Frozen plan:
+- 8 tasks x 6 replicates = 48 paired comparisons, 96 total runs
 
 Hard rule:
 - neither task count nor replicate count changes after the first benchmark run starts
@@ -515,8 +525,7 @@ If blinding is not credible, these results remain exploratory only.
 
 ### 9. Minimal meaningful effect
 Minimal meaningful effect, MME:
-- proposed default: 0.10 absolute on the task evaluation score
-- final value must be confirmed before freeze
+- fixed value: 0.10 absolute on the task evaluation score
 
 Interpretation:
 - the benchmark asks not only whether B is better than A
@@ -636,35 +645,37 @@ Role of the evaluation suite:
 - it produces a JSON report reproducible from raw artifacts
 - it is the primary source for the benefit claim
 
-### 15. Open decisions for approval
+### 15. Frozen decisions and pre-run prerequisites
+Frozen decisions:
 1. Treatment:
-   - proposed: B-loop-closed with symmetric repair for A
-   - alternative, only if changed before freeze: B-context
+   - B-loop-closed with symmetric repair for A
 
 2. Sample size:
-   - recommended: 8 tasks x 6 replicates
-   - acceptable: 6 tasks x 6 replicates
-   - 4 tasks only as a pilot, not as a headline basis
+   - 8 tasks x 6 replicates = 96 total runs
 
 3. Primary endpoint:
-   - confirm the independent task evaluation score as primary
-   - confirm `verify-run` as a manipulation check, not primary benefit evidence
+   - independent task evaluation score
+   - `verify-run` classified as a manipulation check, not as primary benefit evidence
 
 4. MME:
-   - confirm 0.10 or set a different value before freeze
+   - 0.10
 
+Mandatory pre-run prerequisites:
 5. Task suite:
-   - for every new task, define its independent evaluation suite before any run
+   - every new task must define its independent evaluation suite before any run
+   - all 8 tasks must pass the quality gate declared in section 5
 
 6. Residual subjective metrics:
-   - confirm whether to include them in phase one as exploratory secondary outputs
+   - if included in phase one, they remain exploratory secondary outputs
 
 ### 16. Freeze rule
-No benchmark run starts until this document is approved.
-After approval, the following are frozen:
+No benchmark run starts until this document receives final sign-off.
+After final sign-off, the following are frozen:
 - treatment
 - task list
 - sample size
 - metrics
 - MME
 - decision rule
+
+If the 8-task quality gate is not met before the first run, benchmark execution stays blocked and requires a formal pre-registration amendment.
