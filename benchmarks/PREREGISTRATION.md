@@ -272,7 +272,9 @@ Dati mancanti e fallimenti:
 - tutti i run si includono
 - un run crashato o in timeout vale 0 sul task evaluation score e conta come fallimento sul pass binario
 - artifact richiesti mancanti contano come fallimento sui criteri relativi
-- niente esclusioni post hoc, salvo hard invalidation dell'harness prima della partenza dell'agente, con motivo loggato
+- se la soluzione non si installa, non si importa o non si avvia dentro l'ambiente isolato costruito dalla propria manifest dichiarata, il run resta incluso come real_failure con score 0 sul task evaluation score
+- import failure o runtime failure dopo la build dell'ambiente isolato non sono invalidazione di default: restano real_failure salvo evidenza che il guasto appartenga al grader
+- niente esclusioni post hoc, salvo hard invalidation dell'harness o del grader, con motivo loggato, quando il guasto è attribuibile all'infrastruttura di valutazione e non alla soluzione
 
 Limite onesto da dichiarare fin d'ora:
 - con 8 task l'inferenza a livello di cluster resta comunque modesta e va interpretata con cautela
@@ -346,6 +348,15 @@ Come entra la evaluation suite:
 - controlla correttezza task-specific non abbastanza catturata genericamente da `verify-run`
 - produce un report JSON rigenerabile dai raw artifact
 - è la fonte primaria per la claim di beneficio
+
+Prerequisito operativo del grader held-out, da soddisfare prima del primo run senza cambiare endpoint o parametri congelati:
+- per ogni soluzione, il grader costruisce un ambiente isolato a partire dalla manifest dichiarata dalla soluzione stessa
+- il grading held-out gira fuori processo dentro quell'ambiente isolato, non nel processo del grader con il suo ambiente ambientale
+- la tassonomia degli esiti distingue almeno: valid, real_failure, harness_invalid
+- valid significa che il grading è partito correttamente nell'ambiente isolato e ha prodotto osservazioni task-specific
+- real_failure significa che la soluzione, valutata dalla propria manifest dichiarata, non installa, non importa, non parte, oppure fallisce i check held-out
+- harness_invalid è riservato a bug o guasti del grader, del protocollo worker, o dell'infrastruttura di valutazione non imputabili alla soluzione
+- un semplice import failure non è harness_invalid per scorciatoia: dopo build isolata resta normalmente real_failure
 
 ### 15. Decisioni congelate e prerequisiti pre-run
 Decisioni congelate:

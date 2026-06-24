@@ -14,9 +14,8 @@ import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+import tomllib
 from typing import Any
-
-from fastapi.testclient import TestClient
 
 from .verify import load_run
 
@@ -45,10 +44,21 @@ class HiddenEvaluationResult:
     summary_path: Path
     result_path: Path
 
+    execution_status: str = "valid"
+    outcome_status: str = "success"
+    classification_reason: str = ""
+
+    def __post_init__(self) -> None:
+        if self.execution_status == "valid" and self.outcome_status == "success" and not self.critical_ok:
+            self.outcome_status = "real_failure"
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "task_id": self.task_id,
             "critical_ok": self.critical_ok,
+            "execution_status": self.execution_status,
+            "outcome_status": self.outcome_status,
+            "classification_reason": self.classification_reason,
             "passed_checks": self.passed_checks,
             "failed_checks": self.failed_checks,
             "observations": [item.to_dict() for item in self.observations],
@@ -70,6 +80,9 @@ def _persist_hidden_evaluation(result: HiddenEvaluationResult) -> HiddenEvaluati
             {
                 "task_id": result.task_id,
                 "critical_ok": result.critical_ok,
+                "execution_status": result.execution_status,
+                "outcome_status": result.outcome_status,
+                "classification_reason": result.classification_reason,
                 "passed_checks": result.passed_checks,
                 "failed_checks": result.failed_checks,
                 "observations": [item.to_dict() for item in result.observations],
@@ -163,6 +176,12 @@ def _load_fastapi_app(workspace: Path) -> tuple[Path, Any]:
             if value is not None and value.__class__.__name__ == "FastAPI":
                 return module_path, value
     raise RuntimeError(f"Could not locate a FastAPI app object inside {module_path}")
+
+
+def _make_test_client(app: Any):
+    from fastapi.testclient import TestClient
+
+    return TestClient(app)
 
 
 def _normalize_ticket_id(payload: Any) -> Any:
@@ -275,6 +294,318 @@ def _extract_history_entries(payload: Any) -> list[Any]:
     return []
 
 
+API_BENCHMARK_TASK_IDS = {
+    "support-ticket-api",
+    "inventory-adjustment-api",
+    "leave-request-api",
+    "refund-approval-api",
+    "incident-escalation-api",
+    "webhook-ingestion-service",
+}
+
+WORKER_SENTINEL = "agentharness-benchmark-hidden-worker"
+WORKER_PROTOCOL_VERSION = "1"
+
+
+@dataclass
+class _ManifestSpec:
+    kind: str
+    path: Path
+    dependencies: list[str]
+
+
+@dataclass
+class _IsolationPreparation:
+    ok: bool
+    workspace: Path
+    venv_dir: Path
+    manifest: _ManifestSpec | None
+    detail: str
+    install_stdout: str = ""
+    install_stderr: str = ""
+
+
+def _required_manifest_dependencies(task_id: str) -> set[str]:
+    if task_id in API_BENCHMARK_TASK_IDS:
+        return {"fastapi", "pydantic"}
+    return set()
+
+
+def _canonical_dependency_name(spec: str) -> str:
+    candidate = spec.strip()
+    for separator in ("[", ";", "<", ">", "=", "!", "~", " "):
+        candidate = candidate.split(separator, 1)[0]
+    return candidate.replace("_", "-").lower()
+
+
+def _discover_manifest(workspace: Path) -> _ManifestSpec | None:
+    pyproject_path = workspace / "pyproject.toml"
+    if pyproject_path.is_file():
+        payload = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+        project = payload.get("project", {})
+        dependencies = project.get("dependencies", [])
+        if not isinstance(dependencies, list):
+            dependencies = []
+        return _ManifestSpec(kind="pyproject", path=pyproject_path, dependencies=[str(item) for item in dependencies])
+
+    requirements_path = workspace / "requirements.txt"
+    if requirements_path.is_file():
+        dependencies = [
+            line.strip()
+            for line in requirements_path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        return _ManifestSpec(kind="requirements", path=requirements_path, dependencies=dependencies)
+
+    return None
+
+
+def _ensure_required_manifest_dependencies(task_id: str, manifest: _ManifestSpec | None) -> str | None:
+    required = _required_manifest_dependencies(task_id)
+    if not required:
+        return None
+    if manifest is None:
+        return f"missing manifest: task {task_id} requires declared dependencies {sorted(required)}"
+    declared = {_canonical_dependency_name(item) for item in manifest.dependencies}
+    missing = sorted(required - declared)
+    if missing:
+        return f"manifest {manifest.path.name} is missing required dependencies for task {task_id}: {missing}"
+    return None
+
+
+def _manifest_hash(manifest: _ManifestSpec | None, task_id: str) -> str:
+    seed = task_id
+    if manifest is None:
+        seed += "::no-manifest"
+    else:
+        seed += f"::{manifest.kind}::{manifest.path.read_text(encoding='utf-8')}"
+    seed += f"::python={sys.version_info.major}.{sys.version_info.minor}"
+    seed += f"::protocol={WORKER_PROTOCOL_VERSION}"
+    return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+
+
+def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPreparation:
+    manifest = _discover_manifest(workspace)
+    dependency_error = _ensure_required_manifest_dependencies(task_id, manifest)
+    env_root = workspace / ".agentharness" / "eval_envs"
+    env_root.mkdir(parents=True, exist_ok=True)
+    venv_dir = env_root / _manifest_hash(manifest, task_id)
+    if dependency_error is not None:
+        return _IsolationPreparation(ok=False, workspace=workspace, venv_dir=venv_dir, manifest=manifest, detail=dependency_error)
+
+    try:
+        if not venv_dir.exists():
+            subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as exc:
+        return _IsolationPreparation(
+            ok=False,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=f"harness failed creating isolated environment: {exc}",
+            install_stdout=exc.stdout,
+            install_stderr=exc.stderr,
+        )
+    except Exception as exc:
+        return _IsolationPreparation(
+            ok=False,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=f"harness failed creating isolated environment: {exc}",
+        )
+
+    python_bin = venv_dir / "bin" / "python"
+    marker_path = venv_dir / ".agentharness-ready.json"
+    if marker_path.is_file():
+        try:
+            marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            marker = None
+        if isinstance(marker, dict) and marker.get("protocol_version") == WORKER_PROTOCOL_VERSION:
+            return _IsolationPreparation(ok=True, workspace=workspace, venv_dir=venv_dir, manifest=manifest, detail=f"reused isolated environment {venv_dir}")
+
+    install_commands: list[list[str]] = [
+        [str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", "--upgrade", "pip"],
+        [str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", "-e", str(Path(__file__).resolve().parents[2])],
+    ]
+    if manifest is not None:
+        if manifest.kind == "pyproject" and manifest.dependencies:
+            install_commands.append([str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", *manifest.dependencies])
+        elif manifest.kind == "requirements":
+            install_commands.append([str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", "-r", str(manifest.path)])
+
+    stdout_chunks: list[str] = []
+    stderr_chunks: list[str] = []
+    try:
+        for command in install_commands:
+            completed = subprocess.run(command, cwd=workspace, capture_output=True, text=True, check=False)
+            stdout_chunks.append(completed.stdout)
+            stderr_chunks.append(completed.stderr)
+            if completed.returncode != 0:
+                return _IsolationPreparation(
+                    ok=False,
+                    workspace=workspace,
+                    venv_dir=venv_dir,
+                    manifest=manifest,
+                    detail=f"solution environment install failed with exit code {completed.returncode}",
+                    install_stdout="\n".join(stdout_chunks),
+                    install_stderr="\n".join(stderr_chunks),
+                )
+        marker_path.write_text(
+            json.dumps(
+                {
+                    "protocol_version": WORKER_PROTOCOL_VERSION,
+                    "task_id": task_id,
+                    "manifest_path": str(manifest.path) if manifest is not None else None,
+                    "python": str(python_bin),
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return _IsolationPreparation(
+            ok=True,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=f"prepared isolated environment {venv_dir}",
+            install_stdout="\n".join(stdout_chunks),
+            install_stderr="\n".join(stderr_chunks),
+        )
+    except Exception as exc:
+        return _IsolationPreparation(
+            ok=False,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=f"harness failed while preparing isolated environment: {exc}",
+            install_stdout="\n".join(stdout_chunks),
+            install_stderr="\n".join(stderr_chunks),
+        )
+
+
+def _result_from_isolation_failure(preparation: _IsolationPreparation, task_id: str) -> HiddenEvaluationResult:
+    evaluation_dir = _evaluation_dir(preparation.workspace, task_id)
+    looks_like_harness_fault = preparation.detail.startswith("harness failed")
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=False,
+            execution_status="harness_invalid" if looks_like_harness_fault else "valid",
+            outcome_status="real_failure",
+            classification_reason=preparation.detail,
+            passed_checks=[],
+            failed_checks=[],
+            observations=[
+                HiddenEvaluationObservation(
+                    id="environment_preparation",
+                    status="fail",
+                    detail="; ".join(
+                        item
+                        for item in (
+                            preparation.detail,
+                            preparation.install_stdout.strip() or None,
+                            preparation.install_stderr.strip() or None,
+                        )
+                        if item
+                    ),
+                )
+            ],
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
+def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task_id: str) -> HiddenEvaluationResult:
+    output_path = preparation.workspace / ".agentharness" / "evaluation" / task_id / "worker-result.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    python_bin = preparation.venv_dir / "bin" / "python"
+    env = os.environ.copy()
+    repo_src = Path(__file__).resolve().parents[1]
+    env["PYTHONPATH"] = os.pathsep.join([str(repo_src), env.get("PYTHONPATH", "")]).rstrip(os.pathsep)
+    command = [
+        str(python_bin),
+        "-m",
+        "agentharness.benchmark_hidden_evaluators",
+        WORKER_SENTINEL,
+        "--task-id",
+        task_id,
+        "--workspace",
+        str(preparation.workspace),
+        "--output",
+        str(output_path),
+    ]
+    completed = subprocess.run(command, cwd=preparation.workspace, capture_output=True, text=True, env=env, check=False)
+    if output_path.is_file():
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+        return HiddenEvaluationResult(
+            task_id=str(payload.get("task_id", task_id)),
+            critical_ok=bool(payload.get("critical_ok", False)),
+            execution_status=str(payload.get("execution_status", "valid")),
+            outcome_status=str(payload.get("outcome_status", "success")),
+            classification_reason=str(payload.get("classification_reason", "")),
+            passed_checks=[str(item) for item in payload.get("passed_checks", [])],
+            failed_checks=[str(item) for item in payload.get("failed_checks", [])],
+            observations=[
+                HiddenEvaluationObservation(
+                    id=str(item.get("id", "")),
+                    status=str(item.get("status", "fail")),
+                    detail=str(item.get("detail", "")),
+                )
+                for item in payload.get("observations", [])
+                if isinstance(item, dict)
+            ],
+            summary_path=Path(str(payload.get("summary_path", _evaluation_dir(preparation.workspace, task_id) / "summary.txt"))),
+            result_path=Path(str(payload.get("result_path", _evaluation_dir(preparation.workspace, task_id) / "result.json"))),
+        )
+
+    evaluation_dir = _evaluation_dir(preparation.workspace, task_id)
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=False,
+            execution_status="harness_invalid",
+            outcome_status="real_failure",
+            classification_reason="worker protocol failed before producing a result payload",
+            passed_checks=[],
+            failed_checks=[],
+            observations=[
+                HiddenEvaluationObservation(
+                    id="worker_protocol",
+                    status="fail",
+                    detail=f"exit_code={completed.returncode}; stdout={completed.stdout.strip()}; stderr={completed.stderr.strip()}",
+                )
+            ],
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
+def _evaluate_benchmark_task_in_worker(workspace: Path, task_id: str) -> HiddenEvaluationResult:
+    normalized_task_id = task_id.strip()
+    if normalized_task_id == "support-ticket-api":
+        return _evaluate_support_ticket_api(workspace)
+    if normalized_task_id == "inventory-adjustment-api":
+        return _evaluate_inventory_adjustment_api(workspace)
+    if normalized_task_id == "leave-request-api":
+        return _evaluate_leave_request_api(workspace)
+    if normalized_task_id == "refund-approval-api":
+        return _evaluate_refund_approval_api(workspace)
+    if normalized_task_id == "incident-escalation-api":
+        return _evaluate_incident_escalation_api(workspace)
+    if normalized_task_id == "csv-member-import":
+        return _evaluate_csv_member_import(workspace)
+    if normalized_task_id == "report-export-job":
+        return _evaluate_report_export_job(workspace)
+    if normalized_task_id == "webhook-ingestion-service":
+        return _evaluate_webhook_ingestion_service(workspace)
+    raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
+
+
 def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
     task_id = "support-ticket-api"
     evaluation_dir = _evaluation_dir(workspace, task_id)
@@ -314,7 +645,7 @@ def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
         )
 
     try:
-        with _working_directory(workspace), TestClient(app) as client:
+        with _working_directory(workspace), _make_test_client(app) as client:
             base_ticket = {
                 "title": "VPN access request",
                 "description": "Cannot connect to internal VPN",
@@ -493,7 +824,7 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
         )
 
     try:
-        with _working_directory(workspace), TestClient(app) as client:
+        with _working_directory(workspace), _make_test_client(app) as client:
             create_item = client.post(
                 "/items",
                 json={"sku": "SKU-001", "name": "Widget", "on_hand": 10, "reserved": 0},
@@ -646,7 +977,7 @@ def _evaluate_leave_request_api(workspace: Path) -> HiddenEvaluationResult:
         )
 
     try:
-        with _working_directory(workspace), TestClient(app) as client:
+        with _working_directory(workspace), _make_test_client(app) as client:
             create_response = client.post(
                 "/requests",
                 json={
@@ -862,7 +1193,7 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
         )
 
     try:
-        with _working_directory(workspace), TestClient(app) as client:
+        with _working_directory(workspace), _make_test_client(app) as client:
             create_small = client.post(
                 "/refunds",
                 json={
@@ -1118,7 +1449,7 @@ def _evaluate_webhook_ingestion_service(workspace: Path) -> HiddenEvaluationResu
         )
 
     try:
-        with _working_directory(workspace), TestClient(app) as client:
+        with _working_directory(workspace), _make_test_client(app) as client:
             ingest_path = "/webhooks"
             base_payload = {
                 "event_id": "evt_001",
@@ -1279,7 +1610,7 @@ def _evaluate_incident_escalation_api(workspace: Path) -> HiddenEvaluationResult
         return None
 
     try:
-        with _working_directory(workspace), TestClient(app) as client:
+        with _working_directory(workspace), _make_test_client(app) as client:
             create_sev1 = client.post("/incidents", json={"service": "payments", "severity": "sev1", "opened_at": "2026-07-01T10:00:00Z", "summary": "primary processor down"})
             sev1_payload: Any = create_sev1.json() if create_sev1.headers.get("content-type", "").startswith("application/json") else {}
             sev1_id = _extract_incident_id(sev1_payload)
@@ -1479,21 +1810,25 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
 
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:
     run = load_run(run_path)
-    normalized_task_id = task_id.strip()
-    if normalized_task_id == "support-ticket-api":
-        return _evaluate_support_ticket_api(run.workspace)
-    if normalized_task_id == "inventory-adjustment-api":
-        return _evaluate_inventory_adjustment_api(run.workspace)
-    if normalized_task_id == "leave-request-api":
-        return _evaluate_leave_request_api(run.workspace)
-    if normalized_task_id == "refund-approval-api":
-        return _evaluate_refund_approval_api(run.workspace)
-    if normalized_task_id == "incident-escalation-api":
-        return _evaluate_incident_escalation_api(run.workspace)
-    if normalized_task_id == "csv-member-import":
-        return _evaluate_csv_member_import(run.workspace)
-    if normalized_task_id == "report-export-job":
-        return _evaluate_report_export_job(run.workspace)
-    if normalized_task_id == "webhook-ingestion-service":
-        return _evaluate_webhook_ingestion_service(run.workspace)
-    raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
+    preparation = _prepare_isolated_environment(run.workspace, task_id.strip())
+    if not preparation.ok:
+        return _result_from_isolation_failure(preparation, task_id.strip())
+    return _run_worker_in_isolated_environment(preparation, task_id.strip())
+
+
+def _run_worker_main(argv: list[str]) -> int:
+    if len(argv) != 7 or argv[0] != WORKER_SENTINEL or argv[1] != "--task-id" or argv[3] != "--workspace" or argv[5] != "--output":
+        raise ValueError("Invalid benchmark hidden evaluator worker invocation")
+    task_id = argv[2]
+    workspace = Path(argv[4])
+    output_path = Path(argv[6])
+    result = _evaluate_benchmark_task_in_worker(workspace, task_id)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(result.to_dict(), indent=2) + "\n", encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == WORKER_SENTINEL:
+        sys.exit(_run_worker_main(sys.argv[1:]))
+    raise SystemExit("This module is intended to run as an internal worker only")

@@ -207,7 +207,7 @@ def _write_workspace(workspace: Path, app_source: str) -> None:
     (app_dir / "main.py").write_text(app_source, encoding="utf-8")
     (workspace / "README.md").write_text("# Inventory adjustment API\n", encoding="utf-8")
     (workspace / "pyproject.toml").write_text(
-        "[project]\nname = \"inventory-adjustment-api\"\nversion = \"0.1.0\"\n",
+        "[project]\nname = \"inventory-adjustment-api\"\nversion = \"0.1.0\"\ndependencies = [\"fastapi\", \"pydantic\"]\n",
         encoding="utf-8",
     )
 

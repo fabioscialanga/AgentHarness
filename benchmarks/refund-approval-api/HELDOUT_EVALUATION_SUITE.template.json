@@ -88,6 +88,9 @@
           "required": [
             "task_id",
             "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
             "passed_checks",
             "failed_checks",
             "observations"
@@ -98,6 +101,15 @@
             },
             "critical_ok": {
               "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
             },
             "passed_checks": {
               "type": "array",

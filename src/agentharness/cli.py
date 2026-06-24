@@ -382,8 +382,14 @@ def _print_benchmark_task_evaluation_result(result: dict[str, object], as_json: 
     if not isinstance(failed_checks, list):
         failed_checks = []
 
+    execution_status = str(result.get("execution_status", "valid"))
+    outcome_status = str(result.get("outcome_status", "success"))
     status = "PASS" if result.get("critical_ok") else "FAIL"
     print(f"[{status}] benchmark task {result.get('task_id', '')}")
+    print(f"Execution status: {execution_status}")
+    print(f"Outcome status: {outcome_status}")
+    if result.get("classification_reason"):
+        print(f"Classification reason: {result.get('classification_reason', '')}")
     print(f"Summary written: {result.get('summary_path', '')}")
     print(f"Result written: {result.get('result_path', '')}")
     print(f"Passed checks: {', '.join(str(item) for item in passed_checks)}")
@@ -495,6 +501,8 @@ def main(argv: list[str] | None = None) -> int:
         result = evaluate_benchmark_task(args.run, args.task_id)
         payload = result.to_dict()
         _print_benchmark_task_evaluation_result(payload, args.json)
+        if result.execution_status == "harness_invalid":
+            return 2
         return 0 if result.critical_ok else 1
 
     if args.command == "run-plan":
