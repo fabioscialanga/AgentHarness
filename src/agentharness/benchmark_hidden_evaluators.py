@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import hmac
 import importlib.util
 import json
 import os
+import sqlite3
+import subprocess
 import sys
+import tempfile
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -225,6 +229,40 @@ def _sign_webhook_payload(payload: dict[str, Any], secret: str) -> tuple[str, st
     body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
     digest = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
     return body.decode("utf-8"), digest
+
+
+def _discover_entrypoint(workspace: Path, candidates: list[str]) -> Path:
+    for relative in candidates:
+        candidate = workspace / relative
+        if candidate.is_file():
+            return candidate
+    raise RuntimeError(f"Could not find an entrypoint in workspace matching candidates: {candidates}")
+
+
+def _run_python_entrypoint(workspace: Path, candidates: list[str], args: list[str], env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    entrypoint = _discover_entrypoint(workspace, candidates)
+    merged_env = os.environ.copy()
+    if env:
+        merged_env.update(env)
+    module_name = ".".join(entrypoint.relative_to(workspace).with_suffix("").parts)
+    module_result = subprocess.run(
+        [sys.executable, "-m", module_name, *args],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+        env=merged_env,
+        check=False,
+    )
+    if module_result.returncode == 0:
+        return module_result
+    return subprocess.run(
+        [sys.executable, str(entrypoint), *args],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+        env=merged_env,
+        check=False,
+    )
 
 
 def _extract_history_entries(payload: Any) -> list[Any]:
@@ -1198,6 +1236,247 @@ def _evaluate_webhook_ingestion_service(workspace: Path) -> HiddenEvaluationResu
     )
 
 
+def _evaluate_incident_escalation_api(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "incident-escalation-api"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        module_path, app = _load_fastapi_app(workspace)
+    except Exception as exc:
+        detail = f"app discovery failed: {exc}"
+        for check_id in (
+            "sev1_escalates_on_time",
+            "ack_stops_escalation",
+            "resolved_stops_escalation",
+            "sev3_not_auto_escalated",
+            "invalid_as_of_rejected",
+        ):
+            record(check_id, False, detail)
+        return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=False, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+
+    def _is_escalated(payload: Any) -> Any:
+        if isinstance(payload, dict):
+            for key in ("escalated", "is_escalated"):
+                if key in payload:
+                    return payload[key]
+        return None
+
+    def _extract_incident_id(payload: Any) -> Any:
+        if isinstance(payload, dict):
+            for key in ("id", "incident_id"):
+                if key in payload:
+                    return payload[key]
+        return None
+
+    try:
+        with _working_directory(workspace), TestClient(app) as client:
+            create_sev1 = client.post("/incidents", json={"service": "payments", "severity": "sev1", "opened_at": "2026-07-01T10:00:00Z", "summary": "primary processor down"})
+            sev1_payload: Any = create_sev1.json() if create_sev1.headers.get("content-type", "").startswith("application/json") else {}
+            sev1_id = _extract_incident_id(sev1_payload)
+            before = client.get(f"/incidents/{sev1_id}/escalation", params={"as_of": "2026-07-01T10:10:00Z"}) if sev1_id is not None else None
+            after = client.get(f"/incidents/{sev1_id}/escalation", params={"as_of": "2026-07-01T10:16:00Z"}) if sev1_id is not None else None
+            before_payload: Any = before.json() if before is not None and before.headers.get("content-type", "").startswith("application/json") else {}
+            after_payload: Any = after.json() if after is not None and after.headers.get("content-type", "").startswith("application/json") else {}
+            sev1_ok = create_sev1.status_code in {200, 201} and before is not None and after is not None and before.status_code == 200 and after.status_code == 200 and _is_escalated(before_payload) is False and _is_escalated(after_payload) is True
+            record("sev1_escalates_on_time", sev1_ok, f"status_code={create_sev1.status_code}; module={module_path}; incident_id={sev1_id}; before_status={before.status_code if before is not None else None}; before_escalated={_is_escalated(before_payload)}; after_status={after.status_code if after is not None else None}; after_escalated={_is_escalated(after_payload)}")
+
+            ack_ok = False
+            ack_detail = "not evaluated"
+            resolved_ok = False
+            resolved_detail = "not evaluated"
+            sev3_ok = False
+            sev3_detail = "not evaluated"
+            invalid_ok = False
+            invalid_detail = "not evaluated"
+
+            create_ack = client.post("/incidents", json={"service": "auth", "severity": "sev2", "opened_at": "2026-07-01T11:00:00Z", "summary": "login latency spike"})
+            ack_payload: Any = create_ack.json() if create_ack.headers.get("content-type", "").startswith("application/json") else {}
+            ack_id = _extract_incident_id(ack_payload)
+            if ack_id is not None:
+                ack_response = client.post(f"/incidents/{ack_id}/acknowledge", json={"responder": "oncall1", "acknowledged_at": "2026-07-01T11:20:00Z"})
+                ack_escalation = client.get(f"/incidents/{ack_id}/escalation", params={"as_of": "2026-07-01T12:30:00Z"})
+                ack_escalation_payload: Any = ack_escalation.json() if ack_escalation.headers.get("content-type", "").startswith("application/json") else {}
+                ack_ok = create_ack.status_code in {200, 201} and ack_response.status_code in {200, 201} and ack_escalation.status_code == 200 and _is_escalated(ack_escalation_payload) is False
+                ack_detail = f"create_status={create_ack.status_code}; incident_id={ack_id}; ack_status={ack_response.status_code}; escalation_status={ack_escalation.status_code}; escalated={_is_escalated(ack_escalation_payload)}"
+
+            create_resolved = client.post("/incidents", json={"service": "search", "severity": "sev1", "opened_at": "2026-07-01T12:00:00Z", "summary": "index lag"})
+            resolved_payload: Any = create_resolved.json() if create_resolved.headers.get("content-type", "").startswith("application/json") else {}
+            resolved_id = _extract_incident_id(resolved_payload)
+            if resolved_id is not None:
+                resolve_response = client.post(f"/incidents/{resolved_id}/resolve", json={"resolution_note": "fixed", "resolved_at": "2026-07-01T12:05:00Z"})
+                resolved_escalation = client.get(f"/incidents/{resolved_id}/escalation", params={"as_of": "2026-07-01T14:00:00Z"})
+                resolved_escalation_payload: Any = resolved_escalation.json() if resolved_escalation.headers.get("content-type", "").startswith("application/json") else {}
+                resolved_ok = create_resolved.status_code in {200, 201} and resolve_response.status_code in {200, 201} and resolved_escalation.status_code == 200 and _is_escalated(resolved_escalation_payload) is False
+                resolved_detail = f"create_status={create_resolved.status_code}; incident_id={resolved_id}; resolve_status={resolve_response.status_code}; escalation_status={resolved_escalation.status_code}; escalated={_is_escalated(resolved_escalation_payload)}"
+
+            create_sev3 = client.post("/incidents", json={"service": "docs", "severity": "sev3", "opened_at": "2026-07-01T09:00:00Z", "summary": "minor admin issue"})
+            sev3_payload: Any = create_sev3.json() if create_sev3.headers.get("content-type", "").startswith("application/json") else {}
+            sev3_id = _extract_incident_id(sev3_payload)
+            if sev3_id is not None:
+                sev3_escalation = client.get(f"/incidents/{sev3_id}/escalation", params={"as_of": "2026-07-01T18:00:00Z"})
+                sev3_escalation_payload: Any = sev3_escalation.json() if sev3_escalation.headers.get("content-type", "").startswith("application/json") else {}
+                sev3_ok = create_sev3.status_code in {200, 201} and sev3_escalation.status_code == 200 and _is_escalated(sev3_escalation_payload) is False
+                sev3_detail = f"create_status={create_sev3.status_code}; incident_id={sev3_id}; escalation_status={sev3_escalation.status_code}; escalated={_is_escalated(sev3_escalation_payload)}"
+
+            if sev1_id is not None:
+                invalid_response = client.get(f"/incidents/{sev1_id}/escalation", params={"as_of": "not-a-timestamp"})
+                invalid_ok = invalid_response.status_code in {400, 422}
+                invalid_detail = f"status_code={invalid_response.status_code}"
+
+            record("ack_stops_escalation", ack_ok, ack_detail)
+            record("resolved_stops_escalation", resolved_ok, resolved_detail)
+            record("sev3_not_auto_escalated", sev3_ok, sev3_detail)
+            record("invalid_as_of_rejected", invalid_ok, invalid_detail)
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        seen_ids = {item.id for item in observations}
+        for check_id in ("sev1_escalates_on_time", "ack_stops_escalation", "resolved_stops_escalation", "sev3_not_auto_escalated", "invalid_as_of_rejected"):
+            if check_id not in seen_ids:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=not failed_checks, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+
+
+def _evaluate_csv_member_import(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "csv-member-import"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        with tempfile.TemporaryDirectory(dir=workspace) as tmp_dir:
+            temp_root = Path(tmp_dir)
+            input_path = temp_root / "members.csv"
+            out_dir = temp_root / "out"
+            input_path.write_text(
+                "name,email,role\n"
+                "Alice, Alice@Example.com ,admin\n"
+                "Bob,bob@example.com,viewer\n"
+                "Charlie,BOB@example.com,member\n"
+                "Dora,not-an-email,member\n"
+                "Eve,eve@example.com,owner\n",
+                encoding="utf-8",
+            )
+            command = _run_python_entrypoint(workspace, ["app/import_members.py", "import_members.py", "src/app/import_members.py"], ["--input", str(input_path), "--out-dir", str(out_dir)])
+            accepted_path = out_dir / "accepted.json"
+            rejected_path = out_dir / "rejected.csv"
+            summary_path = out_dir / "summary.json"
+            accepted: Any = json.loads(accepted_path.read_text(encoding="utf-8")) if accepted_path.is_file() else []
+            summary: Any = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.is_file() else {}
+            rejected_rows: list[dict[str, str]] = []
+            if rejected_path.is_file():
+                with rejected_path.open(encoding="utf-8", newline="") as handle:
+                    rejected_rows = list(csv.DictReader(handle))
+
+            emails = [item.get("email") for item in accepted if isinstance(item, dict)] if isinstance(accepted, list) else []
+            normalized_ok = command.returncode == 0 and emails == ["alice@example.com", "bob@example.com"]
+            duplicate_ok = command.returncode == 0 and emails.count("bob@example.com") == 1 and isinstance(summary, dict) and summary.get("duplicate_count") == 1
+            reasons = [row.get("reason", "") for row in rejected_rows]
+            invalid_reason_ok = command.returncode == 0 and len(rejected_rows) >= 2 and any(reason.strip() for reason in reasons)
+            summary_counts_ok = command.returncode == 0 and isinstance(summary, dict) and summary.get("accepted_count") == len(accepted if isinstance(accepted, list) else []) and summary.get("rejected_count") == len(rejected_rows) and summary.get("duplicate_count") == 1 and summary.get("processed_count") == 5
+            outputs_ok = accepted_path.is_file() and rejected_path.is_file() and summary_path.is_file()
+
+            record("valid_rows_normalized", normalized_ok, f"exit_code={command.returncode}; stdout={command.stdout.strip()}; stderr={command.stderr.strip()}; emails={emails}")
+            record("duplicate_handling_correct", duplicate_ok, f"exit_code={command.returncode}; emails={emails}; duplicate_count={summary.get('duplicate_count') if isinstance(summary, dict) else None}")
+            record("invalid_rows_rejected_with_reason", invalid_reason_ok, f"exit_code={command.returncode}; rejected_rows={len(rejected_rows)}; reasons={reasons}")
+            record("summary_counts_correct", summary_counts_ok, f"exit_code={command.returncode}; summary={summary}; accepted_len={len(accepted if isinstance(accepted, list) else [])}; rejected_len={len(rejected_rows)}")
+            record("output_files_present", outputs_ok, f"accepted_exists={accepted_path.is_file()}; rejected_exists={rejected_path.is_file()}; summary_exists={summary_path.is_file()}")
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        for check_id in ("valid_rows_normalized", "duplicate_handling_correct", "invalid_rows_rejected_with_reason", "summary_counts_correct", "output_files_present"):
+            if check_id not in {item.id for item in observations}:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=not failed_checks, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+
+
+def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
+    task_id = "report-export-job"
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    observations: list[HiddenEvaluationObservation] = []
+    passed_checks: list[str] = []
+    failed_checks: list[str] = []
+
+    def record(check_id: str, ok: bool, detail: str) -> None:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="pass" if ok else "fail", detail=detail))
+        if ok:
+            passed_checks.append(check_id)
+        else:
+            failed_checks.append(check_id)
+
+    try:
+        with tempfile.TemporaryDirectory(dir=workspace) as tmp_dir:
+            temp_root = Path(tmp_dir)
+            db_path = temp_root / "report.db"
+            out_dir = temp_root / "out"
+            connection = sqlite3.connect(db_path)
+            try:
+                connection.execute("CREATE TABLE records (record_date TEXT NOT NULL, merchant_id TEXT NOT NULL, payout_amount REAL NOT NULL, refund_amount REAL NOT NULL)")
+                connection.executemany(
+                    "INSERT INTO records (record_date, merchant_id, payout_amount, refund_amount) VALUES (?, ?, ?, ?)",
+                    [
+                        ("2026-07-01", "m001", 100.0, 10.0),
+                        ("2026-07-01", "m001", 50.0, 0.0),
+                        ("2026-07-01", "m002", 80.0, 5.0),
+                        ("2026-07-02", "m003", 200.0, 20.0),
+                    ],
+                )
+                connection.commit()
+            finally:
+                connection.close()
+
+            command = _run_python_entrypoint(workspace, ["app/export.py", "export.py", "src/app/export.py"], ["--date", "2026-07-01", "--out-dir", str(out_dir)], env={"REPORT_DB_PATH": str(db_path)})
+            csv_path = out_dir / "report.csv"
+            summary_json_path = out_dir / "summary.json"
+            rows: list[dict[str, str]] = []
+            if csv_path.is_file():
+                with csv_path.open(encoding="utf-8", newline="") as handle:
+                    rows = list(csv.DictReader(handle))
+            summary: Any = json.loads(summary_json_path.read_text(encoding="utf-8")) if summary_json_path.is_file() else {}
+
+            merchant_ids = [str(row.get("merchant_id", "")) for row in rows]
+            sorted_complete_ok = command.returncode == 0 and bool(rows) and merchant_ids == sorted(merchant_ids) and all({"merchant_id", "gross_payout", "refund_total", "net_payout", "transaction_count"}.issubset(row.keys()) for row in rows)
+            net_ok = command.returncode == 0 and all(abs(float(row["gross_payout"]) - float(row["refund_total"]) - float(row["net_payout"])) < 1e-9 for row in rows)
+            date_filter_ok = command.returncode == 0 and {row.get("merchant_id") for row in rows} == {"m001", "m002"} and isinstance(summary, dict) and summary.get("export_date") == "2026-07-01"
+            gross_total = sum(float(row["gross_payout"]) for row in rows) if rows else 0.0
+            refund_total = sum(float(row["refund_total"]) for row in rows) if rows else 0.0
+            net_total = sum(float(row["net_payout"]) for row in rows) if rows else 0.0
+            summary_totals_ok = command.returncode == 0 and isinstance(summary, dict) and summary.get("merchant_count") == len(rows) and abs(float(summary.get("total_gross", 0.0)) - gross_total) < 1e-9 and abs(float(summary.get("total_refunds", 0.0)) - refund_total) < 1e-9 and abs(float(summary.get("total_net", 0.0)) - net_total) < 1e-9
+            invalid_date = _run_python_entrypoint(workspace, ["app/export.py", "export.py", "src/app/export.py"], ["--date", "2026/07/01", "--out-dir", str(temp_root / "bad-out")], env={"REPORT_DB_PATH": str(db_path)})
+            invalid_date_ok = invalid_date.returncode != 0
+
+            record("csv_rows_sorted_complete", sorted_complete_ok, f"exit_code={command.returncode}; rows={rows}")
+            record("net_totals_correct", net_ok, f"exit_code={command.returncode}; rows={rows}")
+            record("date_filter_applied", date_filter_ok, f"exit_code={command.returncode}; merchants={[row.get('merchant_id') for row in rows]}; summary={summary}")
+            record("summary_totals_match", summary_totals_ok, f"exit_code={command.returncode}; summary={summary}; gross_total={gross_total}; refund_total={refund_total}; net_total={net_total}")
+            record("invalid_date_rejected", invalid_date_ok, f"exit_code={invalid_date.returncode}; stdout={invalid_date.stdout.strip()}; stderr={invalid_date.stderr.strip()}")
+    except Exception as exc:
+        detail = f"runtime evaluation failed: {exc}"
+        for check_id in ("csv_rows_sorted_complete", "net_totals_correct", "date_filter_applied", "summary_totals_match", "invalid_date_rejected"):
+            if check_id not in {item.id for item in observations}:
+                record(check_id, False, detail)
+
+    return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=not failed_checks, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+
+
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:
     run = load_run(run_path)
     normalized_task_id = task_id.strip()
@@ -1209,6 +1488,12 @@ def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluat
         return _evaluate_leave_request_api(run.workspace)
     if normalized_task_id == "refund-approval-api":
         return _evaluate_refund_approval_api(run.workspace)
+    if normalized_task_id == "incident-escalation-api":
+        return _evaluate_incident_escalation_api(run.workspace)
+    if normalized_task_id == "csv-member-import":
+        return _evaluate_csv_member_import(run.workspace)
+    if normalized_task_id == "report-export-job":
+        return _evaluate_report_export_job(run.workspace)
     if normalized_task_id == "webhook-ingestion-service":
         return _evaluate_webhook_ingestion_service(run.workspace)
     raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
