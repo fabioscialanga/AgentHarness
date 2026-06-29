@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import hmac
+import importlib.metadata
 import importlib.util
 import json
 import os
@@ -95,6 +96,56 @@ def _persist_hidden_evaluation(result: HiddenEvaluationResult) -> HiddenEvaluati
     return result
 
 
+def _finalize_hidden_evaluation(
+    *,
+    task_id: str,
+    evaluation_dir: Path,
+    passed_checks: list[str],
+    failed_checks: list[str],
+    observations: list[HiddenEvaluationObservation],
+    classification_reason: str = "",
+) -> HiddenEvaluationResult:
+    reason = classification_reason
+    if not reason and failed_checks:
+        reason = "behavior_wrong:functional_checks_failed"
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=not failed_checks,
+            classification_reason=reason,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
+def _interface_unreachable_result(
+    *,
+    task_id: str,
+    evaluation_dir: Path,
+    passed_checks: list[str],
+    failed_checks: list[str],
+    observations: list[HiddenEvaluationObservation],
+    check_ids: tuple[str, ...],
+    detail: str,
+    reason: str,
+) -> HiddenEvaluationResult:
+    for check_id in check_ids:
+        observations.append(HiddenEvaluationObservation(id=check_id, status="fail", detail=detail))
+        failed_checks.append(check_id)
+    return _finalize_hidden_evaluation(
+        task_id=task_id,
+        evaluation_dir=evaluation_dir,
+        passed_checks=passed_checks,
+        failed_checks=failed_checks,
+        observations=observations,
+        classification_reason=reason,
+    )
+
+
 @contextmanager
 def _temporary_sys_path(paths: list[Path]):
     original = list(sys.path)
@@ -120,9 +171,33 @@ def _working_directory(path: Path):
 
 @contextmanager
 def _load_module_from_path(module_path: Path, workspace: Path):
-    module_name = f"agentharness_benchmark_{module_path.stem}_{uuid.uuid4().hex}"
     import_roots = [workspace, workspace / "src", module_path.parent]
+    module_name = f"agentharness_benchmark_{module_path.stem}_{uuid.uuid4().hex}"
+    for import_root in import_roots:
+        try:
+            relative_module = module_path.relative_to(import_root).with_suffix("")
+        except ValueError:
+            continue
+        module_parts = relative_module.parts
+        if module_parts and all(part.isidentifier() for part in module_parts):
+            module_name = ".".join(module_parts)
+            break
     with _temporary_sys_path(import_roots), _working_directory(workspace):
+        if "." in module_name and all(part.isidentifier() for part in module_name.split(".")):
+            imported_names_before = set(sys.modules)
+            module = importlib.import_module(module_name)
+            imported_names_after = set(sys.modules)
+            added_names = {
+                name
+                for name in imported_names_after - imported_names_before
+                if name == module_name or name.startswith(f"{module_name}.") or module_name.startswith(f"{name}.")
+            }
+            try:
+                yield module
+            finally:
+                for name in sorted(added_names, key=len, reverse=True):
+                    sys.modules.pop(name, None)
+            return
         spec = importlib.util.spec_from_file_location(module_name, module_path)
         if spec is None or spec.loader is None:
             raise RuntimeError(f"Could not load module spec from {module_path}")
@@ -303,6 +378,14 @@ API_BENCHMARK_TASK_IDS = {
     "webhook-ingestion-service",
 }
 
+CLI_BENCHMARK_TASK_IDS = {
+    "csv-member-import",
+    "report-export-job",
+}
+
+AGENTHARNESS_REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_GRADING_ENV_ROOT = AGENTHARNESS_REPO_ROOT / "benchmarks" / "grading-env"
+
 WORKER_SENTINEL = "agentharness-benchmark-hidden-worker"
 WORKER_PROTOCOL_VERSION = "1"
 
@@ -315,27 +398,100 @@ class _ManifestSpec:
 
 
 @dataclass
+class _GradingEnvironmentConfig:
+    root_dir: Path
+    wheelhouse_dir: Path
+    constraints_path: Path
+    manifest_path: Path
+    fingerprint: str
+    agentharness_version: str
+
+
+@dataclass
 class _IsolationPreparation:
     ok: bool
     workspace: Path
     venv_dir: Path
     manifest: _ManifestSpec | None
     detail: str
+    grading_env: _GradingEnvironmentConfig | None = None
     install_stdout: str = ""
     install_stderr: str = ""
-
-
-def _required_manifest_dependencies(task_id: str) -> set[str]:
-    if task_id in API_BENCHMARK_TASK_IDS:
-        return {"fastapi", "pydantic"}
-    return set()
-
 
 def _canonical_dependency_name(spec: str) -> str:
     candidate = spec.strip()
     for separator in ("[", ";", "<", ">", "=", "!", "~", " "):
         candidate = candidate.split(separator, 1)[0]
     return candidate.replace("_", "-").lower()
+
+
+def _agentharness_version() -> str:
+    pyproject_path = AGENTHARNESS_REPO_ROOT / "pyproject.toml"
+    if pyproject_path.is_file():
+        payload = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+        project = payload.get("project", {})
+        version = project.get("version")
+        if isinstance(version, str) and version.strip():
+            return version.strip()
+    try:
+        return importlib.metadata.version("agentharness")
+    except importlib.metadata.PackageNotFoundError as exc:
+        raise RuntimeError("harness failed loading agentharness version from pyproject.toml or installed package metadata") from exc
+
+
+def _default_constraints_filename() -> str:
+    return f"constraints-py{sys.version_info.major}{sys.version_info.minor}.txt"
+
+def _load_grading_environment() -> _GradingEnvironmentConfig:
+    root_dir = Path(os.environ.get("AGENTHARNESS_GRADING_ENV_DIR", str(DEFAULT_GRADING_ENV_ROOT))).expanduser()
+    wheelhouse_dir = Path(os.environ.get("AGENTHARNESS_WHEELHOUSE_DIR", str(root_dir / "wheelhouse"))).expanduser()
+    constraints_path = Path(
+        os.environ.get("AGENTHARNESS_CONSTRAINTS_FILE", str(root_dir / _default_constraints_filename()))
+    ).expanduser()
+    manifest_path = Path(os.environ.get("AGENTHARNESS_WHEELHOUSE_MANIFEST", str(root_dir / "wheelhouse-manifest.json"))).expanduser()
+
+    missing_paths = [
+        str(path)
+        for path in (wheelhouse_dir, constraints_path, manifest_path)
+        if not path.exists()
+    ]
+    if missing_paths:
+        raise RuntimeError(f"offline grading environment is incomplete; missing: {missing_paths}")
+    if not wheelhouse_dir.is_dir():
+        raise RuntimeError(f"offline grading wheelhouse path is not a directory: {wheelhouse_dir}")
+    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(manifest_payload, dict):
+        raise RuntimeError(f"wheelhouse manifest must be a JSON object: {manifest_path}")
+    files = manifest_payload.get("files", [])
+    if not isinstance(files, list):
+        raise RuntimeError(f"wheelhouse manifest files entry must be a list: {manifest_path}")
+    missing_wheels = [
+        str(wheelhouse_dir / str(item.get("filename", "")))
+        for item in files
+        if isinstance(item, dict)
+        and str(item.get("filename", ""))
+        and not (wheelhouse_dir / str(item.get("filename", ""))).is_file()
+    ]
+    if missing_wheels:
+        raise RuntimeError(f"wheelhouse manifest references missing files: {missing_wheels}")
+
+    agentharness_version = _agentharness_version()
+    fingerprint_seed = "\n".join(
+        [
+            constraints_path.read_text(encoding="utf-8"),
+            manifest_path.read_text(encoding="utf-8"),
+            agentharness_version,
+        ]
+    )
+    fingerprint = hashlib.sha256(fingerprint_seed.encode("utf-8")).hexdigest()[:16]
+    return _GradingEnvironmentConfig(
+        root_dir=root_dir,
+        wheelhouse_dir=wheelhouse_dir,
+        constraints_path=constraints_path,
+        manifest_path=manifest_path,
+        fingerprint=fingerprint,
+        agentharness_version=agentharness_version,
+    )
 
 
 def _discover_manifest(workspace: Path) -> _ManifestSpec | None:
@@ -360,20 +516,13 @@ def _discover_manifest(workspace: Path) -> _ManifestSpec | None:
     return None
 
 
-def _ensure_required_manifest_dependencies(task_id: str, manifest: _ManifestSpec | None) -> str | None:
-    required = _required_manifest_dependencies(task_id)
-    if not required:
-        return None
+def _ensure_manifest_present(task_id: str, manifest: _ManifestSpec | None) -> str | None:
     if manifest is None:
-        return f"missing manifest: task {task_id} requires declared dependencies {sorted(required)}"
-    declared = {_canonical_dependency_name(item) for item in manifest.dependencies}
-    missing = sorted(required - declared)
-    if missing:
-        return f"manifest {manifest.path.name} is missing required dependencies for task {task_id}: {missing}"
+        return f"missing manifest: task {task_id} must declare solution dependencies in pyproject.toml or requirements.txt"
     return None
 
 
-def _manifest_hash(manifest: _ManifestSpec | None, task_id: str) -> str:
+def _manifest_hash(manifest: _ManifestSpec | None, task_id: str, grading_env: _GradingEnvironmentConfig | None = None) -> str:
     seed = task_id
     if manifest is None:
         seed += "::no-manifest"
@@ -381,17 +530,67 @@ def _manifest_hash(manifest: _ManifestSpec | None, task_id: str) -> str:
         seed += f"::{manifest.kind}::{manifest.path.read_text(encoding='utf-8')}"
     seed += f"::python={sys.version_info.major}.{sys.version_info.minor}"
     seed += f"::protocol={WORKER_PROTOCOL_VERSION}"
+    if grading_env is not None:
+        seed += f"::grading_env={grading_env.fingerprint}"
     return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+
+
+def _classify_install_failure_detail(stderr_text: str, exit_code: int) -> str:
+    normalized = stderr_text.lower()
+    offline_resolution_markers = (
+        "no matching distribution found",
+        "could not find a version that satisfies the requirement",
+        "from versions: none",
+    )
+    if any(marker in normalized for marker in offline_resolution_markers):
+        return f"solution dependencies could not be resolved from the offline wheelhouse (exit code {exit_code})"
+    return f"solution environment install failed with exit code {exit_code}"
+
+
+def _preparation_failure_reason(detail: str) -> tuple[str, str]:
+    normalized = detail.lower()
+    if detail.startswith("harness failed loading offline grading environment"):
+        return "harness_invalid", "harness_invalid:offline_grading_environment_unavailable"
+    if detail.startswith("harness failed creating isolated environment"):
+        return "harness_invalid", "harness_invalid:isolated_environment_creation_failed"
+    if detail.startswith("harness failed while preparing isolated environment"):
+        return "harness_invalid", "harness_invalid:isolated_environment_preparation_failed"
+    if detail.startswith("missing manifest:"):
+        return "valid", "preparation_failed:missing_manifest"
+    if detail.startswith("solution dependencies could not be resolved from the offline wheelhouse"):
+        return "valid", "preparation_failed:dependency_not_in_wheelhouse"
+    if detail.startswith("solution environment install failed"):
+        return "valid", "preparation_failed:environment_install_failed"
+    return "valid", "preparation_failed:unknown"
 
 
 def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPreparation:
     manifest = _discover_manifest(workspace)
-    dependency_error = _ensure_required_manifest_dependencies(task_id, manifest)
     env_root = workspace / ".agentharness" / "eval_envs"
     env_root.mkdir(parents=True, exist_ok=True)
-    venv_dir = env_root / _manifest_hash(manifest, task_id)
+    try:
+        grading_env = _load_grading_environment()
+    except Exception as exc:
+        venv_dir = env_root / _manifest_hash(manifest, task_id)
+        return _IsolationPreparation(
+            ok=False,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=f"harness failed loading offline grading environment: {exc}",
+        )
+
+    dependency_error = _ensure_manifest_present(task_id, manifest)
+    venv_dir = env_root / _manifest_hash(manifest, task_id, grading_env)
     if dependency_error is not None:
-        return _IsolationPreparation(ok=False, workspace=workspace, venv_dir=venv_dir, manifest=manifest, detail=dependency_error)
+        return _IsolationPreparation(
+            ok=False,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=dependency_error,
+            grading_env=grading_env,
+        )
 
     try:
         if not venv_dir.exists():
@@ -403,6 +602,7 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             venv_dir=venv_dir,
             manifest=manifest,
             detail=f"harness failed creating isolated environment: {exc}",
+            grading_env=grading_env,
             install_stdout=exc.stdout,
             install_stderr=exc.stderr,
         )
@@ -413,6 +613,7 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             venv_dir=venv_dir,
             manifest=manifest,
             detail=f"harness failed creating isolated environment: {exc}",
+            grading_env=grading_env,
         )
 
     python_bin = venv_dir / "bin" / "python"
@@ -422,18 +623,40 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             marker = json.loads(marker_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             marker = None
-        if isinstance(marker, dict) and marker.get("protocol_version") == WORKER_PROTOCOL_VERSION:
-            return _IsolationPreparation(ok=True, workspace=workspace, venv_dir=venv_dir, manifest=manifest, detail=f"reused isolated environment {venv_dir}")
+        if (
+            isinstance(marker, dict)
+            and marker.get("protocol_version") == WORKER_PROTOCOL_VERSION
+            and marker.get("grading_env_fingerprint") == grading_env.fingerprint
+        ):
+            return _IsolationPreparation(
+                ok=True,
+                workspace=workspace,
+                venv_dir=venv_dir,
+                manifest=manifest,
+                detail=f"reused isolated environment {venv_dir}",
+                grading_env=grading_env,
+            )
 
+    pip_base = [
+        str(python_bin),
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "--no-index",
+        "--find-links",
+        str(grading_env.wheelhouse_dir),
+        "-c",
+        str(grading_env.constraints_path),
+    ]
     install_commands: list[list[str]] = [
-        [str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", "--upgrade", "pip"],
-        [str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", "-e", str(Path(__file__).resolve().parents[2])],
+        [*pip_base, f"agentharness=={grading_env.agentharness_version}"],
     ]
     if manifest is not None:
         if manifest.kind == "pyproject" and manifest.dependencies:
-            install_commands.append([str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", *manifest.dependencies])
+            install_commands.append([*pip_base, *manifest.dependencies])
         elif manifest.kind == "requirements":
-            install_commands.append([str(python_bin), "-m", "pip", "install", "--disable-pip-version-check", "-r", str(manifest.path)])
+            install_commands.append([*pip_base, "-r", str(manifest.path)])
 
     stdout_chunks: list[str] = []
     stderr_chunks: list[str] = []
@@ -443,14 +666,16 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             stdout_chunks.append(completed.stdout)
             stderr_chunks.append(completed.stderr)
             if completed.returncode != 0:
+                combined_stderr = "\n".join(stderr_chunks)
                 return _IsolationPreparation(
                     ok=False,
                     workspace=workspace,
                     venv_dir=venv_dir,
                     manifest=manifest,
-                    detail=f"solution environment install failed with exit code {completed.returncode}",
+                    detail=_classify_install_failure_detail(combined_stderr, completed.returncode),
+                    grading_env=grading_env,
                     install_stdout="\n".join(stdout_chunks),
-                    install_stderr="\n".join(stderr_chunks),
+                    install_stderr=combined_stderr,
                 )
         marker_path.write_text(
             json.dumps(
@@ -459,6 +684,9 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
                     "task_id": task_id,
                     "manifest_path": str(manifest.path) if manifest is not None else None,
                     "python": str(python_bin),
+                    "grading_env_fingerprint": grading_env.fingerprint,
+                    "constraints_path": str(grading_env.constraints_path),
+                    "wheelhouse_dir": str(grading_env.wheelhouse_dir),
                 },
                 indent=2,
             )
@@ -471,6 +699,7 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             venv_dir=venv_dir,
             manifest=manifest,
             detail=f"prepared isolated environment {venv_dir}",
+            grading_env=grading_env,
             install_stdout="\n".join(stdout_chunks),
             install_stderr="\n".join(stderr_chunks),
         )
@@ -481,6 +710,7 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             venv_dir=venv_dir,
             manifest=manifest,
             detail=f"harness failed while preparing isolated environment: {exc}",
+            grading_env=grading_env,
             install_stdout="\n".join(stdout_chunks),
             install_stderr="\n".join(stderr_chunks),
         )
@@ -488,14 +718,14 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
 
 def _result_from_isolation_failure(preparation: _IsolationPreparation, task_id: str) -> HiddenEvaluationResult:
     evaluation_dir = _evaluation_dir(preparation.workspace, task_id)
-    looks_like_harness_fault = preparation.detail.startswith("harness failed")
+    execution_status, classification_reason = _preparation_failure_reason(preparation.detail)
     return _persist_hidden_evaluation(
         HiddenEvaluationResult(
             task_id=task_id,
             critical_ok=False,
-            execution_status="harness_invalid" if looks_like_harness_fault else "valid",
+            execution_status=execution_status,
             outcome_status="real_failure",
-            classification_reason=preparation.detail,
+            classification_reason=classification_reason,
             passed_checks=[],
             failed_checks=[],
             observations=[
@@ -624,24 +854,21 @@ def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
         module_path, app = _load_fastapi_app(workspace)
     except Exception as exc:
         detail = f"app discovery failed: {exc}"
-        for check_id in (
-            "create_valid_ticket",
-            "list_filters_work",
-            "closed_ticket_reopen_blocked",
-            "comments_embedded_in_detail",
-            "invalid_email_rejected",
-        ):
-            record(check_id, False, detail)
-        return _persist_hidden_evaluation(
-            HiddenEvaluationResult(
-                task_id=task_id,
-                critical_ok=False,
-                passed_checks=passed_checks,
-                failed_checks=failed_checks,
-                observations=observations,
-                summary_path=evaluation_dir / "summary.txt",
-                result_path=evaluation_dir / "result.json",
-            )
+        return _interface_unreachable_result(
+            task_id=task_id,
+            evaluation_dir=evaluation_dir,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            check_ids=(
+                "create_valid_ticket",
+                "list_filters_work",
+                "closed_ticket_reopen_blocked",
+                "comments_embedded_in_detail",
+                "invalid_email_rejected",
+            ),
+            detail=detail,
+            reason="interface_unreachable:app_load_failed",
         )
 
     try:
@@ -772,16 +999,12 @@ def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
             if check_id not in seen_ids:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(
-        HiddenEvaluationResult(
-            task_id=task_id,
-            critical_ok=not failed_checks,
-            passed_checks=passed_checks,
-            failed_checks=failed_checks,
-            observations=observations,
-            summary_path=evaluation_dir / "summary.txt",
-            result_path=evaluation_dir / "result.json",
-        )
+    return _finalize_hidden_evaluation(
+        task_id=task_id,
+        evaluation_dir=evaluation_dir,
+        passed_checks=passed_checks,
+        failed_checks=failed_checks,
+        observations=observations,
     )
 
 
@@ -803,24 +1026,21 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
         module_path, app = _load_fastapi_app(workspace)
     except Exception as exc:
         detail = f"app discovery failed: {exc}"
-        for check_id in (
-            "reserve_within_available",
-            "over_reserve_rejected",
-            "damage_cannot_go_negative",
-            "recount_sets_exact_quantity",
-            "release_cannot_exceed_reserved",
-        ):
-            record(check_id, False, detail)
-        return _persist_hidden_evaluation(
-            HiddenEvaluationResult(
-                task_id=task_id,
-                critical_ok=False,
-                passed_checks=passed_checks,
-                failed_checks=failed_checks,
-                observations=observations,
-                summary_path=evaluation_dir / "summary.txt",
-                result_path=evaluation_dir / "result.json",
-            )
+        return _interface_unreachable_result(
+            task_id=task_id,
+            evaluation_dir=evaluation_dir,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            check_ids=(
+                "reserve_within_available",
+                "over_reserve_rejected",
+                "damage_cannot_go_negative",
+                "recount_sets_exact_quantity",
+                "release_cannot_exceed_reserved",
+            ),
+            detail=detail,
+            reason="interface_unreachable:app_load_failed",
         )
 
     try:
@@ -925,16 +1145,12 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
             if check_id not in seen_ids:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(
-        HiddenEvaluationResult(
-            task_id=task_id,
-            critical_ok=not failed_checks,
-            passed_checks=passed_checks,
-            failed_checks=failed_checks,
-            observations=observations,
-            summary_path=evaluation_dir / "summary.txt",
-            result_path=evaluation_dir / "result.json",
-        )
+    return _finalize_hidden_evaluation(
+        task_id=task_id,
+        evaluation_dir=evaluation_dir,
+        passed_checks=passed_checks,
+        failed_checks=failed_checks,
+        observations=observations,
     )
 
 
@@ -956,24 +1172,21 @@ def _evaluate_leave_request_api(workspace: Path) -> HiddenEvaluationResult:
         module_path, app = _load_fastapi_app(workspace)
     except Exception as exc:
         detail = f"app discovery failed: {exc}"
-        for check_id in (
-            "valid_request_created",
-            "overlap_rejected",
-            "personal_leave_limit_enforced",
-            "approval_sets_reviewed_at",
-            "terminal_state_blocks_second_review",
-        ):
-            record(check_id, False, detail)
-        return _persist_hidden_evaluation(
-            HiddenEvaluationResult(
-                task_id=task_id,
-                critical_ok=False,
-                passed_checks=passed_checks,
-                failed_checks=failed_checks,
-                observations=observations,
-                summary_path=evaluation_dir / "summary.txt",
-                result_path=evaluation_dir / "result.json",
-            )
+        return _interface_unreachable_result(
+            task_id=task_id,
+            evaluation_dir=evaluation_dir,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            check_ids=(
+                "valid_request_created",
+                "overlap_rejected",
+                "personal_leave_limit_enforced",
+                "approval_sets_reviewed_at",
+                "terminal_state_blocks_second_review",
+            ),
+            detail=detail,
+            reason="interface_unreachable:app_load_failed",
         )
 
     try:
@@ -1141,16 +1354,12 @@ def _evaluate_leave_request_api(workspace: Path) -> HiddenEvaluationResult:
             if check_id not in seen_ids:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(
-        HiddenEvaluationResult(
-            task_id=task_id,
-            critical_ok=not failed_checks,
-            passed_checks=passed_checks,
-            failed_checks=failed_checks,
-            observations=observations,
-            summary_path=evaluation_dir / "summary.txt",
-            result_path=evaluation_dir / "result.json",
-        )
+    return _finalize_hidden_evaluation(
+        task_id=task_id,
+        evaluation_dir=evaluation_dir,
+        passed_checks=passed_checks,
+        failed_checks=failed_checks,
+        observations=observations,
     )
 
 
@@ -1172,24 +1381,21 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
         module_path, app = _load_fastapi_app(workspace)
     except Exception as exc:
         detail = f"app discovery failed: {exc}"
-        for check_id in (
-            "small_refund_auto_approved",
-            "medium_refund_needs_manager",
-            "large_refund_needs_finance",
-            "invalid_amount_rejected",
-            "terminal_state_blocks_reapproval",
-        ):
-            record(check_id, False, detail)
-        return _persist_hidden_evaluation(
-            HiddenEvaluationResult(
-                task_id=task_id,
-                critical_ok=False,
-                passed_checks=passed_checks,
-                failed_checks=failed_checks,
-                observations=observations,
-                summary_path=evaluation_dir / "summary.txt",
-                result_path=evaluation_dir / "result.json",
-            )
+        return _interface_unreachable_result(
+            task_id=task_id,
+            evaluation_dir=evaluation_dir,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            check_ids=(
+                "small_refund_auto_approved",
+                "medium_refund_needs_manager",
+                "large_refund_needs_finance",
+                "invalid_amount_rejected",
+                "terminal_state_blocks_reapproval",
+            ),
+            detail=detail,
+            reason="interface_unreachable:app_load_failed",
         )
 
     try:
@@ -1396,16 +1602,12 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
             if check_id not in seen_ids:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(
-        HiddenEvaluationResult(
-            task_id=task_id,
-            critical_ok=not failed_checks,
-            passed_checks=passed_checks,
-            failed_checks=failed_checks,
-            observations=observations,
-            summary_path=evaluation_dir / "summary.txt",
-            result_path=evaluation_dir / "result.json",
-        )
+    return _finalize_hidden_evaluation(
+        task_id=task_id,
+        evaluation_dir=evaluation_dir,
+        passed_checks=passed_checks,
+        failed_checks=failed_checks,
+        observations=observations,
     )
 
 
@@ -1428,24 +1630,21 @@ def _evaluate_webhook_ingestion_service(workspace: Path) -> HiddenEvaluationResu
         module_path, app = _load_fastapi_app(workspace)
     except Exception as exc:
         detail = f"app discovery failed: {exc}"
-        for check_id in (
-            "valid_signed_event_stored",
-            "invalid_signature_rejected",
-            "duplicate_delivery_idempotent",
-            "type_normalized_correctly",
-            "missing_fields_rejected",
-        ):
-            record(check_id, False, detail)
-        return _persist_hidden_evaluation(
-            HiddenEvaluationResult(
-                task_id=task_id,
-                critical_ok=False,
-                passed_checks=passed_checks,
-                failed_checks=failed_checks,
-                observations=observations,
-                summary_path=evaluation_dir / "summary.txt",
-                result_path=evaluation_dir / "result.json",
-            )
+        return _interface_unreachable_result(
+            task_id=task_id,
+            evaluation_dir=evaluation_dir,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            check_ids=(
+                "valid_signed_event_stored",
+                "invalid_signature_rejected",
+                "duplicate_delivery_idempotent",
+                "type_normalized_correctly",
+                "missing_fields_rejected",
+            ),
+            detail=detail,
+            reason="interface_unreachable:app_load_failed",
         )
 
     try:
@@ -1554,16 +1753,12 @@ def _evaluate_webhook_ingestion_service(workspace: Path) -> HiddenEvaluationResu
             if check_id not in seen_ids:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(
-        HiddenEvaluationResult(
-            task_id=task_id,
-            critical_ok=not failed_checks,
-            passed_checks=passed_checks,
-            failed_checks=failed_checks,
-            observations=observations,
-            summary_path=evaluation_dir / "summary.txt",
-            result_path=evaluation_dir / "result.json",
-        )
+    return _finalize_hidden_evaluation(
+        task_id=task_id,
+        evaluation_dir=evaluation_dir,
+        passed_checks=passed_checks,
+        failed_checks=failed_checks,
+        observations=observations,
     )
 
 
@@ -1585,15 +1780,22 @@ def _evaluate_incident_escalation_api(workspace: Path) -> HiddenEvaluationResult
         module_path, app = _load_fastapi_app(workspace)
     except Exception as exc:
         detail = f"app discovery failed: {exc}"
-        for check_id in (
-            "sev1_escalates_on_time",
-            "ack_stops_escalation",
-            "resolved_stops_escalation",
-            "sev3_not_auto_escalated",
-            "invalid_as_of_rejected",
-        ):
-            record(check_id, False, detail)
-        return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=False, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+        return _interface_unreachable_result(
+            task_id=task_id,
+            evaluation_dir=evaluation_dir,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            observations=observations,
+            check_ids=(
+                "sev1_escalates_on_time",
+                "ack_stops_escalation",
+                "resolved_stops_escalation",
+                "sev3_not_auto_escalated",
+                "invalid_as_of_rejected",
+            ),
+            detail=detail,
+            reason="interface_unreachable:app_load_failed",
+        )
 
     def _is_escalated(payload: Any) -> Any:
         if isinstance(payload, dict):
@@ -1675,7 +1877,7 @@ def _evaluate_incident_escalation_api(workspace: Path) -> HiddenEvaluationResult
             if check_id not in seen_ids:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=not failed_checks, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+    return _finalize_hidden_evaluation(task_id=task_id, evaluation_dir=evaluation_dir, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations)
 
 
 def _evaluate_csv_member_import(workspace: Path) -> HiddenEvaluationResult:
@@ -1706,7 +1908,32 @@ def _evaluate_csv_member_import(workspace: Path) -> HiddenEvaluationResult:
                 "Eve,eve@example.com,owner\n",
                 encoding="utf-8",
             )
-            command = _run_python_entrypoint(workspace, ["app/import_members.py", "import_members.py", "src/app/import_members.py"], ["--input", str(input_path), "--out-dir", str(out_dir)])
+            try:
+                command = _run_python_entrypoint(workspace, ["app/import_members.py", "import_members.py", "src/app/import_members.py"], ["--input", str(input_path), "--out-dir", str(out_dir)])
+            except RuntimeError as exc:
+                detail = f"entrypoint discovery failed: {exc}"
+                return _interface_unreachable_result(
+                    task_id=task_id,
+                    evaluation_dir=evaluation_dir,
+                    passed_checks=passed_checks,
+                    failed_checks=failed_checks,
+                    observations=observations,
+                    check_ids=("valid_rows_normalized", "duplicate_handling_correct", "invalid_rows_rejected_with_reason", "summary_counts_correct", "output_files_present"),
+                    detail=detail,
+                    reason="interface_unreachable:entrypoint_missing",
+                )
+            if command.returncode != 0:
+                detail = f"process failed: exit_code={command.returncode}; stdout={command.stdout.strip()}; stderr={command.stderr.strip()}"
+                return _interface_unreachable_result(
+                    task_id=task_id,
+                    evaluation_dir=evaluation_dir,
+                    passed_checks=passed_checks,
+                    failed_checks=failed_checks,
+                    observations=observations,
+                    check_ids=("valid_rows_normalized", "duplicate_handling_correct", "invalid_rows_rejected_with_reason", "summary_counts_correct", "output_files_present"),
+                    detail=detail,
+                    reason="interface_unreachable:process_failed",
+                )
             accepted_path = out_dir / "accepted.json"
             rejected_path = out_dir / "rejected.csv"
             summary_path = out_dir / "summary.json"
@@ -1724,6 +1951,18 @@ def _evaluate_csv_member_import(workspace: Path) -> HiddenEvaluationResult:
             invalid_reason_ok = command.returncode == 0 and len(rejected_rows) >= 2 and any(reason.strip() for reason in reasons)
             summary_counts_ok = command.returncode == 0 and isinstance(summary, dict) and summary.get("accepted_count") == len(accepted if isinstance(accepted, list) else []) and summary.get("rejected_count") == len(rejected_rows) and summary.get("duplicate_count") == 1 and summary.get("processed_count") == 5
             outputs_ok = accepted_path.is_file() and rejected_path.is_file() and summary_path.is_file()
+            if not outputs_ok:
+                detail = f"required outputs missing: accepted_exists={accepted_path.is_file()}; rejected_exists={rejected_path.is_file()}; summary_exists={summary_path.is_file()}"
+                return _interface_unreachable_result(
+                    task_id=task_id,
+                    evaluation_dir=evaluation_dir,
+                    passed_checks=passed_checks,
+                    failed_checks=failed_checks,
+                    observations=observations,
+                    check_ids=("valid_rows_normalized", "duplicate_handling_correct", "invalid_rows_rejected_with_reason", "summary_counts_correct", "output_files_present"),
+                    detail=detail,
+                    reason="interface_unreachable:required_outputs_missing",
+                )
 
             record("valid_rows_normalized", normalized_ok, f"exit_code={command.returncode}; stdout={command.stdout.strip()}; stderr={command.stderr.strip()}; emails={emails}")
             record("duplicate_handling_correct", duplicate_ok, f"exit_code={command.returncode}; emails={emails}; duplicate_count={summary.get('duplicate_count') if isinstance(summary, dict) else None}")
@@ -1736,7 +1975,7 @@ def _evaluate_csv_member_import(workspace: Path) -> HiddenEvaluationResult:
             if check_id not in {item.id for item in observations}:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=not failed_checks, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+    return _finalize_hidden_evaluation(task_id=task_id, evaluation_dir=evaluation_dir, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations)
 
 
 def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
@@ -1774,7 +2013,32 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
             finally:
                 connection.close()
 
-            command = _run_python_entrypoint(workspace, ["app/export.py", "export.py", "src/app/export.py"], ["--date", "2026-07-01", "--out-dir", str(out_dir)], env={"REPORT_DB_PATH": str(db_path)})
+            try:
+                command = _run_python_entrypoint(workspace, ["app/export.py", "export.py", "src/app/export.py"], ["--date", "2026-07-01", "--out-dir", str(out_dir)], env={"REPORT_DB_PATH": str(db_path)})
+            except RuntimeError as exc:
+                detail = f"entrypoint discovery failed: {exc}"
+                return _interface_unreachable_result(
+                    task_id=task_id,
+                    evaluation_dir=evaluation_dir,
+                    passed_checks=passed_checks,
+                    failed_checks=failed_checks,
+                    observations=observations,
+                    check_ids=("csv_rows_sorted_complete", "net_totals_correct", "date_filter_applied", "summary_totals_match", "invalid_date_rejected"),
+                    detail=detail,
+                    reason="interface_unreachable:entrypoint_missing",
+                )
+            if command.returncode != 0:
+                detail = f"process failed: exit_code={command.returncode}; stdout={command.stdout.strip()}; stderr={command.stderr.strip()}"
+                return _interface_unreachable_result(
+                    task_id=task_id,
+                    evaluation_dir=evaluation_dir,
+                    passed_checks=passed_checks,
+                    failed_checks=failed_checks,
+                    observations=observations,
+                    check_ids=("csv_rows_sorted_complete", "net_totals_correct", "date_filter_applied", "summary_totals_match", "invalid_date_rejected"),
+                    detail=detail,
+                    reason="interface_unreachable:process_failed",
+                )
             csv_path = out_dir / "report.csv"
             summary_json_path = out_dir / "summary.json"
             rows: list[dict[str, str]] = []
@@ -1782,6 +2046,18 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
                 with csv_path.open(encoding="utf-8", newline="") as handle:
                     rows = list(csv.DictReader(handle))
             summary: Any = json.loads(summary_json_path.read_text(encoding="utf-8")) if summary_json_path.is_file() else {}
+            if not csv_path.is_file() or not summary_json_path.is_file():
+                detail = f"required outputs missing: report_exists={csv_path.is_file()}; summary_exists={summary_json_path.is_file()}"
+                return _interface_unreachable_result(
+                    task_id=task_id,
+                    evaluation_dir=evaluation_dir,
+                    passed_checks=passed_checks,
+                    failed_checks=failed_checks,
+                    observations=observations,
+                    check_ids=("csv_rows_sorted_complete", "net_totals_correct", "date_filter_applied", "summary_totals_match", "invalid_date_rejected"),
+                    detail=detail,
+                    reason="interface_unreachable:required_outputs_missing",
+                )
 
             merchant_ids = [str(row.get("merchant_id", "")) for row in rows]
             sorted_complete_ok = command.returncode == 0 and bool(rows) and merchant_ids == sorted(merchant_ids) and all({"merchant_id", "gross_payout", "refund_total", "net_payout", "transaction_count"}.issubset(row.keys()) for row in rows)
@@ -1805,7 +2081,7 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
             if check_id not in {item.id for item in observations}:
                 record(check_id, False, detail)
 
-    return _persist_hidden_evaluation(HiddenEvaluationResult(task_id=task_id, critical_ok=not failed_checks, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations, summary_path=evaluation_dir / "summary.txt", result_path=evaluation_dir / "result.json"))
+    return _finalize_hidden_evaluation(task_id=task_id, evaluation_dir=evaluation_dir, passed_checks=passed_checks, failed_checks=failed_checks, observations=observations)
 
 
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:

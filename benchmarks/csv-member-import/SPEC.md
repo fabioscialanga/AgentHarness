@@ -50,6 +50,25 @@ Operations staff receive manual member CSVs from different sources. The import u
 - background workers
 - GUI upload flow
 
+## Interface contract evaluated by the grader
+The hidden evaluator invokes the deliverable through the following interface contract.
+
+### CLI contract
+- The workspace must expose one of these Python entrypoints: `app/import_members.py`, `import_members.py`, or `src/app/import_members.py`.
+- The evaluator first invokes the entrypoint as a Python module, then falls back to `python <entrypoint.py>` if needed.
+- The CLI must accept these arguments exactly:
+  - `--input <path_to_csv>`
+  - `--out-dir <path_to_output_directory>`
+
+### Output artifact contract
+- The CLI must write these files inside the directory passed to `--out-dir`:
+  - `accepted.json`
+  - `rejected.csv`
+  - `summary.json`
+
+### Packaging contract
+- The project manifest must declare the dependencies needed to run the implementation and tests in the grading environment, including pytest.
+
 ## Acceptance criteria
 - valid rows are normalized
 - duplicates are handled correctly

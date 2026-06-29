@@ -131,6 +131,24 @@ Do not include:
 - email sending
 - Docker unless the implementation chooses to add it without harming focus
 
+## Interface contract evaluated by the grader
+The hidden evaluator invokes the deliverable through the following interface contract.
+
+### Application loading contract
+- The workspace must contain a Python module that defines a FastAPI application.
+- The evaluator loads that module from the workspace root or `src/` and looks for a FastAPI object named `app`, `api`, or `application`, or another FastAPI object exposed at module top level.
+- Package-relative imports used by that module must resolve when the project is loaded from the workspace.
+
+### HTTP contract
+- `POST /tickets` accepts JSON with `title`, `description`, `requester_email`, `category`, and `priority`.
+- `GET /tickets` supports query parameters `status`, `priority`, and `category`.
+- `GET /tickets/{ticket_id}` returns one ticket and its comments.
+- `PATCH /tickets/{ticket_id}` accepts partial JSON updates for `status` and `assignee`.
+- `POST /tickets/{ticket_id}/comments` accepts JSON with `author` and `body`.
+
+### Packaging contract
+- The project manifest must declare the dependencies needed to run the application and tests in the grading environment, including FastAPI, Pydantic, SQLAlchemy, and pytest.
+
 ## Acceptance criteria
 A strong result should satisfy the following:
 - the app runs locally

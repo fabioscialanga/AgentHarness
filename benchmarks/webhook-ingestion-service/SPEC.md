@@ -59,6 +59,27 @@ An internal integrations team receives webhooks from an external partner. The se
 - frontend dashboards
 - multi-tenant auth
 
+## Interface contract evaluated by the grader
+The hidden evaluator invokes the deliverable through the following interface contract.
+
+### Application loading contract
+- The workspace must contain a Python module that defines a FastAPI application.
+- The evaluator loads that module from the workspace root or `src/` and looks for a FastAPI object named `app`, `api`, or `application`, or another FastAPI object exposed at module top level.
+- Package-relative imports used by that module must resolve when the project is loaded from the workspace.
+
+### HTTP contract
+- `POST /webhooks` accepts a JSON request body containing `event_id`, `source`, `occurred_at`, `type`, and `payload`.
+- Signed webhook requests use the `X-Signature` header carrying the HMAC SHA-256 hex digest of the raw JSON body.
+- `GET /events/{event_id}` returns one stored event.
+- `GET /events` supports query parameters `normalized_status` and `source`.
+- The stored event payload returned by the API must expose an event identifier and normalized status in JSON.
+
+### Runtime configuration contract
+- The application must honor the `WEBHOOK_SECRET` environment variable for signature verification.
+
+### Packaging contract
+- The project manifest must declare the dependencies needed to run the application and tests in the grading environment, including FastAPI, Pydantic, SQLAlchemy, and pytest.
+
 ## Acceptance criteria
 - valid signed events are stored
 - invalid signatures are rejected

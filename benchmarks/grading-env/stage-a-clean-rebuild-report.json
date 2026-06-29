@@ -1,0 +1,26 @@
+[
+  {
+    "name": "support-ticket-api",
+    "task_id": "support-ticket-api",
+    "returncode": 0,
+    "verdict": "pass"
+  },
+  {
+    "name": "support-ticket-emailstr",
+    "task_id": "support-ticket-api",
+    "returncode": 0,
+    "verdict": "pass"
+  },
+  {
+    "name": "inventory-adjustment-api",
+    "task_id": "inventory-adjustment-api",
+    "returncode": 0,
+    "verdict": "pass"
+  },
+  {
+    "name": "csv-member-import",
+    "task_id": "csv-member-import",
+    "returncode": 0,
+    "verdict": "pass"
+  }
+]

@@ -177,7 +177,7 @@ def _write_workspace(workspace: Path, app_source: str) -> None:
     (app_dir / '__init__.py').write_text('', encoding='utf-8')
     (app_dir / 'export.py').write_text(app_source, encoding='utf-8')
     (workspace / 'README.md').write_text('# Report export job\n', encoding='utf-8')
-    (workspace / 'pyproject.toml').write_text('[project]\nname = "report-export-job"\nversion = "0.1.0"\n', encoding='utf-8')
+    (workspace / 'pyproject.toml').write_text('[project]\nname = "report-export-job"\nversion = "0.1.0"\ndependencies = ["pytest"]\n', encoding='utf-8')
 
 
 def _write_run(run_path: Path, workspace: Path, run_id: str) -> None:

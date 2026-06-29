@@ -54,6 +54,23 @@ HR operations need a small internal service for employee leave requests. The ser
 - email notifications
 - frontend UI
 
+## Interface contract evaluated by the grader
+The hidden evaluator invokes the deliverable through the following interface contract.
+
+### Application loading contract
+- The workspace must contain a Python module that defines a FastAPI application.
+- The evaluator loads that module from the workspace root or `src/` and looks for a FastAPI object named `app`, `api`, or `application`, or another FastAPI object exposed at module top level.
+- Package-relative imports used by that module must resolve when the project is loaded from the workspace.
+
+### HTTP contract
+- `POST /requests` accepts JSON with `employee_id`, `leave_type`, `start_date`, `end_date`, and `reason`.
+- `GET /requests` supports query parameters `employee_id` and `status`.
+- `GET /requests/{request_id}` returns one request.
+- `POST /requests/{request_id}/review` accepts JSON with `decision`, `reviewer`, and `note`.
+
+### Packaging contract
+- The project manifest must declare the dependencies needed to run the application and tests in the grading environment, including FastAPI, Pydantic, SQLAlchemy, and pytest.
+
 ## Acceptance criteria
 - valid requests can be created
 - overlapping approved leave is rejected

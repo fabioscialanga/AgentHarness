@@ -155,6 +155,26 @@ BUGGY_APP = inspect.cleandoc(
     '''
 ).strip() + '\n'
 
+MISSING_OUTPUT_APP = inspect.cleandoc(
+    '''
+    from __future__ import annotations
+
+    import argparse
+    from pathlib import Path
+
+    def main() -> int:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--input', required=True)
+        parser.add_argument('--out-dir', required=True)
+        args = parser.parse_args()
+        Path(args.out_dir).mkdir(parents=True, exist_ok=True)
+        return 0
+
+    if __name__ == '__main__':
+        raise SystemExit(main())
+    '''
+).strip() + '\n'
+
 
 def _write_workspace(workspace: Path, app_source: str) -> None:
     app_dir = workspace / 'app'
@@ -162,7 +182,7 @@ def _write_workspace(workspace: Path, app_source: str) -> None:
     (app_dir / '__init__.py').write_text('', encoding='utf-8')
     (app_dir / 'import_members.py').write_text(app_source, encoding='utf-8')
     (workspace / 'README.md').write_text('# CSV member import\n', encoding='utf-8')
-    (workspace / 'pyproject.toml').write_text('[project]\nname = "csv-member-import"\nversion = "0.1.0"\n', encoding='utf-8')
+    (workspace / 'pyproject.toml').write_text('[project]\nname = "csv-member-import"\nversion = "0.1.0"\ndependencies = ["pytest"]\n', encoding='utf-8')
 
 
 def _write_run(run_path: Path, workspace: Path, run_id: str) -> None:
@@ -253,6 +273,7 @@ class CsvBenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertEqual(hidden_eval.returncode, 1, hidden_eval.stdout)
             hidden_payload = json.loads(hidden_eval.stdout)
             self.assertFalse(hidden_payload['critical_ok'])
+            self.assertEqual(hidden_payload['classification_reason'], 'behavior_wrong:functional_checks_failed')
             self.assertIn('valid_rows_normalized', hidden_payload['failed_checks'])
             self.assertIn('duplicate_handling_correct', hidden_payload['failed_checks'])
             self.assertIn('invalid_rows_rejected_with_reason', hidden_payload['failed_checks'])
@@ -266,6 +287,23 @@ class CsvBenchmarkHiddenEvaluatorTests(unittest.TestCase):
             payload = json.loads(completed.stdout)
             self.assertFalse(payload['ok'])
             self.assertGreaterEqual(payload['summary']['failed'], 4)
+
+    def test_hidden_evaluator_reports_interface_unreachable_when_required_outputs_are_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / 'workspace'
+            workspace.mkdir()
+            _write_workspace(workspace, MISSING_OUTPUT_APP)
+            run_path = temp_root / 'run.json'
+            _write_run(run_path, workspace, 'csv_missing_outputs_001')
+
+            result = evaluate_benchmark_task(run_path, TASK_ID)
+
+            self.assertFalse(result.critical_ok)
+            self.assertEqual(result.classification_reason, 'interface_unreachable:required_outputs_missing')
+            self.assertEqual(result.execution_status, 'valid')
+            self.assertEqual(result.outcome_status, 'real_failure')
+            self.assertIn('output_files_present', result.failed_checks)
 
     def test_library_evaluator_integrates_with_evaluate_run(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

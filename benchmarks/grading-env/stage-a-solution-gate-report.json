@@ -1,0 +1,254 @@
+[
+  {
+    "name": "support-ticket-api",
+    "task_id": "support-ticket-api",
+    "workspace": "/home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/support-ticket-api",
+    "returncode": 0,
+    "stdout": "\n=== Gate wheelhouse: dettaglio ===\n[PASS] manifest leggibile\n[PASS] tutte le wheel elencate sono presenti su disco\n[PASS] nessuna wheel presente fuori dal manifest\n[PASS] hash delle wheel coerenti col manifest\n[PASS] hash del constraints coerente col manifest\n[PASS] install offline della radice (--no-index)\n[PASS] probe import in-spec (EmailStr, TestClient, sniffio)\n[PASS] soluzione support-ticket-api: install offline dalla propria manifest\n[PASS] soluzione support-ticket-api: install offline del grader\n[PASS] soluzione support-ticket-api: grader esito di successo\n\n=== Verdetto ===\nPASS, il wheelhouse copre i percorsi provati\n\nReport JSON scritto in /home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/support-ticket-api-gate.json\n",
+    "stderr": "",
+    "gate_report": {
+      "verdict": "pass",
+      "checks": [
+        {
+          "check": "manifest leggibile",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "tutte le wheel elencate sono presenti su disco",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "nessuna wheel presente fuori dal manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash delle wheel coerenti col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash del constraints coerente col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "install offline della radice (--no-index)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "probe import in-spec (EmailStr, TestClient, sniffio)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione support-ticket-api: install offline dalla propria manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione support-ticket-api: install offline del grader",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione support-ticket-api: grader esito di successo",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    }
+  },
+  {
+    "name": "support-ticket-emailstr",
+    "task_id": "support-ticket-api",
+    "workspace": "/home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/support-ticket-emailstr",
+    "returncode": 0,
+    "stdout": "\n=== Gate wheelhouse: dettaglio ===\n[PASS] manifest leggibile\n[PASS] tutte le wheel elencate sono presenti su disco\n[PASS] nessuna wheel presente fuori dal manifest\n[PASS] hash delle wheel coerenti col manifest\n[PASS] hash del constraints coerente col manifest\n[PASS] install offline della radice (--no-index)\n[PASS] probe import in-spec (EmailStr, TestClient, sniffio)\n[PASS] soluzione support-ticket-emailstr: install offline dalla propria manifest\n[PASS] soluzione support-ticket-emailstr: install offline del grader\n[PASS] soluzione support-ticket-emailstr: grader esito di successo\n\n=== Verdetto ===\nPASS, il wheelhouse copre i percorsi provati\n\nReport JSON scritto in /home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/support-ticket-emailstr-gate.json\n",
+    "stderr": "",
+    "gate_report": {
+      "verdict": "pass",
+      "checks": [
+        {
+          "check": "manifest leggibile",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "tutte le wheel elencate sono presenti su disco",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "nessuna wheel presente fuori dal manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash delle wheel coerenti col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash del constraints coerente col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "install offline della radice (--no-index)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "probe import in-spec (EmailStr, TestClient, sniffio)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione support-ticket-emailstr: install offline dalla propria manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione support-ticket-emailstr: install offline del grader",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione support-ticket-emailstr: grader esito di successo",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    }
+  },
+  {
+    "name": "inventory-adjustment-api",
+    "task_id": "inventory-adjustment-api",
+    "workspace": "/home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/inventory-adjustment-api",
+    "returncode": 0,
+    "stdout": "\n=== Gate wheelhouse: dettaglio ===\n[PASS] manifest leggibile\n[PASS] tutte le wheel elencate sono presenti su disco\n[PASS] nessuna wheel presente fuori dal manifest\n[PASS] hash delle wheel coerenti col manifest\n[PASS] hash del constraints coerente col manifest\n[PASS] install offline della radice (--no-index)\n[PASS] probe import in-spec (EmailStr, TestClient, sniffio)\n[PASS] soluzione inventory-adjustment-api: install offline dalla propria manifest\n[PASS] soluzione inventory-adjustment-api: install offline del grader\n[PASS] soluzione inventory-adjustment-api: grader esito di successo\n\n=== Verdetto ===\nPASS, il wheelhouse copre i percorsi provati\n\nReport JSON scritto in /home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/inventory-adjustment-api-gate.json\n",
+    "stderr": "",
+    "gate_report": {
+      "verdict": "pass",
+      "checks": [
+        {
+          "check": "manifest leggibile",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "tutte le wheel elencate sono presenti su disco",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "nessuna wheel presente fuori dal manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash delle wheel coerenti col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash del constraints coerente col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "install offline della radice (--no-index)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "probe import in-spec (EmailStr, TestClient, sniffio)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione inventory-adjustment-api: install offline dalla propria manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione inventory-adjustment-api: install offline del grader",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione inventory-adjustment-api: grader esito di successo",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    }
+  },
+  {
+    "name": "csv-member-import",
+    "task_id": "csv-member-import",
+    "workspace": "/home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/csv-member-import",
+    "returncode": 0,
+    "stdout": "\n=== Gate wheelhouse: dettaglio ===\n[PASS] manifest leggibile\n[PASS] tutte le wheel elencate sono presenti su disco\n[PASS] nessuna wheel presente fuori dal manifest\n[PASS] hash delle wheel coerenti col manifest\n[PASS] hash del constraints coerente col manifest\n[PASS] install offline della radice (--no-index)\n[PASS] probe import in-spec (EmailStr, TestClient, sniffio)\n[PASS] soluzione csv-member-import: install offline dalla propria manifest\n[PASS] soluzione csv-member-import: install offline del grader\n[PASS] soluzione csv-member-import: grader esito di successo\n\n=== Verdetto ===\nPASS, il wheelhouse copre i percorsi provati\n\nReport JSON scritto in /home/fabio/AgentHarness/benchmarks/grading-env/stage-a-solutions/csv-member-import-gate.json\n",
+    "stderr": "",
+    "gate_report": {
+      "verdict": "pass",
+      "checks": [
+        {
+          "check": "manifest leggibile",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "tutte le wheel elencate sono presenti su disco",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "nessuna wheel presente fuori dal manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash delle wheel coerenti col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "hash del constraints coerente col manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "install offline della radice (--no-index)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "probe import in-spec (EmailStr, TestClient, sniffio)",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione csv-member-import: install offline dalla propria manifest",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione csv-member-import: install offline del grader",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "soluzione csv-member-import: grader esito di successo",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    }
+  }
+]

@@ -155,6 +155,11 @@ Da fissare e loggare per ogni run:
 - hash versione task
 - commit SHA di AgentHarness
 - hash versione script benchmark
+- Python 3.12 come target del grading congelato
+- `benchmarks/grading-env/constraints-py312.txt`
+- `benchmarks/grading-env/wheelhouse-manifest.json` con hash delle wheel
+- `benchmarks/grading-env/wheelhouse/` come unica sorgente offline per install con `--no-index`
+- warning noto e congelato: l'attuale combinazione Starlette e httpx emette un deprecation warning verso `httpx2` durante `TestClient`, senza invalidare il grading
 
 ### 8. Metriche
 #### 8.1 Endpoint primario
@@ -352,6 +357,8 @@ Come entra la evaluation suite:
 Prerequisito operativo del grader held-out, da soddisfare prima del primo run senza cambiare endpoint o parametri congelati:
 - per ogni soluzione, il grader costruisce un ambiente isolato a partire dalla manifest dichiarata dalla soluzione stessa
 - il grading held-out gira fuori processo dentro quell'ambiente isolato, non nel processo del grader con il suo ambiente ambientale
+- la manifest dichiarata è obbligatoria, ma il grader non applica una allowlist hardcoded o un minimo hardcoded di dipendenze per task
+- il wheelhouse offline congelato è l'unica fonte di verità per l'ammissione delle dipendenze: se una dipendenza installa offline viene ammessa, se non installa il run resta `real_failure`
 - la tassonomia degli esiti distingue almeno: valid, real_failure, harness_invalid
 - valid significa che il grading è partito correttamente nell'ambiente isolato e ha prodotto osservazioni task-specific
 - real_failure significa che la soluzione, valutata dalla propria manifest dichiarata, non installa, non importa, non parte, oppure fallisce i check held-out
@@ -382,6 +389,12 @@ Prerequisiti pre-run ancora obbligatori:
 
 6. Residuo soggettivo:
    - se incluso nella fase uno, resta secondario ed esplorativo
+
+7. Ambiente di grading held-out:
+   - freeze operativo completo
+   - ricostruibile dai soli artefatti versionati in `benchmarks/grading-env/`
+   - gate root offline verde
+   - gate a livello di soluzione verde per reference API, reference CLI e variante in-spec con `EmailStr`
 
 ### 16. Freeze rule
 Nessun benchmark run parte prima che sia soddisfatto il quality gate della sezione 5.
@@ -500,18 +513,23 @@ Hard rule:
 - neither task count nor replicate count changes after the first benchmark run starts
 
 ### 7. Reproducibility controls
-Log for every run:
-- exact model and provider
-- runtime and version when available
-- temperature and stochastic controls
-- seed if available, otherwise paired replicate index
-- tool and network policy
+Per run, fix and log at least:
+- exact model provider and model name
+- agent runtime and version when available
+- temperature and stochasticity controls when exposed
+- true seed when available, otherwise paired replicate index
+- tool access and network policy
 - wall-clock budget
-- repair-pass limit
-- workspace template
-- task version hash
+- maximum repair-pass count
+- initial workspace template and files
+- task-version hash
 - AgentHarness commit SHA
-- benchmark script version hash
+- benchmark-script version hash
+- Python 3.12 as the frozen grading target
+- `benchmarks/grading-env/constraints-py312.txt`
+- `benchmarks/grading-env/wheelhouse-manifest.json` with wheel hashes
+- `benchmarks/grading-env/wheelhouse/` as the only offline source for `--no-index` installs
+- known frozen warning: the current Starlette and httpx combination emits an `httpx2` deprecation warning during `TestClient` usage without invalidating grading
 
 ### 8. Metrics
 #### 8.1 Primary endpoint
@@ -728,6 +746,12 @@ Mandatory pre-run prerequisites:
 
 6. Residual subjective metrics:
    - if included in phase one, they remain exploratory secondary outputs
+
+7. Held-out grading environment:
+   - operational freeze complete
+   - rebuildable from the versioned artifacts in `benchmarks/grading-env/` alone
+   - root offline gate green
+   - solution-level gate green for API reference, CLI reference, and an in-spec `EmailStr` variant
 
 ### 16. Freeze rule
 No benchmark run starts until the section-5 quality gate is satisfied.

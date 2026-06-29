@@ -1,0 +1,24 @@
+# Top-level dependency seed for building the offline benchmark wheelhouse.
+# This file is a build input, not the hidden grader's admission gate.
+
+[api-solution]
+email-validator
+fastapi
+pydantic
+pytest>=8.0,<9.0
+sqlalchemy
+uvicorn
+
+[cli-solution]
+pytest>=8.0,<9.0
+
+[grader]
+agentharness
+email-validator
+PyYAML
+fastapi
+httpx
+pytest>=8.0,<9.0
+setuptools
+sniffio
+sqlalchemy

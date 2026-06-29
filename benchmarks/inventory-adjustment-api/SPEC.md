@@ -66,6 +66,25 @@ Operations teams need a lightweight service to track item stock, manual adjustme
 - background workers
 - batch CSV imports
 
+## Interface contract evaluated by the grader
+The hidden evaluator invokes the deliverable through the following interface contract.
+
+### Application loading contract
+- The workspace must contain a Python module that defines a FastAPI application.
+- The evaluator loads that module from the workspace root or `src/` and looks for a FastAPI object named `app`, `api`, or `application`, or another FastAPI object exposed at module top level.
+- Package-relative imports used by that module must resolve when the project is loaded from the workspace.
+
+### HTTP contract
+- `POST /items` accepts JSON with `sku`, `name`, and `on_hand`.
+- `GET /items` supports query parameters `sku` and `low_stock`.
+- `GET /items/{sku}` returns one item with adjustment and reservation history.
+- `POST /items/{sku}/adjustments` accepts JSON with `reason`, and either a delta-based quantity for receive or damage, or a counted quantity for recount.
+- `POST /items/{sku}/reservations` accepts JSON with `order_id` and `quantity`.
+- `POST /items/{sku}/reservations/{order_id}/release` accepts JSON with `quantity`.
+
+### Packaging contract
+- The project manifest must declare the dependencies needed to run the application and tests in the grading environment, including FastAPI, Pydantic, SQLAlchemy, and pytest.
+
 ## Acceptance criteria
 - valid reservations succeed when stock is available
 - over-reservation is rejected

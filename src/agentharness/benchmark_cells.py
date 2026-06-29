@@ -1,0 +1,693 @@
+from __future__ import annotations
+
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Protocol
+
+from .benchmarking import render_json_template, write_rendered_json_template
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+BENCHMARKS_DIR = REPO_ROOT / "benchmarks"
+DEFAULT_RUNS_ROOT = BENCHMARKS_DIR / "runs" / "stage-b-diagnostics"
+GRADING_ENV_DIR = BENCHMARKS_DIR / "grading-env"
+SESSION_ID_RE = re.compile(r"session_id:\s*(?P<session_id>\S+)")
+
+_EXCLUDED_PARTS = {".venv", ".pytest_cache", ".agentharness", ".stageb-test-venv", "__pycache__"}
+_EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".db"}
+
+
+@dataclass
+class AgentAttempt:
+    attempt_name: str
+    prompt_kind: str
+    command: list[str]
+    exit_code: int
+    stdout_path: Path
+    stderr_path: Path
+    session_id: str | None
+    started_at: str
+    finished_at: str
+    duration_seconds: float
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "attempt_name": self.attempt_name,
+            "prompt_kind": self.prompt_kind,
+            "command": self.command,
+            "exit_code": self.exit_code,
+            "stdout_path": str(self.stdout_path),
+            "stderr_path": str(self.stderr_path),
+            "session_id": self.session_id,
+            "started_at": self.started_at,
+            "finished_at": self.finished_at,
+            "duration_seconds": self.duration_seconds,
+        }
+
+
+@dataclass
+class AgentInvocationResult:
+    attempts: list[AgentAttempt]
+
+    def to_dict(self) -> list[dict[str, object]]:
+        return [attempt.to_dict() for attempt in self.attempts]
+
+
+def _has_invocation_evidence(attempt: AgentAttempt) -> bool:
+    if attempt.session_id:
+        return True
+    if attempt.stdout_path.is_file() and attempt.stdout_path.read_text(encoding="utf-8").strip():
+        return True
+    if attempt.stderr_path.is_file() and attempt.stderr_path.read_text(encoding="utf-8").strip():
+        return True
+    return False
+
+
+class AgentInvoker(Protocol):
+    def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
+        ...
+
+
+class HermesCliInvoker:
+    def __init__(
+        self,
+        hermes_command: str | None = None,
+        toolsets: str = "terminal,file",
+        max_retries: int = 3,
+    ) -> None:
+        self._hermes_command = hermes_command or "hermes"
+        self._toolsets = toolsets
+        self._max_retries = max_retries
+
+    def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
+        task_id = str(manifest["task_id"])
+        condition = str(manifest["condition"])
+        run_id = str(manifest["run_id"])
+        spec_path = Path(str(manifest["spec_path"]))
+        claims_template_path = Path(str(manifest["claims_template_path"]))
+
+        attempts_dir = outputs_dir / "agent-invocations"
+        attempts_dir.mkdir(parents=True, exist_ok=True)
+
+        attempts: list[AgentAttempt] = []
+        initial_prompt = _build_initial_prompt(
+            task_id=task_id,
+            condition=condition,
+            workspace=workspace,
+            spec_path=spec_path,
+            claims_template_path=claims_template_path,
+        )
+        attempts.append(
+            self._invoke(
+                prompt=initial_prompt,
+                attempt_name="attempt-1-initial",
+                prompt_kind="initial",
+                outputs_dir=attempts_dir,
+            )
+        )
+
+        pytest_report = outputs_dir / "pre-repair-pytest.json"
+        pytest_result = run_workspace_pytest(workspace, pytest_report)
+
+        if condition == "A-baseline":
+            repair_prompt = _build_baseline_repair_prompt(
+                task_id=task_id,
+                workspace=workspace,
+                spec_path=spec_path,
+                pytest_stdout_path=str(pytest_result["stdout_path"]),
+                pytest_stderr_path=str(pytest_result["stderr_path"]),
+            )
+        else:
+            verify_feedback_path = outputs_dir / "pre-repair-verify-run-report.json"
+            provisional_run_path = outputs_dir / "pre-repair-run.json"
+            provisional_claims_path = outputs_dir / "pre-repair-claims.json"
+            write_run_json(
+                run_path=provisional_run_path,
+                manifest=manifest,
+                workspace=workspace,
+                pytest_exit=int(str(pytest_result["exit_code"])),
+                pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
+                pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
+            )
+            render_claims_json(run_id=run_id, claims_template_path=claims_template_path, claims_path=provisional_claims_path)
+            run_verify_run(
+                run_path=provisional_run_path,
+                claims_path=provisional_claims_path,
+                report_path=verify_feedback_path,
+            )
+            repair_prompt = _build_agentharness_repair_prompt(
+                task_id=task_id,
+                workspace=workspace,
+                spec_path=spec_path,
+                pytest_stdout_path=str(pytest_result["stdout_path"]),
+                pytest_stderr_path=str(pytest_result["stderr_path"]),
+                verify_feedback_path=verify_feedback_path,
+            )
+
+        attempts.append(
+            self._invoke(
+                prompt=repair_prompt,
+                attempt_name="attempt-2-repair",
+                prompt_kind="repair",
+                outputs_dir=attempts_dir,
+            )
+        )
+        return AgentInvocationResult(attempts=attempts)
+
+    def _invoke(self, *, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path) -> AgentAttempt:
+        command = [
+            self._hermes_command,
+            "chat",
+            "-Q",
+            "--source",
+            "tool",
+            "--ignore-rules",
+            "--yolo",
+            "--toolsets",
+            self._toolsets,
+            "-q",
+            prompt,
+        ]
+        last_attempt: AgentAttempt | None = None
+        for retry_index in range(1, self._max_retries + 1):
+            suffix = "" if self._max_retries == 1 else f".try{retry_index}"
+            stdout_path = outputs_dir / f"{attempt_name}{suffix}.stdout"
+            stderr_path = outputs_dir / f"{attempt_name}{suffix}.stderr"
+            started = _utc_now()
+            t0 = time.time()
+            completed = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+            duration = time.time() - t0
+            finished = _utc_now()
+            stdout_path.write_text(completed.stdout, encoding="utf-8")
+            stderr_path.write_text(completed.stderr, encoding="utf-8")
+            session_match = SESSION_ID_RE.search(completed.stdout)
+            session_id = session_match.group("session_id") if session_match else None
+            last_attempt = AgentAttempt(
+                attempt_name=attempt_name,
+                prompt_kind=prompt_kind,
+                command=command,
+                exit_code=completed.returncode,
+                stdout_path=stdout_path,
+                stderr_path=stderr_path,
+                session_id=session_id,
+                started_at=started,
+                finished_at=finished,
+                duration_seconds=duration,
+            )
+            if completed.returncode == 0 and session_id:
+                return last_attempt
+        assert last_attempt is not None
+        return last_attempt
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def benchmark_task_dir(task_id: str) -> Path:
+    task_dir = BENCHMARKS_DIR / task_id
+    if not task_dir.is_dir():
+        raise FileNotFoundError(f"Benchmark task directory not found for {task_id}: {task_dir}")
+    return task_dir
+
+
+def build_cell_manifest(*, task_id: str, condition: str, replicate_id: str, cell_dir: Path) -> dict[str, object]:
+    run_id = f"stageb_{task_id.replace('-', '_')}_{'a' if condition == 'A-baseline' else 'b'}_{replicate_id}"
+    return {
+        "task_id": task_id,
+        "condition": condition,
+        "replicate_id": replicate_id,
+        "run_id": run_id,
+        "cell_dir": str(cell_dir),
+        "workspace": str(cell_dir / "workspace"),
+        "spec_path": str(cell_dir / "inputs" / "SPEC.md"),
+        "claims_template_path": str(cell_dir / "inputs" / "CLAIMS_CONTRACT.template.json"),
+        "repair_policy": "generic-self-review" if condition == "A-baseline" else "verify-run-guided",
+        "diagnostic_stage": "B",
+    }
+
+
+def prepare_fresh_cell(*, task_id: str, condition: str, replicate_id: str, cell_dir: Path) -> dict[str, object]:
+    if cell_dir.exists():
+        shutil.rmtree(cell_dir)
+    workspace = cell_dir / "workspace"
+    inputs_dir = cell_dir / "inputs"
+    outputs_dir = cell_dir / "outputs"
+    workspace.mkdir(parents=True, exist_ok=True)
+    inputs_dir.mkdir(parents=True, exist_ok=True)
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+
+    task_dir = benchmark_task_dir(task_id)
+    shutil.copy2(task_dir / "SPEC.md", inputs_dir / "SPEC.md")
+    shutil.copy2(task_dir / "CLAIMS_CONTRACT.template.json", inputs_dir / "CLAIMS_CONTRACT.template.json")
+    for extra_name in ("RUN_PROTOCOL.md", "QUALITY_GATE.md", "SCORECARD.md"):
+        extra_path = task_dir / extra_name
+        if extra_path.is_file():
+            shutil.copy2(extra_path, inputs_dir / extra_name)
+
+    manifest = build_cell_manifest(task_id=task_id, condition=condition, replicate_id=replicate_id, cell_dir=cell_dir)
+    (cell_dir / "cell_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    return manifest
+
+
+def rel_solution_files(workspace: Path) -> list[str]:
+    paths: list[str] = []
+    for path in sorted(workspace.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(workspace).as_posix()
+        parts = set(rel.split("/"))
+        if parts & _EXCLUDED_PARTS:
+            continue
+        if any(rel.endswith(suffix) for suffix in _EXCLUDED_SUFFIXES):
+            continue
+        if ".egg-info/" in rel:
+            continue
+        paths.append(rel)
+    return paths
+
+
+def compute_solution_hash(workspace: Path) -> str:
+    import hashlib
+
+    digest = hashlib.sha256()
+    for rel in rel_solution_files(workspace):
+        path = workspace / rel
+        digest.update(rel.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def ensure_test_venv(workspace: Path) -> Path:
+    venv_dir = workspace / ".stageb-test-venv"
+    py = venv_dir / "bin" / "python"
+    if py.exists():
+        return py
+    subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True)
+    command = [
+        str(py),
+        "-m",
+        "pip",
+        "install",
+        "--no-index",
+        "--find-links",
+        str(GRADING_ENV_DIR / "wheelhouse"),
+        "-c",
+        str(GRADING_ENV_DIR / "constraints-py312.txt"),
+        "pytest",
+        "fastapi",
+        "sqlalchemy",
+        "pydantic",
+        "email-validator",
+        "httpx",
+    ]
+    env = _base_env()
+    completed = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False, env=env)
+    if completed.returncode != 0:
+        raise RuntimeError(f"Offline shared deps install failed for {workspace}: {completed.stderr}")
+    return py
+
+
+def _base_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["AGENTHARNESS_GRADING_ENV_DIR"] = str(GRADING_ENV_DIR)
+    env["PYTHONPATH"] = str(REPO_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    return env
+
+
+def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object]:
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    python_path = ensure_test_venv(workspace)
+    stdout_path = report_path.with_suffix(".stdout")
+    stderr_path = report_path.with_suffix(".stderr")
+    started = _utc_now()
+    t0 = time.time()
+    completed = subprocess.run(
+        [str(python_path), "-m", "pytest", "-q"],
+        cwd=str(workspace),
+        capture_output=True,
+        text=True,
+        check=False,
+        env={**_base_env(), "PYTHONPATH": str(workspace)},
+    )
+    duration = time.time() - t0
+    finished = _utc_now()
+    stdout_path.write_text(completed.stdout, encoding="utf-8")
+    stderr_path.write_text(completed.stderr, encoding="utf-8")
+    payload = {
+        "command": [str(python_path), "-m", "pytest", "-q"],
+        "exit_code": completed.returncode,
+        "stdout_path": str(stdout_path),
+        "stderr_path": str(stderr_path),
+        "started_at": started,
+        "finished_at": finished,
+        "duration_seconds": duration,
+    }
+    report_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
+def write_run_json(
+    *,
+    run_path: Path,
+    manifest: dict[str, object],
+    workspace: Path,
+    pytest_exit: int,
+    pytest_stdout_path: Path,
+    pytest_stderr_path: Path,
+) -> None:
+    run_payload = {
+        "run_id": manifest["run_id"],
+        "workspace": str(workspace),
+        "task": manifest["task_id"],
+        "artifacts": {
+            "changed_files": rel_solution_files(workspace),
+            "commands": [
+                {
+                    "cmd": "pytest -q",
+                    "exit_code": pytest_exit,
+                    "stdout_path": str(pytest_stdout_path),
+                    "stderr_path": str(pytest_stderr_path),
+                }
+            ],
+            "outputs": [
+                {"type": "file", "path": "README.md"},
+                {"type": "file", "path": "pyproject.toml"},
+            ],
+        },
+    }
+    run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+
+
+def render_claims_json(*, run_id: str, claims_template_path: Path, claims_path: Path) -> None:
+    rendered_claims = render_json_template(claims_template_path, run_id=run_id)
+    claims_path.write_text(json.dumps(rendered_claims, indent=2) + "\n", encoding="utf-8")
+
+
+def run_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> dict[str, object]:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "agentharness",
+            "verify-run",
+            "--run",
+            str(run_path),
+            "--claims",
+            str(claims_path),
+            "--json",
+            "--report-path",
+            str(report_path),
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+        env=_base_env(),
+    )
+    if completed.stdout.strip().startswith("{"):
+        return json.loads(completed.stdout)
+    return {
+        "ok": False,
+        "error": "verify-run did not emit JSON",
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+    }
+
+
+def run_hidden_benchmark(*, run_path: Path, task_id: str, output_path: Path) -> dict[str, object]:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "agentharness",
+            "benchmark-evaluate-task",
+            "--run",
+            str(run_path),
+            "--task-id",
+            task_id,
+            "--json",
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+        env=_base_env(),
+    )
+    if completed.stdout.strip().startswith("{"):
+        payload = json.loads(completed.stdout)
+    else:
+        payload = {
+            "task_id": task_id,
+            "critical_ok": False,
+            "execution_status": "harness_invalid",
+            "outcome_status": "real_failure",
+            "classification_reason": "benchmark-evaluate-task did not emit JSON",
+            "passed_checks": [],
+            "failed_checks": [],
+            "observations": [],
+            "stdout": completed.stdout,
+            "stderr": completed.stderr,
+        }
+    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
+def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs_dir: Path) -> dict[str, object]:
+    suite_path = outputs_dir / "suite.json"
+    write_rendered_json_template(
+        BENCHMARKS_DIR / task_id / "HELDOUT_EVALUATION_SUITE.template.json",
+        run_id=run_id,
+        output_path=suite_path,
+    )
+    report_path = outputs_dir / "evaluation-report.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "agentharness",
+            "evaluate",
+            "--run",
+            str(run_path),
+            "--suite",
+            str(suite_path),
+            "--json",
+            "--report-path",
+            str(report_path),
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+        env=_base_env(),
+    )
+    if completed.stdout.strip().startswith("{"):
+        return json.loads(completed.stdout)
+    return {
+        "ok": False,
+        "summary": {"passed": 0, "failed": 0, "invalid": 0},
+        "results": [],
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+    }
+
+
+def score_from_evaluation(payload: dict[str, object]) -> float:
+    results = payload.get("results", [])
+    if not isinstance(results, list) or not results:
+        return 0.0
+    passed = sum(1 for item in results if isinstance(item, dict) and item.get("status") == "passed")
+    return passed / len(results)
+
+
+def write_provenance(
+    *,
+    provenance_path: Path,
+    manifest: dict[str, object],
+    workspace: Path,
+    invocation_result: AgentInvocationResult,
+    pytest_result: dict[str, object],
+) -> dict[str, object]:
+    provenance = {
+        "task_id": manifest["task_id"],
+        "condition": manifest["condition"],
+        "replicate_id": manifest["replicate_id"],
+        "run_id": manifest["run_id"],
+        "workspace": str(workspace),
+        "solution_hash": compute_solution_hash(workspace),
+        "attempt_count": len(invocation_result.attempts),
+        "attempts": invocation_result.to_dict(),
+        "pytest": pytest_result,
+    }
+    provenance_path.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
+    return provenance
+
+
+def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
+    manifest = json.loads((cell_dir / "cell_manifest.json").read_text(encoding="utf-8"))
+    workspace = Path(str(manifest["workspace"]))
+    outputs_dir = cell_dir / "outputs"
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+
+    invocation_result = invoker.run_cell(manifest, outputs_dir, workspace)
+    if any(not _has_invocation_evidence(attempt) for attempt in invocation_result.attempts):
+        raise RuntimeError(f"Missing invocation evidence for {cell_dir}")
+    if not rel_solution_files(workspace):
+        raise RuntimeError(f"Agent left an empty workspace for {cell_dir}")
+
+    pytest_result = run_workspace_pytest(workspace, outputs_dir / "final-pytest.json")
+    run_path = cell_dir / "run.json"
+    claims_path = cell_dir / "claims.json"
+    write_run_json(
+        run_path=run_path,
+        manifest=manifest,
+        workspace=workspace,
+        pytest_exit=int(str(pytest_result["exit_code"])),
+        pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
+        pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
+    )
+    render_claims_json(
+        run_id=str(manifest["run_id"]),
+        claims_template_path=Path(str(manifest["claims_template_path"])),
+        claims_path=claims_path,
+    )
+    verify_payload = run_verify_run(run_path=run_path, claims_path=claims_path, report_path=outputs_dir / "verify-run-report.json")
+    benchmark_payload = run_hidden_benchmark(
+        run_path=run_path,
+        task_id=str(manifest["task_id"]),
+        output_path=outputs_dir / "benchmark-evaluate-task.json",
+    )
+    eval_payload = run_heldout_evaluation(
+        task_id=str(manifest["task_id"]),
+        run_id=str(manifest["run_id"]),
+        run_path=run_path,
+        outputs_dir=outputs_dir,
+    )
+    provenance = write_provenance(
+        provenance_path=cell_dir / "provenance.json",
+        manifest=manifest,
+        workspace=workspace,
+        invocation_result=invocation_result,
+        pytest_result=pytest_result,
+    )
+    metadata = {
+        "task_id": manifest["task_id"],
+        "condition": manifest["condition"],
+        "replicate_id": manifest["replicate_id"],
+        "run_id": manifest["run_id"],
+        "repair_passes_used": max(0, len(invocation_result.attempts) - 1),
+        "final_pytest_exit_code": pytest_result["exit_code"],
+        "scorable_score": score_from_evaluation(eval_payload),
+        "verify_run_ok": verify_payload.get("ok"),
+        "benchmark_execution_status": benchmark_payload.get("execution_status"),
+        "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
+        "solution_hash": provenance["solution_hash"],
+        "attempt_count": provenance["attempt_count"],
+    }
+    (cell_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    try:
+        cell_label = str(cell_dir.relative_to(REPO_ROOT))
+    except ValueError:
+        cell_label = str(cell_dir)
+    return {
+        "cell": cell_label,
+        "task_id": manifest["task_id"],
+        "condition": manifest["condition"],
+        "replicate_id": manifest["replicate_id"],
+        "pytest_exit_code": pytest_result["exit_code"],
+        "verify_run_ok": verify_payload.get("ok"),
+        "benchmark_execution_status": benchmark_payload.get("execution_status"),
+        "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
+        "score": score_from_evaluation(eval_payload),
+        "evaluation_summary": eval_payload.get("summary", {}),
+        "solution_hash": provenance["solution_hash"],
+        "attempt_count": provenance["attempt_count"],
+    }
+
+
+def assert_nonshared_solution_hashes(results: list[dict[str, object]]) -> None:
+    grouped: dict[str, list[str]] = defaultdict(list)
+    for result in results:
+        task_id = str(result["task_id"])
+        grouped[task_id].append(str(result["solution_hash"]))
+    offenders = [task_id for task_id, hashes in grouped.items() if len(hashes) > 1 and len(set(hashes)) == 1]
+    if offenders:
+        joined = ", ".join(sorted(offenders))
+        raise RuntimeError(f"Identical solution_hash across all cells for task(s): {joined}")
+
+
+def _build_initial_prompt(*, task_id: str, condition: str, workspace: Path, spec_path: Path, claims_template_path: Path) -> str:
+    common = f"""
+You are executing one benchmark cell for task {task_id}.
+Work only inside this absolute workspace: {workspace}
+Read this spec first: {spec_path}
+Do not write outside the workspace.
+Create a runnable solution from scratch in the workspace.
+Create a README.md with run instructions.
+Create a pyproject.toml.
+Create automated tests and make a best effort to get pytest -q green.
+Use absolute paths in tool calls when helpful.
+Do not inspect any held-out evaluation suite.
+The claims template exists at {claims_template_path}, but do not use held-out evaluator material.
+""".strip()
+    if condition == "A-baseline":
+        extra = """
+Condition A, baseline:
+- do not use AgentHarness project files, framework metadata, or verify-run feedback
+- implement directly from the benchmark spec with reasonable engineering judgment
+- keep the solution concise and practical
+""".strip()
+    else:
+        extra = """
+Condition B, AgentHarness package:
+- follow a verification oriented implementation style
+- keep README, tests, and dependency manifest explicit and reviewable
+- you will later receive structured verify-run feedback for one bounded repair pass
+""".strip()
+    return common + "\n\n" + extra
+
+
+def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path) -> str:
+    return f"""
+This is the one bounded repair pass for baseline condition A on task {task_id}.
+Workspace: {workspace}
+Spec: {spec_path}
+Review the implementation against the task spec, not against any framework guidance.
+Use these raw local test outputs only as ordinary development feedback:
+- pytest stdout: {pytest_stdout_path}
+- pytest stderr: {pytest_stderr_path}
+Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
+Do not read any held-out evaluation suite.
+""".strip()
+
+
+def _build_agentharness_repair_prompt(
+    *,
+    task_id: str,
+    workspace: Path,
+    spec_path: Path,
+    pytest_stdout_path: str | Path,
+    pytest_stderr_path: str | Path,
+    verify_feedback_path: Path,
+) -> str:
+    return f"""
+This is the one bounded repair pass for AgentHarness condition B on task {task_id}.
+Workspace: {workspace}
+Spec: {spec_path}
+Use the structured verify-run feedback here: {verify_feedback_path}
+You may also consult the raw local test outputs:
+- pytest stdout: {pytest_stdout_path}
+- pytest stderr: {pytest_stderr_path}
+Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
+Do not read any held-out evaluation suite.
+""".strip()

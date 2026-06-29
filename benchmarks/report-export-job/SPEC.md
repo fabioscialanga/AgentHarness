@@ -55,6 +55,27 @@ Operations analysts need a lightweight daily export that reconciles payouts and 
 - cloud storage uploads
 - spreadsheet UI
 
+## Interface contract evaluated by the grader
+The hidden evaluator invokes the deliverable through the following interface contract.
+
+### CLI contract
+- The workspace must expose one of these Python entrypoints: `app/export.py`, `export.py`, or `src/app/export.py`.
+- The evaluator first invokes the entrypoint as a Python module, then falls back to `python <entrypoint.py>` if needed.
+- The CLI must accept these arguments exactly:
+  - `--date <YYYY-MM-DD>`
+  - `--out-dir <path_to_output_directory>`
+
+### Runtime configuration contract
+- The export job must read the SQLite database path from the `REPORT_DB_PATH` environment variable.
+
+### Output artifact contract
+- The CLI must write these files inside the directory passed to `--out-dir`:
+  - `report.csv`
+  - `summary.json`
+
+### Packaging contract
+- The project manifest must declare the dependencies needed to run the implementation and tests in the grading environment, including pytest.
+
 ## Acceptance criteria
 - CSV rows are complete and sorted
 - summary totals match the CSV

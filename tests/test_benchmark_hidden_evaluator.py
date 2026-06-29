@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -9,6 +10,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import agentharness.benchmark_hidden_evaluators as benchmark_hidden_evaluators
 from agentharness.benchmark_hidden_evaluators import evaluate_benchmark_task
 from agentharness.benchmarking import write_rendered_json_template
 from agentharness.evaluation import evaluate_run
@@ -152,7 +154,7 @@ def _write_workspace(workspace: Path, app_source: str) -> None:
     (app_dir / "main.py").write_text(app_source, encoding="utf-8")
     (workspace / "README.md").write_text("# Support ticket API\n", encoding="utf-8")
     (workspace / "pyproject.toml").write_text(
-        "[project]\nname = \"support-ticket-api\"\nversion = \"0.1.0\"\ndependencies = [\"fastapi\", \"pydantic\"]\n",
+        "[project]\nname = \"support-ticket-api\"\nversion = \"0.1.0\"\ndependencies = [\"fastapi\", \"pydantic\", \"pytest\", \"sqlalchemy\"]\n",
         encoding="utf-8",
     )
 
@@ -345,8 +347,8 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertGreaterEqual(payload["summary"]["failed"], 1)
 
-    def test_isolated_env_installs_dependency_declared_only_in_manifest(self) -> None:
-        helper_app = textwrap.dedent(
+    def test_isolated_env_installs_allowed_dependency_declared_only_in_manifest(self) -> None:
+        sqlalchemy_app = textwrap.dedent(
             '''
             from __future__ import annotations
 
@@ -354,8 +356,8 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
             from datetime import datetime, timezone
 
             from fastapi import FastAPI, HTTPException
-            from helperlib import normalize_priority
             from pydantic import BaseModel
+            from sqlalchemy import text
 
             app = FastAPI()
 
@@ -397,7 +399,7 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
                     raise HTTPException(status_code=422, detail="invalid requester_email")
                 if ticket.category not in VALID_CATEGORIES:
                     raise HTTPException(status_code=422, detail="invalid category")
-                normalized_priority = normalize_priority(ticket.priority)
+                normalized_priority = text(ticket.priority.strip().lower()).text
                 if normalized_priority not in VALID_PRIORITIES:
                     raise HTTPException(status_code=422, detail="invalid priority")
                 record = {
@@ -469,11 +471,10 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
             temp_root = Path(tmp_dir)
             workspace = temp_root / "workspace"
             workspace.mkdir()
-            helper_uri = _write_local_helper_package(temp_root)
             _write_workspace_with_manifest(
                 workspace,
-                helper_app,
-                ["fastapi", "pydantic", f"helperlib @ {helper_uri}"],
+                sqlalchemy_app,
+                ["fastapi", "pydantic", "pytest", "sqlalchemy"],
             )
             run_path = temp_root / "run.json"
             _write_run(run_path, workspace, "support_ticket_manifest_dep_001")
@@ -484,68 +485,51 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertEqual(result.execution_status, "valid")
             self.assertEqual(result.outcome_status, "success")
 
-    def test_underdeclared_dependency_is_real_failure_not_invalid(self) -> None:
-        helper_app = textwrap.dedent(
-            '''
-            from fastapi import FastAPI
-            from helperlib import normalize_priority
-            from pydantic import BaseModel
-
-            app = FastAPI()
-
-            class TicketCreate(BaseModel):
-                title: str
-                description: str
-                requester_email: str
-                category: str
-                priority: str
-
-            @app.post("/tickets", status_code=201)
-            def create_ticket(ticket: TicketCreate):
-                return {
-                    "id": 1,
-                    "title": ticket.title,
-                    "description": ticket.description,
-                    "requester_email": ticket.requester_email,
-                    "category": ticket.category,
-                    "priority": normalize_priority(ticket.priority),
-                    "status": "open",
-                    "assignee": None,
-                    "comments": [],
-                }
-
-            @app.get("/tickets")
-            def list_tickets(status: str | None = None, priority: str | None = None, category: str | None = None):
-                return []
-
-            @app.get("/tickets/{ticket_id}")
-            def get_ticket(ticket_id: int):
-                return {"id": ticket_id, "comments": [], "status": "closed", "priority": "high", "category": "access"}
-
-            @app.patch("/tickets/{ticket_id}")
-            def update_ticket(ticket_id: int, payload: dict):
-                return {"id": ticket_id, "status": "closed"}
-
-            @app.post("/tickets/{ticket_id}/comments", status_code=201)
-            def add_comment(ticket_id: int, payload: dict):
-                return {"ok": True}
-            '''
-        ).strip() + "\n"
+    def test_out_of_spec_dependency_is_real_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_root = Path(tmp_dir)
             workspace = temp_root / "workspace"
             workspace.mkdir()
-            _write_local_helper_package(temp_root)
-            _write_workspace_with_manifest(workspace, helper_app, ["fastapi", "pydantic"])
+            _write_workspace_with_manifest(
+                workspace,
+                GOOD_APP,
+                ["fastapi", "pydantic", "pytest", "sqlalchemy", "pandas"],
+            )
             run_path = temp_root / "run.json"
-            _write_run(run_path, workspace, "support_ticket_manifest_missing_dep_001")
+            _write_run(run_path, workspace, "support_ticket_out_of_spec_dep_001")
 
             result = evaluate_benchmark_task(run_path, TASK_ID)
 
             self.assertFalse(result.critical_ok)
             self.assertEqual(result.execution_status, "valid")
             self.assertEqual(result.outcome_status, "real_failure")
-            self.assertIn("app discovery failed", json.dumps(result.to_dict()))
+            self.assertEqual(result.classification_reason, "preparation_failed:dependency_not_in_wheelhouse")
+            self.assertIn("offline wheelhouse", result.observations[0].detail)
+            self.assertIn("pandas", result.observations[0].detail)
+
+    def test_missing_offline_grading_env_is_harness_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, GOOD_APP)
+            run_path = temp_root / "run.json"
+            _write_run(run_path, workspace, "support_ticket_missing_offline_env_001")
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "AGENTHARNESS_GRADING_ENV_DIR": str(temp_root / "missing-grading-env"),
+                },
+                clear=False,
+            ):
+                result = evaluate_benchmark_task(run_path, TASK_ID)
+
+            self.assertFalse(result.critical_ok)
+            self.assertEqual(result.execution_status, "harness_invalid")
+            self.assertEqual(result.outcome_status, "real_failure")
+            self.assertEqual(result.classification_reason, "harness_invalid:offline_grading_environment_unavailable")
+            self.assertIn("harness failed loading offline grading environment", result.observations[0].detail)
 
     def test_harness_fault_is_classified_as_harness_invalid(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -565,7 +549,23 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertFalse(result.critical_ok)
             self.assertEqual(result.execution_status, "harness_invalid")
             self.assertEqual(result.outcome_status, "real_failure")
-            self.assertIn("harness failed", result.classification_reason)
+            self.assertEqual(result.classification_reason, "harness_invalid:isolated_environment_creation_failed")
+            self.assertIn("harness failed", result.observations[0].detail)
+
+    def test_agentharness_version_falls_back_to_installed_metadata(self) -> None:
+        with mock.patch.object(
+            benchmark_hidden_evaluators,
+            "AGENTHARNESS_REPO_ROOT",
+            Path("/tmp/nonexistent-agentharness-root"),
+        ):
+            with mock.patch(
+                "agentharness.benchmark_hidden_evaluators.importlib.metadata.version",
+                return_value="0.1.0",
+            ) as version_mock:
+                version = benchmark_hidden_evaluators._agentharness_version()
+
+        self.assertEqual(version, "0.1.0")
+        version_mock.assert_called_once_with("agentharness")
 
     def test_hidden_evaluator_outputs_match_declared_schema(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
