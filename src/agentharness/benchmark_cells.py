@@ -33,6 +33,7 @@ class AgentAttempt:
     exit_code: int
     stdout_path: Path
     stderr_path: Path
+    working_directory: Path
     session_id: str | None
     started_at: str
     finished_at: str
@@ -46,6 +47,7 @@ class AgentAttempt:
             "exit_code": self.exit_code,
             "stdout_path": str(self.stdout_path),
             "stderr_path": str(self.stderr_path),
+            "working_directory": str(self.working_directory),
             "session_id": self.session_id,
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -82,10 +84,12 @@ class HermesCliInvoker:
         hermes_command: str | None = None,
         toolsets: str = "terminal,file",
         max_retries: int = 3,
+        retry_backoff_seconds: float = 30.0,
     ) -> None:
         self._hermes_command = hermes_command or "hermes"
         self._toolsets = toolsets
         self._max_retries = max_retries
+        self._retry_backoff_seconds = retry_backoff_seconds
 
     def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
         task_id = str(manifest["task_id"])
@@ -111,6 +115,7 @@ class HermesCliInvoker:
                 attempt_name="attempt-1-initial",
                 prompt_kind="initial",
                 outputs_dir=attempts_dir,
+                workspace=workspace,
             )
         )
 
@@ -158,11 +163,12 @@ class HermesCliInvoker:
                 attempt_name="attempt-2-repair",
                 prompt_kind="repair",
                 outputs_dir=attempts_dir,
+                workspace=workspace,
             )
         )
         return AgentInvocationResult(attempts=attempts)
 
-    def _invoke(self, *, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path) -> AgentAttempt:
+    def _invoke(self, *, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path, workspace: Path) -> AgentAttempt:
         command = [
             self._hermes_command,
             "chat",
@@ -183,7 +189,7 @@ class HermesCliInvoker:
             stderr_path = outputs_dir / f"{attempt_name}{suffix}.stderr"
             started = _utc_now()
             t0 = time.time()
-            completed = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+            completed = subprocess.run(command, cwd=str(workspace), capture_output=True, text=True, check=False)
             duration = time.time() - t0
             finished = _utc_now()
             stdout_path.write_text(completed.stdout, encoding="utf-8")
@@ -197,6 +203,7 @@ class HermesCliInvoker:
                 exit_code=completed.returncode,
                 stdout_path=stdout_path,
                 stderr_path=stderr_path,
+                working_directory=workspace,
                 session_id=session_id,
                 started_at=started,
                 finished_at=finished,
@@ -204,8 +211,21 @@ class HermesCliInvoker:
             )
             if completed.returncode == 0 and session_id:
                 return last_attempt
+            if retry_index < self._max_retries and _is_retryable_invocation_failure(completed):
+                time.sleep(self._retry_backoff_seconds * retry_index)
         assert last_attempt is not None
         return last_attempt
+
+
+def _is_retryable_invocation_failure(completed: subprocess.CompletedProcess[str]) -> bool:
+    retry_markers = (
+        "HTTP 429",
+        "usage limit has been reached",
+        "rate limit",
+        "temporarily unavailable",
+    )
+    haystacks = (completed.stdout.lower(), completed.stderr.lower())
+    return any(marker.lower() in haystack for marker in retry_markers for haystack in haystacks)
 
 
 def _utc_now() -> str:
@@ -312,7 +332,7 @@ def ensure_test_venv(workspace: Path) -> Path:
         "httpx",
     ]
     env = _base_env()
-    completed = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False, env=env)
+    completed = subprocess.run(command, cwd=str(workspace), capture_output=True, text=True, check=False, env=env)
     if completed.returncode != 0:
         raise RuntimeError(f"Offline shared deps install failed for {workspace}: {completed.stderr}")
     return py
@@ -533,9 +553,29 @@ def write_provenance(
     return provenance
 
 
+def _clear_cell_runtime_artifacts(cell_dir: Path, workspace: Path, task_id: str, run_id: str) -> None:
+    paths_to_remove = [
+        cell_dir / "outputs",
+        cell_dir / "run.json",
+        cell_dir / "claims.json",
+        cell_dir / "provenance.json",
+        cell_dir / "metadata.json",
+        workspace / ".agentharness" / "evaluation" / task_id,
+        workspace / ".agentharness" / "traces" / "evaluation",
+        workspace / ".agentharness" / "traces" / "verify-run",
+        workspace / ".agentharness" / "evidence" / run_id / "reexecuted",
+    ]
+    for path in paths_to_remove:
+        if path.is_symlink() or path.is_file():
+            path.unlink(missing_ok=True)
+        elif path.is_dir():
+            shutil.rmtree(path)
+
+
 def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
     manifest = json.loads((cell_dir / "cell_manifest.json").read_text(encoding="utf-8"))
     workspace = Path(str(manifest["workspace"]))
+    _clear_cell_runtime_artifacts(cell_dir, workspace, str(manifest["task_id"]), str(manifest["run_id"]))
     outputs_dir = cell_dir / "outputs"
     outputs_dir.mkdir(parents=True, exist_ok=True)
 

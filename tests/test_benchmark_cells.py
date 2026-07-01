@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +10,8 @@ from unittest import mock
 from agentharness.benchmark_cells import (
     AgentAttempt,
     AgentInvocationResult,
+    HermesCliInvoker,
+    _is_retryable_invocation_failure,
     assert_nonshared_solution_hashes,
     compute_solution_hash,
     execute_cell,
@@ -57,6 +60,7 @@ class _FakeInvoker:
                     exit_code=0,
                     stdout_path=stdout_path,
                     stderr_path=stderr_path,
+                    working_directory=workspace,
                     session_id=f"fake_{condition}_{replicate_id}_{index}",
                     started_at="2026-01-01T00:00:00Z",
                     finished_at="2026-01-01T00:00:01Z",
@@ -150,6 +154,137 @@ class BenchmarkCellsTests(unittest.TestCase):
             (workspace / "README.md").write_text("b\n", encoding="utf-8")
             second = compute_solution_hash(workspace)
             self.assertNotEqual(first, second)
+
+    def test_execute_cell_clears_stale_runtime_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "support-ticket-api" / "A-baseline" / "r1"
+            manifest = prepare_fresh_cell(
+                task_id="support-ticket-api",
+                condition="A-baseline",
+                replicate_id="r1",
+                cell_dir=cell_dir,
+            )
+            workspace = Path(str(manifest["workspace"]))
+            stale_paths = [
+                cell_dir / "outputs" / "benchmark-evaluate-task.json",
+                cell_dir / "metadata.json",
+                workspace / ".agentharness" / "evaluation" / "support-ticket-api" / "result.json",
+                workspace / ".agentharness" / "traces" / "evaluation" / "old.jsonl",
+                workspace / ".agentharness" / "traces" / "verify-run" / "old.jsonl",
+                workspace / ".agentharness" / "evidence" / str(manifest["run_id"]) / "reexecuted" / "command.stdout",
+            ]
+            for path in stale_paths:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("stale\n", encoding="utf-8")
+            stdout_path = cell_dir / "tmp-pytest.stdout"
+            stderr_path = cell_dir / "tmp-pytest.stderr"
+            stdout_path.write_text("1 passed\n", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+            pytest_payload = {
+                "command": ["python", "-m", "pytest", "-q"],
+                "exit_code": 0,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "started_at": "2026-01-01T00:00:00Z",
+                "finished_at": "2026-01-01T00:00:01Z",
+                "duration_seconds": 1.0,
+            }
+            with (
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
+                mock.patch("agentharness.benchmark_cells.run_verify_run", return_value={"ok": True}),
+                mock.patch("agentharness.benchmark_cells.run_hidden_benchmark", return_value={"execution_status": "valid", "outcome_status": "success"}),
+                mock.patch("agentharness.benchmark_cells.run_heldout_evaluation", return_value={"summary": {"passed": 1, "failed": 0, "invalid": 0}, "results": [{"status": "passed"}]}),
+            ):
+                execute_cell(cell_dir, _FakeInvoker())
+            self.assertFalse((workspace / ".agentharness" / "traces" / "evaluation" / "old.jsonl").exists())
+            self.assertFalse((workspace / ".agentharness" / "traces" / "verify-run" / "old.jsonl").exists())
+            self.assertFalse((workspace / ".agentharness" / "evidence" / str(manifest["run_id"]) / "reexecuted" / "command.stdout").exists())
+
+    def test_retryable_invocation_failure_detects_rate_limit_markers(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=1,
+            stdout="API call failed after 3 retries: HTTP 429: The usage limit has been reached\n",
+            stderr="",
+        )
+        self.assertTrue(_is_retryable_invocation_failure(completed))
+
+    def test_invoke_retries_with_backoff_on_retryable_failure(self) -> None:
+        completed_retry = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=1,
+            stdout="API call failed after 3 retries: HTTP 429: The usage limit has been reached\n",
+            stderr="",
+        )
+        completed_success = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=0,
+            stdout="session_id: ok_123\n",
+            stderr="",
+        )
+        invoker = HermesCliInvoker(hermes_command="hermes", retry_backoff_seconds=0.01)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            outputs_dir = Path(tmp_dir)
+            with (
+                mock.patch("agentharness.benchmark_cells.subprocess.run", side_effect=[completed_retry, completed_success]) as run_mock,
+                mock.patch("agentharness.benchmark_cells.time.sleep") as sleep_mock,
+            ):
+                attempt = invoker._invoke(
+                    prompt="hello",
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    outputs_dir=outputs_dir,
+                    workspace=outputs_dir,
+                )
+        self.assertEqual(attempt.exit_code, 0)
+        self.assertEqual(attempt.session_id, "ok_123")
+        self.assertEqual(attempt.working_directory, outputs_dir)
+        self.assertEqual(run_mock.call_args_list[0].kwargs["cwd"], str(outputs_dir))
+        self.assertEqual(run_mock.call_args_list[1].kwargs["cwd"], str(outputs_dir))
+        sleep_mock.assert_called_once_with(0.01)
+
+    def test_run_cell_invokes_agent_in_workspace(self) -> None:
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            spec_path = root / "SPEC.md"
+            claims_template_path = root / "CLAIMS_CONTRACT.template.json"
+            spec_path.write_text("spec\n", encoding="utf-8")
+            claims_template_path.write_text("{}\n", encoding="utf-8")
+            outputs_dir = root / "outputs"
+            manifest: dict[str, object] = {
+                "task_id": "support-ticket-api",
+                "condition": "A-baseline",
+                "run_id": "stageb_support_ticket_api_a_r1",
+                "spec_path": str(spec_path),
+                "claims_template_path": str(claims_template_path),
+            }
+            stdout_path = root / "pytest.stdout"
+            stderr_path = root / "pytest.stderr"
+            stdout_path.write_text("1 passed\n", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+            pytest_payload = {
+                "command": ["python", "-m", "pytest", "-q"],
+                "exit_code": 0,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "started_at": "2026-01-01T00:00:00Z",
+                "finished_at": "2026-01-01T00:00:01Z",
+                "duration_seconds": 1.0,
+            }
+            completed = subprocess.CompletedProcess(args=["hermes"], returncode=0, stdout="session_id: ok_123\n", stderr="")
+            with (
+                mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock,
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
+            ):
+                result = invoker.run_cell(manifest, outputs_dir, workspace)
+        self.assertEqual(len(result.attempts), 2)
+        self.assertTrue(all(attempt.working_directory == workspace for attempt in result.attempts))
+        hermes_calls = [call for call in run_mock.call_args_list if call.args and call.args[0] and call.args[0][0] == "hermes"]
+        self.assertEqual(len(hermes_calls), 2)
+        self.assertTrue(all(call.kwargs["cwd"] == str(workspace) for call in hermes_calls))
 
 
 if __name__ == "__main__":

@@ -552,6 +552,95 @@ class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertEqual(result.classification_reason, "harness_invalid:isolated_environment_creation_failed")
             self.assertIn("harness failed", result.observations[0].detail)
 
+    def test_missing_pip_in_isolated_env_is_harness_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, GOOD_APP)
+            run_path = temp_root / "run.json"
+            _write_run(run_path, workspace, "support_ticket_missing_pip_001")
+            fake_env = benchmark_hidden_evaluators._GradingEnvironmentConfig(
+                root_dir=temp_root,
+                wheelhouse_dir=temp_root,
+                constraints_path=temp_root / "constraints.txt",
+                manifest_path=temp_root / "wheelhouse-manifest.json",
+                fingerprint="fp123",
+                agentharness_version="0.1.0",
+            )
+            with (
+                mock.patch("agentharness.benchmark_hidden_evaluators._load_grading_environment", return_value=fake_env),
+                mock.patch("agentharness.benchmark_hidden_evaluators.subprocess.run", return_value=subprocess.CompletedProcess(args=["python", "-m", "venv"], returncode=0, stdout="", stderr="")),
+                mock.patch("agentharness.benchmark_hidden_evaluators._venv_pip_health", return_value=(False, "isolated environment python cannot run pip: No module named pip", "")),
+            ):
+                result = evaluate_benchmark_task(run_path, TASK_ID)
+            self.assertEqual(result.execution_status, "harness_invalid")
+            self.assertEqual(result.classification_reason, "harness_invalid:isolated_environment_preparation_failed")
+            self.assertIn("No module named pip", result.observations[0].detail)
+
+    def test_evaluate_benchmark_task_clears_stale_artifacts_before_rerun(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, GOOD_APP)
+            run_path = temp_root / "run.json"
+            run_id = "support_ticket_stale_cleanup_001"
+            _write_run(run_path, workspace, run_id)
+            stale_paths = [
+                workspace / ".agentharness" / "traces" / "evaluation" / "old.jsonl",
+                workspace / ".agentharness" / "traces" / "verify-run" / "old.jsonl",
+                workspace / ".agentharness" / "evidence" / run_id / "reexecuted" / "command.stdout",
+            ]
+            stale_result_path = workspace / ".agentharness" / "evaluation" / TASK_ID / "result.json"
+            for path in [stale_result_path, *stale_paths]:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("stale\n", encoding="utf-8")
+            fake_prep = benchmark_hidden_evaluators._IsolationPreparation(
+                ok=False,
+                workspace=workspace,
+                venv_dir=workspace / ".agentharness" / "eval_envs" / "fake",
+                manifest=None,
+                detail="missing manifest: task support-ticket-api must declare solution dependencies in pyproject.toml or requirements.txt",
+            )
+            with mock.patch("agentharness.benchmark_hidden_evaluators._prepare_isolated_environment", return_value=fake_prep):
+                evaluate_benchmark_task(run_path, TASK_ID)
+            for path in stale_paths:
+                self.assertFalse(path.exists(), path)
+
+    def test_coherence_check_detects_mismatched_evaluation_instance_id(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            evaluation_dir = workspace / ".agentharness" / "evaluation" / TASK_ID
+            evaluation_dir.mkdir(parents=True, exist_ok=True)
+            summary_path = evaluation_dir / "summary.txt"
+            result_path = evaluation_dir / "result.json"
+            state_path = evaluation_dir / "state.json"
+            summary_path.write_text("environment_preparation=fail\n", encoding="utf-8")
+            result_path.write_text(json.dumps({"task_id": TASK_ID, "critical_ok": False, "execution_status": "harness_invalid", "outcome_status": "real_failure", "classification_reason": "x", "passed_checks": [], "failed_checks": [], "observations": []}) + "\n", encoding="utf-8")
+            state_path.write_text(json.dumps({"evaluation_instance_id": "older"}) + "\n", encoding="utf-8")
+            result = benchmark_hidden_evaluators.HiddenEvaluationResult(
+                task_id=TASK_ID,
+                critical_ok=False,
+                execution_status="harness_invalid",
+                outcome_status="real_failure",
+                classification_reason="harness_invalid:isolated_environment_preparation_failed",
+                evaluation_instance_id="newer",
+                passed_checks=[],
+                failed_checks=[],
+                observations=[benchmark_hidden_evaluators.HiddenEvaluationObservation(id="environment_preparation", status="fail", detail="x")],
+                summary_path=summary_path,
+                result_path=result_path,
+            )
+            detail = benchmark_hidden_evaluators._assert_hidden_evaluation_coherence(
+                workspace=workspace,
+                task_id=TASK_ID,
+                result=result,
+                evaluation_instance_id="newer",
+            )
+            self.assertIsNotNone(detail)
+            self.assertIn("evaluation_instance_id mismatch", detail)
+
     def test_agentharness_version_falls_back_to_installed_metadata(self) -> None:
         with mock.patch.object(
             benchmark_hidden_evaluators,

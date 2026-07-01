@@ -7,6 +7,7 @@ import importlib.metadata
 import importlib.util
 import json
 import os
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -14,6 +15,7 @@ import tempfile
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 import tomllib
 from typing import Any
@@ -48,6 +50,9 @@ class HiddenEvaluationResult:
     execution_status: str = "valid"
     outcome_status: str = "success"
     classification_reason: str = ""
+    evaluation_instance_id: str = ""
+    lifecycle_started_at: str = ""
+    lifecycle_finished_at: str = ""
 
     def __post_init__(self) -> None:
         if self.execution_status == "valid" and self.outcome_status == "success" and not self.critical_ok:
@@ -60,6 +65,9 @@ class HiddenEvaluationResult:
             "execution_status": self.execution_status,
             "outcome_status": self.outcome_status,
             "classification_reason": self.classification_reason,
+            "evaluation_instance_id": self.evaluation_instance_id,
+            "lifecycle_started_at": self.lifecycle_started_at,
+            "lifecycle_finished_at": self.lifecycle_finished_at,
             "passed_checks": self.passed_checks,
             "failed_checks": self.failed_checks,
             "observations": [item.to_dict() for item in self.observations],
@@ -73,6 +81,11 @@ def _evaluation_dir(workspace: Path, task_id: str) -> Path:
 
 
 def _persist_hidden_evaluation(result: HiddenEvaluationResult) -> HiddenEvaluationResult:
+    if not result.evaluation_instance_id:
+        result.evaluation_instance_id = uuid.uuid4().hex
+    if not result.lifecycle_started_at:
+        result.lifecycle_started_at = _utcnow_iso()
+    result.lifecycle_finished_at = _utcnow_iso()
     result.summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_lines = [f"{item.id}={'pass' if item.status == 'pass' else 'fail'}" for item in result.observations]
     result.summary_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
@@ -87,6 +100,19 @@ def _persist_hidden_evaluation(result: HiddenEvaluationResult) -> HiddenEvaluati
                 "passed_checks": result.passed_checks,
                 "failed_checks": result.failed_checks,
                 "observations": [item.to_dict() for item in result.observations],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (result.summary_path.parent / "state.json").write_text(
+        json.dumps(
+            {
+                "task_id": result.task_id,
+                "evaluation_instance_id": result.evaluation_instance_id,
+                "lifecycle_started_at": result.lifecycle_started_at,
+                "lifecycle_finished_at": result.lifecycle_finished_at,
             },
             indent=2,
         )
@@ -387,7 +413,7 @@ AGENTHARNESS_REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_GRADING_ENV_ROOT = AGENTHARNESS_REPO_ROOT / "benchmarks" / "grading-env"
 
 WORKER_SENTINEL = "agentharness-benchmark-hidden-worker"
-WORKER_PROTOCOL_VERSION = "1"
+WORKER_PROTOCOL_VERSION = "2"
 
 
 @dataclass
@@ -417,6 +443,151 @@ class _IsolationPreparation:
     grading_env: _GradingEnvironmentConfig | None = None
     install_stdout: str = ""
     install_stderr: str = ""
+
+
+def _utcnow_iso() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _system_python_candidates() -> list[Path]:
+    return [
+        Path(f"/usr/bin/python{sys.version_info.major}.{sys.version_info.minor}"),
+        Path(f"/usr/bin/python{sys.version_info.major}"),
+        Path("/usr/bin/python3"),
+        Path(sys.executable),
+    ]
+
+
+def _system_python_executable() -> str:
+    for candidate in _system_python_candidates():
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return sys.executable
+
+
+def _ready_marker_path(venv_dir: Path) -> Path:
+    return venv_dir / ".agentharness-ready.json"
+
+
+def _worker_output_path(workspace: Path, task_id: str) -> Path:
+    return _evaluation_dir(workspace, task_id) / "worker-result.json"
+
+
+def _evaluation_state_path(workspace: Path, task_id: str) -> Path:
+    return _evaluation_dir(workspace, task_id) / "state.json"
+
+
+def _remove_path(path: Path) -> None:
+    if path.is_symlink() or path.is_file():
+        path.unlink(missing_ok=True)
+        return
+    if path.is_dir():
+        shutil.rmtree(path)
+
+
+def _clear_hidden_evaluation_state(workspace: Path, task_id: str, run_id: str | None = None) -> None:
+    paths_to_remove = [
+        _evaluation_dir(workspace, task_id),
+        workspace / ".agentharness" / "traces" / "evaluation",
+        workspace / ".agentharness" / "traces" / "verify-run",
+        _worker_output_path(workspace, task_id),
+        _evaluation_state_path(workspace, task_id),
+    ]
+    if run_id:
+        paths_to_remove.append(workspace / ".agentharness" / "evidence" / run_id / "reexecuted")
+    for candidate in paths_to_remove:
+        if candidate.exists() or candidate.is_symlink():
+            _remove_path(candidate)
+
+
+def _read_ready_marker(venv_dir: Path) -> dict[str, Any] | None:
+    marker_path = _ready_marker_path(venv_dir)
+    if not marker_path.is_file():
+        return None
+    try:
+        payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _venv_pip_health(venv_dir: Path) -> tuple[bool, str, str]:
+    python_bin = venv_dir / "bin" / "python"
+    if not python_bin.is_file():
+        return False, f"missing python executable at {python_bin}", ""
+    completed = subprocess.run([str(python_bin), "-m", "pip", "--version"], capture_output=True, text=True, check=False)
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip() or f"exit code {completed.returncode}"
+        return False, f"isolated environment python cannot run pip: {detail}", ""
+    return True, "", completed.stdout.strip()
+
+
+def _write_ready_marker(*, venv_dir: Path, task_id: str, manifest: _ManifestSpec | None, grading_env: _GradingEnvironmentConfig, python_bin: Path, creator_python: str, pip_version: str) -> None:
+    _ready_marker_path(venv_dir).write_text(
+        json.dumps(
+            {
+                "protocol_version": WORKER_PROTOCOL_VERSION,
+                "task_id": task_id,
+                "manifest_path": str(manifest.path) if manifest is not None else None,
+                "python": str(python_bin),
+                "creator_python": creator_python,
+                "pip_version": pip_version,
+                "created_at": _utcnow_iso(),
+                "grading_env_fingerprint": grading_env.fingerprint,
+                "constraints_path": str(grading_env.constraints_path),
+                "wheelhouse_dir": str(grading_env.wheelhouse_dir),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _coherence_invalid_result(*, workspace: Path, task_id: str, evaluation_instance_id: str, detail: str) -> HiddenEvaluationResult:
+    evaluation_dir = _evaluation_dir(workspace, task_id)
+    timestamp = _utcnow_iso()
+    return _persist_hidden_evaluation(
+        HiddenEvaluationResult(
+            task_id=task_id,
+            critical_ok=False,
+            execution_status="harness_invalid",
+            outcome_status="real_failure",
+            classification_reason="harness_invalid:artifact_state_inconsistent",
+            evaluation_instance_id=evaluation_instance_id,
+            lifecycle_started_at=timestamp,
+            lifecycle_finished_at=timestamp,
+            passed_checks=[],
+            failed_checks=[],
+            observations=[HiddenEvaluationObservation(id="artifact_state", status="fail", detail=detail)],
+            summary_path=evaluation_dir / "summary.txt",
+            result_path=evaluation_dir / "result.json",
+        )
+    )
+
+
+def _assert_hidden_evaluation_coherence(*, workspace: Path, task_id: str, result: HiddenEvaluationResult, evaluation_instance_id: str) -> str | None:
+    if result.evaluation_instance_id != evaluation_instance_id:
+        return f"worker payload evaluation_instance_id mismatch: expected {evaluation_instance_id}, got {result.evaluation_instance_id or '<missing>'}"
+    if not result.summary_path.is_file() or not result.result_path.is_file():
+        return f"worker completed without expected persisted outputs: summary={result.summary_path} result={result.result_path}"
+    try:
+        persisted_state = json.loads(_evaluation_state_path(workspace, task_id).read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        return f"missing lifecycle state artifact: {_evaluation_state_path(workspace, task_id)}"
+    except json.JSONDecodeError as exc:
+        return f"persisted state.json is not valid JSON: {exc}"
+    persisted_eval_id = str(persisted_state.get('evaluation_instance_id', ''))
+    if persisted_eval_id != evaluation_instance_id:
+        return f"persisted state.json evaluation_instance_id mismatch: expected {evaluation_instance_id}, got {persisted_eval_id or '<missing>'}"
+    summary_lines = [line.strip() for line in result.summary_path.read_text(encoding='utf-8').splitlines() if line.strip()]
+    summary_ids = {line.split('=', 1)[0] for line in summary_lines if '=' in line}
+    observation_ids = {item.id for item in result.observations}
+    if summary_ids != observation_ids:
+        return f"summary/result observation mismatch: summary_ids={sorted(summary_ids)} observation_ids={sorted(observation_ids)}"
+    if result.classification_reason.startswith('preparation_failed:') and summary_lines:
+        return 'preparation_failed result persisted alongside evaluation summary entries'
+    return None
 
 def _canonical_dependency_name(spec: str) -> str:
     candidate = spec.strip()
@@ -555,6 +726,8 @@ def _preparation_failure_reason(detail: str) -> tuple[str, str]:
         return "harness_invalid", "harness_invalid:isolated_environment_creation_failed"
     if detail.startswith("harness failed while preparing isolated environment"):
         return "harness_invalid", "harness_invalid:isolated_environment_preparation_failed"
+    if detail.startswith("isolated environment python cannot run pip"):
+        return "harness_invalid", "harness_invalid:isolated_environment_preparation_failed"
     if detail.startswith("missing manifest:"):
         return "valid", "preparation_failed:missing_manifest"
     if detail.startswith("solution dependencies could not be resolved from the offline wheelhouse"):
@@ -592,9 +765,28 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
             grading_env=grading_env,
         )
 
+    creator_python = _system_python_executable()
+    marker = _read_ready_marker(venv_dir)
+    if venv_dir.exists():
+        marker_compatible = (
+            isinstance(marker, dict)
+            and marker.get("protocol_version") == WORKER_PROTOCOL_VERSION
+            and marker.get("grading_env_fingerprint") == grading_env.fingerprint
+        )
+        pip_ok, _, _ = _venv_pip_health(venv_dir)
+        if marker_compatible and pip_ok:
+            return _IsolationPreparation(
+                ok=True,
+                workspace=workspace,
+                venv_dir=venv_dir,
+                manifest=manifest,
+                detail=f"reused isolated environment {venv_dir}",
+                grading_env=grading_env,
+            )
+        _remove_path(venv_dir)
+
     try:
-        if not venv_dir.exists():
-            subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, capture_output=True, text=True)
+        subprocess.run([creator_python, "-m", "venv", str(venv_dir)], check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as exc:
         return _IsolationPreparation(
             ok=False,
@@ -617,25 +809,16 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
         )
 
     python_bin = venv_dir / "bin" / "python"
-    marker_path = venv_dir / ".agentharness-ready.json"
-    if marker_path.is_file():
-        try:
-            marker = json.loads(marker_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            marker = None
-        if (
-            isinstance(marker, dict)
-            and marker.get("protocol_version") == WORKER_PROTOCOL_VERSION
-            and marker.get("grading_env_fingerprint") == grading_env.fingerprint
-        ):
-            return _IsolationPreparation(
-                ok=True,
-                workspace=workspace,
-                venv_dir=venv_dir,
-                manifest=manifest,
-                detail=f"reused isolated environment {venv_dir}",
-                grading_env=grading_env,
-            )
+    pip_ok, pip_detail, pip_version = _venv_pip_health(venv_dir)
+    if not pip_ok:
+        return _IsolationPreparation(
+            ok=False,
+            workspace=workspace,
+            venv_dir=venv_dir,
+            manifest=manifest,
+            detail=pip_detail,
+            grading_env=grading_env,
+        )
 
     pip_base = [
         str(python_bin),
@@ -677,21 +860,14 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
                     install_stdout="\n".join(stdout_chunks),
                     install_stderr=combined_stderr,
                 )
-        marker_path.write_text(
-            json.dumps(
-                {
-                    "protocol_version": WORKER_PROTOCOL_VERSION,
-                    "task_id": task_id,
-                    "manifest_path": str(manifest.path) if manifest is not None else None,
-                    "python": str(python_bin),
-                    "grading_env_fingerprint": grading_env.fingerprint,
-                    "constraints_path": str(grading_env.constraints_path),
-                    "wheelhouse_dir": str(grading_env.wheelhouse_dir),
-                },
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
+        _write_ready_marker(
+            venv_dir=venv_dir,
+            task_id=task_id,
+            manifest=manifest,
+            grading_env=grading_env,
+            python_bin=python_bin,
+            creator_python=creator_python,
+            pip_version=pip_version,
         )
         return _IsolationPreparation(
             ok=True,
@@ -716,9 +892,10 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
         )
 
 
-def _result_from_isolation_failure(preparation: _IsolationPreparation, task_id: str) -> HiddenEvaluationResult:
+def _result_from_isolation_failure(preparation: _IsolationPreparation, task_id: str, evaluation_instance_id: str) -> HiddenEvaluationResult:
     evaluation_dir = _evaluation_dir(preparation.workspace, task_id)
     execution_status, classification_reason = _preparation_failure_reason(preparation.detail)
+    timestamp = _utcnow_iso()
     return _persist_hidden_evaluation(
         HiddenEvaluationResult(
             task_id=task_id,
@@ -726,6 +903,9 @@ def _result_from_isolation_failure(preparation: _IsolationPreparation, task_id: 
             execution_status=execution_status,
             outcome_status="real_failure",
             classification_reason=classification_reason,
+            evaluation_instance_id=evaluation_instance_id,
+            lifecycle_started_at=timestamp,
+            lifecycle_finished_at=timestamp,
             passed_checks=[],
             failed_checks=[],
             observations=[
@@ -749,8 +929,8 @@ def _result_from_isolation_failure(preparation: _IsolationPreparation, task_id: 
     )
 
 
-def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task_id: str) -> HiddenEvaluationResult:
-    output_path = preparation.workspace / ".agentharness" / "evaluation" / task_id / "worker-result.json"
+def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task_id: str, evaluation_instance_id: str) -> HiddenEvaluationResult:
+    output_path = _worker_output_path(preparation.workspace, task_id)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     python_bin = preparation.venv_dir / "bin" / "python"
     env = os.environ.copy()
@@ -765,18 +945,23 @@ def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task
         task_id,
         "--workspace",
         str(preparation.workspace),
+        "--evaluation-instance-id",
+        evaluation_instance_id,
         "--output",
         str(output_path),
     ]
     completed = subprocess.run(command, cwd=preparation.workspace, capture_output=True, text=True, env=env, check=False)
     if output_path.is_file():
         payload = json.loads(output_path.read_text(encoding="utf-8"))
-        return HiddenEvaluationResult(
+        result = HiddenEvaluationResult(
             task_id=str(payload.get("task_id", task_id)),
             critical_ok=bool(payload.get("critical_ok", False)),
             execution_status=str(payload.get("execution_status", "valid")),
             outcome_status=str(payload.get("outcome_status", "success")),
             classification_reason=str(payload.get("classification_reason", "")),
+            evaluation_instance_id=str(payload.get("evaluation_instance_id", "")),
+            lifecycle_started_at=str(payload.get("lifecycle_started_at", "")),
+            lifecycle_finished_at=str(payload.get("lifecycle_finished_at", "")),
             passed_checks=[str(item) for item in payload.get("passed_checks", [])],
             failed_checks=[str(item) for item in payload.get("failed_checks", [])],
             observations=[
@@ -791,6 +976,20 @@ def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task
             summary_path=Path(str(payload.get("summary_path", _evaluation_dir(preparation.workspace, task_id) / "summary.txt"))),
             result_path=Path(str(payload.get("result_path", _evaluation_dir(preparation.workspace, task_id) / "result.json"))),
         )
+        coherence_error = _assert_hidden_evaluation_coherence(
+            workspace=preparation.workspace,
+            task_id=task_id,
+            result=result,
+            evaluation_instance_id=evaluation_instance_id,
+        )
+        if coherence_error is not None:
+            return _coherence_invalid_result(
+                workspace=preparation.workspace,
+                task_id=task_id,
+                evaluation_instance_id=evaluation_instance_id,
+                detail=coherence_error,
+            )
+        return result
 
     evaluation_dir = _evaluation_dir(preparation.workspace, task_id)
     return _persist_hidden_evaluation(
@@ -800,6 +999,9 @@ def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task
             execution_status="harness_invalid",
             outcome_status="real_failure",
             classification_reason="worker protocol failed before producing a result payload",
+            evaluation_instance_id=evaluation_instance_id,
+            lifecycle_started_at=_utcnow_iso(),
+            lifecycle_finished_at=_utcnow_iso(),
             passed_checks=[],
             failed_checks=[],
             observations=[
@@ -815,25 +1017,28 @@ def _run_worker_in_isolated_environment(preparation: _IsolationPreparation, task
     )
 
 
-def _evaluate_benchmark_task_in_worker(workspace: Path, task_id: str) -> HiddenEvaluationResult:
+def _evaluate_benchmark_task_in_worker(workspace: Path, task_id: str, evaluation_instance_id: str) -> HiddenEvaluationResult:
     normalized_task_id = task_id.strip()
     if normalized_task_id == "support-ticket-api":
-        return _evaluate_support_ticket_api(workspace)
-    if normalized_task_id == "inventory-adjustment-api":
-        return _evaluate_inventory_adjustment_api(workspace)
-    if normalized_task_id == "leave-request-api":
-        return _evaluate_leave_request_api(workspace)
-    if normalized_task_id == "refund-approval-api":
-        return _evaluate_refund_approval_api(workspace)
-    if normalized_task_id == "incident-escalation-api":
-        return _evaluate_incident_escalation_api(workspace)
-    if normalized_task_id == "csv-member-import":
-        return _evaluate_csv_member_import(workspace)
-    if normalized_task_id == "report-export-job":
-        return _evaluate_report_export_job(workspace)
-    if normalized_task_id == "webhook-ingestion-service":
-        return _evaluate_webhook_ingestion_service(workspace)
-    raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
+        result = _evaluate_support_ticket_api(workspace)
+    elif normalized_task_id == "inventory-adjustment-api":
+        result = _evaluate_inventory_adjustment_api(workspace)
+    elif normalized_task_id == "leave-request-api":
+        result = _evaluate_leave_request_api(workspace)
+    elif normalized_task_id == "refund-approval-api":
+        result = _evaluate_refund_approval_api(workspace)
+    elif normalized_task_id == "incident-escalation-api":
+        result = _evaluate_incident_escalation_api(workspace)
+    elif normalized_task_id == "csv-member-import":
+        result = _evaluate_csv_member_import(workspace)
+    elif normalized_task_id == "report-export-job":
+        result = _evaluate_report_export_job(workspace)
+    elif normalized_task_id == "webhook-ingestion-service":
+        result = _evaluate_webhook_ingestion_service(workspace)
+    else:
+        raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
+    result.evaluation_instance_id = evaluation_instance_id
+    return _persist_hidden_evaluation(result)
 
 
 def _evaluate_support_ticket_api(workspace: Path) -> HiddenEvaluationResult:
@@ -2086,19 +2291,30 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
 
 def evaluate_benchmark_task(run_path: str | Path, task_id: str) -> HiddenEvaluationResult:
     run = load_run(run_path)
-    preparation = _prepare_isolated_environment(run.workspace, task_id.strip())
+    normalized_task_id = task_id.strip()
+    evaluation_instance_id = uuid.uuid4().hex
+    _clear_hidden_evaluation_state(run.workspace, normalized_task_id, run.run_id)
+    preparation = _prepare_isolated_environment(run.workspace, normalized_task_id)
     if not preparation.ok:
-        return _result_from_isolation_failure(preparation, task_id.strip())
-    return _run_worker_in_isolated_environment(preparation, task_id.strip())
+        return _result_from_isolation_failure(preparation, normalized_task_id, evaluation_instance_id)
+    return _run_worker_in_isolated_environment(preparation, normalized_task_id, evaluation_instance_id)
 
 
 def _run_worker_main(argv: list[str]) -> int:
-    if len(argv) != 7 or argv[0] != WORKER_SENTINEL or argv[1] != "--task-id" or argv[3] != "--workspace" or argv[5] != "--output":
+    if (
+        len(argv) != 9
+        or argv[0] != WORKER_SENTINEL
+        or argv[1] != "--task-id"
+        or argv[3] != "--workspace"
+        or argv[5] != "--evaluation-instance-id"
+        or argv[7] != "--output"
+    ):
         raise ValueError("Invalid benchmark hidden evaluator worker invocation")
     task_id = argv[2]
     workspace = Path(argv[4])
-    output_path = Path(argv[6])
-    result = _evaluate_benchmark_task_in_worker(workspace, task_id)
+    evaluation_instance_id = argv[6]
+    output_path = Path(argv[8])
+    result = _evaluate_benchmark_task_in_worker(workspace, task_id, evaluation_instance_id)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(result.to_dict(), indent=2) + "\n", encoding="utf-8")
     return 0
