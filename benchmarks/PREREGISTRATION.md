@@ -783,7 +783,8 @@ This section freezes the concrete operational parameters, system facts, and held
 #### 17.1 Frozen system facts
 - repository path: `/home/fabio/AgentHarness`
 - frozen branch: `main`
-- frozen commit SHA: `04db03d`
+- frozen benchmark code commit SHA: `04db03d`
+- appendix first recorded in the repository at commit: `10ea1a1`
 - agent model: `gpt-5.4`
 - agent provider: `openai-codex`
 - frozen grading constraints path: `/home/fabio/AgentHarness/benchmarks/grading-env/constraints-py312.txt`
@@ -844,4 +845,4 @@ Source of the held-out functional checks above: the versioned evaluator definiti
 
 ## Freeze
 
-Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget, il commit 04db03d e le regole inferenziali sopra sono immutabili. Nessuna cella del benchmark era stata eseguita prima di questa data.
+Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget, il benchmark code commit `04db03d` e le regole inferenziali sopra sono immutabili. Il testo dell'appendice operativa è stato introdotto nel repository al commit `10ea1a1`. Nessuna cella del benchmark era stata eseguita prima di questa data.
