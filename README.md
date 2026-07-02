@@ -4,7 +4,77 @@
   <img src="docs/assets/agentharness-logo.png" alt="AgentHarness logo" width="220" />
 </p>
 
-**A verification layer for coding agents. It reruns what an agent claims and accepts only the results it can prove.**
+<h3 align="center">Trust proof, not agent narration.</h3>
+
+<p align="center"><strong>A verification layer for coding agents. It reruns what an agent claims and accepts only the results it can prove.</strong></p>
+
+<p align="center">AgentHarness verifies run claims, reexecutes allowed test commands, scores held-out tasks, and separates genuine solution failure from invalid measurement.</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/claim_verification-strict-7c3aed?style=for-the-badge" alt="Strict claim verification" />
+  <img src="https://img.shields.io/badge/reexecution-controlled-2563eb?style=for-the-badge" alt="Controlled reexecution" />
+  <img src="https://img.shields.io/badge/evidence-auditable-0f766e?style=for-the-badge" alt="Auditable evidence" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/model-agnostic-f59e0b?style=flat-square" alt="Model agnostic" />
+  <img src="https://img.shields.io/badge/harness_invalid-separated-dc2626?style=flat-square" alt="Harness invalid separated" />
+  <img src="https://img.shields.io/badge/held--out_eval-deterministic-0891b2?style=flat-square" alt="Deterministic held-out evaluation" />
+  <img src="https://img.shields.io/badge/offline_grading-reproducible-15803d?style=flat-square" alt="Offline grading reproducible" />
+  <img src="https://img.shields.io/badge/benchmark-A%2FB_ready-9333ea?style=flat-square" alt="A/B benchmark ready" />
+</p>
+
+<table>
+<tr>
+<td width="25%" align="center" valign="top">
+
+<strong>7 commands</strong><br />
+validate, generate, verify, verify-run, evaluate, run-plan, bootstrap
+
+</td>
+<td width="25%" align="center" valign="top">
+
+<strong>4 verdicts</strong><br />
+supported, unsupported, inconclusive, invalid
+
+</td>
+<td width="25%" align="center" valign="top">
+
+<strong>1 trust boundary</strong><br />
+real failure versus harness invalid
+
+</td>
+<td width="25%" align="center" valign="top">
+
+<strong>0 blind trust</strong><br />
+logs alone are not accepted as proof
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### Proves, not reports
+If an agent says tests passed, AgentHarness tries to prove it with controlled reexecution instead of trusting narration.
+
+</td>
+<td width="33%" valign="top">
+
+### Scores the real task
+Held-out evaluation stays separate from the claims the agent sees, so the benchmark measures outcome, not prompt gaming.
+
+</td>
+<td width="33%" valign="top">
+
+### Keeps failure honest
+It distinguishes a bad solution from a broken measuring instrument, so invalid grading does not become fake rigor.
+
+</td>
+</tr>
+</table>
 
 English | Italiano (vai alla [versione italiana](#italiano))
 
