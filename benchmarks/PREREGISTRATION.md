@@ -775,3 +775,66 @@ Any reduction to 6 tasks or other change in task count requires a formal amendme
 
 If the 8-task quality gate is not met before the first run, benchmark execution stays blocked and requires a formal pre-registration amendment.
 The same block applies if disjunction between evaluation suite and claims contract is not demonstrated, or if held-out material leaks into the agent-visible context.
+
+### 17. Operational appendix
+
+This section freezes the concrete operational parameters, system facts, and held-out functional checks that must remain unchanged before the first benchmark run.
+
+#### 17.1 Frozen system facts
+- repository path: `/home/fabio/AgentHarness`
+- frozen branch: `main`
+- frozen commit SHA: `04db03d`
+- agent model: `gpt-5.4`
+- agent provider: `openai-codex`
+- frozen grading constraints path: `/home/fabio/AgentHarness/benchmarks/grading-env/constraints-py312.txt`
+- frozen wheelhouse manifest path: `/home/fabio/AgentHarness/benchmarks/grading-env/wheelhouse-manifest.json`
+- frozen offline wheelhouse path: `/home/fabio/AgentHarness/benchmarks/grading-env/wheelhouse`
+
+#### 17.2 Frozen per-cell budget and time limits
+- maximum turns per cell: `40`
+- maximum input tokens per cell: `200000`
+- maximum output tokens per cell: `60000`
+- maximum total tokens per cell: `300000`
+- agent invocation timeout per cell: `1800` seconds
+- local test timeout per cell: `180` seconds
+- budget and timeout are identical for condition A, condition B, and all replicates
+
+#### 17.3 Frozen randomization and bootstrap settings
+- randomization method: pseudorandom permutation of cell order using a seeded generator, with the seed recorded per stage
+- Stage 1 seed: `20260701`
+- Stage 2 seed: `20260702`
+- bootstrap 1: cluster bootstrap
+  - purpose: confidence interval for the effect
+  - resampling unit: task
+  - seed: `20260703`
+  - resamples: `10000`
+- bootstrap 2: wild cluster bootstrap
+  - purpose: confidence interval for the effect
+  - resampling unit: task
+  - seed: `20260704`
+  - resamples: `10000`
+
+#### 17.4 Held-out functional checks by task
+Only functional checks are part of this table. The structural envelope check `evaluation_result_schema` is excluded from every task below and is not part of the primary endpoint.
+
+| Task | Held-out functional checks only |
+| --- | --- |
+| `support-ticket-api` | `create_valid_ticket`, `list_filters_work`, `closed_ticket_reopen_blocked`, `comments_embedded_in_detail`, `invalid_email_rejected` |
+| `inventory-adjustment-api` | `reserve_within_available`, `over_reserve_rejected`, `damage_cannot_go_negative`, `recount_sets_exact_quantity`, `release_cannot_exceed_reserved` |
+| `webhook-ingestion-service` | `valid_signed_event_stored`, `invalid_signature_rejected`, `duplicate_delivery_idempotent`, `type_normalized_correctly`, `missing_fields_rejected` |
+| `report-export-job` | `csv_rows_sorted_complete`, `net_totals_correct`, `date_filter_applied`, `summary_totals_match`, `invalid_date_rejected` |
+| `leave-request-api` | `valid_request_created`, `overlap_rejected`, `personal_leave_limit_enforced`, `approval_sets_reviewed_at`, `terminal_state_blocks_second_review` |
+| `incident-escalation-api` | `sev1_escalates_on_time`, `ack_stops_escalation`, `resolved_stops_escalation`, `sev3_not_auto_escalated`, `invalid_as_of_rejected` |
+| `refund-approval-api` | `small_refund_auto_approved`, `medium_refund_needs_manager`, `large_refund_needs_finance`, `invalid_amount_rejected`, `terminal_state_blocks_reapproval` |
+| `csv-member-import` | `valid_rows_normalized`, `duplicate_handling_correct`, `invalid_rows_rejected_with_reason`, `summary_counts_correct`, `output_files_present` |
+
+Source of the held-out functional checks above: the versioned evaluator definitions in each task's `HELDOUT_EVALUATION_SUITE.template.json`, with the non-functional envelope check removed.
+
+#### 17.5 Frozen non-leakage audit result
+- non-leakage audit result: `PASS`
+- basis of the PASS:
+  - `benchmarks/QUALITY_GATE_POLICY.md` requires that only `SPEC.md` and the visible claims contract may be shown during the run
+  - `src/agentharness/benchmark_cells.py` copies only `SPEC.md` and `CLAIMS_CONTRACT.template.json` into the agent-visible `inputs/` directory
+  - `src/agentharness/benchmark_cells.py` does not copy `QUALITY_GATE.md`, `RUN_PROTOCOL.md`, `SCORECARD.md`, or held-out evaluator outputs into the agent-visible inputs
+  - prompt construction in `src/agentharness/benchmark_cells.py` uses only cell-relative paths and explicitly instructs the agent not to inspect any held-out evaluation suite
+  - regression tests in `tests/test_benchmark_cells.py` enforce the allowed-inputs and relative-path non-leakage constraints
