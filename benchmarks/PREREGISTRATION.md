@@ -838,3 +838,10 @@ Source of the held-out functional checks above: the versioned evaluator definiti
   - `src/agentharness/benchmark_cells.py` does not copy `QUALITY_GATE.md`, `RUN_PROTOCOL.md`, `SCORECARD.md`, or held-out evaluator outputs into the agent-visible inputs
   - prompt construction in `src/agentharness/benchmark_cells.py` uses only cell-relative paths and explicitly instructs the agent not to inspect any held-out evaluation suite
   - regression tests in `tests/test_benchmark_cells.py` enforce the allowed-inputs and relative-path non-leakage constraints
+
+
+---
+
+## Freeze
+
+Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget, il commit 04db03d e le regole inferenziali sopra sono immutabili. Nessuna cella del benchmark era stata eseguita prima di questa data.
