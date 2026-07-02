@@ -132,6 +132,13 @@ Quality gate prima dell'avvio:
 - il benchmark non parte finché non è dimostrata, task per task, la disgiunzione tra evaluation suite e claims contract
 - il benchmark non parte finché non è dimostrato il non leakage del materiale held-out nel contesto visibile all'agente
 
+Nota protocollare sulla contaminazione da leakage:
+- la copia dei file held-out nella cartella `inputs/` è stata introdotta nel commit `9813169`
+- di conseguenza, ogni cella prodotta da `prepare_fresh_cell` dal commit `9813169` in poi ha potuto esporre i criteri held-out all'agente durante il run
+- i risultati di smoke prodotti sotto quel regime, inclusi i workspace webhook e csv delle run di smoke, non sono validi come misura del base rate dell'agente
+- quei run non devono essere riusati come dati di base rate, dati di campagna o dati diagnostici pre-campagna
+- la raccolta dati valida riparte solo da celle materializzate dopo la chiusura verificata della falla di non leakage
+
 ### 6. Numerosità fissata
 Repliche per task:
 - 6 repliche appaiate A/B per task

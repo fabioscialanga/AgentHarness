@@ -268,10 +268,6 @@ def prepare_fresh_cell(*, task_id: str, condition: str, replicate_id: str, cell_
     task_dir = benchmark_task_dir(task_id)
     shutil.copy2(task_dir / "SPEC.md", inputs_dir / "SPEC.md")
     shutil.copy2(task_dir / "CLAIMS_CONTRACT.template.json", inputs_dir / "CLAIMS_CONTRACT.template.json")
-    for extra_name in ("RUN_PROTOCOL.md", "QUALITY_GATE.md", "SCORECARD.md"):
-        extra_path = task_dir / extra_name
-        if extra_path.is_file():
-            shutil.copy2(extra_path, inputs_dir / extra_name)
 
     manifest = build_cell_manifest(task_id=task_id, condition=condition, replicate_id=replicate_id, cell_dir=cell_dir)
     (cell_dir / "cell_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -666,19 +662,24 @@ def assert_nonshared_solution_hashes(results: list[dict[str, object]]) -> None:
         raise RuntimeError(f"Identical solution_hash across all cells for task(s): {joined}")
 
 
+def _prompt_relative_path(*, workspace: Path, target: Path) -> str:
+    return os.path.relpath(target, start=workspace)
+
+
 def _build_initial_prompt(*, task_id: str, condition: str, workspace: Path, spec_path: Path, claims_template_path: Path) -> str:
+    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
+    claims_ref = _prompt_relative_path(workspace=workspace, target=claims_template_path)
     common = f"""
 You are executing one benchmark cell for task {task_id}.
-Work only inside this absolute workspace: {workspace}
-Read this spec first: {spec_path}
-Do not write outside the workspace.
-Create a runnable solution from scratch in the workspace.
+Work only inside the current working directory.
+Read this spec first: {spec_ref}
+Do not write outside the current working directory.
+Create a runnable solution from scratch in the current working directory.
 Create a README.md with run instructions.
 Create a pyproject.toml.
 Create automated tests and make a best effort to get pytest -q green.
-Use absolute paths in tool calls when helpful.
 Do not inspect any held-out evaluation suite.
-The claims template exists at {claims_template_path}, but do not use held-out evaluator material.
+The claims template exists at {claims_ref}, but do not use held-out evaluator material.
 """.strip()
     if condition == "A-baseline":
         extra = """
@@ -698,14 +699,17 @@ Condition B, AgentHarness package:
 
 
 def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path) -> str:
+    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
+    pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
+    pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
     return f"""
 This is the one bounded repair pass for baseline condition A on task {task_id}.
-Workspace: {workspace}
-Spec: {spec_path}
+Workspace: current working directory
+Spec: {spec_ref}
 Review the implementation against the task spec, not against any framework guidance.
 Use these raw local test outputs only as ordinary development feedback:
-- pytest stdout: {pytest_stdout_path}
-- pytest stderr: {pytest_stderr_path}
+- pytest stdout: {pytest_stdout_ref}
+- pytest stderr: {pytest_stderr_ref}
 Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
@@ -720,14 +724,18 @@ def _build_agentharness_repair_prompt(
     pytest_stderr_path: str | Path,
     verify_feedback_path: Path,
 ) -> str:
+    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
+    pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
+    pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
+    verify_feedback_ref = _prompt_relative_path(workspace=workspace, target=verify_feedback_path)
     return f"""
 This is the one bounded repair pass for AgentHarness condition B on task {task_id}.
-Workspace: {workspace}
-Spec: {spec_path}
-Use the structured verify-run feedback here: {verify_feedback_path}
+Workspace: current working directory
+Spec: {spec_ref}
+Use the structured verify-run feedback here: {verify_feedback_ref}
 You may also consult the raw local test outputs:
-- pytest stdout: {pytest_stdout_path}
-- pytest stderr: {pytest_stderr_path}
+- pytest stdout: {pytest_stdout_ref}
+- pytest stderr: {pytest_stderr_ref}
 Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
