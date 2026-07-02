@@ -666,15 +666,22 @@ def _prompt_relative_path(*, workspace: Path, target: Path) -> str:
     return os.path.relpath(target, start=workspace)
 
 
+def _prompt_absolute_path(target: Path) -> str:
+    return str(target.resolve())
+
+
 def _build_initial_prompt(*, task_id: str, condition: str, workspace: Path, spec_path: Path, claims_template_path: Path) -> str:
-    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
-    claims_ref = _prompt_relative_path(workspace=workspace, target=claims_template_path)
+    workspace_ref = _prompt_absolute_path(workspace)
+    spec_ref = _prompt_absolute_path(spec_path)
+    claims_ref = _prompt_absolute_path(claims_template_path)
     common = f"""
 You are executing one benchmark cell for task {task_id}.
-Work only inside the current working directory.
+The only project workspace for this cell is: {workspace_ref}
+Use that exact absolute workspace path for every file read/write/create/modify operation.
+Do not rely on your default current working directory.
 Read this spec first: {spec_ref}
-Do not write outside the current working directory.
-Create a runnable solution from scratch in the current working directory.
+Do not write anywhere outside {workspace_ref}.
+Create a runnable solution from scratch inside {workspace_ref}.
 Create a README.md with run instructions.
 Create a pyproject.toml.
 Create automated tests and make a best effort to get pytest -q green.
@@ -699,12 +706,14 @@ Condition B, AgentHarness package:
 
 
 def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path) -> str:
-    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
-    pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
-    pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
+    workspace_ref = _prompt_absolute_path(workspace)
+    spec_ref = _prompt_absolute_path(spec_path)
+    pytest_stdout_ref = _prompt_absolute_path(Path(str(pytest_stdout_path)))
+    pytest_stderr_ref = _prompt_absolute_path(Path(str(pytest_stderr_path)))
     return f"""
 This is the one bounded repair pass for baseline condition A on task {task_id}.
-Workspace: current working directory
+Workspace absolute path: {workspace_ref}
+Use that exact absolute workspace path for every file operation and do not rely on your default current working directory.
 Spec: {spec_ref}
 Review the implementation against the task spec, not against any framework guidance.
 Use these raw local test outputs only as ordinary development feedback:
@@ -724,13 +733,15 @@ def _build_agentharness_repair_prompt(
     pytest_stderr_path: str | Path,
     verify_feedback_path: Path,
 ) -> str:
-    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
-    pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
-    pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
-    verify_feedback_ref = _prompt_relative_path(workspace=workspace, target=verify_feedback_path)
+    workspace_ref = _prompt_absolute_path(workspace)
+    spec_ref = _prompt_absolute_path(spec_path)
+    pytest_stdout_ref = _prompt_absolute_path(Path(str(pytest_stdout_path)))
+    pytest_stderr_ref = _prompt_absolute_path(Path(str(pytest_stderr_path)))
+    verify_feedback_ref = _prompt_absolute_path(verify_feedback_path)
     return f"""
 This is the one bounded repair pass for AgentHarness condition B on task {task_id}.
-Workspace: current working directory
+Workspace absolute path: {workspace_ref}
+Use that exact absolute workspace path for every file operation and do not rely on your default current working directory.
 Spec: {spec_ref}
 Use the structured verify-run feedback here: {verify_feedback_ref}
 You may also consult the raw local test outputs:

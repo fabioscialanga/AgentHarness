@@ -837,8 +837,8 @@ Source of the held-out functional checks above: the versioned evaluator definiti
   - `benchmarks/QUALITY_GATE_POLICY.md` requires that only `SPEC.md` and the visible claims contract may be shown during the run
   - `src/agentharness/benchmark_cells.py` copies only `SPEC.md` and `CLAIMS_CONTRACT.template.json` into the agent-visible `inputs/` directory
   - `src/agentharness/benchmark_cells.py` does not copy `QUALITY_GATE.md`, `RUN_PROTOCOL.md`, `SCORECARD.md`, or held-out evaluator outputs into the agent-visible inputs
-  - prompt construction in `src/agentharness/benchmark_cells.py` uses only cell-relative paths and explicitly instructs the agent not to inspect any held-out evaluation suite
-  - regression tests in `tests/test_benchmark_cells.py` enforce the allowed-inputs and relative-path non-leakage constraints
+  - prompt construction in `src/agentharness/benchmark_cells.py` uses only materialized cell-local input/output paths and explicitly instructs the agent not to inspect any held-out evaluation suite
+  - regression tests in `tests/test_benchmark_cells.py` enforce the allowed-inputs and cell-local-path non-leakage constraints
 
 #### 17.6 Pre-analysis amendment (2026-07-02, before inspecting any Stage 1 outputs)
 An initial Stage 1 launch was started and then aborted before inspecting any summary statistics, invalid-rate aggregates, ceiling counts, or treatment-contrast results. The aborted run is discarded unread and is not part of the benchmark evidence base. This amendment records three execution-level corrections discovered by code inspection before any Stage 1 analysis.
@@ -854,6 +854,17 @@ An initial Stage 1 launch was started and then aborted before inspecting any sum
   - agent invocation timeout per cell: enforced at `1800` seconds
   - local pytest timeout per cell: enforced at `180` seconds
   - these enforcement checks are verified in code before the benchmark is relaunched
+
+#### 17.7 Pre-analysis amendment (2026-07-02, before inspecting any Stage 1 outputs)
+A second Stage 1 launch exposed a harness-side execution-path discrepancy before any analyzable cell results were produced. The first randomized cell (`refund-approval-api`, `A-baseline`, `r2`) repeatedly left the materialized workspace empty while the child Hermes CLI wrote solution files under `/home/fabio`. This run is discarded unread and is not part of the benchmark evidence base.
+
+- correction 4: Hermes CLI execution in this environment must not rely on subprocess cwd semantics for benchmark-cell file placement
+  - empirical finding before analysis: invoking `hermes chat` from a subprocess with `cwd=<cell workspace>` still caused file-tool writes to land in the default Hermes session directory (`/home/fabio`) rather than in the per-cell workspace
+  - operational rule after this amendment: Stage 1 benchmark prompts must provide explicit absolute cell-local paths for the workspace, visible inputs, and repair-feedback files, and must instruct the agent to use those exact absolute paths for all file operations instead of relying on the default current working directory
+  - non-leakage interpretation after this amendment: prompt-visible paths remain confined to the materialized cell (`workspace/`, `inputs/`, `outputs/`) and do not expose benchmark task-pack directories or held-out evaluator assets
+- correction 5: the analyzable benchmark-code freeze is updated to the first commit that includes the verified absolute-path workspace fix and its regression-test updates
+  - the prior benchmark-code freeze commit `04db03d` remains the basis for discarded unread smoke/diagnostic launches only
+  - the replacement benchmark-code commit is the commit referenced by the post-amendment relaunch and by the run-level provenance artifacts of the analyzable Stage 1 campaign
 
 
 ---

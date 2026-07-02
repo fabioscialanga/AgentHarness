@@ -93,7 +93,7 @@ class BenchmarkCellsTests(unittest.TestCase):
             self.assertTrue((cell_dir / "cell_manifest.json").is_file())
             self.assertTrue((cell_dir / "workspace").is_dir())
 
-    def test_prompts_use_relative_cell_paths_and_do_not_expose_task_dir(self) -> None:
+    def test_prompts_use_cell_local_absolute_paths_and_do_not_expose_task_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             cell_dir = Path(tmp_dir) / "support-ticket-api" / "B-agentharness" / "r1"
             prepare_fresh_cell(
@@ -132,21 +132,21 @@ class BenchmarkCellsTests(unittest.TestCase):
             )
 
             task_dir = str((Path(__file__).resolve().parents[1] / "benchmarks" / "support-ticket-api").resolve())
-            self.assertIn("../inputs/SPEC.md", initial_prompt)
-            self.assertIn("../inputs/CLAIMS_CONTRACT.template.json", initial_prompt)
-            self.assertIn("../inputs/SPEC.md", baseline_repair_prompt)
-            self.assertIn("../inputs/SPEC.md", agentharness_repair_prompt)
-            self.assertIn("../outputs/pre-repair-pytest.stdout", baseline_repair_prompt)
-            self.assertIn("../outputs/pre-repair-pytest.stderr", baseline_repair_prompt)
-            self.assertIn("../outputs/pre-repair-verify-run-report.json", agentharness_repair_prompt)
+            self.assertIn(str(workspace.resolve()), initial_prompt)
+            self.assertIn(str(spec_path.resolve()), initial_prompt)
+            self.assertIn(str(claims_template_path.resolve()), initial_prompt)
+            self.assertIn(str(workspace.resolve()), baseline_repair_prompt)
+            self.assertIn(str(spec_path.resolve()), baseline_repair_prompt)
+            self.assertIn(str(pytest_stdout_path.resolve()), baseline_repair_prompt)
+            self.assertIn(str(pytest_stderr_path.resolve()), baseline_repair_prompt)
+            self.assertIn(str(workspace.resolve()), agentharness_repair_prompt)
+            self.assertIn(str(spec_path.resolve()), agentharness_repair_prompt)
+            self.assertIn(str(pytest_stdout_path.resolve()), agentharness_repair_prompt)
+            self.assertIn(str(pytest_stderr_path.resolve()), agentharness_repair_prompt)
+            self.assertIn(str(verify_feedback_path.resolve()), agentharness_repair_prompt)
             for prompt in (initial_prompt, baseline_repair_prompt, agentharness_repair_prompt):
                 self.assertNotIn(task_dir, prompt)
-                self.assertNotIn(str(workspace), prompt)
-                self.assertNotIn(str(spec_path), prompt)
-                self.assertNotIn(str(claims_template_path), prompt)
-                self.assertNotIn(str(pytest_stdout_path), prompt)
-                self.assertNotIn(str(pytest_stderr_path), prompt)
-            self.assertNotIn(str(verify_feedback_path), agentharness_repair_prompt)
+                self.assertNotIn(str((Path(__file__).resolve().parents[1] / "benchmarks").resolve()), prompt)
 
     def test_execute_cell_records_provenance_and_solution_hash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
