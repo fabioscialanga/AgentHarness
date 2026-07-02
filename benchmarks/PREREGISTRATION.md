@@ -871,4 +871,4 @@ A second Stage 1 launch exposed a harness-side execution-path discrepancy before
 
 ## Freeze
 
-Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget, il benchmark code commit `04db03d` e le regole inferenziali sopra sono immutabili. Il testo dell'appendice operativa è stato introdotto nel repository al commit `10ea1a1`. Nessuna cella del benchmark era stata eseguita prima di questa data.
+Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget e le regole inferenziali sopra sono immutabili. Per le campagne Stage 1 analizzabili, il benchmark code commit congelato è `e8e8504` come registrato nell'emendamento pre-analisi 17.7; il precedente commit `04db03d` resta riferito solo ai run scartati e non letti antecedenti alla correzione del path workspace. Il testo dell'appendice operativa è stato introdotto nel repository al commit `10ea1a1`. Nessuna cella del benchmark era stata eseguita prima di questa data.
