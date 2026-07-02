@@ -840,6 +840,21 @@ Source of the held-out functional checks above: the versioned evaluator definiti
   - prompt construction in `src/agentharness/benchmark_cells.py` uses only cell-relative paths and explicitly instructs the agent not to inspect any held-out evaluation suite
   - regression tests in `tests/test_benchmark_cells.py` enforce the allowed-inputs and relative-path non-leakage constraints
 
+#### 17.6 Pre-analysis amendment (2026-07-02, before inspecting any Stage 1 outputs)
+An initial Stage 1 launch was started and then aborted before inspecting any summary statistics, invalid-rate aggregates, ceiling counts, or treatment-contrast results. The aborted run is discarded unread and is not part of the benchmark evidence base. This amendment records three execution-level corrections discovered by code inspection before any Stage 1 analysis.
+
+- correction 1: token budgets in section 17.2 remain frozen as nominal safety ceilings, but on the `openai-codex` / `gpt-5.4` backend they are not hard-enforced by the Stage 1 runner path actually used for execution
+  - frozen nominal ceilings remain: input `200000`, output `60000`, total `300000`
+  - interpretation after this amendment: these token values are documented operating ceilings, not an enforced exclusion rule in the current backend path
+  - hard-enforced per-cell controls for the relaunched Stage 1 are: maximum turns `40`, agent wall-clock timeout `1800` seconds, and local pytest timeout `180` seconds
+- correction 2: the single allowed rerun for a `harness_invalid` or held-out-`invalid` cell must be executed on a freshly rematerialized cell
+  - operational rule after this amendment: before the one allowed rerun, the harness must call fresh cell materialization again so that `workspace/`, `inputs/`, `outputs/`, `run.json`, `claims.json`, `provenance.json`, and `metadata.json` are recreated from scratch
+  - if the rerun remains invalid, the cell is excluded from the primary analysis and reported explicitly under the preregistered invalid-cell rule
+- correction 3: the relaunched Stage 1 runner must enforce the declared time limits directly in the launcher wrapper
+  - agent invocation timeout per cell: enforced at `1800` seconds
+  - local pytest timeout per cell: enforced at `180` seconds
+  - these enforcement checks are verified in code before the benchmark is relaunched
+
 
 ---
 
