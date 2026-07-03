@@ -6,8 +6,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
+from agentharness.reexecution import sanitized_environment, default_execution_policy
 from agentharness.verify import default_verify_run_report_path, verify_run
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +24,47 @@ CLAIMS_LIE_FIXTURE = FIXTURES / "claims_invite_lie.json"
 
 
 class VerifyRunTests(unittest.TestCase):
+    def test_sanitized_environment_preserves_windows_runtime_variables(self) -> None:
+        policy = default_execution_policy()
+        with mock.patch.dict(
+            os.environ,
+            {
+                "PATH": r"C:\Windows\System32;C:\Windows",
+                "SYSTEMROOT": r"C:\Windows",
+                "SYSTEMDRIVE": "C:\\",
+                "WINDIR": r"C:\Windows",
+                "TEMP": r"C:\Temp",
+                "TMP": r"C:\Tmp",
+                "USERPROFILE": r"C:\Users\tester",
+                "APPDATA": r"C:\Users\tester\AppData\Roaming",
+                "PROGRAMDATA": r"C:\ProgramData",
+            },
+            clear=True,
+        ):
+            env = sanitized_environment(policy)
+        self.assertEqual(env["SYSTEMROOT"], r"C:\Windows")
+        self.assertEqual(env["SYSTEMDRIVE"], "C:\\")
+        self.assertEqual(env["WINDIR"], r"C:\Windows")
+        self.assertEqual(env["TEMP"], r"C:\Temp")
+        self.assertEqual(env["TMP"], r"C:\Tmp")
+        self.assertEqual(env["USERPROFILE"], r"C:\Users\tester")
+        self.assertEqual(env["APPDATA"], r"C:\Users\tester\AppData\Roaming")
+        self.assertEqual(env["PROGRAMDATA"], r"C:\ProgramData")
+
+    def test_sanitized_environment_uses_windows_scripts_directory_and_path_separator(self) -> None:
+        policy = default_execution_policy()
+        with mock.patch("agentharness.reexecution.os.name", "nt"), mock.patch("agentharness.reexecution.os.pathsep", ";"), mock.patch.dict(
+            os.environ,
+            {
+                "PATH": r"C:\Windows\System32;C:\Windows",
+                "VIRTUAL_ENV": r"C:\venv",
+                "SYSTEMROOT": r"C:\Windows",
+            },
+            clear=True,
+        ):
+            env = sanitized_environment(policy)
+        self.assertEqual(env["PATH"], r"C:\venv\Scripts;C:\Windows\System32;C:\Windows")
+
     def test_verify_run_supports_all_claims_on_happy_path(self) -> None:
         result = verify_run(RUN_FIXTURE, CLAIMS_FIXTURE)
         self.assertTrue(result.ok)

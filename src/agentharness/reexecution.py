@@ -8,7 +8,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 
@@ -26,6 +26,14 @@ DEFAULT_ALLOWED_ENV_NAMES: tuple[str, ...] = (
     "LANG",
     "LC_ALL",
     "LC_CTYPE",
+    "SYSTEMROOT",
+    "SYSTEMDRIVE",
+    "WINDIR",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "APPDATA",
+    "PROGRAMDATA",
 )
 
 
@@ -200,12 +208,15 @@ def sanitized_environment(policy: ExecutionPolicy) -> dict[str, str]:
         value = os.environ.get(name)
         if value is not None:
             env[name] = value
-    path_value = env.get("PATH", "/usr/bin:/bin")
+    path_separator = os.pathsep
+    path_value = env.get("PATH", os.defpath)
     virtual_env = env.get("VIRTUAL_ENV")
     if virtual_env:
-        venv_bin = str(Path(virtual_env) / "bin")
-        if venv_bin not in path_value.split(":"):
-            path_value = f"{venv_bin}:{path_value}"
+        scripts_dir = "Scripts" if os.name == "nt" else "bin"
+        path_cls = PureWindowsPath if os.name == "nt" else PurePosixPath
+        venv_bin = str(path_cls(virtual_env) / scripts_dir)
+        if venv_bin not in path_value.split(path_separator):
+            path_value = f"{venv_bin}{path_separator}{path_value}"
     env["PATH"] = path_value
     env["PYTHONIOENCODING"] = "utf-8"
     return env
