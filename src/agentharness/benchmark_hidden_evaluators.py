@@ -302,6 +302,15 @@ def _extract_comments(payload: Any) -> list[Any]:
     return []
 
 
+def _extract_inventory_item(payload: Any) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        return {}
+    item = payload.get("item")
+    if isinstance(item, dict):
+        return item
+    return payload
+
+
 def _normalize_item_ref(payload: Any) -> Any:
     if isinstance(payload, dict):
         for key in ("sku", "id", "item_id"):
@@ -389,7 +398,9 @@ def _extract_history_entries(payload: Any) -> list[Any]:
     if not isinstance(payload, dict):
         return []
     for key in ("history", "events", "adjustments"):
-        value = payload.get(key, [])
+        if key not in payload:
+            continue
+        value = payload.get(key)
         if isinstance(value, list):
             return value
     return []
@@ -1250,9 +1261,10 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
 
     try:
         with _working_directory(workspace), _make_test_client(app) as client:
+            sku_seed = f"SKU-{uuid.uuid4().hex[:8].upper()}"
             create_item = client.post(
                 "/items",
-                json={"sku": "SKU-001", "name": "Widget", "on_hand": 10, "reserved": 0},
+                json={"sku": sku_seed, "name": "Widget", "on_hand": 10},
             )
             create_ok = create_item.status_code in {200, 201}
             create_payload: Any = create_item.json() if create_ok else {}
@@ -1272,12 +1284,13 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
 
             if sku is not None:
                 reserve_response = client.post(
-                    "/reservations",
-                    json={"sku": sku, "order_id": "ORDER-1", "quantity": 4},
+                    f"/items/{sku}/reservations",
+                    json={"order_id": "ORDER-1", "quantity": 4},
                 )
                 detail_after_reserve = client.get(f"/items/{sku}")
                 detail_payload = detail_after_reserve.json() if detail_after_reserve.status_code == 200 else {}
-                reserved_quantity = detail_payload.get("reserved") if isinstance(detail_payload, dict) else None
+                detail_item = _extract_inventory_item(detail_payload)
+                reserved_quantity = detail_item.get("reserved") if isinstance(detail_item, dict) else None
                 reserve_ok = (
                     reserve_response.status_code in {200, 201}
                     and detail_after_reserve.status_code == 200
@@ -1288,31 +1301,32 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
                 )
 
                 over_reserve_response = client.post(
-                    "/reservations",
-                    json={"sku": sku, "order_id": "ORDER-2", "quantity": 7},
+                    f"/items/{sku}/reservations",
+                    json={"order_id": "ORDER-2", "quantity": 7},
                 )
                 over_reserve_ok = over_reserve_response.status_code in {400, 409, 422}
                 over_reserve_detail = f"status_code={over_reserve_response.status_code}"
 
                 damage_response = client.post(
-                    "/adjustments",
-                    json={"sku": sku, "reason": "damage", "delta": -20},
+                    f"/items/{sku}/adjustments",
+                    json={"reason": "damage", "delta": -20},
                 )
                 damage_ok = damage_response.status_code in {400, 409, 422}
                 damage_detail = f"status_code={damage_response.status_code}"
 
                 recount_response = client.post(
-                    "/adjustments",
-                    json={"sku": sku, "reason": "recount", "counted_quantity": 8},
+                    f"/items/{sku}/adjustments",
+                    json={"reason": "recount", "counted_quantity": 8},
                 )
                 detail_after_recount = client.get(f"/items/{sku}")
                 detail_after_recount_payload = detail_after_recount.json() if detail_after_recount.status_code == 200 else {}
-                recount_on_hand = detail_after_recount_payload.get("on_hand") if isinstance(detail_after_recount_payload, dict) else None
+                recount_item = _extract_inventory_item(detail_after_recount_payload)
+                recount_on_hand = recount_item.get("on_hand") if isinstance(recount_item, dict) else None
                 history = _extract_history_entries(detail_after_recount_payload)
                 recount_history_ok = any(
                     isinstance(entry, dict)
                     and entry.get("reason") == "recount"
-                    and entry.get("counted_quantity") == 8
+                    and (entry.get("counted_quantity") == 8 or entry.get("quantity") == 8)
                     for entry in history
                 )
                 recount_ok = (
@@ -1326,8 +1340,8 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
                 )
 
                 release_response = client.post(
-                    "/releases",
-                    json={"sku": sku, "order_id": "ORDER-1", "quantity": 10},
+                    f"/items/{sku}/reservations/ORDER-1/release",
+                    json={"quantity": 10},
                 )
                 release_ok = release_response.status_code in {400, 409, 422}
                 release_detail = f"status_code={release_response.status_code}"

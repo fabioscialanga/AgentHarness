@@ -32,22 +32,17 @@ GOOD_APP = textwrap.dedent(
         sku: str
         name: str
         on_hand: int
-        reserved: int = 0
 
     class AdjustmentCreate(BaseModel):
-        sku: str
         reason: str
         delta: int | None = None
         counted_quantity: int | None = None
 
     class ReservationCreate(BaseModel):
-        sku: str
         order_id: str
         quantity: int
 
     class ReleaseCreate(BaseModel):
-        sku: str
-        order_id: str
         quantity: int
 
     items: dict[str, dict] = {}
@@ -68,15 +63,13 @@ GOOD_APP = textwrap.dedent(
     def create_item(payload: ItemCreate):
         if payload.sku in items:
             raise HTTPException(status_code=409, detail="duplicate sku")
-        if payload.on_hand < 0 or payload.reserved < 0:
+        if payload.on_hand < 0:
             raise HTTPException(status_code=422, detail="invalid quantities")
-        if payload.reserved > payload.on_hand:
-            raise HTTPException(status_code=422, detail="reserved cannot exceed on_hand")
         items[payload.sku] = {
             "sku": payload.sku,
             "name": payload.name,
             "on_hand": payload.on_hand,
-            "reserved": payload.reserved,
+            "reserved": 0,
             "history": [],
         }
         return clone_item(items[payload.sku])
@@ -97,9 +90,9 @@ GOOD_APP = textwrap.dedent(
             raise HTTPException(status_code=404, detail="not found")
         return clone_item(item)
 
-    @app.post("/adjustments", status_code=201)
-    def create_adjustment(payload: AdjustmentCreate):
-        item = items.get(payload.sku)
+    @app.post("/items/{sku}/adjustments", status_code=201)
+    def create_adjustment(sku: str, payload: AdjustmentCreate):
+        item = items.get(sku)
         if item is None:
             raise HTTPException(status_code=404, detail="not found")
         if payload.reason not in {"receive", "damage", "recount"}:
@@ -128,9 +121,9 @@ GOOD_APP = textwrap.dedent(
         )
         return clone_item(item)
 
-    @app.post("/reservations", status_code=201)
-    def reserve_stock(payload: ReservationCreate):
-        item = items.get(payload.sku)
+    @app.post("/items/{sku}/reservations", status_code=201)
+    def reserve_stock(sku: str, payload: ReservationCreate):
+        item = items.get(sku)
         if item is None:
             raise HTTPException(status_code=404, detail="not found")
         available = item["on_hand"] - item["reserved"]
@@ -147,19 +140,19 @@ GOOD_APP = textwrap.dedent(
         )
         return {"ok": True}
 
-    @app.post("/releases", status_code=201)
-    def release_stock(payload: ReleaseCreate):
-        item = items.get(payload.sku)
+    @app.post("/items/{sku}/reservations/{order_id}/release", status_code=201)
+    def release_stock(sku: str, order_id: str, payload: ReleaseCreate):
+        item = items.get(sku)
         if item is None:
             raise HTTPException(status_code=404, detail="not found")
         reserved_for_order = sum(
             entry["quantity"]
             for entry in item["history"]
-            if entry["type"] == "reservation" and entry.get("order_id") == payload.order_id
+            if entry["type"] == "reservation" and entry.get("order_id") == order_id
         ) - sum(
             entry["quantity"]
             for entry in item["history"]
-            if entry["type"] == "release" and entry.get("order_id") == payload.order_id
+            if entry["type"] == "release" and entry.get("order_id") == order_id
         )
         if payload.quantity <= 0 or payload.quantity > reserved_for_order:
             raise HTTPException(status_code=409, detail="release exceeds reserved quantity")
@@ -167,7 +160,7 @@ GOOD_APP = textwrap.dedent(
         item["history"].append(
             {
                 "type": "release",
-                "order_id": payload.order_id,
+                "order_id": order_id,
                 "quantity": payload.quantity,
                 "created_at": now(),
             }
