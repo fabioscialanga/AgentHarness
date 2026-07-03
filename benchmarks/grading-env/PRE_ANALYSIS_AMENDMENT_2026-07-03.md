@@ -20,7 +20,7 @@ Amendments and verified fixes:
    - Rebuilt the frozen `agentharness` wheel and updated `wheelhouse-manifest.json`.
 
 Verification performed on published state:
-- `origin/main` verified at `55ce6831933a28d53001b42198d45d75f8133485`
+- `origin/main` verified at `fe6ac79566330614ff8f1656352b9ed3a4be13fc`
 - Root wheelhouse gate: PASS
 - Solution smoke: `support-ticket-api`: PASS
 - Solution smoke: `inventory-adjustment-api`: PASS
@@ -36,5 +36,5 @@ Interpretation:
 - Earlier failures attributable to stale freeze coverage or evaluator/packaged-wheel mismatch should not be read as treatment evidence.
 - The refreshed freeze now has positive offline evidence on multiple representative API tasks (`support-ticket-api`, `inventory-adjustment-api`, `incident-escalation-api`, `refund-approval-api`).
 - The earlier `refund-approval-api` false negative came from using a representative workspace nested under `tests/`, which the hidden grader intentionally excludes during FastAPI module autodiscovery; the benchmark fixture under `benchmarks/fixtures/` passes offline end-to-end.
-- A fresh benchmark rerun should use repo state `55ce6831933a28d53001b42198d45d75f8133485` or later.
+- A fresh benchmark rerun should use repo state `fe6ac79566330614ff8f1656352b9ed3a4be13fc` or later.
 - No new A/B effect claims should be made from runs executed before these fixes.
