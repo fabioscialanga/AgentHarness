@@ -31,7 +31,36 @@ TASKS = [
 ]
 CONDITIONS = ["A-baseline", "B-agentharness"]
 REPLICATES = ["r1", "r2", "r3"]
+MAX_RERUNS_AFTER_INVALID = 1
 SEED = int(os.environ.get("STAGE1_SEED", "20260701"))
+
+PROVIDER_UNAVAILABLE_MARKERS = (
+    "HTTP 429",
+    "usage limit has been reached",
+    "rate limit",
+    "temporarily unavailable",
+)
+
+
+def _is_provider_unavailable_record(record: dict[str, object]) -> bool:
+    final_error = str(record.get("final_error") or "")
+    if any(marker.lower() in final_error.lower() for marker in PROVIDER_UNAVAILABLE_MARKERS):
+        return True
+    cell_dir = Path(str(record["cell_dir"]))
+    attempts_dir = cell_dir / "outputs" / "agent-invocations"
+    if not attempts_dir.is_dir():
+        return False
+    for stdout_path in sorted(attempts_dir.glob("*.stdout")):
+        text = stdout_path.read_text(encoding="utf-8", errors="replace")
+        if any(marker.lower() in text.lower() for marker in PROVIDER_UNAVAILABLE_MARKERS):
+            return True
+    for stderr_path in sorted(attempts_dir.glob("*.stderr")):
+        text = stderr_path.read_text(encoding="utf-8", errors="replace")
+        if any(marker.lower() in text.lower() for marker in PROVIDER_UNAVAILABLE_MARKERS):
+            return True
+    return False
+
+
 RUNS_ROOT = Path(
     os.environ.get(
         "STAGE1_RUNS_ROOT",
@@ -40,7 +69,6 @@ RUNS_ROOT = Path(
 )
 AGENT_TIMEOUT_SECONDS = int(os.environ.get("STAGE1_AGENT_TIMEOUT_SECONDS", "1800"))
 PYTEST_TIMEOUT_SECONDS = int(os.environ.get("STAGE1_PYTEST_TIMEOUT_SECONDS", "180"))
-MAX_RERUNS_AFTER_INVALID = 1
 RUNS_ROOT.mkdir(parents=True, exist_ok=True)
 
 
@@ -260,6 +288,7 @@ def main() -> int:
         "by_condition": {},
         "by_task_condition": {},
         "invalid_cells": [],
+        "provider_unavailable_cells": [],
         "ceiling_cells": [],
         "under_ceiling_cells": [],
     }
@@ -276,6 +305,7 @@ def main() -> int:
                 or r["final"].get("evaluation_summary", {}).get("invalid", 0) > 0
             )
         ]
+        provider_unavailable = [r for r in invalids if _is_provider_unavailable_record(r)]
         summary["by_condition"][condition] = {
             "n": len(finals),
             "mean_score": (sum(scores) / len(scores)) if scores else 0.0,
@@ -283,21 +313,24 @@ def main() -> int:
             "ceiling_count": sum(1 for s in scores if s >= 1.0),
             "under_ceiling_count": sum(1 for s in scores if s < 1.0),
             "harness_invalid_count": len(invalids),
+            "provider_unavailable_count": len(provider_unavailable),
         }
     for task in TASKS:
         for condition in CONDITIONS:
             task_records = [r for r in results if r["task_id"] == task and r["condition"] == condition]
             finals = [r.get("final") for r in task_records if r.get("final")]
             scores = [float(f.get("score", 0.0)) for f in finals]
-            invalid_count = sum(
-                1
+            invalid_records = [
+                r
                 for r in task_records
                 if (
                     not r.get("final")
                     or r["final"].get("benchmark_execution_status") == "harness_invalid"
                     or r["final"].get("evaluation_summary", {}).get("invalid", 0) > 0
                 )
-            )
+            ]
+            invalid_count = len(invalid_records)
+            provider_unavailable_count = sum(1 for r in invalid_records if _is_provider_unavailable_record(r))
             key = f"{task}::{condition}"
             summary["by_task_condition"][key] = {
                 "n": len(task_records),
@@ -305,6 +338,7 @@ def main() -> int:
                 "mean_score": (sum(scores) / len(scores)) if scores else 0.0,
                 "ceiling_count": sum(1 for s in scores if s >= 1.0),
                 "harness_invalid_count": invalid_count,
+                "provider_unavailable_count": provider_unavailable_count,
             }
     for r in results:
         f = r.get("final")
@@ -321,6 +355,15 @@ def main() -> int:
                     "cell_dir": r["cell_dir"],
                 }
             )
+            if _is_provider_unavailable_record(r):
+                summary["provider_unavailable_cells"].append(
+                    {
+                        "task_id": r["task_id"],
+                        "condition": r["condition"],
+                        "replicate_id": r["replicate_id"],
+                        "cell_dir": r["cell_dir"],
+                    }
+                )
         elif float(f.get("score", 0.0)) >= 1.0:
             summary["ceiling_cells"].append(
                 {

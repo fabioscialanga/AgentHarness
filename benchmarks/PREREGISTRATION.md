@@ -866,6 +866,18 @@ A second Stage 1 launch exposed a harness-side execution-path discrepancy before
   - the prior benchmark-code freeze commit `04db03d` remains the basis for discarded unread smoke/diagnostic launches only
   - the replacement benchmark-code commit is the commit referenced by the post-amendment relaunch and by the run-level provenance artifacts of the analyzable Stage 1 campaign
 
+#### 17.8 Post-diagnostic amendment (2026-07-03, before any treatment-effect interpretation of the completed Stage 1 run)
+The completed Stage 1 diagnostic campaign on the post-amendment freeze is not analyzable for A-vs-B treatment effect because benchmark-cell execution was materially contaminated by provider-availability failures. This amendment records that diagnosis before any treatment-effect claim is made from the run.
+
+- correction 6: provider-side quota / rate-limit failures must be reported separately from harness-invalid cells and separately from ordinary task failures
+  - empirical finding after run completion: a large subset of Stage 1 cells terminated with empty workspaces because the Hermes CLI invocation failed upstream with provider-side availability errors, including `HTTP 429: The usage limit has been reached`
+  - these cells do not constitute evidence about task-solving ability and must not be pooled with ordinary failed solutions when interpreting condition means or ceilings
+  - Stage 1 summaries must report provider-unavailable counts explicitly, alongside but distinct from generic harness-invalid counts
+- correction 7: the completed Stage 1 diagnostic campaign on freeze `e8e8504` is classified as non-analyzable for treatment contrast
+  - observed contamination count: `31/48` cells were invalid due to provider-unavailable failures, with asymmetric realized exposure across conditions
+  - consequence: the completed run may be used only for diagnostic inspection of failure modes and harness instrumentation, not for comparative A-vs-B inference
+  - operational requirement before any renewed Stage 1 claim: rerun only under a provider/profile path with sufficient confirmed execution headroom, or under an explicit preflight/abort rule that stops the campaign if provider-unavailable failures recur
+
 
 ---
 
