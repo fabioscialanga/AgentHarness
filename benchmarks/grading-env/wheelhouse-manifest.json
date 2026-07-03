@@ -56,8 +56,8 @@
   "files": [
     {
       "filename": "agentharness-0.1.0-py3-none-any.whl",
-      "sha256": "575f75d9b273daf78868d4e649ab9939879b2a4e057a503ac397bbbfd43efa77",
-      "size_bytes": 73931
+      "sha256": "a0a5a742d38fade24f38a9fff996cd71bdf1615fe4462a28996f00b184348f98",
+      "size_bytes": 74041
     },
     {
       "filename": "annotated_doc-0.0.4-py3-none-any.whl",
