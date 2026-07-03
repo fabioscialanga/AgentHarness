@@ -25,7 +25,7 @@ Verification performed on published state:
 - Solution smoke: `support-ticket-api`: PASS
 - Solution smoke: `inventory-adjustment-api`: PASS
 - Solution smoke: `incident-escalation-api`: PASS
-- Spot-check classification: `refund-approval-api` workspace is not positive wheelhouse evidence; its representative workspace is structurally invalid for hidden grading (`app.py` imports `refund_approval_api.main`, but that module tree is absent in the workspace), so this should be treated as a workspace/task artifact issue rather than more evidence that the shared freeze is broken.
+- Solution smoke: `refund-approval-api`: PASS (using `benchmarks/fixtures/refund-approval-api-success` as a representative workspace outside `tests/`, because FastAPI module autodiscovery intentionally skips paths nested under a `tests` directory)
 - `pytest -q tests/test_inventory_benchmark_hidden_evaluator.py`: 4 passed
 
 Claude review follow-up:
@@ -34,7 +34,7 @@ Claude review follow-up:
 
 Interpretation:
 - Earlier failures attributable to stale freeze coverage or evaluator/packaged-wheel mismatch should not be read as treatment evidence.
-- The refreshed freeze now has positive offline evidence on multiple representative API tasks (`support-ticket-api`, `inventory-adjustment-api`, `incident-escalation-api`).
-- The observed `refund-approval-api` failure in this spot-check should not be collapsed into a wheelhouse failure bucket; it is currently best classified as a broken representative workspace artifact.
+- The refreshed freeze now has positive offline evidence on multiple representative API tasks (`support-ticket-api`, `inventory-adjustment-api`, `incident-escalation-api`, `refund-approval-api`).
+- The earlier `refund-approval-api` false negative came from using a representative workspace nested under `tests/`, which the hidden grader intentionally excludes during FastAPI module autodiscovery; the benchmark fixture under `benchmarks/fixtures/` passes offline end-to-end.
 - A fresh benchmark rerun should use repo state `336e7e79ee29e8f12af57f32b935fbfad87fb37b` or later.
 - No new A/B effect claims should be made from runs executed before these fixes.
