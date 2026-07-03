@@ -5,6 +5,7 @@
 email-validator
 fastapi
 pydantic
+pydantic-settings
 pytest>=8.0,<9.0
 sqlalchemy
 uvicorn

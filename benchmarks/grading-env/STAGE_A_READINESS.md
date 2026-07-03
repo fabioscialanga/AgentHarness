@@ -52,6 +52,7 @@ Wheelhouse seed for API solutions:
 - `email-validator`
 - `fastapi`
 - `pydantic`
+- `pydantic-settings`
 - `pytest`
 - `sqlalchemy`
 - `uvicorn`
