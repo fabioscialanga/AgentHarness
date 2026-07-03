@@ -20,13 +20,21 @@ Amendments and verified fixes:
    - Rebuilt the frozen `agentharness` wheel and updated `wheelhouse-manifest.json`.
 
 Verification performed on published state:
-- `git push origin main` verified at `ab5e49200e7cb78f3641aaed72f7717069c475af`
+- `origin/main` verified at `935d4f182cd18efa563c49997dc7efafd27659b6`
 - Root wheelhouse gate: PASS
 - Solution smoke: `support-ticket-api`: PASS
 - Solution smoke: `inventory-adjustment-api`: PASS
+- Solution smoke: `incident-escalation-api`: PASS
+- Spot-check classification: `refund-approval-api` workspace is not positive wheelhouse evidence; its representative workspace is structurally invalid for hidden grading (`app.py` imports `refund_approval_api.main`, but that module tree is absent in the workspace), so this should be treated as a workspace/task artifact issue rather than more evidence that the shared freeze is broken.
 - `pytest -q tests/test_inventory_benchmark_hidden_evaluator.py`: 4 passed
+
+Claude review follow-up:
+- Claude correctly flagged that the original evidence bundle was still too narrow because it lacked additional representative shared-wheelhouse smokes after the freeze refresh.
+- That gap is now closed by the published-state spot-checks above.
 
 Interpretation:
 - Earlier failures attributable to stale freeze coverage or evaluator/packaged-wheel mismatch should not be read as treatment evidence.
-- A fresh benchmark rerun should use repo state `ab5e49200e7cb78f3641aaed72f7717069c475af` or later.
+- The refreshed freeze now has positive offline evidence on multiple representative API tasks (`support-ticket-api`, `inventory-adjustment-api`, `incident-escalation-api`).
+- The observed `refund-approval-api` failure in this spot-check should not be collapsed into a wheelhouse failure bucket; it is currently best classified as a broken representative workspace artifact.
+- A fresh benchmark rerun should use repo state `935d4f182cd18efa563c49997dc7efafd27659b6` or later.
 - No new A/B effect claims should be made from runs executed before these fixes.
