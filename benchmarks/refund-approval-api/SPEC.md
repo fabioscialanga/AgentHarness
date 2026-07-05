@@ -26,7 +26,7 @@ Support agents submit refund requests, but approval thresholds differ by amount.
 
 ### 3. Manager review endpoint
 - Allow manager approval or rejection.
-- Capture approver and note.
+- Capture reviewer and note.
 
 ### 4. Finance approval endpoint
 - Allow finance approval only when the request already passed manager review and the amount requires finance approval.

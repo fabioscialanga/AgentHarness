@@ -127,6 +127,13 @@ GOOD_APP = textwrap.dedent(
     '''
 ).strip() + "\n"
 
+SPEC_ALIGNED_GOOD_APP = (
+    GOOD_APP.replace('        approver: str\n', '        reviewer: str\n', 1)
+    .replace('            status = "approved"\n', '            status = "auto_approved"\n', 1)
+    .replace('        item["manager_approver"] = payload.approver\n', '        item["manager_approver"] = payload.reviewer\n', 1)
+    .replace('        item["finance_approver"] = payload.approver\n', '        item["finance_approver"] = payload.reviewer\n', 1)
+)
+
 BUGGY_APP = (
     GOOD_APP.replace(
         'status = "approved"',
@@ -241,6 +248,20 @@ class RefundBenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             self.assertEqual(payload["summary"]["failed"], 0)
             self.assertGreaterEqual(payload["summary"]["passed"], 6)
+
+    def test_library_evaluator_accepts_spec_aligned_reviewer_and_auto_approved_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, SPEC_ALIGNED_GOOD_APP)
+            run_path = temp_root / "run.json"
+            _write_run(run_path, workspace, "refund_spec_aligned_001")
+
+            result = evaluate_benchmark_task(run_path, TASK_ID)
+
+            self.assertTrue(result.critical_ok)
+            self.assertEqual(result.failed_checks, [])
 
     def test_cli_evaluate_fails_for_buggy_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

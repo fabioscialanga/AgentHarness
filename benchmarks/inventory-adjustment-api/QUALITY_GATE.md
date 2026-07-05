@@ -20,7 +20,7 @@ Held-out file: `HELDOUT_EVALUATION_SUITE.template.json`
 | reserve_within_available | Reservation math and state update correctness |
 | over_reserve_rejected | Negative-path validation on insufficient available stock |
 | damage_cannot_go_negative | Invariant that stock never drops below zero |
-| recount_sets_exact_quantity | Correct semantics of recount versus delta adjustment |
+| recount_sets_exact_quantity | Correct semantics of recount versus delta adjustment; the API must accept `counted_quantity` for recount and set `on_hand` exactly to that value |
 | release_cannot_exceed_reserved | Reservation-release state transition correctness |
 
 ## Semantic disjunction proof

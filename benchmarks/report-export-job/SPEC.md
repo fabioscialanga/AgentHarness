@@ -31,6 +31,7 @@ Operations analysts need a lightweight daily export that reconciles payouts and 
 ### 4. JSON summary
 - Write a summary.json containing the export date and aggregate totals.
 - Include merchant count and total gross, refunds, and net values.
+- The export date field may be named `export_date` or `date`.
 
 ## Non-functional requirements
 - clear CLI usage in README

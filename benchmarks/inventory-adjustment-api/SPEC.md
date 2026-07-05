@@ -23,8 +23,11 @@ Operations teams need a lightweight service to track item stock, manual adjustme
 
 ### 2. Post an inventory adjustment
 - Support adjustment reasons: receive, damage, recount.
-- Receive and damage change inventory by a delta.
+- Receive and damage change inventory by a delta using the request field `quantity`.
 - Recount sets on_hand to an explicit counted quantity and must record the reason.
+- For recount, the request body must use `counted_quantity` rather than `quantity`.
+- Common pitfall to avoid: do not overload `quantity` for recount, and do not treat recount as a delta update.
+
 
 ### 3. Reserve stock
 - Reserve quantity for an order_id against a sku.
@@ -78,7 +81,9 @@ The hidden evaluator invokes the deliverable through the following interface con
 - `POST /items` accepts JSON with `sku`, `name`, and `on_hand`.
 - `GET /items` supports query parameters `sku` and `low_stock`.
 - `GET /items/{sku}` returns one item with adjustment and reservation history.
-- `POST /items/{sku}/adjustments` accepts JSON with `reason`, and either a delta-based quantity for receive or damage, or a counted quantity for recount.
+- `POST /items/{sku}/adjustments` accepts JSON with `reason`, and either a delta-based `quantity` for receive or damage, or a `counted_quantity` field for recount.
+  - Example receive/damage body: `{ "reason": "receive", "quantity": 5 }`
+  - Example recount body: `{ "reason": "recount", "counted_quantity": 8 }`
 - `POST /items/{sku}/reservations` accepts JSON with `order_id` and `quantity`.
 - `POST /items/{sku}/reservations/{order_id}/release` accepts JSON with `quantity`.
 

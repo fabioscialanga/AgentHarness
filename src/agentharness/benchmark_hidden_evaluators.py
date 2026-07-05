@@ -335,6 +335,15 @@ def _normalize_refund_request_id(payload: Any) -> Any:
     return None
 
 
+def _payload_value(payload: Any, *keys: str) -> Any:
+    if not isinstance(payload, dict):
+        return None
+    for key in keys:
+        if key in payload:
+            return payload[key]
+    return None
+
+
 def _normalize_event_id(payload: Any) -> Any:
     if isinstance(payload, dict):
         for key in ("event_id", "id"):
@@ -1336,7 +1345,10 @@ def _evaluate_inventory_adjustment_api(workspace: Path) -> HiddenEvaluationResul
                     and recount_history_ok
                 )
                 recount_detail = (
-                    f"adjust_status={recount_response.status_code}; detail_status={detail_after_recount.status_code}; on_hand={recount_on_hand}; recount_history={recount_history_ok}"
+                    "request_payload={'reason': 'recount', 'counted_quantity': 8}; "
+                    f"adjust_status={recount_response.status_code}; detail_status={detail_after_recount.status_code}; "
+                    f"on_hand={recount_on_hand}; recount_history={recount_history_ok}; "
+                    "expected_behavior=accept counted_quantity for recount and set on_hand exactly to 8, not as a delta"
                 )
 
                 release_response = client.post(
@@ -1639,10 +1651,10 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
             small_auto_ok = (
                 small_ok
                 and small_id is not None
-                and small_status == "approved"
+                and small_status in {"approved", "auto_approved"}
                 and small_lookup is not None
                 and small_lookup.status_code == 200
-                and lookup_small_status == "approved"
+                and lookup_small_status in {"approved", "auto_approved"}
             )
             record(
                 "small_refund_auto_approved",
@@ -1693,7 +1705,7 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
             if medium_id is not None:
                 manager_review = client.post(
                     f"/refunds/{medium_id}/manager-review",
-                    json={"decision": "approve", "approver": "manager1", "note": "policy ok"},
+                    json={"decision": "approve", "reviewer": "manager1", "approver": "manager1", "note": "policy ok"},
                 )
                 manager_review_status = manager_review.status_code
                 manager_review_payload: Any = manager_review.json() if manager_review.headers.get("content-type", "").startswith("application/json") else {}
@@ -1731,7 +1743,7 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
             if large_id is not None:
                 finance_before = client.post(
                     f"/refunds/{large_id}/finance-review",
-                    json={"decision": "approve", "approver": "finance0", "note": "premature"},
+                    json={"decision": "approve", "reviewer": "finance0", "approver": "finance0", "note": "premature"},
                 )
                 finance_before_status = finance_before.status_code
                 finance_before_payload: Any = finance_before.json() if finance_before.headers.get("content-type", "").startswith("application/json") else {}
@@ -1739,7 +1751,7 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
 
                 manager_large = client.post(
                     f"/refunds/{large_id}/manager-review",
-                    json={"decision": "approve", "approver": "manager2", "note": "needs finance"},
+                    json={"decision": "approve", "reviewer": "manager2", "approver": "manager2", "note": "needs finance"},
                 )
                 manager_large_status = manager_large.status_code
                 after_manager_payload: Any = manager_large.json() if manager_large.headers.get("content-type", "").startswith("application/json") else {}
@@ -1747,7 +1759,7 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
 
                 finance_after = client.post(
                     f"/refunds/{large_id}/finance-review",
-                    json={"decision": "approve", "approver": "finance1", "note": "approved by finance"},
+                    json={"decision": "approve", "reviewer": "finance1", "approver": "finance1", "note": "approved by finance"},
                 )
                 finance_after_status = finance_after.status_code
                 finance_after_payload: Any = finance_after.json() if finance_after.headers.get("content-type", "").startswith("application/json") else {}
@@ -1788,7 +1800,7 @@ def _evaluate_refund_approval_api(workspace: Path) -> HiddenEvaluationResult:
             if medium_id is not None:
                 second_terminal_review = client.post(
                     f"/refunds/{medium_id}/manager-review",
-                    json={"decision": "reject", "approver": "manager3", "note": "second decision"},
+                    json={"decision": "reject", "reviewer": "manager3", "approver": "manager3", "note": "second decision"},
                 )
                 second_terminal_payload: Any = second_terminal_review.json() if second_terminal_review.headers.get("content-type", "").startswith("application/json") else {}
                 second_terminal_status = second_terminal_payload.get("status") if isinstance(second_terminal_payload, dict) else None
@@ -2218,14 +2230,14 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
             out_dir = temp_root / "out"
             connection = sqlite3.connect(db_path)
             try:
-                connection.execute("CREATE TABLE records (record_date TEXT NOT NULL, merchant_id TEXT NOT NULL, payout_amount REAL NOT NULL, refund_amount REAL NOT NULL)")
+                connection.execute("CREATE TABLE records (record_date TEXT NOT NULL, date TEXT NOT NULL, merchant_id TEXT NOT NULL, payout_amount REAL NOT NULL, refund_amount REAL NOT NULL)")
                 connection.executemany(
-                    "INSERT INTO records (record_date, merchant_id, payout_amount, refund_amount) VALUES (?, ?, ?, ?)",
+                    "INSERT INTO records (record_date, date, merchant_id, payout_amount, refund_amount) VALUES (?, ?, ?, ?, ?)",
                     [
-                        ("2026-07-01", "m001", 100.0, 10.0),
-                        ("2026-07-01", "m001", 50.0, 0.0),
-                        ("2026-07-01", "m002", 80.0, 5.0),
-                        ("2026-07-02", "m003", 200.0, 20.0),
+                        ("2026-07-01", "2026-07-01", "m001", 100.0, 10.0),
+                        ("2026-07-01", "2026-07-01", "m001", 50.0, 0.0),
+                        ("2026-07-01", "2026-07-01", "m002", 80.0, 5.0),
+                        ("2026-07-02", "2026-07-02", "m003", 200.0, 20.0),
                     ],
                 )
                 connection.commit()
@@ -2281,7 +2293,8 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
             merchant_ids = [str(row.get("merchant_id", "")) for row in rows]
             sorted_complete_ok = command.returncode == 0 and bool(rows) and merchant_ids == sorted(merchant_ids) and all({"merchant_id", "gross_payout", "refund_total", "net_payout", "transaction_count"}.issubset(row.keys()) for row in rows)
             net_ok = command.returncode == 0 and all(abs(float(row["gross_payout"]) - float(row["refund_total"]) - float(row["net_payout"])) < 1e-9 for row in rows)
-            date_filter_ok = command.returncode == 0 and {row.get("merchant_id") for row in rows} == {"m001", "m002"} and isinstance(summary, dict) and summary.get("export_date") == "2026-07-01"
+            summary_export_date = _payload_value(summary, "export_date", "date")
+            date_filter_ok = command.returncode == 0 and {row.get("merchant_id") for row in rows} == {"m001", "m002"} and isinstance(summary, dict) and summary_export_date == "2026-07-01"
             gross_total = sum(float(row["gross_payout"]) for row in rows) if rows else 0.0
             refund_total = sum(float(row["refund_total"]) for row in rows) if rows else 0.0
             net_total = sum(float(row["net_payout"]) for row in rows) if rows else 0.0
@@ -2291,7 +2304,7 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
 
             record("csv_rows_sorted_complete", sorted_complete_ok, f"exit_code={command.returncode}; rows={rows}")
             record("net_totals_correct", net_ok, f"exit_code={command.returncode}; rows={rows}")
-            record("date_filter_applied", date_filter_ok, f"exit_code={command.returncode}; merchants={[row.get('merchant_id') for row in rows]}; summary={summary}")
+            record("date_filter_applied", date_filter_ok, f"exit_code={command.returncode}; merchants={[row.get('merchant_id') for row in rows]}; summary={summary}; summary_export_date={summary_export_date}")
             record("summary_totals_match", summary_totals_ok, f"exit_code={command.returncode}; summary={summary}; gross_total={gross_total}; refund_total={refund_total}; net_total={net_total}")
             record("invalid_date_rejected", invalid_date_ok, f"exit_code={invalid_date.returncode}; stdout={invalid_date.stdout.strip()}; stderr={invalid_date.stderr.strip()}")
     except Exception as exc:

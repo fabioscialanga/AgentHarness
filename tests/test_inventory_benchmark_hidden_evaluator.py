@@ -169,6 +169,13 @@ GOOD_APP = textwrap.dedent(
     '''
 ).strip() + "\n"
 
+QUANTITY_RECOUNT_APP = (
+    GOOD_APP.replace('    counted_quantity: int | None = None', '    quantity: int | None = None', 1)
+    .replace('        if payload.counted_quantity is None or payload.counted_quantity < 0:', '        if payload.quantity is None or payload.quantity < 0:', 1)
+    .replace('        item["on_hand"] = payload.counted_quantity', '        item["on_hand"] = payload.quantity', 1)
+    .replace('            "counted_quantity": payload.counted_quantity,', '            "counted_quantity": None,\n            "quantity": payload.quantity,', 1)
+)
+
 BUGGY_APP = (
     GOOD_APP.replace(
         'raise HTTPException(status_code=409, detail="on_hand cannot go negative")',
@@ -281,6 +288,20 @@ class InventoryBenchmarkHiddenEvaluatorTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             self.assertEqual(payload["summary"]["failed"], 0)
             self.assertGreaterEqual(payload["summary"]["passed"], 6)
+
+    def test_quantity_only_recount_contract_fails_hidden_evaluator(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, QUANTITY_RECOUNT_APP)
+            run_path = temp_root / "run.json"
+            _write_run(run_path, workspace, "inventory_quantity_recount_001")
+
+            result = evaluate_benchmark_task(run_path, TASK_ID)
+
+            self.assertFalse(result.critical_ok)
+            self.assertIn("recount_sets_exact_quantity", result.failed_checks)
 
     def test_cli_evaluate_fails_for_buggy_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
