@@ -21,6 +21,13 @@ DEFAULT_RUNS_ROOT = BENCHMARKS_DIR / "runs" / "stage-b-diagnostics"
 GRADING_ENV_DIR = BENCHMARKS_DIR / "grading-env"
 SESSION_ID_RE = re.compile(r"session_id:\s*(?P<session_id>\S+)")
 
+AGENT_INVOCATION_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_AGENT_TIMEOUT_SECONDS", "1800"))
+ENV_SETUP_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_ENV_SETUP_TIMEOUT_SECONDS", "300"))
+PYTEST_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_PYTEST_TIMEOUT_SECONDS", "600"))
+VERIFY_RUN_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_VERIFY_TIMEOUT_SECONDS", "300"))
+BENCHMARK_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_BENCHMARK_TIMEOUT_SECONDS", "300"))
+HELDOUT_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_EVALUATION_TIMEOUT_SECONDS", "300"))
+
 _EXCLUDED_PARTS = {".venv", ".pytest_cache", ".agentharness", ".stageb-test-venv", "__pycache__"}
 _EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".db"}
 
@@ -61,6 +68,13 @@ class AgentInvocationResult:
 
     def to_dict(self) -> list[dict[str, object]]:
         return [attempt.to_dict() for attempt in self.attempts]
+
+
+@dataclass
+class ClassifiedCellFailure(Exception):
+    execution_status: str
+    classification_reason: str
+    invocation_result: AgentInvocationResult | None = None
 
 
 def _has_invocation_evidence(attempt: AgentAttempt) -> bool:
@@ -120,7 +134,14 @@ class HermesCliInvoker:
         )
 
         pytest_report = outputs_dir / "pre-repair-pytest.json"
-        pytest_result = run_workspace_pytest(workspace, pytest_report)
+        try:
+            pytest_result = run_workspace_pytest(workspace, pytest_report)
+        except ClassifiedCellFailure as exc:
+            raise ClassifiedCellFailure(
+                exc.execution_status,
+                exc.classification_reason,
+                invocation_result=AgentInvocationResult(attempts=attempts),
+            ) from exc
 
         if condition == "A-baseline":
             repair_prompt = _build_baseline_repair_prompt(
@@ -189,18 +210,36 @@ class HermesCliInvoker:
             stderr_path = outputs_dir / f"{attempt_name}{suffix}.stderr"
             started = _utc_now()
             t0 = time.time()
-            completed = subprocess.run(command, cwd=str(workspace), capture_output=True, text=True, check=False)
+            try:
+                completed = subprocess.run(
+                    command,
+                    cwd=str(workspace),
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=AGENT_INVOCATION_TIMEOUT_SECONDS,
+                )
+                stdout_text = completed.stdout
+                stderr_text = completed.stderr
+                exit_code = completed.returncode
+            except subprocess.TimeoutExpired as exc:
+                stdout_text = _decode_timeout_output(exc.stdout)
+                stderr_text = _decode_timeout_output(exc.stderr)
+                timeout_msg = f"\nAgent invocation timed out after {AGENT_INVOCATION_TIMEOUT_SECONDS} seconds."
+                stderr_text = (stderr_text + timeout_msg).strip() + "\n"
+                completed = subprocess.CompletedProcess(args=command, returncode=124, stdout=stdout_text, stderr=stderr_text)
+                exit_code = 124
             duration = time.time() - t0
             finished = _utc_now()
-            stdout_path.write_text(completed.stdout, encoding="utf-8")
-            stderr_path.write_text(completed.stderr, encoding="utf-8")
-            session_match = SESSION_ID_RE.search(completed.stdout)
+            stdout_path.write_text(stdout_text, encoding="utf-8")
+            stderr_path.write_text(stderr_text, encoding="utf-8")
+            session_match = SESSION_ID_RE.search(stdout_text)
             session_id = session_match.group("session_id") if session_match else None
             last_attempt = AgentAttempt(
                 attempt_name=attempt_name,
                 prompt_kind=prompt_kind,
                 command=command,
-                exit_code=completed.returncode,
+                exit_code=exit_code,
                 stdout_path=stdout_path,
                 stderr_path=stderr_path,
                 working_directory=workspace,
@@ -223,9 +262,145 @@ def _is_retryable_invocation_failure(completed: subprocess.CompletedProcess[str]
         "usage limit has been reached",
         "rate limit",
         "temporarily unavailable",
+        "timed out after",
     )
     haystacks = (completed.stdout.lower(), completed.stderr.lower())
     return any(marker.lower() in haystack for marker in retry_markers for haystack in haystacks)
+
+
+def _decode_timeout_output(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
+def _attempt_output_text(attempt: AgentAttempt) -> str:
+    chunks: list[str] = []
+    for path in (attempt.stdout_path, attempt.stderr_path):
+        if path.is_file():
+            chunks.append(path.read_text(encoding="utf-8"))
+    return "\n".join(chunks)
+
+
+def _classify_empty_workspace_failure(invocation_result: AgentInvocationResult) -> tuple[str, str]:
+    for attempt in invocation_result.attempts:
+        text = _attempt_output_text(attempt)
+        if _is_retryable_invocation_failure(
+            subprocess.CompletedProcess(args=attempt.command, returncode=attempt.exit_code, stdout=text, stderr="")
+        ):
+            return (
+                "provider_unavailable",
+                "Agent produced no solution files because every invocation attempt failed with retryable provider-side errors",
+            )
+    return (
+        "harness_invalid",
+        "Agent produced no solution files and no retryable provider-side failure markers were detected in invocation logs",
+    )
+
+
+def _write_invalid_cell_artifacts(
+    *,
+    cell_dir: Path,
+    manifest: dict[str, object],
+    outputs_dir: Path,
+    invocation_result: AgentInvocationResult,
+    execution_status: str,
+    classification_reason: str,
+) -> dict[str, object]:
+    task_id = str(manifest["task_id"])
+    condition = str(manifest["condition"])
+    replicate_id = str(manifest["replicate_id"])
+    run_id = str(manifest["run_id"])
+    workspace = Path(str(manifest["workspace"]))
+    suite_path = outputs_dir / "suite.json"
+    write_rendered_json_template(
+        BENCHMARKS_DIR / task_id / "HELDOUT_EVALUATION_SUITE.template.json",
+        run_id=run_id,
+        output_path=suite_path,
+    )
+    benchmark_payload = {
+        "task_id": task_id,
+        "critical_ok": False,
+        "execution_status": execution_status,
+        "outcome_status": "real_failure",
+        "classification_reason": classification_reason,
+        "passed_checks": [],
+        "failed_checks": [],
+        "observations": [],
+    }
+    (outputs_dir / "benchmark-evaluate-task.json").write_text(json.dumps(benchmark_payload, indent=2) + "\n", encoding="utf-8")
+    eval_payload = {
+        "suite_id": f"{task_id}_heldout_eval",
+        "run_id": run_id,
+        "run_path": None,
+        "suite_path": str(suite_path),
+        "ok": False,
+        "summary": {"passed": 0, "failed": 0, "invalid": 1},
+        "results": [
+            {
+                "case_id": "cell_execution",
+                "case_type": "execution_status",
+                "status": "invalid",
+                "reason": classification_reason,
+                "evidence": [str(outputs_dir / "agent-invocations")],
+            }
+        ],
+        "gating_errors": [classification_reason],
+    }
+    (outputs_dir / "evaluation-report.json").write_text(json.dumps(eval_payload, indent=2) + "\n", encoding="utf-8")
+    verify_payload = {
+        "ok": False,
+        "error": classification_reason,
+        "reason": "empty_workspace",
+    }
+    (outputs_dir / "verify-run-report.json").write_text(json.dumps(verify_payload, indent=2) + "\n", encoding="utf-8")
+    provenance = {
+        "task_id": task_id,
+        "condition": condition,
+        "replicate_id": replicate_id,
+        "run_id": run_id,
+        "workspace": str(workspace),
+        "solution_hash": f"{execution_status}:{task_id}:{condition}:{replicate_id}",
+        "attempt_count": len(invocation_result.attempts),
+        "attempts": invocation_result.to_dict(),
+        "pytest": None,
+    }
+    (cell_dir / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
+    metadata = {
+        "task_id": task_id,
+        "condition": condition,
+        "replicate_id": replicate_id,
+        "run_id": run_id,
+        "repair_passes_used": max(0, len(invocation_result.attempts) - 1),
+        "final_pytest_exit_code": None,
+        "scorable_score": 0.0,
+        "verify_run_ok": False,
+        "benchmark_execution_status": execution_status,
+        "benchmark_outcome_status": "real_failure",
+        "solution_hash": provenance["solution_hash"],
+        "attempt_count": provenance["attempt_count"],
+    }
+    (cell_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    try:
+        cell_label = str(cell_dir.relative_to(REPO_ROOT))
+    except ValueError:
+        cell_label = str(cell_dir)
+    return {
+        "cell": cell_label,
+        "task_id": task_id,
+        "condition": condition,
+        "replicate_id": replicate_id,
+        "pytest_exit_code": None,
+        "verify_run_ok": False,
+        "benchmark_execution_status": execution_status,
+        "benchmark_outcome_status": "real_failure",
+        "score": 0.0,
+        "evaluation_summary": eval_payload["summary"],
+        "solution_hash": provenance["solution_hash"],
+        "attempt_count": provenance["attempt_count"],
+    }
 
 
 def _utc_now() -> str:
@@ -309,7 +484,13 @@ def ensure_test_venv(workspace: Path) -> Path:
     py = venv_dir / "bin" / "python"
     if py.exists():
         return py
-    subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True)
+    try:
+        subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, timeout=ENV_SETUP_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired as exc:
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"Python venv creation timed out after {ENV_SETUP_TIMEOUT_SECONDS} seconds for {workspace}",
+        ) from exc
     command = [
         str(py),
         "-m",
@@ -328,9 +509,26 @@ def ensure_test_venv(workspace: Path) -> Path:
         "httpx",
     ]
     env = _base_env()
-    completed = subprocess.run(command, cwd=str(workspace), capture_output=True, text=True, check=False, env=env)
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(workspace),
+            capture_output=True,
+            text=True,
+            check=False,
+            env=env,
+            timeout=ENV_SETUP_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"Offline shared deps install timed out after {ENV_SETUP_TIMEOUT_SECONDS} seconds for {workspace}",
+        ) from exc
     if completed.returncode != 0:
-        raise RuntimeError(f"Offline shared deps install failed for {workspace}: {completed.stderr}")
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"Offline shared deps install failed for {workspace}: {completed.stderr}",
+        )
     return py
 
 
@@ -348,14 +546,21 @@ def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object
     stderr_path = report_path.with_suffix(".stderr")
     started = _utc_now()
     t0 = time.time()
-    completed = subprocess.run(
-        [str(python_path), "-m", "pytest", "-q"],
-        cwd=str(workspace),
-        capture_output=True,
-        text=True,
-        check=False,
-        env={**_base_env(), "PYTHONPATH": str(workspace)},
-    )
+    try:
+        completed = subprocess.run(
+            [str(python_path), "-m", "pytest", "-q"],
+            cwd=str(workspace),
+            capture_output=True,
+            text=True,
+            check=False,
+            env={**_base_env(), "PYTHONPATH": str(workspace)},
+            timeout=PYTEST_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"Workspace pytest timed out after {PYTEST_TIMEOUT_SECONDS} seconds for {workspace}",
+        ) from exc
     duration = time.time() - t0
     finished = _utc_now()
     stdout_path.write_text(completed.stdout, encoding="utf-8")
@@ -411,26 +616,35 @@ def render_claims_json(*, run_id: str, claims_template_path: Path, claims_path: 
 
 
 def run_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> dict[str, object]:
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "agentharness",
-            "verify-run",
-            "--run",
-            str(run_path),
-            "--claims",
-            str(claims_path),
-            "--json",
-            "--report-path",
-            str(report_path),
-        ],
-        cwd=str(REPO_ROOT),
-        capture_output=True,
-        text=True,
-        check=False,
-        env=_base_env(),
-    )
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "agentharness",
+                "verify-run",
+                "--run",
+                str(run_path),
+                "--claims",
+                str(claims_path),
+                "--json",
+                "--report-path",
+                str(report_path),
+            ],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+            env=_base_env(),
+            timeout=VERIFY_RUN_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "ok": False,
+            "error": f"verify-run timed out after {VERIFY_RUN_TIMEOUT_SECONDS} seconds",
+            "stdout": _decode_timeout_output(exc.stdout),
+            "stderr": _decode_timeout_output(exc.stderr),
+        }
     if completed.stdout.strip().startswith("{"):
         return json.loads(completed.stdout)
     return {
@@ -442,24 +656,41 @@ def run_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> d
 
 
 def run_hidden_benchmark(*, run_path: Path, task_id: str, output_path: Path) -> dict[str, object]:
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "agentharness",
-            "benchmark-evaluate-task",
-            "--run",
-            str(run_path),
-            "--task-id",
-            task_id,
-            "--json",
-        ],
-        cwd=str(REPO_ROOT),
-        capture_output=True,
-        text=True,
-        check=False,
-        env=_base_env(),
-    )
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "agentharness",
+                "benchmark-evaluate-task",
+                "--run",
+                str(run_path),
+                "--task-id",
+                task_id,
+                "--json",
+            ],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+            env=_base_env(),
+            timeout=BENCHMARK_EVAL_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        payload = {
+            "task_id": task_id,
+            "critical_ok": False,
+            "execution_status": "harness_invalid",
+            "outcome_status": "real_failure",
+            "classification_reason": f"benchmark-evaluate-task timed out after {BENCHMARK_EVAL_TIMEOUT_SECONDS} seconds",
+            "passed_checks": [],
+            "failed_checks": [],
+            "observations": [],
+            "stdout": _decode_timeout_output(exc.stdout),
+            "stderr": _decode_timeout_output(exc.stderr),
+        }
+        output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        return payload
     if completed.stdout.strip().startswith("{"):
         payload = json.loads(completed.stdout)
     else:
@@ -487,26 +718,37 @@ def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs
         output_path=suite_path,
     )
     report_path = outputs_dir / "evaluation-report.json"
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "agentharness",
-            "evaluate",
-            "--run",
-            str(run_path),
-            "--suite",
-            str(suite_path),
-            "--json",
-            "--report-path",
-            str(report_path),
-        ],
-        cwd=str(REPO_ROOT),
-        capture_output=True,
-        text=True,
-        check=False,
-        env=_base_env(),
-    )
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "agentharness",
+                "evaluate",
+                "--run",
+                str(run_path),
+                "--suite",
+                str(suite_path),
+                "--json",
+                "--report-path",
+                str(report_path),
+            ],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+            env=_base_env(),
+            timeout=HELDOUT_EVAL_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "ok": False,
+            "summary": {"passed": 0, "failed": 0, "invalid": 1},
+            "results": [],
+            "stdout": _decode_timeout_output(exc.stdout),
+            "stderr": _decode_timeout_output(exc.stderr),
+            "error": f"held-out evaluation timed out after {HELDOUT_EVAL_TIMEOUT_SECONDS} seconds",
+        }
     if completed.stdout.strip().startswith("{"):
         return json.loads(completed.stdout)
     return {
@@ -574,14 +816,38 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
     _clear_cell_runtime_artifacts(cell_dir, workspace, str(manifest["task_id"]), str(manifest["run_id"]))
     outputs_dir = cell_dir / "outputs"
     outputs_dir.mkdir(parents=True, exist_ok=True)
+    invocation_result: AgentInvocationResult | None = None
 
-    invocation_result = invoker.run_cell(manifest, outputs_dir, workspace)
-    if any(not _has_invocation_evidence(attempt) for attempt in invocation_result.attempts):
-        raise RuntimeError(f"Missing invocation evidence for {cell_dir}")
-    if not rel_solution_files(workspace):
-        raise RuntimeError(f"Agent left an empty workspace for {cell_dir}")
+    try:
+        invocation_result = invoker.run_cell(manifest, outputs_dir, workspace)
+        if any(not _has_invocation_evidence(attempt) for attempt in invocation_result.attempts):
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"Missing invocation evidence for {cell_dir}",
+                invocation_result=invocation_result,
+            )
+        if not rel_solution_files(workspace):
+            execution_status, classification_reason = _classify_empty_workspace_failure(invocation_result)
+            return _write_invalid_cell_artifacts(
+                cell_dir=cell_dir,
+                manifest=manifest,
+                outputs_dir=outputs_dir,
+                invocation_result=invocation_result,
+                execution_status=execution_status,
+                classification_reason=classification_reason,
+            )
 
-    pytest_result = run_workspace_pytest(workspace, outputs_dir / "final-pytest.json")
+        pytest_result = run_workspace_pytest(workspace, outputs_dir / "final-pytest.json")
+    except ClassifiedCellFailure as exc:
+        return _write_invalid_cell_artifacts(
+            cell_dir=cell_dir,
+            manifest=manifest,
+            outputs_dir=outputs_dir,
+            invocation_result=exc.invocation_result or invocation_result or AgentInvocationResult(attempts=[]),
+            execution_status=exc.execution_status,
+            classification_reason=exc.classification_reason,
+        )
+
     run_path = cell_dir / "run.json"
     claims_path = cell_dir / "claims.json"
     write_run_json(
@@ -613,7 +879,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         provenance_path=cell_dir / "provenance.json",
         manifest=manifest,
         workspace=workspace,
-        invocation_result=invocation_result,
+        invocation_result=invocation_result or AgentInvocationResult(attempts=[]),
         pytest_result=pytest_result,
     )
     metadata = {
@@ -621,7 +887,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "condition": manifest["condition"],
         "replicate_id": manifest["replicate_id"],
         "run_id": manifest["run_id"],
-        "repair_passes_used": max(0, len(invocation_result.attempts) - 1),
+        "repair_passes_used": max(0, len((invocation_result or AgentInvocationResult(attempts=[])).attempts) - 1),
         "final_pytest_exit_code": pytest_result["exit_code"],
         "scorable_score": score_from_evaluation(eval_payload),
         "verify_run_ok": verify_payload.get("ok"),

@@ -5,11 +5,13 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import cast
 from unittest import mock
 
 from agentharness.benchmark_cells import (
     AgentAttempt,
     AgentInvocationResult,
+    ClassifiedCellFailure,
     HermesCliInvoker,
     _build_agentharness_repair_prompt,
     _build_baseline_repair_prompt,
@@ -71,6 +73,101 @@ class _FakeInvoker:
                 )
             )
         return AgentInvocationResult(attempts=attempts)
+
+
+class _EmptyWorkspaceInvoker:
+    def __init__(self, stdout_text: str, stderr_text: str = "") -> None:
+        self._stdout_text = stdout_text
+        self._stderr_text = stderr_text
+
+    def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+        workspace.mkdir(parents=True, exist_ok=True)
+        attempts_dir = outputs_dir / "agent-invocations"
+        attempts_dir.mkdir(parents=True, exist_ok=True)
+        stdout_path = attempts_dir / "attempt-1.stdout"
+        stderr_path = attempts_dir / "attempt-1.stderr"
+        stdout_path.write_text(self._stdout_text, encoding="utf-8")
+        stderr_path.write_text(self._stderr_text, encoding="utf-8")
+        return AgentInvocationResult(
+            attempts=[
+                AgentAttempt(
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    command=["fake-agent", "initial"],
+                    exit_code=1,
+                    stdout_path=stdout_path,
+                    stderr_path=stderr_path,
+                    working_directory=workspace,
+                    session_id="fake_session",
+                    started_at="2026-01-01T00:00:00Z",
+                    finished_at="2026-01-01T00:00:01Z",
+                    duration_seconds=1.0,
+                )
+            ]
+        )
+
+
+class _NoEvidenceInvoker:
+    def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+        workspace.mkdir(parents=True, exist_ok=True)
+        attempts_dir = outputs_dir / "agent-invocations"
+        attempts_dir.mkdir(parents=True, exist_ok=True)
+        stdout_path = attempts_dir / "attempt-1.stdout"
+        stderr_path = attempts_dir / "attempt-1.stderr"
+        stdout_path.write_text("", encoding="utf-8")
+        stderr_path.write_text("", encoding="utf-8")
+        return AgentInvocationResult(
+            attempts=[
+                AgentAttempt(
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    command=["fake-agent", "initial"],
+                    exit_code=1,
+                    stdout_path=stdout_path,
+                    stderr_path=stderr_path,
+                    working_directory=workspace,
+                    session_id=None,
+                    started_at="2026-01-01T00:00:00Z",
+                    finished_at="2026-01-01T00:00:01Z",
+                    duration_seconds=1.0,
+                )
+            ]
+        )
+
+
+class _PreRepairFailureInvoker:
+    def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+        workspace.mkdir(parents=True, exist_ok=True)
+        attempts_dir = outputs_dir / "agent-invocations"
+        attempts_dir.mkdir(parents=True, exist_ok=True)
+        stdout_path = attempts_dir / "attempt-1.stdout"
+        stderr_path = attempts_dir / "attempt-1.stderr"
+        stdout_path.write_text("session_id: fake_session\n", encoding="utf-8")
+        stderr_path.write_text("", encoding="utf-8")
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"Offline shared deps install failed for {workspace}: boom",
+            invocation_result=AgentInvocationResult(
+                attempts=[
+                    AgentAttempt(
+                        attempt_name="attempt-1",
+                        prompt_kind="initial",
+                        command=["fake-agent", "initial"],
+                        exit_code=0,
+                        stdout_path=stdout_path,
+                        stderr_path=stderr_path,
+                        working_directory=workspace,
+                        session_id="fake_session",
+                        started_at="2026-01-01T00:00:00Z",
+                        finished_at="2026-01-01T00:00:01Z",
+                        duration_seconds=1.0,
+                    )
+                ]
+            ),
+        )
 
 
 class BenchmarkCellsTests(unittest.TestCase):
@@ -261,6 +358,103 @@ class BenchmarkCellsTests(unittest.TestCase):
             self.assertFalse((workspace / ".agentharness" / "traces" / "evaluation" / "old.jsonl").exists())
             self.assertFalse((workspace / ".agentharness" / "traces" / "verify-run" / "old.jsonl").exists())
             self.assertFalse((workspace / ".agentharness" / "evidence" / str(manifest["run_id"]) / "reexecuted" / "command.stdout").exists())
+
+    def test_execute_cell_classifies_empty_workspace_rate_limit_as_provider_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "leave-request-api" / "B-agentharness" / "r2"
+            prepare_fresh_cell(
+                task_id="leave-request-api",
+                condition="B-agentharness",
+                replicate_id="r2",
+                cell_dir=cell_dir,
+            )
+            result = execute_cell(
+                cell_dir,
+                _EmptyWorkspaceInvoker("API call failed after 3 retries: HTTP 429: The usage limit has been reached\n"),
+            )
+            benchmark_payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
+            metadata = json.loads((cell_dir / "metadata.json").read_text(encoding="utf-8"))
+            evaluation_summary = cast(dict[str, object], result["evaluation_summary"])
+            self.assertEqual(result["benchmark_execution_status"], "provider_unavailable")
+            self.assertEqual(benchmark_payload["execution_status"], "provider_unavailable")
+            self.assertEqual(metadata["benchmark_execution_status"], "provider_unavailable")
+            self.assertEqual(evaluation_summary["invalid"], 1)
+            self.assertTrue((cell_dir / "outputs" / "suite.json").is_file())
+            self.assertTrue((cell_dir / "provenance.json").is_file())
+
+    def test_execute_cell_classifies_empty_workspace_without_retryable_markers_as_harness_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "leave-request-api" / "B-agentharness" / "r2"
+            prepare_fresh_cell(
+                task_id="leave-request-api",
+                condition="B-agentharness",
+                replicate_id="r2",
+                cell_dir=cell_dir,
+            )
+            result = execute_cell(
+                cell_dir,
+                _EmptyWorkspaceInvoker("session_id: fake_session\n", "unexpected non-provider failure\n"),
+            )
+            benchmark_payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+            self.assertEqual(benchmark_payload["execution_status"], "harness_invalid")
+
+    def test_execute_cell_classifies_missing_invocation_evidence_as_harness_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "leave-request-api" / "B-agentharness" / "r1"
+            prepare_fresh_cell(
+                task_id="leave-request-api",
+                condition="B-agentharness",
+                replicate_id="r1",
+                cell_dir=cell_dir,
+            )
+            result = execute_cell(cell_dir, _NoEvidenceInvoker())
+            payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+            self.assertIn("Missing invocation evidence", payload["classification_reason"])
+
+    def test_execute_cell_classifies_pre_repair_failure_from_invoker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "leave-request-api" / "B-agentharness" / "r1"
+            prepare_fresh_cell(
+                task_id="leave-request-api",
+                condition="B-agentharness",
+                replicate_id="r1",
+                cell_dir=cell_dir,
+            )
+            result = execute_cell(cell_dir, _PreRepairFailureInvoker())
+            payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+            self.assertIn("Offline shared deps install failed", payload["classification_reason"])
+            self.assertEqual(result["attempt_count"], 1)
+
+    def test_invoke_marks_timeout_as_provider_retryable_failure(self) -> None:
+        invoker = HermesCliInvoker(hermes_command="hermes", retry_backoff_seconds=0.01)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            outputs_dir = Path(tmp_dir)
+            timeout_exc = subprocess.TimeoutExpired(cmd=["hermes"], timeout=1)
+            completed_success = subprocess.CompletedProcess(
+                args=["hermes"],
+                returncode=0,
+                stdout="session_id: ok_123\n",
+                stderr="",
+            )
+            with (
+                mock.patch("agentharness.benchmark_cells.subprocess.run", side_effect=[timeout_exc, completed_success]) as run_mock,
+                mock.patch("agentharness.benchmark_cells.time.sleep") as sleep_mock,
+            ):
+                attempt = invoker._invoke(
+                    prompt="hello",
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    outputs_dir=outputs_dir,
+                    workspace=outputs_dir,
+                )
+                self.assertIn("timed out after", (outputs_dir / "attempt-1.try1.stderr").read_text(encoding="utf-8").lower())
+        self.assertEqual(attempt.exit_code, 0)
+        self.assertEqual(attempt.session_id, "ok_123")
+        self.assertEqual(run_mock.call_count, 2)
+        sleep_mock.assert_called_once_with(0.01)
 
     def test_retryable_invocation_failure_detects_rate_limit_markers(self) -> None:
         completed = subprocess.CompletedProcess(
