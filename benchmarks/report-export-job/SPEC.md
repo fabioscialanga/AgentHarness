@@ -32,6 +32,7 @@ Operations analysts need a lightweight daily export that reconciles payouts and 
 - Write a summary.json containing the export date and aggregate totals.
 - Include merchant count and total gross, refunds, and net values.
 - The export date field may be named `export_date` or `date`.
+- The total fields may use either concise keys (`total_gross`, `total_refunds`, `total_net`) or descriptive keys (`total_gross_payout`, `total_refund_total`, `total_net_payout`).
 
 ## Non-functional requirements
 - clear CLI usage in README

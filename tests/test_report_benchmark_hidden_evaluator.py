@@ -177,6 +177,86 @@ SPEC_ALIGNED_GOOD_APP = inspect.cleandoc(
     '''
 ).strip() + '\n'
 
+DESCRIPTIVE_SUMMARY_KEYS_APP = inspect.cleandoc(
+    '''
+    from __future__ import annotations
+
+    import argparse
+    import csv
+    import json
+    import os
+    import sqlite3
+    from collections import defaultdict
+    from datetime import datetime
+    from pathlib import Path
+
+    def main() -> int:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--date', required=True)
+        parser.add_argument('--out-dir', required=True)
+        args = parser.parse_args()
+
+        try:
+            datetime.strptime(args.date, '%Y-%m-%d')
+        except ValueError:
+            raise SystemExit(2)
+
+        out_dir = Path(args.out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        db_path = Path(os.environ.get('REPORT_DB_PATH', 'report.db'))
+
+        connection = sqlite3.connect(db_path)
+        try:
+            rows = connection.execute(
+                'SELECT merchant_id, payout_amount, refund_amount FROM records WHERE record_date = ? ORDER BY merchant_id ASC',
+                (args.date,),
+            ).fetchall()
+        finally:
+            connection.close()
+
+        aggregates: dict[str, dict[str, float | int]] = defaultdict(lambda: {'gross_payout': 0.0, 'refund_total': 0.0, 'transaction_count': 0})
+        for merchant_id, payout_amount, refund_amount in rows:
+            item = aggregates[merchant_id]
+            item['gross_payout'] += float(payout_amount)
+            item['refund_total'] += float(refund_amount)
+            item['transaction_count'] += 1
+
+        csv_rows = []
+        for merchant_id in sorted(aggregates):
+            item = aggregates[merchant_id]
+            gross = float(item['gross_payout'])
+            refunds = float(item['refund_total'])
+            net = gross - refunds
+            csv_rows.append(
+                {
+                    'merchant_id': merchant_id,
+                    'gross_payout': f'{gross:.2f}',
+                    'refund_total': f'{refunds:.2f}',
+                    'net_payout': f'{net:.2f}',
+                    'transaction_count': str(item['transaction_count']),
+                }
+            )
+
+        with (out_dir / 'report.csv').open('w', encoding='utf-8', newline='') as handle:
+            writer = csv.DictWriter(handle, fieldnames=['merchant_id', 'gross_payout', 'refund_total', 'net_payout', 'transaction_count'])
+            writer.writeheader()
+            writer.writerows(csv_rows)
+
+        summary = {
+            'export_date': args.date,
+            'merchant_count': len(csv_rows),
+            'total_gross_payout': round(sum(float(row['gross_payout']) for row in csv_rows), 2),
+            'total_refund_total': round(sum(float(row['refund_total']) for row in csv_rows), 2),
+            'total_net_payout': round(sum(float(row['net_payout']) for row in csv_rows), 2),
+        }
+        (out_dir / 'summary.json').write_text(json.dumps(summary, indent=2) + '\\n', encoding='utf-8')
+        return 0
+
+    if __name__ == '__main__':
+        raise SystemExit(main())
+    '''
+).strip() + '\n'
+
 BUGGY_APP = inspect.cleandoc(
     '''
     from __future__ import annotations
@@ -337,6 +417,20 @@ class ReportBenchmarkHiddenEvaluatorTests(unittest.TestCase):
             _write_workspace(workspace, SPEC_ALIGNED_GOOD_APP)
             run_path = temp_root / 'run.json'
             _write_run(run_path, workspace, 'report_spec_aligned_001')
+
+            result = evaluate_benchmark_task(run_path, TASK_ID)
+
+            self.assertTrue(result.critical_ok)
+            self.assertEqual(result.failed_checks, [])
+
+    def test_library_evaluator_accepts_descriptive_summary_total_keys(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / 'workspace'
+            workspace.mkdir()
+            _write_workspace(workspace, DESCRIPTIVE_SUMMARY_KEYS_APP)
+            run_path = temp_root / 'run.json'
+            _write_run(run_path, workspace, 'report_descriptive_summary_keys_001')
 
             result = evaluate_benchmark_task(run_path, TASK_ID)
 

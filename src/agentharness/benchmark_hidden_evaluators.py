@@ -247,18 +247,22 @@ def _discover_fastapi_module(workspace: Path) -> Path:
             content = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
-        if "FastAPI(" not in content:
-            continue
         score = 0
         if path.name == "main.py":
             score += 30
         if path.name == "app.py":
             score += 20
+        if "FastAPI(" in content:
+            score += 15
+        if any(token in content for token in ("app =", "api =", "application =")):
+            score += 8
         lowered_parts = {part.lower() for part in path.parts}
         if "app" in lowered_parts:
             score += 10
         if "src" in lowered_parts:
             score += 5
+        if score == 0:
+            continue
         candidates.append((score, path))
     if not candidates:
         raise RuntimeError("Could not find a Python module defining a FastAPI application in the workspace")
@@ -342,6 +346,16 @@ def _payload_value(payload: Any, *keys: str) -> Any:
         if key in payload:
             return payload[key]
     return None
+
+
+def _payload_numeric_value(payload: Any, *keys: str) -> float | None:
+    value = _payload_value(payload, *keys)
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _normalize_event_id(payload: Any) -> Any:
@@ -2298,7 +2312,10 @@ def _evaluate_report_export_job(workspace: Path) -> HiddenEvaluationResult:
             gross_total = sum(float(row["gross_payout"]) for row in rows) if rows else 0.0
             refund_total = sum(float(row["refund_total"]) for row in rows) if rows else 0.0
             net_total = sum(float(row["net_payout"]) for row in rows) if rows else 0.0
-            summary_totals_ok = command.returncode == 0 and isinstance(summary, dict) and summary.get("merchant_count") == len(rows) and abs(float(summary.get("total_gross", 0.0)) - gross_total) < 1e-9 and abs(float(summary.get("total_refunds", 0.0)) - refund_total) < 1e-9 and abs(float(summary.get("total_net", 0.0)) - net_total) < 1e-9
+            summary_gross = _payload_numeric_value(summary, "total_gross", "total_gross_payout")
+            summary_refunds = _payload_numeric_value(summary, "total_refunds", "total_refund_total")
+            summary_net = _payload_numeric_value(summary, "total_net", "total_net_payout")
+            summary_totals_ok = command.returncode == 0 and isinstance(summary, dict) and summary.get("merchant_count") == len(rows) and summary_gross is not None and summary_refunds is not None and summary_net is not None and abs(summary_gross - gross_total) < 1e-9 and abs(summary_refunds - refund_total) < 1e-9 and abs(summary_net - net_total) < 1e-9
             invalid_date = _run_python_entrypoint(workspace, ["app/export.py", "export.py", "src/app/export.py"], ["--date", "2026/07/01", "--out-dir", str(temp_root / "bad-out")], env={"REPORT_DB_PATH": str(db_path)})
             invalid_date_ok = invalid_date.returncode != 0
 

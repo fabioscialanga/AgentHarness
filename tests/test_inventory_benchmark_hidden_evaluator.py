@@ -176,6 +176,154 @@ QUANTITY_RECOUNT_APP = (
     .replace('            "counted_quantity": payload.counted_quantity,', '            "counted_quantity": None,\n            "quantity": payload.quantity,', 1)
 )
 
+WRAPPED_APP_WORKSPACE_MAIN = "from inventory_api.app_factory import create_app\n\napp = create_app()\n"
+
+WRAPPED_APP_FACTORY = textwrap.dedent(
+    '''
+    from __future__ import annotations
+
+    from copy import deepcopy
+    from datetime import datetime, timezone
+
+    from fastapi import FastAPI, HTTPException
+
+    def create_app() -> FastAPI:
+        app = FastAPI()
+        items: dict[str, dict] = {}
+
+        def now() -> str:
+            return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+        def clone_item(item: dict) -> dict:
+            payload = deepcopy(item)
+            payload["history"] = sorted(
+                [deepcopy(entry) for entry in item["history"]],
+                key=lambda entry: entry["created_at"],
+                reverse=True,
+            )
+            return payload
+
+        @app.post("/items", status_code=201)
+        def create_item(payload: dict):
+            sku = payload.get("sku")
+            name = payload.get("name")
+            on_hand = payload.get("on_hand")
+            if not isinstance(sku, str) or not isinstance(name, str) or not isinstance(on_hand, int):
+                raise HTTPException(status_code=422, detail="invalid payload")
+            if sku in items:
+                raise HTTPException(status_code=409, detail="duplicate sku")
+            if on_hand < 0:
+                raise HTTPException(status_code=422, detail="invalid quantities")
+            items[sku] = {"sku": sku, "name": name, "on_hand": on_hand, "reserved": 0, "history": []}
+            return clone_item(items[sku])
+
+        @app.get("/items")
+        def list_items(sku: str | None = None, low_stock: bool | None = None):
+            values = list(items.values())
+            if sku is not None:
+                values = [item for item in values if item["sku"] == sku]
+            if low_stock:
+                values = [item for item in values if item["on_hand"] - item["reserved"] <= 5]
+            return [clone_item(item) for item in values]
+
+        @app.get("/items/{sku}")
+        def get_item(sku: str):
+            item = items.get(sku)
+            if item is None:
+                raise HTTPException(status_code=404, detail="not found")
+            return clone_item(item)
+
+        @app.post("/items/{sku}/adjustments", status_code=201)
+        def create_adjustment(sku: str, payload: dict):
+            item = items.get(sku)
+            if item is None:
+                raise HTTPException(status_code=404, detail="not found")
+            reason = payload.get("reason")
+            if reason not in {"receive", "damage", "recount"}:
+                raise HTTPException(status_code=422, detail="invalid reason")
+            delta = payload.get("delta")
+            counted_quantity = payload.get("counted_quantity")
+            if reason == "recount":
+                if not isinstance(counted_quantity, int) or counted_quantity < 0:
+                    raise HTTPException(status_code=422, detail="invalid counted quantity")
+                item["on_hand"] = counted_quantity
+            else:
+                if not isinstance(delta, int):
+                    raise HTTPException(status_code=422, detail="missing delta")
+                candidate = item["on_hand"] + delta
+                if candidate < 0:
+                    raise HTTPException(status_code=409, detail="on_hand cannot go negative")
+                item["on_hand"] = candidate
+            if item["reserved"] > item["on_hand"]:
+                raise HTTPException(status_code=409, detail="reserved exceeds on_hand")
+            item["history"].append(
+                {
+                    "type": "adjustment",
+                    "reason": reason,
+                    "delta": delta,
+                    "counted_quantity": counted_quantity,
+                    "created_at": now(),
+                }
+            )
+            return clone_item(item)
+
+        @app.post("/items/{sku}/reservations", status_code=201)
+        def reserve_stock(sku: str, payload: dict):
+            item = items.get(sku)
+            if item is None:
+                raise HTTPException(status_code=404, detail="not found")
+            order_id = payload.get("order_id")
+            quantity = payload.get("quantity")
+            if not isinstance(order_id, str) or not isinstance(quantity, int):
+                raise HTTPException(status_code=422, detail="invalid payload")
+            available = item["on_hand"] - item["reserved"]
+            if quantity <= 0 or quantity > available:
+                raise HTTPException(status_code=409, detail="insufficient available stock")
+            item["reserved"] += quantity
+            item["history"].append(
+                {
+                    "type": "reservation",
+                    "order_id": order_id,
+                    "quantity": quantity,
+                    "created_at": now(),
+                }
+            )
+            return {"ok": True}
+
+        @app.post("/items/{sku}/reservations/{order_id}/release", status_code=201)
+        def release_stock(sku: str, order_id: str, payload: dict):
+            item = items.get(sku)
+            if item is None:
+                raise HTTPException(status_code=404, detail="not found")
+            quantity = payload.get("quantity")
+            if not isinstance(quantity, int):
+                raise HTTPException(status_code=422, detail="invalid payload")
+            reserved_for_order = sum(
+                entry["quantity"]
+                for entry in item["history"]
+                if entry["type"] == "reservation" and entry.get("order_id") == order_id
+            ) - sum(
+                entry["quantity"]
+                for entry in item["history"]
+                if entry["type"] == "release" and entry.get("order_id") == order_id
+            )
+            if quantity <= 0 or quantity > reserved_for_order:
+                raise HTTPException(status_code=409, detail="release exceeds reserved quantity")
+            item["reserved"] -= quantity
+            item["history"].append(
+                {
+                    "type": "release",
+                    "order_id": order_id,
+                    "quantity": quantity,
+                    "created_at": now(),
+                }
+            )
+            return {"ok": True}
+
+        return app
+    '''
+).strip() + "\n"
+
 BUGGY_APP = (
     GOOD_APP.replace(
         'raise HTTPException(status_code=409, detail="on_hand cannot go negative")',
@@ -302,6 +450,29 @@ class InventoryBenchmarkHiddenEvaluatorTests(unittest.TestCase):
 
             self.assertFalse(result.critical_ok)
             self.assertIn("recount_sets_exact_quantity", result.failed_checks)
+
+    def test_library_evaluator_accepts_top_level_app_wrapper_module(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = Path(tmp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+            package_dir = workspace / "inventory_api"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            (package_dir / "__init__.py").write_text("", encoding="utf-8")
+            (package_dir / "app_factory.py").write_text(WRAPPED_APP_FACTORY, encoding="utf-8")
+            (workspace / "app.py").write_text(WRAPPED_APP_WORKSPACE_MAIN, encoding="utf-8")
+            (workspace / "README.md").write_text("# Inventory adjustment API\n", encoding="utf-8")
+            (workspace / "pyproject.toml").write_text(
+                "[project]\nname = \"inventory-adjustment-api\"\nversion = \"0.1.0\"\ndependencies = [\"fastapi\", \"pydantic\", \"pytest\", \"sqlalchemy\"]\n",
+                encoding="utf-8",
+            )
+            run_path = temp_root / "run.json"
+            _write_run(run_path, workspace, "inventory_wrapped_app_001")
+
+            result = evaluate_benchmark_task(run_path, TASK_ID)
+
+            self.assertTrue(result.critical_ok)
+            self.assertEqual(result.failed_checks, [])
 
     def test_cli_evaluate_fails_for_buggy_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
