@@ -27,6 +27,15 @@ class Level2ReliabilityTests(unittest.TestCase):
             "real_failure",
         )
 
+    def test_classify_level2_cell_treats_provider_reason_inside_harness_invalid_as_provider_unavailable(self) -> None:
+        result = {
+            "task_id": "leave-request-api",
+            "benchmark_execution_status": "harness_invalid",
+            "benchmark_outcome_status": "invalid",
+            "benchmark_classification_reason": "provider_unavailable: HTTP 429 usage limit has been reached",
+        }
+        self.assertEqual(classify_level2_cell(result), "provider_unavailable")
+
     def test_compute_level2_gate_passes_on_clean_representative_slice(self) -> None:
         results = []
         for idx in range(6):
@@ -86,6 +95,41 @@ class Level2ReliabilityTests(unittest.TestCase):
         self.assertEqual(summary["counts"]["total_invalid"], 2)
         self.assertEqual(summary["tasks_with_success"], 8)
         self.assertEqual(summary["longest_provider_unavailable_block"], 1)
+
+    def test_compute_level2_gate_counts_provider_reason_inside_harness_invalid_separately(self) -> None:
+        gate = compute_level2_gate(
+            [
+                {
+                    "task_id": "leave-request-api",
+                    "condition": "A-baseline",
+                    "replicate_id": "r1",
+                    "benchmark_execution_status": "harness_invalid",
+                    "benchmark_outcome_status": "invalid",
+                    "benchmark_classification_reason": "provider_unavailable: HTTP 429 usage limit has been reached",
+                    "score": 0.0,
+                },
+                {
+                    "task_id": "leave-request-api",
+                    "condition": "B-agentharness",
+                    "replicate_id": "r1",
+                    "benchmark_execution_status": "harness_invalid",
+                    "benchmark_outcome_status": "invalid",
+                    "benchmark_classification_reason": "Missing invocation evidence",
+                    "score": 0.0,
+                },
+                {
+                    "task_id": "support-ticket-api",
+                    "condition": "A-baseline",
+                    "replicate_id": "r1",
+                    "benchmark_execution_status": "valid",
+                    "benchmark_outcome_status": "success",
+                    "score": 1.0,
+                },
+            ]
+        )
+        self.assertEqual(gate["counts"]["provider_unavailable"], 1)
+        self.assertEqual(gate["counts"]["harness_invalid"], 1)
+        self.assertEqual(gate["counts"]["success"], 1)
 
     def test_compute_level2_gate_fails_on_contiguous_provider_block(self) -> None:
         results = []

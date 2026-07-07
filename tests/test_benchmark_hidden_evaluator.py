@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest import mock
 
 import agentharness.benchmark_hidden_evaluators as benchmark_hidden_evaluators
-from agentharness.benchmark_hidden_evaluators import evaluate_benchmark_task
+from agentharness.benchmark_hidden_evaluators import _load_fastapi_app, evaluate_benchmark_task
 from agentharness.benchmarking import write_rendered_json_template
 from agentharness.evaluation import evaluate_run
 
@@ -146,6 +146,23 @@ BUGGY_APP = GOOD_APP.replace(
     'pass  # BUG: closed tickets can reopen',
 )
 
+ALIAS_APP = GOOD_APP.replace("from fastapi import FastAPI, HTTPException", "from fastapi import FastAPI as API, HTTPException").replace("app = FastAPI()", "app = API()")
+
+FACTORY_DISCOVERY_APP = textwrap.dedent(
+    '''
+    from fastapi import FastAPI
+
+    def create_app():
+        app = FastAPI()
+
+        @app.get("/health")
+        def health():
+            return {"ok": True}
+
+        return app
+    '''
+).strip() + "\n"
+
 
 def _write_workspace(workspace: Path, app_source: str) -> None:
     app_dir = workspace / "app"
@@ -213,6 +230,24 @@ def _write_run(run_path: Path, workspace: Path, run_id: str) -> None:
 
 
 class BenchmarkHiddenEvaluatorTests(unittest.TestCase):
+    def test_load_fastapi_app_accepts_alias_instantiation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, ALIAS_APP)
+            module_path, app = _load_fastapi_app(workspace)
+            self.assertEqual(module_path.name, "main.py")
+            self.assertEqual(app.__class__.__name__, "FastAPI")
+
+    def test_load_fastapi_app_accepts_zero_arg_factory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            workspace.mkdir()
+            _write_workspace(workspace, FACTORY_DISCOVERY_APP)
+            module_path, app = _load_fastapi_app(workspace)
+            self.assertEqual(module_path.name, "main.py")
+            self.assertEqual(app.__class__.__name__, "FastAPI")
+
     def test_library_evaluator_writes_hidden_outputs_for_good_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_root = Path(tmp_dir)

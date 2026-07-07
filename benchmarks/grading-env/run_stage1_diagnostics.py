@@ -34,12 +34,8 @@ REPLICATES = ["r1", "r2", "r3"]
 MAX_RERUNS_AFTER_INVALID = 1
 SEED = int(os.environ.get("STAGE1_SEED", "20260701"))
 
-PROVIDER_UNAVAILABLE_MARKERS = (
-    "HTTP 429",
-    "usage limit has been reached",
-    "rate limit",
-    "temporarily unavailable",
-)
+PROVIDER_UNAVAILABLE_MARKERS = bc.PROVIDER_UNAVAILABLE_MARKERS
+INTER_CELL_DELAY_SECONDS = float(os.environ.get("STAGE1_INTER_CELL_DELAY_SECONDS", "15"))
 
 
 def _is_provider_unavailable_record(record: dict[str, object]) -> bool:
@@ -280,6 +276,8 @@ def main() -> int:
             record["final_error"] = final_error
         results.append(record)
         (RUNS_ROOT / "progress.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
+        if index < len(cells):
+            time.sleep(INTER_CELL_DELAY_SECONDS)
 
     summary: dict[str, object] = {
         "seed": SEED,

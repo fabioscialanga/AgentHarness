@@ -375,9 +375,15 @@ class BenchmarkCellsTests(unittest.TestCase):
             benchmark_payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
             metadata = json.loads((cell_dir / "metadata.json").read_text(encoding="utf-8"))
             evaluation_summary = cast(dict[str, object], result["evaluation_summary"])
-            self.assertEqual(result["benchmark_execution_status"], "provider_unavailable")
-            self.assertEqual(benchmark_payload["execution_status"], "provider_unavailable")
-            self.assertEqual(metadata["benchmark_execution_status"], "provider_unavailable")
+            self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+            self.assertEqual(result["benchmark_outcome_status"], "invalid")
+            self.assertTrue(str(result["benchmark_classification_reason"]).startswith("provider_unavailable:"))
+            self.assertEqual(benchmark_payload["execution_status"], "harness_invalid")
+            self.assertEqual(benchmark_payload["outcome_status"], "invalid")
+            self.assertTrue(str(benchmark_payload["classification_reason"]).startswith("provider_unavailable:"))
+            self.assertEqual(metadata["benchmark_execution_status"], "harness_invalid")
+            self.assertEqual(metadata["benchmark_outcome_status"], "invalid")
+            self.assertTrue(str(metadata["benchmark_classification_reason"]).startswith("provider_unavailable:"))
             self.assertEqual(evaluation_summary["invalid"], 1)
             self.assertTrue((cell_dir / "outputs" / "suite.json").is_file())
             self.assertTrue((cell_dir / "provenance.json").is_file())
@@ -397,7 +403,9 @@ class BenchmarkCellsTests(unittest.TestCase):
             )
             benchmark_payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
             self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+            self.assertEqual(result["benchmark_outcome_status"], "invalid")
             self.assertEqual(benchmark_payload["execution_status"], "harness_invalid")
+            self.assertEqual(benchmark_payload["outcome_status"], "invalid")
 
     def test_execute_cell_classifies_missing_invocation_evidence_as_harness_invalid(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -412,6 +420,7 @@ class BenchmarkCellsTests(unittest.TestCase):
             payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
             self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
             self.assertIn("Missing invocation evidence", payload["classification_reason"])
+            self.assertEqual(result["benchmark_outcome_status"], "invalid")
 
     def test_execute_cell_classifies_pre_repair_failure_from_invoker(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

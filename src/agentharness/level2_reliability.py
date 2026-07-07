@@ -12,7 +12,10 @@ CellResult = dict[str, Any]
 def classify_level2_cell(result: CellResult) -> str:
     execution_status = str(result.get("benchmark_execution_status") or "")
     outcome_status = str(result.get("benchmark_outcome_status") or "")
+    classification_reason = str(result.get("benchmark_classification_reason") or "")
     if execution_status == "provider_unavailable":
+        return "provider_unavailable"
+    if classification_reason.startswith("provider_unavailable:"):
         return "provider_unavailable"
     if execution_status == "harness_invalid":
         return "harness_invalid"
@@ -55,6 +58,7 @@ def compute_level2_gate(results: list[CellResult]) -> dict[str, Any]:
                 "category": category,
                 "benchmark_execution_status": result.get("benchmark_execution_status"),
                 "benchmark_outcome_status": result.get("benchmark_outcome_status"),
+                "benchmark_classification_reason": result.get("benchmark_classification_reason"),
                 "score": result.get("score"),
             }
         )

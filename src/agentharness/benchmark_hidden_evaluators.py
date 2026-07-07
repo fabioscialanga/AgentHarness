@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import importlib.metadata
 import importlib.util
+import inspect
 import json
 import os
 import shutil
@@ -236,51 +237,78 @@ def _load_module_from_path(module_path: Path, workspace: Path):
             sys.modules.pop(module_name, None)
 
 
-def _discover_fastapi_module(workspace: Path) -> Path:
+def _discover_fastapi_modules(workspace: Path) -> list[Path]:
     candidates: list[tuple[int, Path]] = []
     for path in workspace.rglob("*.py"):
-        if any(part.startswith(".") for part in path.relative_to(workspace).parts):
+        relative_parts = path.relative_to(workspace).parts
+        if any(part.startswith(".") for part in relative_parts):
             continue
-        if "tests" in path.parts or "site-packages" in path.parts or ".venv" in path.parts:
-            continue
-        try:
-            content = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+        lowered_parts = {part.lower() for part in relative_parts}
+        if "tests" in lowered_parts or "site-packages" in lowered_parts or ".venv" in lowered_parts:
             continue
         score = 0
         if path.name == "main.py":
             score += 30
         if path.name == "app.py":
             score += 20
-        if "FastAPI(" in content:
-            score += 15
-        if any(token in content for token in ("app =", "api =", "application =")):
-            score += 8
-        lowered_parts = {part.lower() for part in path.parts}
-        if "app" in lowered_parts:
+        if any(part.lower() == "app" for part in relative_parts[:-1]):
             score += 10
-        if "src" in lowered_parts:
+        if any(part.lower() == "src" for part in relative_parts[:-1]):
             score += 5
-        if score == 0:
-            continue
         candidates.append((score, path))
     if not candidates:
-        raise RuntimeError("Could not find a Python module defining a FastAPI application in the workspace")
+        raise RuntimeError("Could not find any Python modules in the workspace to inspect for a FastAPI application")
     candidates.sort(key=lambda item: (-item[0], len(item[1].parts), str(item[1])))
-    return candidates[0][1]
+    return [path for _, path in candidates]
+
+
+def _candidate_is_fastapi_app(candidate: Any) -> bool:
+    return candidate is not None and candidate.__class__.__name__ == "FastAPI"
+
+
+def _instantiate_fastapi_factory(candidate: Any) -> Any:
+    if not callable(candidate):
+        return None
+    try:
+        signature = inspect.signature(candidate)
+    except (TypeError, ValueError):
+        return None
+    required_parameters = [
+        parameter
+        for parameter in signature.parameters.values()
+        if parameter.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        and parameter.default is inspect._empty
+    ]
+    if required_parameters:
+        return None
+    try:
+        built = candidate()
+    except Exception:
+        return None
+    return built if _candidate_is_fastapi_app(built) else None
 
 
 def _load_fastapi_app(workspace: Path) -> tuple[Path, Any]:
-    module_path = _discover_fastapi_module(workspace)
-    with _load_module_from_path(module_path, workspace) as module:
-        for attribute_name in ("app", "api", "application"):
-            candidate = getattr(module, attribute_name, None)
-            if candidate is not None and candidate.__class__.__name__ == "FastAPI":
-                return module_path, candidate
-        for value in module.__dict__.values():
-            if value is not None and value.__class__.__name__ == "FastAPI":
-                return module_path, value
-    raise RuntimeError(f"Could not locate a FastAPI app object inside {module_path}")
+    candidate_errors: list[str] = []
+    for module_path in _discover_fastapi_modules(workspace):
+        try:
+            with _load_module_from_path(module_path, workspace) as module:
+                for attribute_name in ("app", "api", "application"):
+                    candidate = getattr(module, attribute_name, None)
+                    if _candidate_is_fastapi_app(candidate):
+                        return module_path, candidate
+                for value in module.__dict__.values():
+                    if _candidate_is_fastapi_app(value):
+                        return module_path, value
+                for factory_name in ("create_app", "build_app", "make_app", "get_app"):
+                    built = _instantiate_fastapi_factory(getattr(module, factory_name, None))
+                    if _candidate_is_fastapi_app(built):
+                        return module_path, built
+                candidate_errors.append(f"{module_path}: no FastAPI app object or supported zero-arg factory found")
+        except Exception as exc:
+            candidate_errors.append(f"{module_path}: {exc}")
+    joined = "; ".join(candidate_errors[:5])
+    raise RuntimeError(f"Could not locate a FastAPI app object in the workspace. Checked modules: {joined}")
 
 
 def _make_test_client(app: Any):

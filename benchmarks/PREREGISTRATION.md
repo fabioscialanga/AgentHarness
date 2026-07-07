@@ -869,7 +869,7 @@ A second Stage 1 launch exposed a harness-side execution-path discrepancy before
 #### 17.8 Post-diagnostic amendment (2026-07-03, before any treatment-effect interpretation of the completed Stage 1 run)
 The completed Stage 1 diagnostic campaign on the post-amendment freeze is not analyzable for A-vs-B treatment effect because benchmark-cell execution was materially contaminated by provider-availability failures. This amendment records that diagnosis before any treatment-effect claim is made from the run.
 
-- correction 6: provider-side quota / rate-limit failures must be reported separately from harness-invalid cells and separately from ordinary task failures
+- correction 6: provider-side quota / rate-limit failures must be reported separately from generic harness-invalid cells and separately from ordinary task failures
   - empirical finding after run completion: a large subset of Stage 1 cells terminated with empty workspaces because the Hermes CLI invocation failed upstream with provider-side availability errors, including `HTTP 429: The usage limit has been reached`
   - these cells do not constitute evidence about task-solving ability and must not be pooled with ordinary failed solutions when interpreting condition means or ceilings
   - Stage 1 summaries must report provider-unavailable counts explicitly, alongside but distinct from generic harness-invalid counts
@@ -878,9 +878,22 @@ The completed Stage 1 diagnostic campaign on the post-amendment freeze is not an
   - consequence: the completed run may be used only for diagnostic inspection of failure modes and harness instrumentation, not for comparative A-vs-B inference
   - operational requirement before any renewed Stage 1 claim: rerun only under a provider/profile path with sufficient confirmed execution headroom, or under an explicit preflight/abort rule that stops the campaign if provider-unavailable failures recur
 
+#### 17.9 Pre-relaunch amendment (2026-07-07, before any renewed Stage 1 launch)
+Two execution-path corrections are required before any clean Stage 1 relaunch.
+
+- correction 8: persistent provider-side availability failures must terminate as analyzable invalids, not as apparent task misses
+  - the benchmark runner must retry provider-side invocation failures with bounded backoff using explicit markers such as `HTTP 429`, `usage limit has been reached`, `rate limit`, `temporarily unavailable`, and `quota`
+  - if every invocation attempt still ends in those provider-side markers and leaves the workspace empty, the cell must be recorded as `benchmark_execution_status = harness_invalid`, `benchmark_outcome_status = invalid`, with a `benchmark_classification_reason` prefixed by `provider_unavailable:`
+  - these cells remain excluded from the primary analysis and must be counted separately in reliability summaries as provider-unavailable, not as agent failures
+  - the Stage 1 launcher must also enforce a fixed delay between cells to reduce contiguous provider-throttling blocks
+- correction 9: FastAPI app discovery in hidden evaluation must be based on a real importable app object, not on a literal source-string pattern
+  - discovery must not depend on finding the text `FastAPI(` in source files
+  - acceptable benchmark solutions include equivalent constructions such as aliased imports and supported zero-argument app factories, provided they materialize a real `FastAPI` application object in the workspace
+  - hidden evaluation must continue to reject workspaces that do not expose any importable `FastAPI` app object
+
 
 ---
 
 ## Freeze
 
-Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget e le regole inferenziali sopra sono immutabili. Per le campagne Stage 1 analizzabili, il benchmark code commit congelato è `e8e8504` come registrato nell'emendamento pre-analisi 17.7; il precedente commit `04db03d` resta riferito solo ai run scartati e non letti antecedenti alla correzione del path workspace. Il testo dell'appendice operativa è stato introdotto nel repository al commit `10ea1a1`. Nessuna cella del benchmark era stata eseguita prima di questa data.
+Appendice operativa congelata il 2 luglio 2026 da Fabio Scialanga. Da questa data i parametri, i seed, i budget e le regole inferenziali sopra sono immutabili. Il completato Stage 1 diagnostico resta attribuito al commit `e8e8504` come registrato negli emendamenti 17.7 e 17.8; il precedente commit `04db03d` resta riferito solo ai run scartati e non letti antecedenti alla correzione del path workspace. Dopo l'emendamento 17.9, qualunque nuovo Stage 1 analizzabile dovrà usare un successivo commit di hardening che includa sia la classificazione `provider_unavailable:` come invalid infrastrutturale sia la discovery FastAPI basata su oggetti importabili. Il testo dell'appendice operativa è stato introdotto nel repository al commit `10ea1a1`. Nessuna cella del benchmark era stata eseguita prima di questa data.

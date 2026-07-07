@@ -28,6 +28,14 @@ VERIFY_RUN_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_VERIFY_TIMEOUT_SEC
 BENCHMARK_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_BENCHMARK_TIMEOUT_SECONDS", "300"))
 HELDOUT_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_EVALUATION_TIMEOUT_SECONDS", "300"))
 
+PROVIDER_UNAVAILABLE_MARKERS = (
+    "HTTP 429",
+    "usage limit has been reached",
+    "rate limit",
+    "temporarily unavailable",
+    "quota",
+)
+
 _EXCLUDED_PARTS = {".venv", ".pytest_cache", ".agentharness", ".stageb-test-venv", "__pycache__"}
 _EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".db"}
 
@@ -257,13 +265,7 @@ class HermesCliInvoker:
 
 
 def _is_retryable_invocation_failure(completed: subprocess.CompletedProcess[str]) -> bool:
-    retry_markers = (
-        "HTTP 429",
-        "usage limit has been reached",
-        "rate limit",
-        "temporarily unavailable",
-        "timed out after",
-    )
+    retry_markers = PROVIDER_UNAVAILABLE_MARKERS + ("timed out after",)
     haystacks = (completed.stdout.lower(), completed.stderr.lower())
     return any(marker.lower() in haystack for marker in retry_markers for haystack in haystacks)
 
@@ -291,8 +293,8 @@ def _classify_empty_workspace_failure(invocation_result: AgentInvocationResult) 
             subprocess.CompletedProcess(args=attempt.command, returncode=attempt.exit_code, stdout=text, stderr="")
         ):
             return (
-                "provider_unavailable",
-                "Agent produced no solution files because every invocation attempt failed with retryable provider-side errors",
+                "harness_invalid",
+                "provider_unavailable: agent produced no solution files because every invocation attempt failed with retryable provider-side errors",
             )
     return (
         "harness_invalid",
@@ -320,11 +322,12 @@ def _write_invalid_cell_artifacts(
         run_id=run_id,
         output_path=suite_path,
     )
+    outcome_status = "invalid"
     benchmark_payload = {
         "task_id": task_id,
         "critical_ok": False,
         "execution_status": execution_status,
-        "outcome_status": "real_failure",
+        "outcome_status": outcome_status,
         "classification_reason": classification_reason,
         "passed_checks": [],
         "failed_checks": [],
@@ -378,7 +381,8 @@ def _write_invalid_cell_artifacts(
         "scorable_score": 0.0,
         "verify_run_ok": False,
         "benchmark_execution_status": execution_status,
-        "benchmark_outcome_status": "real_failure",
+        "benchmark_outcome_status": outcome_status,
+        "benchmark_classification_reason": classification_reason,
         "solution_hash": provenance["solution_hash"],
         "attempt_count": provenance["attempt_count"],
     }
@@ -395,7 +399,8 @@ def _write_invalid_cell_artifacts(
         "pytest_exit_code": None,
         "verify_run_ok": False,
         "benchmark_execution_status": execution_status,
-        "benchmark_outcome_status": "real_failure",
+        "benchmark_outcome_status": outcome_status,
+        "benchmark_classification_reason": classification_reason,
         "score": 0.0,
         "evaluation_summary": eval_payload["summary"],
         "solution_hash": provenance["solution_hash"],
@@ -893,6 +898,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "verify_run_ok": verify_payload.get("ok"),
         "benchmark_execution_status": benchmark_payload.get("execution_status"),
         "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
+        "benchmark_classification_reason": benchmark_payload.get("classification_reason"),
         "solution_hash": provenance["solution_hash"],
         "attempt_count": provenance["attempt_count"],
     }
@@ -910,6 +916,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "verify_run_ok": verify_payload.get("ok"),
         "benchmark_execution_status": benchmark_payload.get("execution_status"),
         "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
+        "benchmark_classification_reason": benchmark_payload.get("classification_reason"),
         "score": score_from_evaluation(eval_payload),
         "evaluation_summary": eval_payload.get("summary", {}),
         "solution_hash": provenance["solution_hash"],
