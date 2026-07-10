@@ -892,6 +892,18 @@ Two execution-path corrections are required before any clean Stage 1 relaunch.
   - hidden evaluation must continue to reject workspaces that do not expose any importable `FastAPI` app object
 
 
+#### 17.10 Pre-relaunch amendment (2026-07-10, before any renewed analyzable Stage 1 launch)
+A fresh unread Stage 1 relaunch attempt was aborted immediately after the first observed invocation because the runner surfaced a new infrastructure-classification defect before any summary, invalid-rate review, or treatment-contrast inspection was performed. The aborted run is archived unread and is not analyzable.
+
+- correction 10: Codex SSE stream-stall failures must be treated as provider-unavailable retry markers and, if persistent, as provider-unavailable invalids
+  - empirical finding before analysis: the first observed invocation of the unread aborted relaunch failed with the message `Codex stream produced no SSE events for 12s after first byte`, leaving the workspace empty
+  - this failure mode is provider-side availability degradation, not evidence about task-solving ability and not evidence of an empty-workspace task miss
+  - the benchmark runner must therefore include the message fragment `produced no SSE events` in both the bounded-backoff retry markers and the provider-unavailable classification markers
+  - if all invocation attempts end in that marker and the workspace remains empty, the cell must be recorded as `benchmark_execution_status = harness_invalid`, `benchmark_outcome_status = invalid`, with `benchmark_classification_reason` prefixed by `provider_unavailable:`
+- declaration on correction 9 status: the FastAPI app-discovery fix recorded in correction 9 is a substantive pre-analysis benchmark-validity amendment, not a mere infrastructure refactor
+  - reason: it changes which benchmark solutions are recognized as valid hidden-evaluation candidates under the preregistered task semantics
+  - analyzable Stage 1 and Stage 2 runs must therefore use a commit that includes both the correction-9 discovery fix and the correction-10 SSE-stall provider classification fix
+
 ---
 
 ## Freeze

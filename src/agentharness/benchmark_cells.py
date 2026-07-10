@@ -34,6 +34,7 @@ PROVIDER_UNAVAILABLE_MARKERS = (
     "rate limit",
     "temporarily unavailable",
     "quota",
+    "produced no SSE events",
 )
 
 _EXCLUDED_PARTS = {".venv", ".pytest_cache", ".agentharness", ".stageb-test-venv", "__pycache__"}

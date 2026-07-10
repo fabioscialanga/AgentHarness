@@ -376,6 +376,38 @@ class BenchmarkCellsTests(unittest.TestCase):
             self.assertFalse((workspace / ".agentharness" / "traces" / "verify-run" / "old.jsonl").exists())
             self.assertFalse((workspace / ".agentharness" / "evidence" / str(manifest["run_id"]) / "reexecuted" / "command.stdout").exists())
 
+    def test_execute_cell_classifies_empty_workspace_codex_sse_stall_as_provider_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "leave-request-api" / "B-agentharness" / "r2"
+            prepare_fresh_cell(
+                task_id="leave-request-api",
+                condition="B-agentharness",
+                replicate_id="r2",
+                cell_dir=cell_dir,
+            )
+            result = execute_cell(
+                cell_dir,
+                _EmptyWorkspaceInvoker(
+                    "session_id: fake_session\n",
+                    "API call failed after 3 retries: Codex stream produced no SSE events for 12s after first byte (threshold: 12s)\n",
+                ),
+            )
+            benchmark_payload = json.loads((cell_dir / "outputs" / "benchmark-evaluate-task.json").read_text(encoding="utf-8"))
+            metadata = json.loads((cell_dir / "metadata.json").read_text(encoding="utf-8"))
+            evaluation_summary = cast(dict[str, object], result["evaluation_summary"])
+            self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+            self.assertEqual(result["benchmark_outcome_status"], "invalid")
+            self.assertTrue(str(result["benchmark_classification_reason"]).startswith("provider_unavailable:"))
+            self.assertEqual(benchmark_payload["execution_status"], "harness_invalid")
+            self.assertEqual(benchmark_payload["outcome_status"], "invalid")
+            self.assertTrue(str(benchmark_payload["classification_reason"]).startswith("provider_unavailable:"))
+            self.assertEqual(metadata["benchmark_execution_status"], "harness_invalid")
+            self.assertEqual(metadata["benchmark_outcome_status"], "invalid")
+            self.assertTrue(str(metadata["benchmark_classification_reason"]).startswith("provider_unavailable:"))
+            self.assertEqual(evaluation_summary["invalid"], 1)
+            self.assertTrue((cell_dir / "outputs" / "suite.json").is_file())
+            self.assertTrue((cell_dir / "provenance.json").is_file())
+
     def test_execute_cell_classifies_empty_workspace_rate_limit_as_provider_unavailable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             cell_dir = Path(tmp_dir) / "leave-request-api" / "B-agentharness" / "r2"
@@ -481,6 +513,15 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertEqual(attempt.session_id, "ok_123")
         self.assertEqual(run_mock.call_count, 2)
         sleep_mock.assert_called_once_with(0.01)
+
+    def test_retryable_invocation_failure_detects_sse_stall_marker_in_stderr(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=1,
+            stdout="",
+            stderr="API call failed after 3 retries: Codex stream produced no SSE events for 12s after first byte (threshold: 12s)\n",
+        )
+        self.assertTrue(_is_retryable_invocation_failure(completed))
 
     def test_retryable_invocation_failure_detects_rate_limit_markers(self) -> None:
         completed = subprocess.CompletedProcess(
