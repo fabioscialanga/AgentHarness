@@ -26,6 +26,7 @@ class Stage2AnalysisError(RuntimeError):
 @dataclass
 class PrimaryAnalysisResult:
     method: str
+    task_weighting_rule: str
     n_rows: int
     n_tasks: int
     effect_b_minus_a: float
@@ -85,6 +86,9 @@ class DatasetSummary:
     conditions: list[str]
     counts_by_category: dict[str, int]
     counts_by_condition: dict[str, int]
+
+
+TASK_WEIGHTING_RULE = "equal_weight_per_task_unweighted_by_valid_cell_count"
 
 
 def _normal_quantile(prob: float) -> float:
@@ -280,6 +284,7 @@ def _task_condition_means(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         .agg(score=("score", "mean"), n=("score", "size"))
         .sort_values(["task_id", "condition"])
     )
+    grouped["task_weighting_rule"] = TASK_WEIGHTING_RULE
     return grouped.to_dict(orient="records")
 
 
@@ -353,6 +358,7 @@ def primary_analysis(rows: list[dict[str, Any]], *, mme: float = MME_DEFAULT) ->
     mixedlm_effect, mixedlm_converged, mixedlm_note = _try_mixedlm_effect(rows)
     return PrimaryAnalysisResult(
         method="paired task-level mean difference with small-cluster t inference",
+        task_weighting_rule=TASK_WEIGHTING_RULE,
         n_rows=len(rows),
         n_tasks=n_tasks,
         effect_b_minus_a=effect,
@@ -485,16 +491,31 @@ def synthetic_dataset(
     task_step: float = 0.03,
     replicate_step: float = 0.005,
     include_invalids: bool = True,
+    seed: int | None = None,
+    task_noise_sd: float = 0.0,
+    replicate_noise_sd: float = 0.0,
+    observation_noise_sd: float = 0.0,
 ) -> list[dict[str, Any]]:
+    rng = random.Random(seed)
     rows: list[dict[str, Any]] = []
     for task_index in range(n_tasks):
         task_id = f"task-{task_index + 1}"
         base = 0.20 + task_index * task_step
+        task_noise = rng.gauss(0.0, task_noise_sd) if task_noise_sd > 0 else 0.0
         for replicate_index in range(replicates):
             rep = f"r{replicate_index + 1}"
             replicate_offset = (replicate_index - (replicates - 1) / 2.0) * replicate_step
+            replicate_noise = rng.gauss(0.0, replicate_noise_sd) if replicate_noise_sd > 0 else 0.0
             for condition in ("A-baseline", "B-agentharness"):
-                score = base + replicate_offset + (true_effect if condition == "B-agentharness" else 0.0)
+                observation_noise = rng.gauss(0.0, observation_noise_sd) if observation_noise_sd > 0 else 0.0
+                score = (
+                    base
+                    + task_noise
+                    + replicate_offset
+                    + replicate_noise
+                    + observation_noise
+                    + (true_effect if condition == "B-agentharness" else 0.0)
+                )
                 score = max(0.0, min(1.0, round(score, 6)))
                 row = {
                     "task_id": task_id,
@@ -566,6 +587,11 @@ def run_full_analysis(
         "headline": _headline_from_results(primary, cluster, loto),
     }
     return {
+        "analysis_spec": {
+            "task_weighting_rule": TASK_WEIGHTING_RULE,
+            "primary_invalid_policy": "exclude_infrastructure_invalids",
+            "sensitivity_invalid_policy": "count_infrastructure_invalids_as_zero",
+        },
         "dataset_summary": asdict(summary),
         "primary_analysis": asdict(primary),
         "cluster_bootstrap": asdict(cluster),

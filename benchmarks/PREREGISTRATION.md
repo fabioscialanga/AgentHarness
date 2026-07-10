@@ -916,6 +916,23 @@ The Stage 2 inferential scripts now exist, were tested on synthetic data with a 
   - the primary inferential quantities used for the frozen report come from the task-cluster estimator, not from an unavailable or guessed Kenward-Roger routine
   - this is declared now, before Stage 2 data exist, as a substantive analytic-execution amendment rather than a silent implementation substitution
 
+#### 17.12 Stage 2 calibration extension to the freeze (2026-07-10, before any Stage 2 data collection)
+The Stage 2 freeze is extended to verify that the analysis code can say "no" under synthetic datasets where improvement should not be declared.
+
+- correction 13: the frozen regression suite now includes explicit calibration controls in addition to the positive-control recovery test
+  - `true_effect = 0.0` must not return `improvement_supported`
+  - `true_effect = 0.05`, below the frozen MME of `0.10`, must not return `improvement_supported`
+  - `true_effect = -0.15` must not return `improvement_supported`
+- correction 14: the frozen suite now includes a null Monte Carlo false-positive check over 100 synthetic datasets with distinct seeds
+  - the observed rate of `improvement_supported` under the null must remain at or below 10% in the frozen regression suite
+  - the purpose is calibration against optimistic analysis behavior before any Stage 2 real data are seen
+- correction 15: the task-cluster estimator is now explicitly frozen as equal-weight-per-task after invalid handling
+  - within each task and condition, valid cells are averaged first
+  - after that, each task contributes exactly one paired `B - A` difference
+  - tasks are not weighted by how many valid cells remain after infrastructure-invalid exclusions
+
+This extension was implemented and tested before any Stage 2 data collection and without reading Stage 1 summary outputs or treatment contrasts.
+
 ---
 
 ## Freeze

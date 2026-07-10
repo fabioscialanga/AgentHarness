@@ -9,6 +9,7 @@ from pathlib import Path
 from agentharness.stage2_analysis import (
     CLUSTER_BOOTSTRAP_SEED_DEFAULT,
     MME_DEFAULT,
+    TASK_WEIGHTING_RULE,
     WILD_BOOTSTRAP_SEED_DEFAULT,
     apply_invalid_policy,
     build_dataset_from_progress,
@@ -30,6 +31,7 @@ class Stage2AnalysisTests(unittest.TestCase):
         rows = synthetic_dataset(true_effect=0.18, include_invalids=False)
         result = primary_analysis(rows, mme=MME_DEFAULT)
         self.assertAlmostEqual(result.effect_b_minus_a, 0.18, places=6)
+        self.assertEqual(result.task_weighting_rule, TASK_WEIGHTING_RULE)
         self.assertTrue(result.ci_entirely_above_zero)
         self.assertTrue(result.mme_cleared)
 
@@ -57,9 +59,65 @@ class Stage2AnalysisTests(unittest.TestCase):
             wild_resamples=1000,
         )
         self.assertEqual(report["decision"]["headline"], "improvement_supported")
+        self.assertEqual(report["analysis_spec"]["task_weighting_rule"], TASK_WEIGHTING_RULE)
         self.assertIn("cluster_bootstrap", report)
         self.assertIn("wild_cluster_bootstrap", report)
         self.assertEqual(len(report["leave_one_task_out"]), 8)
+
+    def test_true_zero_effect_does_not_return_improvement_supported(self) -> None:
+        rows = synthetic_dataset(
+            true_effect=0.0,
+            include_invalids=False,
+            seed=101,
+            task_noise_sd=0.10,
+            replicate_noise_sd=0.08,
+            observation_noise_sd=0.08,
+        )
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800)
+        self.assertNotEqual(report["decision"]["headline"], "improvement_supported")
+
+    def test_true_effect_below_mme_does_not_return_improvement_supported(self) -> None:
+        rows = synthetic_dataset(
+            true_effect=0.05,
+            include_invalids=False,
+            seed=202,
+            task_noise_sd=0.10,
+            replicate_noise_sd=0.08,
+            observation_noise_sd=0.08,
+        )
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800)
+        self.assertNotEqual(report["decision"]["headline"], "improvement_supported")
+        self.assertLess(report["primary_analysis"]["mme"], 0.11)
+
+    def test_negative_true_effect_does_not_return_improvement_supported(self) -> None:
+        rows = synthetic_dataset(
+            true_effect=-0.15,
+            include_invalids=False,
+            seed=303,
+            task_noise_sd=0.10,
+            replicate_noise_sd=0.08,
+            observation_noise_sd=0.08,
+        )
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800)
+        self.assertNotEqual(report["decision"]["headline"], "improvement_supported")
+        self.assertLess(report["primary_analysis"]["effect_b_minus_a"], 0.0)
+
+    def test_null_false_positive_rate_is_calibrated(self) -> None:
+        supported = 0
+        simulations = 100
+        for seed in range(10_000, 10_000 + simulations):
+            rows = synthetic_dataset(
+                true_effect=0.0,
+                include_invalids=False,
+                seed=seed,
+                task_noise_sd=0.10,
+                replicate_noise_sd=0.08,
+                observation_noise_sd=0.08,
+            )
+            report = run_full_analysis(rows, cluster_resamples=300, wild_resamples=300)
+            supported += int(report["decision"]["headline"] == "improvement_supported")
+        false_positive_rate = supported / simulations
+        self.assertLessEqual(false_positive_rate, 0.10)
 
     def test_build_dataset_from_progress_preserves_provider_classification_and_hash_flag(self) -> None:
         progress_payload = [

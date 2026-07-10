@@ -55,6 +55,7 @@ True task failures remain in the dataset with their observed score, including ze
 The executable primary estimator is:
 - task-level paired mean difference in score (`B - A`)
 - one difference per task after averaging over replicates within condition
+- equal task weighting after invalid handling: each task contributes one paired difference, and tasks are not weighted by how many valid cells remain inside that task-condition after exclusion of infrastructure-invalid rows
 - small-cluster t inference over the 8 task-level differences
 
 This choice is frozen because the pinned Python stack available here does not provide a trustworthy Kenward-Roger implementation for the required mixed-model path. The script still fits a REML random-intercept mixed model and records its `B - A` coefficient as a concordance check, but the finite-sample inferential quantities used by the frozen report come from the task-cluster estimator above.
@@ -81,15 +82,25 @@ Manipulation checks are reported, not used as benefit endpoints:
 
 ## Synthetic validation freeze
 
-The scripts were validated on a synthetic dataset with a known built-in treatment effect before any Stage 2 real data existed.
+The scripts were validated on synthetic datasets before any Stage 2 real data existed.
 
-Frozen synthetic validation command:
+Frozen synthetic validation commands:
 
-`python benchmarks/grading-env/stage2_synthetic_smoke.py`
+- `python benchmarks/grading-env/stage2_synthetic_smoke.py`
+- `PYTHONPATH=src python -m pytest tests/test_stage2_analysis.py -q`
 
-Pass criterion:
-- the recovered primary effect must be within the configured tolerance of the known synthetic effect
-- the report must be generated end-to-end
+Frozen calibration checks now include:
+- positive control: a known positive true effect is recovered within tolerance
+- null control: `true_effect = 0.0` must not produce `improvement_supported`
+- sub-MME control: `true_effect = 0.05` must not produce `improvement_supported`
+- sign control: `true_effect = -0.15` must not produce `improvement_supported`
+- false-positive calibration: 100 synthetic null datasets with distinct seeds must keep the observed `improvement_supported` rate at or below 10% in the frozen regression suite
+
+Pass criteria:
+- the recovered primary effect matches the known positive synthetic effect within the configured tolerance
+- the report is generated end-to-end
+- the negative/null/sub-MME/sign controls all refuse `improvement_supported`
+- the null Monte Carlo calibration remains within the frozen bound above
 
 ## Environment freeze
 
