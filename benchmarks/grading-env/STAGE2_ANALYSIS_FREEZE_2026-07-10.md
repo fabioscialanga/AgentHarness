@@ -11,10 +11,14 @@ These scripts are frozen for Stage 2 analysis:
 - `benchmarks/grading-env/stage2_generate_synthetic_dataset.py`
 - `benchmarks/grading-env/stage2_synthetic_smoke.py`
 - `benchmarks/grading-env/stage2_power_curve.py`
+- `benchmarks/grading-env/stage2_null_identifiability_curve.py`
+- `benchmarks/grading-env/stage1_blind_variance_regime.py`
 - `tests/test_stage2_analysis.py`
 - `benchmarks/grading-env/stage2-analysis-requirements.txt`
 - `benchmarks/grading-env/STAGE2_POWER_CURVE_FREEZE_2026-07-10.json`
 - `benchmarks/grading-env/STAGE2_POWER_CURVE_FREEZE_2026-07-10.md`
+- `benchmarks/grading-env/STAGE2_NULL_IDENTIFIABILITY_FREEZE_2026-07-10.json`
+- `benchmarks/grading-env/STAGE2_NULL_IDENTIFIABILITY_FREEZE_2026-07-10.md`
 
 ## Frozen analysis outputs
 
@@ -109,11 +113,19 @@ Frozen calibration checks now include:
 - sign control: `true_effect = -0.15` must not produce `improvement_supported`
 - false-positive calibration: 100 synthetic null datasets with distinct seeds must keep the observed `improvement_supported` rate at or below 10% in the frozen regression suite
 - power-curve calibration: `python benchmarks/grading-env/stage2_power_curve.py` freezes the observed `improvement_supported` rate over the synthetic effect/noise grid before Stage 2 data exist
+- null-identifiability calibration: `python benchmarks/grading-env/stage2_null_identifiability_curve.py` freezes the observed `no_meaningful_effect` versus `inconclusive` rate at `true_effect = 0.00` across the same synthetic noise profiles
+- post-Stage-1 blind regime-matching script: `python benchmarks/grading-env/stage1_blind_variance_regime.py progress.json --output ...` estimates between-task and within-task-condition dispersion without ever computing an A-vs-B contrast
 
 Frozen power-curve highlights from the checked-in artifact:
 - at `true_effect = 0.12`, observed `improvement_supported` rates were `0.595` under `low_noise`, `0.170` under `medium_noise`, and `0.095` under `high_noise`
 - at `true_effect = 0.18`, observed `improvement_supported` rates were `1.000` under `low_noise`, `0.995` under `medium_noise`, and `0.885` under `high_noise`
 - therefore a later non-positive result must be interpreted against the frozen noise-conditional power profile rather than collapsed into a generic null claim
+
+Frozen null-identifiability highlights from the checked-in artifact:
+- at `true_effect = 0.00`, observed `no_meaningful_effect` rates were `1.000` under `low_noise`, `1.000` under `medium_noise`, and `0.985` under `high_noise`
+- corresponding `inconclusive` rates were `0.000`, `0.000`, and `0.015`
+- therefore the frozen decision rule can, in the synthetic regime family currently encoded, still emit an informative `no_meaningful_effect` verdict even when noise is medium or high
+- the remaining uncertainty is empirical regime-matching: after Stage 1 closes, blind variance estimation must determine which frozen synthetic regime is closest to the observed run without reading any A-vs-B contrast
 
 Pass criteria:
 - the recovered primary effect matches the known positive synthetic effect within the configured tolerance

@@ -1,0 +1,72 @@
+{
+  "mme": 0.1,
+  "true_effect": 0.0,
+  "simulations_per_profile": 200,
+  "task_weighting_rule": "equal_weight_per_task_unweighted_by_valid_cell_count",
+  "decision_rule": {
+    "improvement_supported": "primary ci lower bound strictly above mme",
+    "no_meaningful_effect": "primary ci upper bound strictly below mme",
+    "inconclusive": "all remaining cases"
+  },
+  "noise_profiles": [
+    {
+      "name": "low_noise",
+      "task_noise_sd": 0.05,
+      "replicate_noise_sd": 0.04,
+      "observation_noise_sd": 0.04
+    },
+    {
+      "name": "medium_noise",
+      "task_noise_sd": 0.1,
+      "replicate_noise_sd": 0.08,
+      "observation_noise_sd": 0.08
+    },
+    {
+      "name": "high_noise",
+      "task_noise_sd": 0.14,
+      "replicate_noise_sd": 0.1,
+      "observation_noise_sd": 0.1
+    }
+  ],
+  "rows": [
+    {
+      "noise_profile": "low_noise",
+      "task_noise_sd": 0.05,
+      "replicate_noise_sd": 0.04,
+      "observation_noise_sd": 0.04,
+      "simulations": 200,
+      "true_effect": 0.0,
+      "improvement_supported_rate": 0.0,
+      "no_meaningful_effect_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "mean_observed_effect": -0.0001866506250000015,
+      "mean_ci_upper": 0.018447869202732257
+    },
+    {
+      "noise_profile": "medium_noise",
+      "task_noise_sd": 0.1,
+      "replicate_noise_sd": 0.08,
+      "observation_noise_sd": 0.08,
+      "simulations": 200,
+      "true_effect": 0.0,
+      "improvement_supported_rate": 0.0,
+      "no_meaningful_effect_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "mean_observed_effect": -0.0007631254166666668,
+      "mean_ci_upper": 0.03587127615020803
+    },
+    {
+      "noise_profile": "high_noise",
+      "task_noise_sd": 0.14,
+      "replicate_noise_sd": 0.1,
+      "observation_noise_sd": 0.1,
+      "simulations": 200,
+      "true_effect": 0.0,
+      "improvement_supported_rate": 0.0,
+      "no_meaningful_effect_rate": 0.985,
+      "inconclusive_rate": 0.015,
+      "mean_observed_effect": 0.0024403432291666663,
+      "mean_ci_upper": 0.04583915417607121
+    }
+  ]
+}

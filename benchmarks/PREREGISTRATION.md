@@ -957,6 +957,26 @@ The Stage 2 freeze is extended again so that a final non-positive result cannot 
 
 This extension was implemented and tested before any Stage 2 data collection and without reading Stage 1 summary outputs or treatment contrasts.
 
+#### 17.14 Stage 2 null-identifiability and blind noise-regime extension (2026-07-10, before any Stage 2 data collection)
+The Stage 2 freeze is extended once more to separate two questions that had previously been conflated: (a) power to declare a meaningful improvement, and (b) power to declare the absence of a meaningful improvement.
+
+- correction 20: a null-identifiability freeze has now been generated at `true_effect = 0.00` across the frozen low / medium / high synthetic noise profiles
+  - artifact files: `STAGE2_NULL_IDENTIFIABILITY_FREEZE_2026-07-10.json` and `.md`
+  - replications: 200 synthetic datasets per noise profile
+  - reported quantities: rates of `no_meaningful_effect`, `inconclusive`, and `improvement_supported`
+  - frozen result: `no_meaningful_effect` occurred at rates `1.000` (low noise), `1.000` (medium noise), and `0.985` (high noise)
+- correction 21: the key remaining uncertainty is therefore not whether the frozen decision rule can ever emit `no_meaningful_effect`, but whether the live Stage 1 dispersion regime is closest to the low / medium / high synthetic family used by the frozen calibration artifacts
+- correction 22: a post-Stage-1 blind regime-matching script now exists and is frozen before any Stage 2 data collection
+  - script: `benchmarks/grading-env/stage1_blind_variance_regime.py`
+  - inputs: `progress.json` from a completed Stage 1 run
+  - output: a blind report containing between-task score dispersion, within-task-condition replicate dispersion, and nearest frozen synthetic noise profile
+  - explicit guardrail: it estimates dispersion only and does not compute or report any A-vs-B contrast
+- correction 23: campaign decisions remain deferred until that blind regime report exists on the completed Stage 1 run
+  - if the observed blind dispersion is compatible with a frozen regime where practical-effect detection is too weak for the intended claim, the campaign must be reconsidered before any contrast reading or Stage 2 launch
+  - the MME remains unchanged; no threshold-lowering amendment is introduced here
+
+This extension was implemented before any Stage 2 data collection and without reading Stage 1 summary outputs or treatment contrasts.
+
 ---
 
 ## Freeze
