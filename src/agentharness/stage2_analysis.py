@@ -335,7 +335,12 @@ def _try_mixedlm_effect(rows: list[dict[str, Any]]) -> tuple[float | None, bool 
         return None, False, repr(exc)
 
 
-def primary_analysis(rows: list[dict[str, Any]], *, mme: float = MME_DEFAULT) -> PrimaryAnalysisResult:
+def primary_analysis(
+    rows: list[dict[str, Any]],
+    *,
+    mme: float = MME_DEFAULT,
+    include_mixedlm: bool = True,
+) -> PrimaryAnalysisResult:
     diffs = _task_differences(rows)
     values = [float(row["diff"]) for row in diffs]
     n_tasks = len(values)
@@ -355,7 +360,9 @@ def primary_analysis(rows: list[dict[str, Any]], *, mme: float = MME_DEFAULT) ->
         critical = _t_quantile(0.975, df)
         ci_lower = effect - critical * se
         ci_upper = effect + critical * se
-    mixedlm_effect, mixedlm_converged, mixedlm_note = _try_mixedlm_effect(rows)
+    mixedlm_effect, mixedlm_converged, mixedlm_note = (None, None, "mixedlm skipped")
+    if include_mixedlm:
+        mixedlm_effect, mixedlm_converged, mixedlm_note = _try_mixedlm_effect(rows)
     return PrimaryAnalysisResult(
         method="paired task-level mean difference with small-cluster t inference",
         task_weighting_rule=TASK_WEIGHTING_RULE,
@@ -560,6 +567,14 @@ def synthetic_dataset(
     return rows
 
 
+def decision_headline(primary: PrimaryAnalysisResult) -> str:
+    if primary.ci_lower > primary.mme:
+        return "improvement_supported"
+    if primary.ci_upper < primary.mme:
+        return "no_meaningful_effect"
+    return "inconclusive"
+
+
 def run_full_analysis(
     rows: list[dict[str, Any]],
     *,
@@ -568,9 +583,10 @@ def run_full_analysis(
     cluster_resamples: int = CLUSTER_BOOTSTRAP_RESAMPLES_DEFAULT,
     wild_seed: int = WILD_BOOTSTRAP_SEED_DEFAULT,
     wild_resamples: int = WILD_BOOTSTRAP_RESAMPLES_DEFAULT,
+    include_mixedlm: bool = True,
 ) -> dict[str, Any]:
     primary_rows = apply_invalid_policy(rows, "exclude_infrastructure_invalids")
-    primary = primary_analysis(primary_rows, mme=mme)
+    primary = primary_analysis(primary_rows, mme=mme, include_mixedlm=include_mixedlm)
     cluster = cluster_bootstrap(primary_rows, seed=cluster_seed, resamples=cluster_resamples, mme=mme)
     wild = wild_cluster_bootstrap(primary_rows, seed=wild_seed, resamples=wild_resamples, mme=mme)
     loto = leave_one_task_out(primary_rows, mme=mme)
@@ -579,16 +595,26 @@ def run_full_analysis(
     summary = summarize_dataset(rows)
     manipulation = manipulation_checks(rows)
     decision = {
+        "rule": {
+            "improvement_supported": "primary ci lower bound strictly above mme",
+            "no_meaningful_effect": "primary ci upper bound strictly below mme",
+            "inconclusive": "all remaining cases",
+        },
         "mixed_model_favors_b": primary.effect_b_minus_a > 0.0,
         "cluster_bootstrap_favors_b": cluster.effect_b_minus_a > 0.0,
         "ci_entirely_above_zero": primary.ci_entirely_above_zero,
         "mme_cleared": primary.mme_cleared,
         "not_driven_by_single_task": all(row.ci_entirely_above_zero for row in loto),
-        "headline": _headline_from_results(primary, cluster, loto),
+        "headline": decision_headline(primary),
     }
     return {
         "analysis_spec": {
             "task_weighting_rule": TASK_WEIGHTING_RULE,
+            "decision_rule": {
+                "improvement_supported": "primary ci lower bound strictly above mme",
+                "no_meaningful_effect": "primary ci upper bound strictly below mme",
+                "inconclusive": "all remaining cases",
+            },
             "primary_invalid_policy": "exclude_infrastructure_invalids",
             "sensitivity_invalid_policy": "count_infrastructure_invalids_as_zero",
         },
@@ -605,24 +631,6 @@ def run_full_analysis(
         "manipulation_checks": [asdict(row) for row in manipulation],
         "decision": decision,
     }
-
-
-def _headline_from_results(
-    primary: PrimaryAnalysisResult,
-    cluster: BootstrapResult,
-    loto: list[LeaveOneTaskOutRow],
-) -> str:
-    if (
-        primary.effect_b_minus_a > 0.0
-        and cluster.effect_b_minus_a > 0.0
-        and primary.ci_entirely_above_zero
-        and primary.mme_cleared
-        and all(row.ci_entirely_above_zero for row in loto)
-    ):
-        return "improvement_supported"
-    if primary.effect_b_minus_a <= 0.0 and cluster.effect_b_minus_a <= 0.0:
-        return "no_effect_detected"
-    return "mixed_evidence"
 
 
 def _cli() -> argparse.Namespace:

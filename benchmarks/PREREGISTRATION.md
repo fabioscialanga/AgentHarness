@@ -933,6 +933,30 @@ The Stage 2 freeze is extended to verify that the analysis code can say "no" und
 
 This extension was implemented and tested before any Stage 2 data collection and without reading Stage 1 summary outputs or treatment contrasts.
 
+#### 17.13 Stage 2 decision-rule and power-curve extension (2026-07-10, before any Stage 2 data collection)
+The Stage 2 freeze is extended again so that a final non-positive result cannot be over-interpreted as evidence of no meaningful effect unless the frozen decision rule actually supports that conclusion.
+
+- correction 16: the frozen top-line decision now emits exactly three states from the primary task-cluster confidence interval relative to the MME of `0.10`
+  - `improvement_supported` if the primary CI lower bound is strictly greater than `0.10`
+  - `no_meaningful_effect` if the primary CI upper bound is strictly less than `0.10`
+  - `inconclusive` otherwise
+- correction 17: the frozen regression suite now includes synthetic cases that explicitly produce each of the three decision states
+  - positive-effect control for `improvement_supported`
+  - null / negative controls for `no_meaningful_effect`
+  - above-MME but noisy control for `inconclusive`
+- correction 18: a synthetic power-curve freeze has now been generated and versioned before any Stage 2 real data collection
+  - effects grid: `0.05, 0.10, 0.12, 0.15, 0.18, 0.25`
+  - noise grid: low / medium / high synthetic noise profiles
+  - replications: 200 synthetic datasets per effect × noise cell
+  - frozen output artifacts: `STAGE2_POWER_CURVE_FREEZE_2026-07-10.json` and `.md`
+  - reported quantity: observed rate of `improvement_supported`, plus complementary `no_meaningful_effect` and `inconclusive` rates
+  - frozen examples: for `true_effect = 0.12`, observed `improvement_supported` rates are `0.595` (low noise), `0.170` (medium noise), and `0.095` (high noise)
+- correction 19: the Stage 2 interpretation rule is now pre-bound to this three-state logic
+  - a final CI entirely below the MME supports `no_meaningful_effect`
+  - a final CI straddling the MME is `inconclusive`, not a null claim
+
+This extension was implemented and tested before any Stage 2 data collection and without reading Stage 1 summary outputs or treatment contrasts.
+
 ---
 
 ## Freeze

@@ -10,8 +10,11 @@ These scripts are frozen for Stage 2 analysis:
 - `benchmarks/grading-env/stage2_run_analysis.py`
 - `benchmarks/grading-env/stage2_generate_synthetic_dataset.py`
 - `benchmarks/grading-env/stage2_synthetic_smoke.py`
+- `benchmarks/grading-env/stage2_power_curve.py`
 - `tests/test_stage2_analysis.py`
 - `benchmarks/grading-env/stage2-analysis-requirements.txt`
+- `benchmarks/grading-env/STAGE2_POWER_CURVE_FREEZE_2026-07-10.json`
+- `benchmarks/grading-env/STAGE2_POWER_CURVE_FREEZE_2026-07-10.md`
 
 ## Frozen analysis outputs
 
@@ -62,6 +65,15 @@ This choice is frozen because the pinned Python stack available here does not pr
 
 This is a substantive pre-analysis execution freeze, not a post-hoc analytic convenience.
 
+## Frozen decision rule
+
+The frozen top-line decision emits exactly three states from the primary task-cluster confidence interval relative to the MME of `0.10`:
+- `improvement_supported` if the primary CI lower bound is strictly greater than `0.10`
+- `no_meaningful_effect` if the primary CI upper bound is strictly less than `0.10`
+- `inconclusive` otherwise
+
+This rule is frozen before any Stage 2 real data and is the basis for distinguishing an interpretable null from a power-limited non-result.
+
 ### Frozen robustness analyses
 
 - cluster bootstrap over task-level paired differences
@@ -91,16 +103,25 @@ Frozen synthetic validation commands:
 
 Frozen calibration checks now include:
 - positive control: a known positive true effect is recovered within tolerance
+- three-state decision control: synthetic cases must produce `improvement_supported`, `no_meaningful_effect`, and `inconclusive`
 - null control: `true_effect = 0.0` must not produce `improvement_supported`
 - sub-MME control: `true_effect = 0.05` must not produce `improvement_supported`
 - sign control: `true_effect = -0.15` must not produce `improvement_supported`
 - false-positive calibration: 100 synthetic null datasets with distinct seeds must keep the observed `improvement_supported` rate at or below 10% in the frozen regression suite
+- power-curve calibration: `python benchmarks/grading-env/stage2_power_curve.py` freezes the observed `improvement_supported` rate over the synthetic effect/noise grid before Stage 2 data exist
+
+Frozen power-curve highlights from the checked-in artifact:
+- at `true_effect = 0.12`, observed `improvement_supported` rates were `0.595` under `low_noise`, `0.170` under `medium_noise`, and `0.095` under `high_noise`
+- at `true_effect = 0.18`, observed `improvement_supported` rates were `1.000` under `low_noise`, `0.995` under `medium_noise`, and `0.885` under `high_noise`
+- therefore a later non-positive result must be interpreted against the frozen noise-conditional power profile rather than collapsed into a generic null claim
 
 Pass criteria:
 - the recovered primary effect matches the known positive synthetic effect within the configured tolerance
 - the report is generated end-to-end
+- the three-state calibration cases emit the intended verdicts
 - the negative/null/sub-MME/sign controls all refuse `improvement_supported`
 - the null Monte Carlo calibration remains within the frozen bound above
+- the power-curve artifacts are regenerated without consulting any Stage 1 summary or Stage 2 real data
 
 ## Environment freeze
 

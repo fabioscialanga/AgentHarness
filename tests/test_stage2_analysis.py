@@ -13,6 +13,7 @@ from agentharness.stage2_analysis import (
     WILD_BOOTSTRAP_SEED_DEFAULT,
     apply_invalid_policy,
     build_dataset_from_progress,
+    decision_headline,
     load_analysis_dataset,
     manipulation_checks,
     primary_analysis,
@@ -29,7 +30,7 @@ HAS_ANALYSIS_DEPS = all(importlib.util.find_spec(name) is not None for name in (
 class Stage2AnalysisTests(unittest.TestCase):
     def test_synthetic_primary_effect_recovers_known_effect(self) -> None:
         rows = synthetic_dataset(true_effect=0.18, include_invalids=False)
-        result = primary_analysis(rows, mme=MME_DEFAULT)
+        result = primary_analysis(rows, mme=MME_DEFAULT, include_mixedlm=False)
         self.assertAlmostEqual(result.effect_b_minus_a, 0.18, places=6)
         self.assertEqual(result.task_weighting_rule, TASK_WEIGHTING_RULE)
         self.assertTrue(result.ci_entirely_above_zero)
@@ -37,8 +38,16 @@ class Stage2AnalysisTests(unittest.TestCase):
 
     def test_invalid_sensitivity_zero_is_weaker_than_exclusion(self) -> None:
         rows = synthetic_dataset(true_effect=0.18, include_invalids=True)
-        excluded = primary_analysis(apply_invalid_policy(rows, "exclude_infrastructure_invalids"), mme=MME_DEFAULT)
-        zeroed = primary_analysis(apply_invalid_policy(rows, "count_infrastructure_invalids_as_zero"), mme=MME_DEFAULT)
+        excluded = primary_analysis(
+            apply_invalid_policy(rows, "exclude_infrastructure_invalids"),
+            mme=MME_DEFAULT,
+            include_mixedlm=False,
+        )
+        zeroed = primary_analysis(
+            apply_invalid_policy(rows, "count_infrastructure_invalids_as_zero"),
+            mme=MME_DEFAULT,
+            include_mixedlm=False,
+        )
         self.assertLess(zeroed.effect_b_minus_a, excluded.effect_b_minus_a)
 
     def test_manipulation_checks_measure_hash_change_in_both_conditions(self) -> None:
@@ -60,9 +69,43 @@ class Stage2AnalysisTests(unittest.TestCase):
         )
         self.assertEqual(report["decision"]["headline"], "improvement_supported")
         self.assertEqual(report["analysis_spec"]["task_weighting_rule"], TASK_WEIGHTING_RULE)
+        self.assertEqual(report["analysis_spec"]["decision_rule"]["no_meaningful_effect"], "primary ci upper bound strictly below mme")
         self.assertIn("cluster_bootstrap", report)
         self.assertIn("wild_cluster_bootstrap", report)
         self.assertEqual(len(report["leave_one_task_out"]), 8)
+
+    def test_decision_rule_emits_improvement_supported_when_ci_lower_exceeds_mme(self) -> None:
+        rows = synthetic_dataset(true_effect=0.18, include_invalids=False)
+        result = primary_analysis(rows, mme=MME_DEFAULT, include_mixedlm=False)
+        self.assertGreater(result.ci_lower, MME_DEFAULT)
+        self.assertEqual(decision_headline(result), "improvement_supported")
+
+    def test_decision_rule_emits_no_meaningful_effect_when_ci_upper_below_mme(self) -> None:
+        rows = synthetic_dataset(
+            true_effect=0.0,
+            include_invalids=False,
+            seed=1,
+            task_noise_sd=0.05,
+            replicate_noise_sd=0.04,
+            observation_noise_sd=0.04,
+        )
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800, include_mixedlm=False)
+        self.assertEqual(report["decision"]["headline"], "no_meaningful_effect")
+        self.assertLess(report["primary_analysis"]["ci_upper"], MME_DEFAULT)
+
+    def test_decision_rule_emits_inconclusive_when_ci_crosses_mme(self) -> None:
+        rows = synthetic_dataset(
+            true_effect=0.12,
+            include_invalids=False,
+            seed=1,
+            task_noise_sd=0.14,
+            replicate_noise_sd=0.10,
+            observation_noise_sd=0.10,
+        )
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800, include_mixedlm=False)
+        self.assertEqual(report["decision"]["headline"], "inconclusive")
+        self.assertLessEqual(report["primary_analysis"]["ci_lower"], MME_DEFAULT)
+        self.assertGreaterEqual(report["primary_analysis"]["ci_upper"], MME_DEFAULT)
 
     def test_true_zero_effect_does_not_return_improvement_supported(self) -> None:
         rows = synthetic_dataset(
@@ -73,7 +116,7 @@ class Stage2AnalysisTests(unittest.TestCase):
             replicate_noise_sd=0.08,
             observation_noise_sd=0.08,
         )
-        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800)
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800, include_mixedlm=False)
         self.assertNotEqual(report["decision"]["headline"], "improvement_supported")
 
     def test_true_effect_below_mme_does_not_return_improvement_supported(self) -> None:
@@ -85,21 +128,21 @@ class Stage2AnalysisTests(unittest.TestCase):
             replicate_noise_sd=0.08,
             observation_noise_sd=0.08,
         )
-        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800)
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800, include_mixedlm=False)
         self.assertNotEqual(report["decision"]["headline"], "improvement_supported")
         self.assertLess(report["primary_analysis"]["mme"], 0.11)
 
-    def test_negative_true_effect_does_not_return_improvement_supported(self) -> None:
+    def test_negative_true_effect_returns_no_meaningful_effect(self) -> None:
         rows = synthetic_dataset(
             true_effect=-0.15,
             include_invalids=False,
-            seed=303,
-            task_noise_sd=0.10,
-            replicate_noise_sd=0.08,
-            observation_noise_sd=0.08,
+            seed=1,
+            task_noise_sd=0.08,
+            replicate_noise_sd=0.06,
+            observation_noise_sd=0.06,
         )
-        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800)
-        self.assertNotEqual(report["decision"]["headline"], "improvement_supported")
+        report = run_full_analysis(rows, cluster_resamples=800, wild_resamples=800, include_mixedlm=False)
+        self.assertEqual(report["decision"]["headline"], "no_meaningful_effect")
         self.assertLess(report["primary_analysis"]["effect_b_minus_a"], 0.0)
 
     def test_null_false_positive_rate_is_calibrated(self) -> None:
@@ -114,7 +157,12 @@ class Stage2AnalysisTests(unittest.TestCase):
                 replicate_noise_sd=0.08,
                 observation_noise_sd=0.08,
             )
-            report = run_full_analysis(rows, cluster_resamples=300, wild_resamples=300)
+            report = run_full_analysis(
+                rows,
+                cluster_resamples=300,
+                wild_resamples=300,
+                include_mixedlm=False,
+            )
             supported += int(report["decision"]["headline"] == "improvement_supported")
         false_positive_rate = supported / simulations
         self.assertLessEqual(false_positive_rate, 0.10)
