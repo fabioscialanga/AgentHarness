@@ -904,6 +904,18 @@ A fresh unread Stage 1 relaunch attempt was aborted immediately after the first 
   - reason: it changes which benchmark solutions are recognized as valid hidden-evaluation candidates under the preregistered task semantics
   - analyzable Stage 1 and Stage 2 runs must therefore use a commit that includes both the correction-9 discovery fix and the correction-10 SSE-stall provider classification fix
 
+#### 17.11 Stage 2 analysis-stack freeze (2026-07-10, before any Stage 2 data collection)
+The Stage 2 inferential scripts now exist, were tested on synthetic data with a known built-in effect, and are frozen before any Stage 2 real data collection. No Stage 1 summary outputs or treatment contrasts were used to shape these scripts.
+
+- correction 11: the executable Stage 2 analysis stack is frozen in versioned code and a dated freeze note before Stage 2 launch
+  - frozen files include `src/agentharness/stage2_analysis.py`, `benchmarks/grading-env/stage2_build_dataset.py`, `benchmarks/grading-env/stage2_run_analysis.py`, `benchmarks/grading-env/stage2_generate_synthetic_dataset.py`, `benchmarks/grading-env/stage2_synthetic_smoke.py`, `tests/test_stage2_analysis.py`, and `benchmarks/grading-env/STAGE2_ANALYSIS_FREEZE_2026-07-10.md`
+  - the scripts were validated end-to-end on a synthetic dataset whose true `B - A` effect is known by construction, and the recovered effect had to match that truth within a fixed tolerance before freeze
+  - the frozen robustness set includes cluster bootstrap, wild cluster bootstrap, leave-one-task-out, invalid-policy sensitivity, and the manipulation check based on attempt-versus-repair solution-hash change in both arms
+- correction 12: because the pinned Python stack available here does not provide a dependable Kenward-Roger implementation for the planned random-intercept model, the executable finite-sample primary inference is frozen as task-level paired mean differences with small-cluster t inference over tasks
+  - the REML random-intercept mixed-model coefficient is still emitted as a concordance estimate in the report
+  - the primary inferential quantities used for the frozen report come from the task-cluster estimator, not from an unavailable or guessed Kenward-Roger routine
+  - this is declared now, before Stage 2 data exist, as a substantive analytic-execution amendment rather than a silent implementation substitution
+
 ---
 
 ## Freeze
