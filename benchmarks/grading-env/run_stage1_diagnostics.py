@@ -68,6 +68,38 @@ PYTEST_TIMEOUT_SECONDS = int(os.environ.get("STAGE1_PYTEST_TIMEOUT_SECONDS", "18
 RUNS_ROOT.mkdir(parents=True, exist_ok=True)
 
 
+def _git_commit(repo: Path) -> str:
+    return subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _write_run_provenance() -> dict[str, object]:
+    launcher_repo = Path(__file__).resolve().parents[2]
+    payload = {
+        "stage": "stage1",
+        "launcher_repo_path": str(launcher_repo),
+        "launcher_commit": _git_commit(launcher_repo),
+        "target_repo_path": str(TARGET_REPO),
+        "target_repo_commit": _git_commit(TARGET_REPO),
+        "provider": os.environ.get("STAGE1_PROVIDER", "openai-codex"),
+        "model": os.environ.get("STAGE1_MODEL", "gpt-5.4"),
+        "max_turns": os.environ.get("STAGE1_MAX_TURNS", "40"),
+        "agent_timeout_seconds": AGENT_TIMEOUT_SECONDS,
+        "pytest_timeout_seconds": PYTEST_TIMEOUT_SECONDS,
+        "inter_cell_delay_seconds": INTER_CELL_DELAY_SECONDS,
+        "seed": SEED,
+        "runs_root": str(RUNS_ROOT),
+        "launched_at": bc._utc_now(),
+        "launched_by_script": str(Path(__file__).resolve()),
+    }
+    (RUNS_ROOT / "run-provenance.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
 class FixedHermesInvoker(bc.HermesCliInvoker):
     def __init__(self) -> None:
         super().__init__(
@@ -206,6 +238,7 @@ def enforced_run_workspace_pytest(workspace: Path, report_path: Path) -> dict[st
 
 def main() -> int:
     bc.run_workspace_pytest = enforced_run_workspace_pytest
+    run_provenance = _write_run_provenance()
 
     cells: list[dict[str, str]] = []
     for task in TASKS:
@@ -282,6 +315,7 @@ def main() -> int:
     summary: dict[str, object] = {
         "seed": SEED,
         "runs_root": str(RUNS_ROOT),
+        "run_provenance": run_provenance,
         "cells_total": len(results),
         "by_condition": {},
         "by_task_condition": {},
@@ -304,6 +338,11 @@ def main() -> int:
             )
         ]
         provider_unavailable = [r for r in invalids if _is_provider_unavailable_record(r)]
+        changed_hash_count = sum(
+            1
+            for f in finals
+            if isinstance(f, dict) and bool(f.get("solution_hash_changed_between_attempt_and_repair"))
+        )
         summary["by_condition"][condition] = {
             "n": len(finals),
             "mean_score": (sum(scores) / len(scores)) if scores else 0.0,
@@ -312,6 +351,7 @@ def main() -> int:
             "under_ceiling_count": sum(1 for s in scores if s < 1.0),
             "harness_invalid_count": len(invalids),
             "provider_unavailable_count": len(provider_unavailable),
+            "solution_hash_changed_count": changed_hash_count,
         }
     for task in TASKS:
         for condition in CONDITIONS:

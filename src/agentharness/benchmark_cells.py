@@ -73,6 +73,7 @@ class AgentAttempt:
 @dataclass
 class AgentInvocationResult:
     attempts: list[AgentAttempt]
+    attempt_solution_hashes: dict[str, str | None] | None = None
 
     def to_dict(self) -> list[dict[str, object]]:
         return [attempt.to_dict() for attempt in self.attempts]
@@ -124,6 +125,7 @@ class HermesCliInvoker:
         attempts_dir.mkdir(parents=True, exist_ok=True)
 
         attempts: list[AgentAttempt] = []
+        attempt_solution_hashes: dict[str, str | None] = {}
         initial_prompt = _build_initial_prompt(
             task_id=task_id,
             condition=condition,
@@ -139,6 +141,9 @@ class HermesCliInvoker:
                 outputs_dir=attempts_dir,
                 workspace=workspace,
             )
+        )
+        attempt_solution_hashes["attempt_1_initial"] = (
+            compute_solution_hash(workspace) if rel_solution_files(workspace) else None
         )
 
         pytest_report = outputs_dir / "pre-repair-pytest.json"
@@ -195,7 +200,10 @@ class HermesCliInvoker:
                 workspace=workspace,
             )
         )
-        return AgentInvocationResult(attempts=attempts)
+        attempt_solution_hashes["attempt_2_repair"] = (
+            compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+        )
+        return AgentInvocationResult(attempts=attempts, attempt_solution_hashes=attempt_solution_hashes)
 
     def _invoke(self, *, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path, workspace: Path) -> AgentAttempt:
         command = [
@@ -366,6 +374,8 @@ def _write_invalid_cell_artifacts(
         "run_id": run_id,
         "workspace": str(workspace),
         "solution_hash": f"{execution_status}:{task_id}:{condition}:{replicate_id}",
+        "attempt_solution_hashes": invocation_result.attempt_solution_hashes or {},
+        "solution_hash_changed_between_attempt_and_repair": False,
         "attempt_count": len(invocation_result.attempts),
         "attempts": invocation_result.to_dict(),
         "pytest": None,
@@ -384,6 +394,8 @@ def _write_invalid_cell_artifacts(
         "benchmark_outcome_status": outcome_status,
         "benchmark_classification_reason": classification_reason,
         "solution_hash": provenance["solution_hash"],
+        "attempt_solution_hashes": provenance["attempt_solution_hashes"],
+        "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
         "attempt_count": provenance["attempt_count"],
     }
     (cell_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
@@ -788,12 +800,19 @@ def write_provenance(
         "run_id": manifest["run_id"],
         "workspace": str(workspace),
         "solution_hash": compute_solution_hash(workspace),
+        "attempt_solution_hashes": invocation_result.attempt_solution_hashes or {},
+        "solution_hash_changed_between_attempt_and_repair": _solution_hash_changed_between_attempt_and_repair(invocation_result),
         "attempt_count": len(invocation_result.attempts),
         "attempts": invocation_result.to_dict(),
         "pytest": pytest_result,
     }
     provenance_path.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
     return provenance
+
+
+def _solution_hash_changed_between_attempt_and_repair(invocation_result: AgentInvocationResult) -> bool:
+    hashes = invocation_result.attempt_solution_hashes or {}
+    return hashes.get("attempt_1_initial") != hashes.get("attempt_2_repair")
 
 
 def _clear_cell_runtime_artifacts(cell_dir: Path, workspace: Path, task_id: str, run_id: str) -> None:
@@ -900,6 +919,8 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
         "benchmark_classification_reason": benchmark_payload.get("classification_reason"),
         "solution_hash": provenance["solution_hash"],
+        "attempt_solution_hashes": provenance["attempt_solution_hashes"],
+        "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
         "attempt_count": provenance["attempt_count"],
     }
     (cell_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
@@ -920,6 +941,8 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "score": score_from_evaluation(eval_payload),
         "evaluation_summary": eval_payload.get("summary", {}),
         "solution_hash": provenance["solution_hash"],
+        "attempt_solution_hashes": provenance["attempt_solution_hashes"],
+        "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
         "attempt_count": provenance["attempt_count"],
     }
 

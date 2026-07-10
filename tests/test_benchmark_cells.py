@@ -72,7 +72,13 @@ class _FakeInvoker:
                     duration_seconds=1.0,
                 )
             )
-        return AgentInvocationResult(attempts=attempts)
+        return AgentInvocationResult(
+            attempts=attempts,
+            attempt_solution_hashes={
+                "attempt_1_initial": f"initial_{condition}_{replicate_id}",
+                "attempt_2_repair": f"repair_{condition}_{replicate_id}",
+            },
+        )
 
 
 class _EmptyWorkspaceInvoker:
@@ -290,6 +296,17 @@ class BenchmarkCellsTests(unittest.TestCase):
             self.assertEqual(result["attempt_count"], 2)
             self.assertTrue(provenance["solution_hash"])
             self.assertEqual(provenance["solution_hash"], result["solution_hash"])
+            self.assertEqual(
+                provenance["attempt_solution_hashes"],
+                {
+                    "attempt_1_initial": "initial_A-baseline_r1",
+                    "attempt_2_repair": "repair_A-baseline_r1",
+                },
+            )
+            self.assertTrue(provenance["solution_hash_changed_between_attempt_and_repair"])
+            self.assertTrue(result["solution_hash_changed_between_attempt_and_repair"])
+            metadata = json.loads((cell_dir / "metadata.json").read_text(encoding="utf-8"))
+            self.assertTrue(metadata["solution_hash_changed_between_attempt_and_repair"])
             self.assertTrue((cell_dir / "run.json").is_file())
             self.assertTrue((cell_dir / "claims.json").is_file())
 
