@@ -977,6 +977,22 @@ The Stage 2 freeze is extended once more to separate two questions that had prev
 
 This extension was implemented before any Stage 2 data collection and without reading Stage 1 summary outputs or treatment contrasts.
 
+#### 17.15 Treatment-delivery amendment (2026-07-11, after blind regime matching and before any treatment-contrast reading from the current Stage 1 run)
+A manipulation check on the completed Stage 1 run found that the intended pre-repair `verify-run` feedback artifact was not delivered to the AgentHarness repair pass in condition B. This amendment records that delivery failure, freezes the corrective gate, and forbids treatment-effect interpretation of the current run.
+
+- correction 24: the Stage 1 run completed on launcher commit `e5600bd` is not interpretable as an A-vs-B treatment-effect run
+  - empirical finding: across the completed Stage 1 artifacts, the expected file `outputs/pre-repair-verify-run-report.json` was absent in all `24/24` condition-B cells
+  - consequence: the intended B-arm treatment was not observably delivered, so the current run cannot support any estimate of treatment effect and may be used only for harness diagnosis
+- correction 25: treatment delivery is now a symmetric harness gate on both arms
+  - in condition B, treatment delivery requires a written, non-empty, parseable pre-repair `verify-run` report that contains explicit `feedback`
+  - in condition A, treatment delivery requires that the repair-pass treatment prompt itself be materialized and delivered rather than silently skipped by the harness
+  - if the required treatment artifact for either arm is missing, empty, malformed, or otherwise not delivered, the cell must short-circuit before repair and be recorded as `benchmark_execution_status = harness_invalid` with `benchmark_classification_reason = treatment_not_delivered`
+  - these cells are experiment-invalid infrastructure exclusions, not task-solving failures, and must be counted explicitly in run summaries
+- correction 26: `run_verify_run` and the `verify-run` command must verify real report persistence, not only stdout
+  - passing `--report-path` must cause the report to be written at that exact path in the real runtime context
+  - the wrapper must surface whether the report exists, is non-empty, is parseable JSON, and contains explicit `feedback`, so the arm-level gate can reject silent treatment loss automatically
+- declaration on current Stage 1 campaign status: no A-vs-B contrast from the current Stage 1 run may be read or interpreted as a treatment effect until the treatment-delivery channel is repaired and Stage 1 is rerun on the corrected benchmark code
+
 ---
 
 ## Freeze

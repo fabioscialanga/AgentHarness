@@ -157,40 +157,56 @@ class HermesCliInvoker:
                 invocation_result=AgentInvocationResult(attempts=attempts),
             ) from exc
 
-        if condition == "A-baseline":
-            repair_prompt = _build_baseline_repair_prompt(
-                task_id=task_id,
-                workspace=workspace,
-                spec_path=spec_path,
-                pytest_stdout_path=str(pytest_result["stdout_path"]),
-                pytest_stderr_path=str(pytest_result["stderr_path"]),
-            )
-        else:
-            verify_feedback_path = outputs_dir / "pre-repair-verify-run-report.json"
-            provisional_run_path = outputs_dir / "pre-repair-run.json"
-            provisional_claims_path = outputs_dir / "pre-repair-claims.json"
-            write_run_json(
-                run_path=provisional_run_path,
-                manifest=manifest,
-                workspace=workspace,
-                pytest_exit=int(str(pytest_result["exit_code"])),
-                pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
-                pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
-            )
-            render_claims_json(run_id=run_id, claims_template_path=claims_template_path, claims_path=provisional_claims_path)
-            run_verify_run(
-                run_path=provisional_run_path,
-                claims_path=provisional_claims_path,
-                report_path=verify_feedback_path,
-            )
-            repair_prompt = _build_agentharness_repair_prompt(
-                task_id=task_id,
-                workspace=workspace,
-                spec_path=spec_path,
-                pytest_stdout_path=str(pytest_result["stdout_path"]),
-                pytest_stderr_path=str(pytest_result["stderr_path"]),
-                verify_feedback_path=verify_feedback_path,
-            )
+        repair_prompt_path = outputs_dir / "pre-repair-treatment-prompt.txt"
+        try:
+            if condition == "A-baseline":
+                repair_prompt = _build_baseline_repair_prompt(
+                    task_id=task_id,
+                    workspace=workspace,
+                    spec_path=spec_path,
+                    pytest_stdout_path=str(pytest_result["stdout_path"]),
+                    pytest_stderr_path=str(pytest_result["stderr_path"]),
+                )
+                _write_repair_treatment_prompt(prompt=repair_prompt, prompt_path=repair_prompt_path)
+            else:
+                verify_feedback_path = outputs_dir / "pre-repair-verify-run-report.json"
+                provisional_run_path = outputs_dir / "pre-repair-run.json"
+                provisional_claims_path = outputs_dir / "pre-repair-claims.json"
+                write_run_json(
+                    run_path=provisional_run_path,
+                    manifest=manifest,
+                    workspace=workspace,
+                    pytest_exit=int(str(pytest_result["exit_code"])),
+                    pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
+                    pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
+                )
+                render_claims_json(run_id=run_id, claims_template_path=claims_template_path, claims_path=provisional_claims_path)
+                verify_payload = run_verify_run(
+                    run_path=provisional_run_path,
+                    claims_path=provisional_claims_path,
+                    report_path=verify_feedback_path,
+                )
+                _require_verify_feedback_delivery(verify_payload)
+                repair_prompt = _build_agentharness_repair_prompt(
+                    task_id=task_id,
+                    workspace=workspace,
+                    spec_path=spec_path,
+                    pytest_stdout_path=str(pytest_result["stdout_path"]),
+                    pytest_stderr_path=str(pytest_result["stderr_path"]),
+                    verify_feedback_path=verify_feedback_path,
+                )
+                _write_repair_treatment_prompt(prompt=repair_prompt, prompt_path=repair_prompt_path)
+        except ClassifiedCellFailure as exc:
+            if exc.invocation_result is not None:
+                raise
+            raise ClassifiedCellFailure(
+                exc.execution_status,
+                exc.classification_reason,
+                invocation_result=AgentInvocationResult(
+                    attempts=list(attempts),
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                ),
+            ) from exc
 
         attempts.append(
             self._invoke(
@@ -633,6 +649,81 @@ def render_claims_json(*, run_id: str, claims_template_path: Path, claims_path: 
     claims_path.write_text(json.dumps(rendered_claims, indent=2) + "\n", encoding="utf-8")
 
 
+def _inspect_verify_feedback_report(report_path: Path) -> dict[str, object]:
+    payload: dict[str, object] | None = None
+    if not report_path.is_file():
+        return {
+            "report_path": str(report_path),
+            "report_exists": False,
+            "report_nonempty": False,
+            "report_valid": False,
+            "report_error": "report_missing",
+            "report_payload": None,
+        }
+    if report_path.stat().st_size <= 0:
+        return {
+            "report_path": str(report_path),
+            "report_exists": True,
+            "report_nonempty": False,
+            "report_valid": False,
+            "report_error": "report_empty",
+            "report_payload": None,
+        }
+    try:
+        payload = json.loads(report_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return {
+            "report_path": str(report_path),
+            "report_exists": True,
+            "report_nonempty": True,
+            "report_valid": False,
+            "report_error": f"report_invalid_json:{exc.msg}",
+            "report_payload": None,
+        }
+    feedback = payload.get("feedback") if isinstance(payload, dict) else None
+    if not isinstance(feedback, dict):
+        return {
+            "report_path": str(report_path),
+            "report_exists": True,
+            "report_nonempty": True,
+            "report_valid": False,
+            "report_error": "report_missing_feedback",
+            "report_payload": payload,
+        }
+    feedback_items = feedback.get("items")
+    if not isinstance(feedback_items, list) or not feedback_items:
+        return {
+            "report_path": str(report_path),
+            "report_exists": True,
+            "report_nonempty": True,
+            "report_valid": False,
+            "report_error": "report_missing_feedback",
+            "report_payload": payload,
+        }
+    return {
+        "report_path": str(report_path),
+        "report_exists": True,
+        "report_nonempty": True,
+        "report_valid": True,
+        "report_error": None,
+        "report_payload": payload,
+    }
+
+
+def _write_repair_treatment_prompt(*, prompt: str, prompt_path: Path) -> None:
+    if not prompt.strip():
+        raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
+    prompt_path.parent.mkdir(parents=True, exist_ok=True)
+    prompt_path.write_text(prompt, encoding="utf-8")
+    if prompt_path.stat().st_size <= 0:
+        raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
+
+
+def _require_verify_feedback_delivery(verify_payload: dict[str, object]) -> None:
+    if not bool(verify_payload.get("report_valid")):
+        raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
+
+
 def run_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> dict[str, object]:
     try:
         completed = subprocess.run(
@@ -646,6 +737,7 @@ def run_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> d
                 "--claims",
                 str(claims_path),
                 "--json",
+                "--write-report",
                 "--report-path",
                 str(report_path),
             ],
@@ -657,20 +749,24 @@ def run_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> d
             timeout=VERIFY_RUN_TIMEOUT_SECONDS,
         )
     except subprocess.TimeoutExpired as exc:
-        return {
+        payload = {
             "ok": False,
             "error": f"verify-run timed out after {VERIFY_RUN_TIMEOUT_SECONDS} seconds",
             "stdout": _decode_timeout_output(exc.stdout),
             "stderr": _decode_timeout_output(exc.stderr),
         }
-    if completed.stdout.strip().startswith("{"):
-        return json.loads(completed.stdout)
-    return {
-        "ok": False,
-        "error": "verify-run did not emit JSON",
-        "stdout": completed.stdout,
-        "stderr": completed.stderr,
-    }
+    else:
+        if completed.stdout.strip().startswith("{"):
+            payload = json.loads(completed.stdout)
+        else:
+            payload = {
+                "ok": False,
+                "error": "verify-run did not emit JSON",
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+            }
+    payload.update(_inspect_verify_feedback_report(report_path))
+    return payload
 
 
 def run_hidden_benchmark(*, run_path: Path, task_id: str, output_path: Path) -> dict[str, object]:

@@ -321,6 +321,7 @@ def main() -> int:
         "by_task_condition": {},
         "invalid_cells": [],
         "provider_unavailable_cells": [],
+        "treatment_not_delivered_cells": [],
         "ceiling_cells": [],
         "under_ceiling_cells": [],
     }
@@ -338,6 +339,12 @@ def main() -> int:
             )
         ]
         provider_unavailable = [r for r in invalids if _is_provider_unavailable_record(r)]
+        treatment_not_delivered = [
+            r
+            for r in invalids
+            if isinstance(r.get("final"), dict)
+            and r["final"].get("benchmark_classification_reason") == "treatment_not_delivered"
+        ]
         changed_hash_count = sum(
             1
             for f in finals
@@ -351,6 +358,7 @@ def main() -> int:
             "under_ceiling_count": sum(1 for s in scores if s < 1.0),
             "harness_invalid_count": len(invalids),
             "provider_unavailable_count": len(provider_unavailable),
+            "treatment_not_delivered_count": len(treatment_not_delivered),
             "solution_hash_changed_count": changed_hash_count,
         }
     for task in TASKS:
@@ -369,6 +377,12 @@ def main() -> int:
             ]
             invalid_count = len(invalid_records)
             provider_unavailable_count = sum(1 for r in invalid_records if _is_provider_unavailable_record(r))
+            treatment_not_delivered_count = sum(
+                1
+                for r in invalid_records
+                if isinstance(r.get("final"), dict)
+                and r["final"].get("benchmark_classification_reason") == "treatment_not_delivered"
+            )
             key = f"{task}::{condition}"
             summary["by_task_condition"][key] = {
                 "n": len(task_records),
@@ -377,6 +391,7 @@ def main() -> int:
                 "ceiling_count": sum(1 for s in scores if s >= 1.0),
                 "harness_invalid_count": invalid_count,
                 "provider_unavailable_count": provider_unavailable_count,
+                "treatment_not_delivered_count": treatment_not_delivered_count,
             }
     for r in results:
         f = r.get("final")
@@ -395,6 +410,15 @@ def main() -> int:
             )
             if _is_provider_unavailable_record(r):
                 summary["provider_unavailable_cells"].append(
+                    {
+                        "task_id": r["task_id"],
+                        "condition": r["condition"],
+                        "replicate_id": r["replicate_id"],
+                        "cell_dir": r["cell_dir"],
+                    }
+                )
+            if isinstance(f, dict) and f.get("benchmark_classification_reason") == "treatment_not_delivered":
+                summary["treatment_not_delivered_cells"].append(
                     {
                         "task_id": r["task_id"],
                         "condition": r["condition"],

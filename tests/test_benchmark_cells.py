@@ -16,6 +16,7 @@ from agentharness.benchmark_cells import (
     _build_agentharness_repair_prompt,
     _build_baseline_repair_prompt,
     _build_initial_prompt,
+    _inspect_verify_feedback_report,
     _is_retryable_invocation_failure,
     assert_nonshared_solution_hashes,
     compute_solution_hash,
@@ -603,11 +604,151 @@ class BenchmarkCellsTests(unittest.TestCase):
                 mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
             ):
                 result = invoker.run_cell(manifest, outputs_dir, workspace)
-        self.assertEqual(len(result.attempts), 2)
-        self.assertTrue(all(attempt.working_directory == workspace for attempt in result.attempts))
-        hermes_calls = [call for call in run_mock.call_args_list if call.args and call.args[0] and call.args[0][0] == "hermes"]
-        self.assertEqual(len(hermes_calls), 2)
-        self.assertTrue(all(call.kwargs["cwd"] == str(workspace) for call in hermes_calls))
+                self.assertEqual(len(result.attempts), 2)
+                self.assertTrue(all(attempt.working_directory == workspace for attempt in result.attempts))
+                hermes_calls = [call for call in run_mock.call_args_list if call.args and call.args[0] and call.args[0][0] == "hermes"]
+                self.assertEqual(len(hermes_calls), 2)
+                self.assertTrue(all(call.kwargs["cwd"] == str(workspace) for call in hermes_calls))
+                prompt_snapshot = (outputs_dir / "pre-repair-treatment-prompt.txt").read_text(encoding="utf-8")
+                self.assertIn(str(stdout_path.resolve()), prompt_snapshot)
+
+    def test_execute_cell_marks_missing_verify_feedback_as_treatment_not_delivered(self) -> None:
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cell_dir = Path(tmp_dir) / "support-ticket-api" / "B-agentharness" / "r1"
+            prepare_fresh_cell(
+                task_id="support-ticket-api",
+                condition="B-agentharness",
+                replicate_id="r1",
+                cell_dir=cell_dir,
+            )
+            stdout_path = cell_dir / "tmp-pytest.stdout"
+            stderr_path = cell_dir / "tmp-pytest.stderr"
+            stdout_path.write_text("1 passed\n", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+            pytest_payload = {
+                "command": ["python", "-m", "pytest", "-q"],
+                "exit_code": 0,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "started_at": "2026-01-01T00:00:00Z",
+                "finished_at": "2026-01-01T00:00:01Z",
+                "duration_seconds": 1.0,
+            }
+            completed = subprocess.CompletedProcess(args=["hermes"], returncode=0, stdout="session_id: ok_123\n", stderr="")
+            with (
+                mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock,
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
+                mock.patch(
+                    "agentharness.benchmark_cells.run_verify_run",
+                    return_value={
+                        "ok": False,
+                        "report_exists": False,
+                        "report_nonempty": False,
+                        "report_valid": False,
+                        "report_error": "report_missing",
+                    },
+                ),
+            ):
+                result = execute_cell(cell_dir, invoker)
+                self.assertEqual(result["benchmark_execution_status"], "harness_invalid")
+                self.assertEqual(result["benchmark_classification_reason"], "treatment_not_delivered")
+                self.assertEqual(result["attempt_count"], 1)
+                self.assertFalse((cell_dir / "outputs" / "pre-repair-treatment-prompt.txt").exists())
+                self.assertEqual(run_mock.call_count, 1)
+
+    def test_run_cell_agentharness_repair_receives_written_feedback(self) -> None:
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            spec_path = root / "SPEC.md"
+            claims_template_path = root / "CLAIMS_CONTRACT.template.json"
+            spec_path.write_text("spec\n", encoding="utf-8")
+            claims_template_path.write_text("{}\n", encoding="utf-8")
+            outputs_dir = root / "outputs"
+            manifest: dict[str, object] = {
+                "task_id": "support-ticket-api",
+                "condition": "B-agentharness",
+                "run_id": "stageb_support_ticket_api_b_r1",
+                "spec_path": str(spec_path),
+                "claims_template_path": str(claims_template_path),
+            }
+            stdout_path = root / "pytest.stdout"
+            stderr_path = root / "pytest.stderr"
+            stdout_path.write_text("1 passed\n", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+            pytest_payload = {
+                "command": ["python", "-m", "pytest", "-q"],
+                "exit_code": 0,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "started_at": "2026-01-01T00:00:00Z",
+                "finished_at": "2026-01-01T00:00:01Z",
+                "duration_seconds": 1.0,
+            }
+            verify_report_path = outputs_dir / "pre-repair-verify-run-report.json"
+
+            def _fake_verify_run(*, run_path: Path, claims_path: Path, report_path: Path) -> dict[str, object]:
+                self.assertEqual(report_path, verify_report_path)
+                report_path.write_text(
+                    json.dumps(
+                        {
+                            "ok": True,
+                            "feedback": {
+                                "summary": {"supported": 1, "unsupported": 0, "inconclusive": 0, "invalid": 0},
+                                "blocking_claim_ids": [],
+                                "items": [{"claim_id": "claim_tests", "status": "supported", "reason": "ok"}],
+                            },
+                        },
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                return {
+                    "ok": True,
+                    "report_exists": True,
+                    "report_nonempty": True,
+                    "report_valid": True,
+                    "report_error": None,
+                    "report_path": str(report_path),
+                }
+
+            completed = subprocess.CompletedProcess(args=["hermes"], returncode=0, stdout="session_id: ok_123\n", stderr="")
+            with (
+                mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock,
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
+                mock.patch("agentharness.benchmark_cells.run_verify_run", side_effect=_fake_verify_run),
+            ):
+                result = invoker.run_cell(manifest, outputs_dir, workspace)
+                self.assertEqual(len(result.attempts), 2)
+                prompt_snapshot = (outputs_dir / "pre-repair-treatment-prompt.txt").read_text(encoding="utf-8")
+                self.assertIn(str(verify_report_path.resolve()), prompt_snapshot)
+                self.assertTrue(verify_report_path.is_file())
+                self.assertEqual(run_mock.call_count, 2)
+
+    def test_inspect_verify_feedback_report_rejects_empty_malformed_or_missing_feedback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            empty_path = root / "empty.json"
+            empty_path.write_text("", encoding="utf-8")
+            malformed_path = root / "malformed.json"
+            malformed_path.write_text("{not-json\n", encoding="utf-8")
+            missing_feedback_path = root / "missing-feedback.json"
+            missing_feedback_path.write_text(json.dumps({"ok": True, "summary": {"supported": 1}}) + "\n", encoding="utf-8")
+
+            empty = _inspect_verify_feedback_report(empty_path)
+            malformed = _inspect_verify_feedback_report(malformed_path)
+            missing_feedback = _inspect_verify_feedback_report(missing_feedback_path)
+
+        self.assertFalse(empty["report_valid"])
+        self.assertEqual(empty["report_error"], "report_empty")
+        self.assertFalse(malformed["report_valid"])
+        self.assertTrue(str(malformed["report_error"]).startswith("report_invalid_json:"))
+        self.assertFalse(missing_feedback["report_valid"])
+        self.assertEqual(missing_feedback["report_error"], "report_missing_feedback")
 
 
 if __name__ == "__main__":

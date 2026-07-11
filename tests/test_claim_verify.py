@@ -774,6 +774,47 @@ class VerifyRunTests(unittest.TestCase):
             payload = json.loads(report_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["report_written"], str(report_path))
             self.assertTrue(payload["ok"])
+            self.assertIn("feedback", payload)
+            self.assertTrue(payload["feedback"]["items"])
+
+    def test_cli_verify_run_report_path_alone_writes_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            run_path = Path(tmp_dir) / "run.json"
+            claims_path = Path(tmp_dir) / "claims.json"
+            report_path = Path(tmp_dir) / "out" / "verify-run-report.json"
+            run_payload = json.loads(RUN_FIXTURE.read_text(encoding="utf-8"))
+            run_payload["workspace"] = str(FIXTURES / "workspace_invite")
+            run_path.write_text(json.dumps(run_payload, indent=2) + "\n", encoding="utf-8")
+            claims_path.write_text(CLAIMS_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "agentharness",
+                    "verify-run",
+                    "--run",
+                    str(run_path),
+                    "--claims",
+                    str(claims_path),
+                    "--json",
+                    "--report-path",
+                    str(report_path),
+                ],
+                cwd=REPO_ROOT,
+                env={**os.environ, **{"PYTHONPATH": str(REPO_ROOT / 'src')}},
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, msg=completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["report_written"], str(report_path))
+            self.assertTrue(report_path.is_file())
+            report_payload = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report_payload["report_written"], str(report_path))
+            self.assertIn("feedback", report_payload)
+            self.assertTrue(report_payload["feedback"]["items"])
 
     def test_cli_verify_run_reexecution_catches_a_lie(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

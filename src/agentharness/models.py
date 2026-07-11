@@ -149,6 +149,25 @@ class VerifyRunResult:
     def blocking_claim_ids(self) -> list[str]:
         return [item.claim_id for item in self.results if item.status in {"unsupported", "inconclusive", "invalid"}]
 
+    @property
+    def feedback(self) -> dict[str, Any]:
+        return {
+            "summary": self.summary,
+            "blocking_claim_ids": self.blocking_claim_ids,
+            "items": [
+                {
+                    "claim_id": item.claim_id,
+                    "claim_type": item.claim_type,
+                    "statement": item.statement,
+                    "status": item.status,
+                    "reason": item.reason,
+                    "evidence": item.evidence,
+                    "truth_source": item.truth_source,
+                }
+                for item in self.results
+            ],
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
@@ -161,6 +180,7 @@ class VerifyRunResult:
             "ok": self.ok,
             "summary": self.summary,
             "blocking_claim_ids": self.blocking_claim_ids,
+            "feedback": self.feedback,
             "results": [item.to_dict() for item in self.results],
             "notes": self.notes,
             "gating_errors": self.gating_errors,

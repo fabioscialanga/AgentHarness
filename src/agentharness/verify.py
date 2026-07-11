@@ -208,7 +208,7 @@ def verify_run(
             blocking_claim_ids=result.blocking_claim_ids,
         )
 
-    if write_report:
+    if write_report or report_path is not None:
         written_path = write_verify_run_report(result, report_path)
         result.report_written = str(written_path)
 
