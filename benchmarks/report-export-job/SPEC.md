@@ -67,6 +67,13 @@ The hidden evaluator invokes the deliverable through the following interface con
   - `--date <YYYY-MM-DD>`
   - `--out-dir <path_to_output_directory>`
 
+### Project structure and CLI importability contract
+- The repository root submitted to the benchmark must itself be a runnable Python project. Do not require an extra parent directory around the delivered files.
+- If the CLI is implemented as a package module, place the importable package either directly under the workspace root or under `src/`.
+- If the CLI is implemented as a single script, place that script at the workspace root or at one of the explicit entrypoint paths listed above.
+- The grading environment must be able to invoke the CLI from the submitted workspace without editing `PYTHONPATH`, renaming files after submission, or running a custom bootstrap step outside normal Python package loading.
+- Keep the entrypoint module and the modules it imports inside the submitted workspace.
+
 ### Runtime configuration contract
 - The export job must read the SQLite database path from the `REPORT_DB_PATH` environment variable.
 
@@ -77,6 +84,8 @@ The hidden evaluator invokes the deliverable through the following interface con
 
 ### Packaging contract
 - The project manifest must declare the dependencies needed to run the implementation and tests in the grading environment, including pytest.
+- Accepted manifests are `pyproject.toml` or `requirements.txt` at the workspace root.
+- The manifest must include every runtime and test dependency needed for a clean install in the grading environment. Do not rely on undeclared transitive dependencies or globally installed packages.
 
 ## Acceptance criteria
 - CSV rows are complete and sorted

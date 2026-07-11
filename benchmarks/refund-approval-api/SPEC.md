@@ -62,6 +62,13 @@ The hidden evaluator invokes the deliverable through the following interface con
 - The evaluator loads that module from the workspace root or `src/` and looks for a FastAPI object named `app`, `api`, or `application`, or another FastAPI object exposed at module top level.
 - Package-relative imports used by that module must resolve when the project is loaded from the workspace.
 
+### Project structure and importability contract
+- The repository root submitted to the benchmark must itself be a runnable Python project. Do not require an extra parent directory around the delivered files.
+- If the project uses a package layout, place the importable package either directly under the workspace root or under `src/`.
+- If the project uses a single-file entry module, place that module at the workspace root.
+- The FastAPI object exposed for grading must be importable without editing `PYTHONPATH`, renaming files after submission, or running a custom bootstrap step outside normal Python package loading.
+- Keep the module that exposes the FastAPI object and the package modules it imports inside the submitted workspace.
+
 ### HTTP contract
 - `POST /refunds` accepts JSON with `order_id`, `amount`, `currency`, `reason`, and `requested_by`.
 - `GET /refunds` supports query parameters `status` and `requested_by`.
@@ -71,6 +78,8 @@ The hidden evaluator invokes the deliverable through the following interface con
 
 ### Packaging contract
 - The project manifest must declare the dependencies needed to run the application and tests in the grading environment, including FastAPI, Pydantic, SQLAlchemy, and pytest.
+- Accepted manifests are `pyproject.toml` or `requirements.txt` at the workspace root.
+- The manifest must include every runtime and test dependency needed for a clean install in the grading environment. Do not rely on undeclared transitive dependencies or globally installed packages.
 
 ## Acceptance criteria
 - small refunds auto-approve
