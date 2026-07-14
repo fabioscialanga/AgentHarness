@@ -3,6 +3,7 @@
 __version__ = "0.1.0"
 
 from .bootstrap import BootstrapOptions, bootstrap_project
+from .direct_check import DirectCheckResult, check_workspace
 from .benchmarking import render_json_template, write_rendered_json_template
 from .evaluation import evaluate_run
 from .generation import generate_framework_outputs
@@ -12,7 +13,9 @@ from .verification import verify_project_directory
 
 __all__ = [
     "BootstrapOptions",
+    "DirectCheckResult",
     "bootstrap_project",
+    "check_workspace",
     "render_json_template",
     "write_rendered_json_template",
     "evaluate_run",

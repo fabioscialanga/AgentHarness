@@ -28,8 +28,8 @@
 <tr>
 <td width="25%" align="center" valign="top">
 
-<strong>7 commands</strong><br />
-validate, generate, verify, verify-run, evaluate, run-plan, bootstrap
+<strong>2 core commands</strong><br />
+check for the simple path, verify-run for explicit envelopes
 
 </td>
 <td width="25%" align="center" valign="top">
@@ -169,11 +169,28 @@ pip install -e .
 agentharness --help
 ```
 
-## The command that carries the project
+## The product front door
+
+### `agentharness check`
+
+This is the shortest path from an agent claim to independently reexecuted evidence:
+
+```bash
+agentharness check \
+  --workspace . \
+  --command "python -m pytest -q" \
+  --json
+```
+
+`check` snapshots the workspace under `.agentharness/runs/<run-id>/workspace`, creates the run and claims envelopes, reexecutes the allowed pytest command in that persistent copy, and writes the evidence and verification report. The command never runs in the original workspace.
+
+The current `workspace-copy` executor is mutation isolation, not a security sandbox. It does not block network access or isolate the rest of the host filesystem, and the JSON report says so explicitly.
+
+Use repeated `--allowed-path` and `--forbidden-path` options when changed-file scope is also part of the claim.
 
 ### `agentharness verify-run`
 
-This is the core command.
+This is the lower-level, integration-friendly primitive.
 
 It verifies an agent run against explicit claims and accepts a claim only when controlled proof can defend it.
 
@@ -242,6 +259,7 @@ The two layers are complementary. One helps generate the work. This one helps de
 A verification project should be the last to overclaim.
 
 Works today:
+- one-command workspace checking with automatic run/claims envelopes and a persistent workspace-copy evidence bundle
 - claim-based run verification with controlled reexecution
 - deterministic held-out evaluation suites
 - the `real_failure` and `harness_invalid` taxonomy
@@ -250,6 +268,7 @@ Works today:
 - one worked example, runnable cookbooks, and automated tests for the core flows
 
 Not yet:
+- `workspace-copy` keeps ordinary relative command writes in the snapshot but is not yet a network/filesystem security sandbox
 - benchmark tasks currently target Python, FastAPI, and CLI
 - the full A/B campaign result is not published yet
 - out-of-the-box CI and vendor runtime integration are still limited
@@ -352,11 +371,28 @@ pip install -e .
 agentharness --help
 ```
 
-## Il comando che regge il progetto
+## La porta di ingresso del prodotto
+
+### `agentharness check`
+
+Questo e il percorso piu breve dalla dichiarazione dell'agente a una prova rieseguita in modo indipendente:
+
+```bash
+agentharness check \
+  --workspace . \
+  --command "python -m pytest -q" \
+  --json
+```
+
+`check` crea uno snapshot sotto `.agentharness/runs/<run-id>/workspace`, genera automaticamente gli envelope run e claims, riesegue il comando pytest consentito nella copia persistente e scrive evidenze e report. Il comando non viene eseguito nel workspace originale.
+
+L'executor attuale `workspace-copy` isola le modifiche, ma non e un security sandbox: non blocca la rete e non isola il resto del filesystem host. Il report JSON lo dichiara esplicitamente.
+
+Le opzioni ripetibili `--allowed-path` e `--forbidden-path` aggiungono anche la verifica dello scope dei file modificati.
 
 ### `agentharness verify-run`
 
-E il comando centrale.
+E la primitive di livello inferiore per integrazioni ed envelope espliciti.
 
 Verifica una run rispetto a claim espliciti e accetta un claim solo quando una prova controllata puo sostenerlo.
 
@@ -421,6 +457,7 @@ I due layer sono complementari. Uno aiuta a generare il lavoro. Questo aiuta a d
 Un progetto sulla verifica dovrebbe essere l'ultimo a promettere troppo.
 
 Funziona oggi:
+- controllo one-command del workspace con envelope run/claims automatici e bundle di evidenza persistente su copia del workspace
 - verifica di run basata su claim con riesecuzione controllata
 - suite held-out deterministiche
 - tassonomia `real_failure` e `harness_invalid`
@@ -429,6 +466,7 @@ Funziona oggi:
 - un esempio completo, cookbook eseguibili e test automatici per i flussi principali
 
 Non ancora:
+- `workspace-copy` mantiene nella copia le normali scritture relative del comando, ma non e ancora un security sandbox di rete/filesystem
 - i task del benchmark oggi coprono soprattutto Python, FastAPI e CLI
 - il risultato completo della campagna A/B non e ancora pubblicato
 - l'integrazione pronta all'uso con CI e runtime dei vendor e ancora limitata

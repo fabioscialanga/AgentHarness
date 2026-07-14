@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from .benchmark_hidden_evaluators import evaluate_benchmark_task
 from .benchmarking import render_json_template, write_rendered_json_template
 from .bootstrap import BootstrapOptions, bootstrap_project
+from .direct_check import check_workspace
 from .evaluation import evaluate_run
 from .generation import generate_framework_outputs
 from .resilience import run_resilience_plan
@@ -21,6 +23,35 @@ def build_parser() -> argparse.ArgumentParser:
         description="Work with AgentHarness-style project definitions",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    check_parser = subparsers.add_parser(
+        "check",
+        help="Verify that a command succeeds in a persistent copy of a workspace",
+    )
+    check_parser.add_argument("--workspace", type=Path, default=Path("."), help="Workspace to snapshot and verify")
+    check_parser.add_argument(
+        "--command",
+        dest="test_command",
+        required=True,
+        help="Allowed pytest command that is claimed to succeed",
+    )
+    check_parser.add_argument("--run-id", help="Optional path-safe run id; generated automatically when omitted")
+    check_parser.add_argument("--output-dir", type=Path, help="Artifact directory; defaults to .agentharness/runs/<run-id>")
+    check_parser.add_argument("--working-dir", help="Optional workspace-relative directory in which to run the command")
+    check_parser.add_argument("--timeout", type=int, default=60, help="Reexecution timeout in seconds")
+    check_parser.add_argument(
+        "--allowed-path",
+        action="append",
+        default=[],
+        help="Optional changed-file glob allowed by the scope claim; repeat for multiple patterns",
+    )
+    check_parser.add_argument(
+        "--forbidden-path",
+        action="append",
+        default=[],
+        help="Optional changed-file glob forbidden by the scope claim; repeat for multiple patterns",
+    )
+    check_parser.add_argument("--json", action="store_true", help="Print the check result as JSON")
 
     validate_parser = subparsers.add_parser(
         "validate",
@@ -219,6 +250,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print the bootstrap result as JSON",
     )
     return parser
+
+
+def _print_check_result(result, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), indent=2))
+        return
+
+    status = "PASS" if result.ok else "FAIL"
+    print(f"[{status}] check {result.run_id}")
+    print(f"Command: {result.command}")
+    print(f"Isolation: {result.isolation['mode']} (not a security sandbox)")
+    print(f"Snapshot: {result.snapshot_workspace}")
+    print(f"Report: {result.report_path}")
+    summary = result.verification.summary
+    print(
+        "Verdicts: "
+        f"{summary.get('supported', 0)} supported, "
+        f"{summary.get('unsupported', 0)} unsupported, "
+        f"{summary.get('inconclusive', 0)} inconclusive, "
+        f"{summary.get('invalid', 0)} invalid"
+    )
 
 
 def _print_validation_result(result, as_json: bool) -> None:
@@ -437,6 +489,27 @@ def _print_bootstrap_result(result, as_json: bool) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command == "check":
+        try:
+            result = check_workspace(
+                args.workspace,
+                args.test_command,
+                run_id=args.run_id,
+                output_dir=args.output_dir,
+                working_dir=args.working_dir,
+                timeout_seconds=args.timeout,
+                allowed_paths=args.allowed_path,
+                forbidden_paths=args.forbidden_path,
+            )
+        except (ValueError, FileExistsError, OSError) as exc:
+            if args.json:
+                print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
+            else:
+                print(f"[INVALID] check: {exc}", file=sys.stderr)
+            return 2
+        _print_check_result(result, args.json)
+        return 0 if result.ok else 1
 
     if args.command == "validate":
         result = validate_project_directory(args.path)

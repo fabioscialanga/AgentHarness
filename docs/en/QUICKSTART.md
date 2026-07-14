@@ -12,6 +12,7 @@ Instead of starting from a vague prompt, it gives the agent a project contract:
 - generated framework metadata
 
 Today, the repository already provides a working operational core:
+- `agentharness check` creates automatic run/claims envelopes, a persistent snapshot, and reexecuted evidence from a workspace and pytest command
 - `agentharness validate` checks whether an AgentHarness-style project is internally consistent
 - `agentharness generate` regenerates core `.framework` metadata from `project.yaml`
 - `agentharness verify` checks contract validity, semantic AGENTS/project consistency, and drift in generated `.framework` artifacts
@@ -49,14 +50,24 @@ agentharness --help
 ```
 
 ## First useful commands
-### 1. Validate the worked example
+### 1. Check a workspace with one command
+```bash
+agentharness check \
+  --workspace . \
+  --command "python -m pytest -q" \
+  --json
+```
+
+This creates a persistent workspace snapshot, automatic run and claims envelopes, reexecuted evidence, and a verification report under `.agentharness/runs/<run-id>/`. Ordinary relative command writes stay in the snapshot, but the current executor is not a network or host-filesystem security sandbox.
+
+### 2. Validate the worked example
 ```bash
 agentharness validate examples/civictrack --json
 ```
 
 This checks that the example project contract is internally consistent and that AGENTS.md still reflects the key rules declared in project.yaml.
 
-### 2. Regenerate framework metadata
+### 3. Regenerate framework metadata
 ```bash
 agentharness generate examples/civictrack --json
 ```
@@ -66,14 +77,14 @@ This rebuilds:
 - `.framework/risk-matrix.yaml`
 - `.framework/generation-report.json`
 
-### 3. Verify the example end to end
+### 4. Verify the example end to end
 ```bash
 agentharness verify examples/civictrack --json
 ```
 
 This confirms that the checked-in `.framework` files still match the outputs derived from `project.yaml`.
 
-### 4. Verify claim-based run evidence
+### 5. Verify claim-based run evidence
 ```bash
 agentharness verify-run \
   --run tests/fixtures/run_invite_schema_success.json \
@@ -83,7 +94,7 @@ agentharness verify-run \
 
 This uses strict proof by default. Allowed test commands are reexecuted when possible. If AgentHarness cannot defend the truth of a claim, it returns `inconclusive` instead of a false success.
 
-### 5. Catch a fabricated green test run
+### 6. Catch a fabricated green test run
 ```bash
 agentharness verify-run \
   --run tests/fixtures/run_invite_lie.json \
@@ -93,7 +104,7 @@ agentharness verify-run \
 
 This example is expected to fail. The fixture declares a passing pytest command, but AgentHarness reexecutes it and captures the real failing exit code in `.agentharness/evidence/<run_id>/reexecuted/`.
 
-### 6. Bootstrap a new project
+### 7. Bootstrap a new project
 ```bash
 agentharness bootstrap ./my-project \
   --project-name "My Project" \
@@ -125,11 +136,13 @@ If you are new to the repo, follow this order:
 AgentHarness is still early.
 
 What exists today:
-- working CLI commands for validate, generate, verify, verify-run, and bootstrap
+- a one-command `check` path and the lower-level `verify-run` primitive
+- working CLI commands for validate, generate, verify, evaluate, run-plan, and bootstrap
 - one worked example project
 - tests covering the core flows
 
 What does not exist yet:
+- an executor that isolates network access and the host filesystem
 - full execution/runtime integration for coding agents
 - CI integration out of the box
 - broad template coverage for many project types
