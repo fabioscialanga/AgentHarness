@@ -109,11 +109,17 @@ class HermesCliInvoker:
         toolsets: str = "terminal,file",
         max_retries: int = 3,
         retry_backoff_seconds: float = 30.0,
+        provider: str | None = None,
+        model: str | None = None,
+        max_turns: int | str | None = None,
     ) -> None:
         self._hermes_command = hermes_command or "hermes"
         self._toolsets = toolsets
         self._max_retries = max_retries
         self._retry_backoff_seconds = retry_backoff_seconds
+        self._provider = provider
+        self._model = model
+        self._max_turns = str(max_turns) if max_turns is not None else None
 
     def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
         task_id = str(manifest["task_id"])
@@ -233,9 +239,14 @@ class HermesCliInvoker:
             "--yolo",
             "--toolsets",
             self._toolsets,
-            "-q",
-            prompt,
         ]
+        if self._provider:
+            command.extend(["--provider", self._provider])
+        if self._model:
+            command.extend(["-m", self._model])
+        if self._max_turns:
+            command.extend(["--max-turns", self._max_turns])
+        command.extend(["-q", prompt])
         last_attempt: AgentAttempt | None = None
         for retry_index in range(1, self._max_retries + 1):
             suffix = "" if self._max_retries == 1 else f".try{retry_index}"

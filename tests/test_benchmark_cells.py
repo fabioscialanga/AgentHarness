@@ -515,6 +515,37 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertEqual(run_mock.call_count, 2)
         sleep_mock.assert_called_once_with(0.01)
 
+    def test_invoke_pins_provider_model_and_max_turns_in_command(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=0,
+            stdout="session_id: pinned_123\n",
+            stderr="",
+        )
+        invoker = HermesCliInvoker(
+            hermes_command="hermes",
+            max_retries=1,
+            provider="openai-codex",
+            model="gpt-5.6-sol",
+            max_turns=40,
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            outputs_dir = Path(tmp_dir)
+            with mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock:
+                attempt = invoker._invoke(
+                    prompt="hello",
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    outputs_dir=outputs_dir,
+                    workspace=outputs_dir,
+                )
+        command = run_mock.call_args.args[0]
+        self.assertIn("--provider", command)
+        self.assertEqual(command[command.index("--provider") + 1], "openai-codex")
+        self.assertEqual(command[command.index("-m") + 1], "gpt-5.6-sol")
+        self.assertEqual(command[command.index("--max-turns") + 1], "40")
+        self.assertEqual(attempt.command, command)
+
     def test_retryable_invocation_failure_detects_sse_stall_marker_in_stderr(self) -> None:
         completed = subprocess.CompletedProcess(
             args=["hermes"],

@@ -36,6 +36,29 @@ def longest_contiguous_category(results: list[CellResult], category: str) -> int
     return longest
 
 
+def trailing_contiguous_category(results: list[CellResult], category: str) -> int:
+    trailing = 0
+    for result in reversed(results):
+        if classify_level2_cell(result) != category:
+            break
+        trailing += 1
+    return trailing
+
+
+def should_abort_provider_outage(results: list[CellResult], threshold: int = 3) -> bool:
+    if threshold < 1:
+        raise ValueError("threshold must be at least 1")
+    return trailing_contiguous_category(results, "provider_unavailable") >= threshold
+
+
+def auditable_results_for_solution_hash_guard(results: list[CellResult]) -> list[CellResult]:
+    return [
+        result
+        for result in results
+        if classify_level2_cell(result) not in {"provider_unavailable", "harness_invalid"}
+    ]
+
+
 def compute_level2_gate(results: list[CellResult]) -> dict[str, Any]:
     categorized: list[CellResult] = []
     counts: Counter[str] = Counter()

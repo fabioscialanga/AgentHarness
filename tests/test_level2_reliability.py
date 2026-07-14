@@ -5,7 +5,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from agentharness.level2_reliability import classify_level2_cell, compute_level2_gate, load_results
+from agentharness.level2_reliability import (
+    auditable_results_for_solution_hash_guard,
+    classify_level2_cell,
+    compute_level2_gate,
+    load_results,
+    should_abort_provider_outage,
+    trailing_contiguous_category,
+)
 
 
 class Level2ReliabilityTests(unittest.TestCase):
@@ -161,6 +168,46 @@ class Level2ReliabilityTests(unittest.TestCase):
         self.assertFalse(summary["passes_gate"])
         self.assertFalse(summary["gate_checks"]["no_provider_block_ge_3"])
         self.assertEqual(summary["longest_provider_unavailable_block"], 3)
+
+    def test_live_abort_only_triggers_on_trailing_provider_streak(self) -> None:
+        provider = {
+            "benchmark_execution_status": "provider_unavailable",
+            "benchmark_outcome_status": "invalid",
+        }
+        success = {
+            "benchmark_execution_status": "valid",
+            "benchmark_outcome_status": "success",
+        }
+        results = [provider, provider, success, provider, provider]
+        self.assertEqual(trailing_contiguous_category(results, "provider_unavailable"), 2)
+        self.assertFalse(should_abort_provider_outage(results, threshold=3))
+        results.append(provider)
+        self.assertTrue(should_abort_provider_outage(results, threshold=3))
+
+    def test_live_abort_rejects_nonpositive_threshold(self) -> None:
+        with self.assertRaisesRegex(ValueError, "at least 1"):
+            should_abort_provider_outage([], threshold=0)
+
+    def test_solution_hash_guard_excludes_untrusted_provider_and_harness_cells(self) -> None:
+        results = [
+            {
+                "task_id": "task-provider",
+                "benchmark_execution_status": "provider_unavailable",
+                "benchmark_outcome_status": "invalid",
+            },
+            {
+                "task_id": "task-harness",
+                "benchmark_execution_status": "harness_invalid",
+                "benchmark_outcome_status": "invalid",
+            },
+            {
+                "task_id": "task-real",
+                "benchmark_execution_status": "valid",
+                "benchmark_outcome_status": "real_failure",
+            },
+        ]
+        filtered = auditable_results_for_solution_hash_guard(results)
+        self.assertEqual([result["task_id"] for result in filtered], ["task-real"])
 
     def test_load_results_requires_json_list(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
