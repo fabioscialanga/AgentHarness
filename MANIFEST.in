@@ -1,0 +1,7 @@
+include CHANGELOG.md
+include CONTRIBUTING.md
+include SECURITY.md
+include scripts/check_release.py
+include examples/github-actions/agentharness-check.yml
+recursive-include docs/en *.md
+recursive-include docs/it *.md

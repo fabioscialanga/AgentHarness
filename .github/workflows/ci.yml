@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up frozen grading Python
         uses: actions/setup-python@v6
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -84,13 +84,21 @@ jobs:
           /tmp/agentharness-smoke-venv/bin/python -m pip install dist/agentharness-*.whl
 
       - name: Verify installed CLI and one-command product path
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p /tmp/agentharness-smoke-workspace
-          printf 'def test_smoke():\n    assert 2 + 2 == 4\n' > /tmp/agentharness-smoke-workspace/test_smoke.py
+          printf 'from pathlib import Path\n\ndef test_smoke():\n    Path("generated-in-snapshot.txt").write_text("verified\\n")\n    assert 2 + 2 == 4\n' > /tmp/agentharness-smoke-workspace/test_smoke.py
+          cd /tmp/agentharness-smoke-workspace
+          mkdir -p .agentharness
+          RUN_ID="ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           /tmp/agentharness-smoke-venv/bin/agentharness --help
           /tmp/agentharness-smoke-venv/bin/agentharness check \
-            --workspace /tmp/agentharness-smoke-workspace \
+            --workspace . \
             --command "python -m pytest -q" \
-            --output-dir /tmp/agentharness-smoke-artifacts \
-            --json
-          test -f /tmp/agentharness-smoke-artifacts/verify-report.json
+            --run-id "$RUN_ID" \
+            --output-dir ".agentharness/runs/$RUN_ID" \
+            --json | tee ".agentharness/result-$RUN_ID.json"
+          test -f ".agentharness/runs/$RUN_ID/verify-report.json"
+          test -f ".agentharness/runs/$RUN_ID/workspace/generated-in-snapshot.txt"
+          test ! -f generated-in-snapshot.txt

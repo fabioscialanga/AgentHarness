@@ -286,18 +286,21 @@ Works today:
 - the `real_failure` and `harness_invalid` taxonomy
 - an offline, reproducible grading environment
 - a pre-registered A/B benchmark methodology
+- a copyable GitHub Actions workflow that preserves verification evidence
 - one worked example, runnable cookbooks, and automated tests for the core flows
 
 Not yet:
 - `workspace-copy` keeps ordinary relative command writes in the snapshot but is not yet a network/filesystem security sandbox
 - benchmark tasks currently target Python, FastAPI, and CLI
 - the full A/B campaign result is not published yet
-- reusable CI integration for external projects and vendor runtime integration are still limited
+- a packaged reusable GitHub Action and vendor runtime integrations are not available yet
 - project-template coverage is still narrow
 
 ## Documentation
 
 - Quickstart: `docs/en/QUICKSTART.md`
+- GitHub Actions integration: `docs/en/GITHUB_ACTIONS.md`
+- Release process: `docs/en/RELEASING.md`
 - Project documentation: `docs/en/PROJECT_DOCUMENTATION.md`
 - Validator: `docs/en/VALIDATOR.md`
 - Bootstrap: `docs/en/BOOTSTRAP.md`
@@ -505,18 +508,21 @@ Funziona oggi:
 - tassonomia `real_failure` e `harness_invalid`
 - ambiente di grading offline e riproducibile
 - metodologia A/B pre-registrata
+- workflow GitHub Actions copiabile con conservazione dell'evidenza di verifica
 - un esempio completo, cookbook eseguibili e test automatici per i flussi principali
 
 Non ancora:
 - `workspace-copy` mantiene nella copia le normali scritture relative del comando, ma non e ancora un security sandbox di rete/filesystem
 - i task del benchmark oggi coprono soprattutto Python, FastAPI e CLI
 - il risultato completo della campagna A/B non e ancora pubblicato
-- l'integrazione CI riutilizzabile nei progetti esterni e con i runtime dei vendor e ancora limitata
+- non sono ancora disponibili una GitHub Action pacchettizzata e integrazioni con i runtime dei vendor
 - la copertura dei template di progetto e ancora stretta
 
 ## Documentazione
 
 - Quickstart: `docs/it/QUICKSTART.md`
+- Integrazione GitHub Actions: `docs/it/INTEGRAZIONE_GITHUB_ACTIONS.md`
+- Processo di rilascio: `docs/it/RILASCIO.md`
 - Documentazione del progetto: `docs/it/DOCUMENTAZIONE_PROGETTO.md`
 - Validatore: `docs/it/VALIDATORE.md`
 - Bootstrap: `docs/it/BOOTSTRAP.md`

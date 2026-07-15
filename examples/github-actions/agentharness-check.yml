@@ -1,0 +1,50 @@
+# Copy this file to .github/workflows/agentharness.yml in a Python project.
+name: AgentHarness verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-agent-claim:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project and AgentHarness
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install agentharness==0.1.0
+
+      - name: Independently reexecute the test claim
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p .agentharness
+          RUN_ID="ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          agentharness check \
+            --workspace . \
+            --command "python -m pytest -q" \
+            --run-id "$RUN_ID" \
+            --output-dir ".agentharness/runs/$RUN_ID" \
+            --json | tee ".agentharness/result-$RUN_ID.json"
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: agentharness-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .agentharness/
+          if-no-files-found: warn

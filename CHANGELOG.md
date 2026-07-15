@@ -6,12 +6,20 @@ The project follows the structure of [Keep a Changelog](https://keepachangelog.c
 
 ## Unreleased
 
+No user-facing changes yet.
+
+## 0.1.0 - 2026-07-15
+
 ### Added
 
+- Project contracts, validation, generation, and bootstrap flows.
 - `agentharness check`, a one-command path that snapshots a workspace, generates run and claims envelopes, reexecutes an allowed pytest command, and writes persistent evidence.
+- `agentharness verify-run` for explicit run and claims envelopes.
 - Explicit isolation metadata for the `workspace-copy` executor.
+- Deterministic held-out evaluation and benchmark tooling.
 - Provider/model pinning, progressive results, and provider-outage abort handling for Stage B diagnostics.
-- Community CI, Apache-2.0 licensing, contribution guidance, security policy, and GitHub issue templates.
+- Community CI across Python 3.11, 3.12, and 3.13, with the frozen benchmark grading suite kept on Python 3.12.
+- Apache-2.0 licensing, contribution guidance, security policy, and GitHub issue templates.
 
 ### Changed
 
@@ -22,9 +30,3 @@ The project follows the structure of [Keep a Changelog](https://keepachangelog.c
 
 - External and absolute symlinks are rejected when creating a direct-check workspace snapshot.
 - Documentation explicitly states that `workspace-copy` is not a network or host-filesystem security sandbox.
-
-## 0.1.0 - Initial alpha
-
-- Project contracts, validation, generation, and bootstrap flows.
-- Claim-based `verify-run` with controlled pytest reexecution.
-- Deterministic held-out evaluation and benchmark tooling.
