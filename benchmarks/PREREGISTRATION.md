@@ -993,6 +993,26 @@ A manipulation check on the completed Stage 1 run found that the intended pre-re
   - the wrapper must surface whether the report exists, is non-empty, is parseable JSON, and contains explicit `feedback`, so the arm-level gate can reject silent treatment loss automatically
 - declaration on current Stage 1 campaign status: no A-vs-B contrast from the current Stage 1 run may be read or interpreted as a treatment effect until the treatment-delivery channel is repaired and Stage 1 is rerun on the corrected benchmark code
 
+#### 17.16 Pre-rerun code-lineage amendment (2026-07-15, before the masked noise remeasurement)
+Before collecting the masked post-clarification noise data, the complete code lineage from structural-spec freeze `4a5ba8f` through public-release head `678d986` was reviewed and recorded. The starting commit remains the substantive structural-spec clarification already declared in the dated 2026-07-11 amendment. The later commits are packaging, release, CI, community-readiness, product-front-door, reliability, and invocation-adaptation work. This lineage review does not authorize treatment-effect interpretation of the diagnostic rerun.
+
+Commits in the reviewed range:
+- `4a5ba8f6751278c9fc7b207ea323e2b4cc7d5cbd` (`Clarify benchmark structural spec contracts`): the already-declared substantive clarification of task packaging, importability, layout, and entrypoint contracts; it changes no functional requirement, hidden evaluator, treatment prompt, or score calculation
+- `fbf0de67732851971f609a3972884ef24b4c16bb` (`Harden Stage B reliability runs`): operational reliability and invocation adaptation; in `benchmark_cells.py`, the invoker change only exposes `provider`, `model`, and `max_turns` as explicit invocation parameters and forwards them to the Hermes CLI
+- `6b8810fa512f7a94c3d9ebe90c02790e08206262` (`Add one-command workspace verification`): product-front-door and package usability work
+- `9617df85f1011b7248a971ea0d72c1d0d47fccdf` (`Prepare AgentHarness for community adoption`): open-source packaging, metadata, CI, licensing, and contributor-readiness work
+- `3d17631808481671d06740769d5ea30d41198bc0` (`Fix clean-install verification and CI compatibility`): clean-install and invocation adaptation; the `reexecution.py` change selects the currently running Python interpreter for allowed `python -m pytest` reexecution when pytest is available in that interpreter
+- `24192214dfc6d9682dbf29f9b38352d5f3c577d1` (`Prepare verified 0.1.0 release workflow`): release validation, build, documentation, and Trusted Publishing workflow
+- `94c61f62968167a93b2b9259f8844051a7e49c60` (`Rename PyPI distribution to agentharness-verifier`): distribution-name and release-documentation adaptation
+- `678d98645088886230bb3e013b2c30248b0f4554` (`Fix renamed wheel in clean-install CI`): clean-install CI filename correction
+
+Methodological declaration for this range:
+- the `benchmark_cells.py` invocation change exposes only provider, model, and maximum turns as invoker parameters; it does not alter task materialization, treatment content, treatment-delivery criteria, held-out grading logic, or score computation
+- the `reexecution.py` change selects the current interpreter for pytest reexecution; it does not alter the allowed test semantics, verdict rules, benchmark treatment, hidden grading logic, or score computation
+- no commit in this range modifies the hidden task evaluators or the calculation of the held-out task score
+- packaging, release, CI, and invocation adaptations in this range are operational prerequisites only; they do not change the estimand or authorize reading an A-versus-B contrast from the masked noise-remeasurement run
+- the next run is restricted to treatment-delivery integrity checks, invalid classification, masked dispersion estimation, and blind wiring-versus-logic diagnosis
+
 ---
 
 ## Freeze
