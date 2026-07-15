@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose a focused improvement to AgentHarness
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: What concrete verification or adoption problem needs to be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Desired workflow
+      description: Show the smallest useful CLI or API experience.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and success criteria
+      description: How would we verify that the feature is useful and correct?
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Security, compatibility, or complexity trade-offs
+      description: Call out any changes to trust boundaries or verification semantics.

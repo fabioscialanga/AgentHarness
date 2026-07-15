@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Run tests
+        run: python -m pytest -q
+
+  package-smoke:
+    name: Wheel and clean-install smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Build wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+
+      - name: Install wheel in a clean environment
+        run: |
+          python -m venv /tmp/agentharness-smoke-venv
+          /tmp/agentharness-smoke-venv/bin/python -m pip install --upgrade pip
+          /tmp/agentharness-smoke-venv/bin/python -m pip install dist/agentharness-*.whl
+
+      - name: Verify installed CLI and one-command product path
+        run: |
+          mkdir -p /tmp/agentharness-smoke-workspace
+          printf 'def test_smoke():\n    assert 2 + 2 == 4\n' > /tmp/agentharness-smoke-workspace/test_smoke.py
+          /tmp/agentharness-smoke-venv/bin/agentharness --help
+          /tmp/agentharness-smoke-venv/bin/agentharness check \
+            --workspace /tmp/agentharness-smoke-workspace \
+            --command "python -m pytest -q" \
+            --output-dir /tmp/agentharness-smoke-artifacts \
+            --json
+          test -f /tmp/agentharness-smoke-artifacts/verify-report.json

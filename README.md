@@ -17,6 +17,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/fabioscialanga/AgentHarness/actions/workflows/ci.yml"><img src="https://github.com/fabioscialanga/AgentHarness/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license" /></a>
+  <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776ab" alt="Python 3.11, 3.12, and 3.13" />
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/contributions-welcome-2ea44f" alt="Contributions welcome" /></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/model-agnostic-f59e0b?style=flat-square" alt="Model agnostic" />
   <img src="https://img.shields.io/badge/harness_invalid-separated-dc2626?style=flat-square" alt="Harness invalid separated" />
   <img src="https://img.shields.io/badge/held--out_eval-deterministic-0891b2?style=flat-square" alt="Deterministic held-out evaluation" />
@@ -161,13 +168,27 @@ That last row is central. AgentHarness separates `real_failure`, a genuine fault
 
 Requirements: Python 3.11+ and git.
 
+Install the current alpha directly from GitHub in the target project's virtual environment:
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install "agentharness @ git+https://github.com/fabioscialanga/AgentHarness.git"
+agentharness --help
+```
+
+AgentHarness is not published on PyPI yet. Contributors should use an editable source checkout:
+
 ```bash
 git clone https://github.com/fabioscialanga/AgentHarness.git
 cd AgentHarness
 python3 -m venv .venv && . .venv/bin/activate
-pip install -e .
-agentharness --help
+python -m pip install --upgrade pip
+python -m pip install -e .
+python -m pytest -q
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SECURITY.md](SECURITY.md) before running untrusted code.
 
 ## The product front door
 
@@ -271,7 +292,7 @@ Not yet:
 - `workspace-copy` keeps ordinary relative command writes in the snapshot but is not yet a network/filesystem security sandbox
 - benchmark tasks currently target Python, FastAPI, and CLI
 - the full A/B campaign result is not published yet
-- out-of-the-box CI and vendor runtime integration are still limited
+- reusable CI integration for external projects and vendor runtime integration are still limited
 - project-template coverage is still narrow
 
 ## Documentation
@@ -282,6 +303,13 @@ Not yet:
 - Bootstrap: `docs/en/BOOTSTRAP.md`
 - A/B benchmark: `docs/en/AB_BENCHMARK.md`
 - Worked example: `docs/en/EXAMPLE_CIVICTRACK.md`
+
+## Community and license
+
+- Contributions: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security: [SECURITY.md](SECURITY.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
+- License: [Apache-2.0](LICENSE)
 
 ---
 
@@ -363,13 +391,27 @@ L'ultima riga e il centro del progetto. AgentHarness separa `real_failure`, un g
 
 Requisiti: Python 3.11+ e git.
 
+Installa l'alpha corrente direttamente da GitHub nell'ambiente virtuale del progetto da verificare:
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install "agentharness @ git+https://github.com/fabioscialanga/AgentHarness.git"
+agentharness --help
+```
+
+AgentHarness non e ancora pubblicato su PyPI. Chi contribuisce dovrebbe usare un checkout editable:
+
 ```bash
 git clone https://github.com/fabioscialanga/AgentHarness.git
 cd AgentHarness
 python3 -m venv .venv && . .venv/bin/activate
-pip install -e .
-agentharness --help
+python -m pip install --upgrade pip
+python -m pip install -e .
+python -m pytest -q
 ```
+
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) per il workflow di contribuzione e [SECURITY.md](SECURITY.md) prima di eseguire codice non fidato.
 
 ## La porta di ingresso del prodotto
 
@@ -469,7 +511,7 @@ Non ancora:
 - `workspace-copy` mantiene nella copia le normali scritture relative del comando, ma non e ancora un security sandbox di rete/filesystem
 - i task del benchmark oggi coprono soprattutto Python, FastAPI e CLI
 - il risultato completo della campagna A/B non e ancora pubblicato
-- l'integrazione pronta all'uso con CI e runtime dei vendor e ancora limitata
+- l'integrazione CI riutilizzabile nei progetti esterni e con i runtime dei vendor e ancora limitata
 - la copertura dei template di progetto e ancora stretta
 
 ## Documentazione
@@ -480,3 +522,10 @@ Non ancora:
 - Bootstrap: `docs/it/BOOTSTRAP.md`
 - Benchmark A/B: `docs/it/BENCHMARK_AB.md`
 - Esempio completo: `docs/it/ESEMPIO_CIVICTRACK.md`
+
+## Community e licenza
+
+- Contributi: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Sicurezza: [SECURITY.md](SECURITY.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
+- Licenza: [Apache-2.0](LICENSE)
