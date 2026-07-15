@@ -154,6 +154,8 @@ def prepare_execution_tokens(tokens: list[str]) -> list[str]:
         return [sys.executable, "-m", "pytest", *tokens[3:]]
     if normalized[:5] == ["uv", "run", "python", "-m", "pytest"]:
         return [sys.executable, "-m", "pytest", *tokens[5:]]
+    if normalized[:3] == ["python", "-m", "pytest"] and importlib.util.find_spec("pytest") is not None:
+        return [sys.executable, "-m", "pytest", *tokens[3:]]
     if normalized and normalized[0] == "pytest" and importlib.util.find_spec("pytest") is not None:
         return [sys.executable, "-m", "pytest", *tokens[1:]]
     return tokens

@@ -30,11 +30,19 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
-Run the test suite:
+Run the full suite on Python 3.12, which is the frozen offline grading runtime:
 
 ```bash
 python -m pytest -q
 ```
+
+On Python 3.11 or 3.13, run the version-independent community core:
+
+```bash
+python -m pytest -q --ignore-glob='tests/test_*benchmark_hidden_evaluator.py'
+```
+
+The hidden benchmark evaluators are not silently treated as cross-version: CI runs them separately against the frozen Python 3.12 grading environment.
 
 Run the product smoke path:
 

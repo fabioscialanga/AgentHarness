@@ -9,7 +9,7 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from agentharness.reexecution import sanitized_environment, default_execution_policy
+from agentharness.reexecution import default_execution_policy, prepare_execution_tokens, sanitized_environment
 from agentharness.verify import default_verify_run_report_path, verify_run
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +24,14 @@ CLAIMS_LIE_FIXTURE = FIXTURES / "claims_invite_lie.json"
 
 
 class VerifyRunTests(unittest.TestCase):
+    def test_python_module_pytest_uses_the_running_interpreter(self) -> None:
+        prepared = prepare_execution_tokens(["python", "-m", "pytest", "-q"])
+        self.assertEqual(prepared, [sys.executable, "-m", "pytest", "-q"])
+
+    def test_python_versioned_module_pytest_uses_the_running_interpreter(self) -> None:
+        prepared = prepare_execution_tokens(["python3.13", "-m", "pytest", "tests", "-q"])
+        self.assertEqual(prepared, [sys.executable, "-m", "pytest", "tests", "-q"])
+
     def test_sanitized_environment_preserves_windows_runtime_variables(self) -> None:
         policy = default_execution_policy()
         with mock.patch.dict(
