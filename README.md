@@ -168,16 +168,16 @@ That last row is central. AgentHarness separates `real_failure`, a genuine fault
 
 Requirements: Python 3.11+ and git.
 
-Install the current alpha directly from GitHub in the target project's virtual environment:
+Install the current alpha from PyPI in the target project's virtual environment:
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install "agentharness @ git+https://github.com/fabioscialanga/AgentHarness.git"
+python -m pip install agentharness-verifier==0.1.0
 agentharness --help
 ```
 
-AgentHarness is not published on PyPI yet. Contributors should use an editable source checkout:
+The PyPI distribution is named `agentharness-verifier`; the installed Python package and CLI remain `agentharness`. Contributors can use an editable source checkout:
 
 ```bash
 git clone https://github.com/fabioscialanga/AgentHarness.git
@@ -394,16 +394,16 @@ L'ultima riga e il centro del progetto. AgentHarness separa `real_failure`, un g
 
 Requisiti: Python 3.11+ e git.
 
-Installa l'alpha corrente direttamente da GitHub nell'ambiente virtuale del progetto da verificare:
+Installa l'alpha corrente da PyPI nell'ambiente virtuale del progetto da verificare:
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install "agentharness @ git+https://github.com/fabioscialanga/AgentHarness.git"
+python -m pip install agentharness-verifier==0.1.0
 agentharness --help
 ```
 
-AgentHarness non e ancora pubblicato su PyPI. Chi contribuisce dovrebbe usare un checkout editable:
+La distribuzione PyPI si chiama `agentharness-verifier`; il package Python e la CLI installati restano `agentharness`. Chi contribuisce puo usare un checkout editable:
 
 ```bash
 git clone https://github.com/fabioscialanga/AgentHarness.git

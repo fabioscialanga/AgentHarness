@@ -14,7 +14,7 @@ AgentHarness può trasformare il claim sui test di una pull request in un artefa
 
 ## Installazione
 
-Dopo la pubblicazione del pacchetto `0.1.0` su PyPI:
+Dopo la pubblicazione di `agentharness-verifier` versione `0.1.0` su PyPI:
 
 ```bash
 mkdir -p .github/workflows
@@ -25,7 +25,7 @@ Prima della release, sostituisci nel workflow copiato la riga di installazione d
 
 ```bash
 python -m pip install \
-  "agentharness @ git+https://github.com/fabioscialanga/AgentHarness.git@3d17631808481671d06740769d5ea30d41198bc0"
+  "git+https://github.com/fabioscialanga/AgentHarness.git@main"
 ```
 
 ## Adattamento al progetto

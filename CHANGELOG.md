@@ -25,6 +25,7 @@ No user-facing changes yet.
 
 - Product positioning now emphasizes independent, auditable verification of coding-agent claims.
 - Package metadata now declares supported Python versions and project URLs.
+- The PyPI distribution is named `agentharness-verifier`; the import package and CLI remain `agentharness`.
 
 ### Security
 

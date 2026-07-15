@@ -4,9 +4,9 @@ AgentHarness usa PyPI Trusted Publishing. Nessun token PyPI di lunga durata deve
 
 ## Configurazione PyPI iniziale
 
-Poiché `agentharness` non è ancora pubblicato, crea un pending publisher su PyPI con questi valori esatti:
+Crea un pending publisher su PyPI con questi valori esatti:
 
-- nome progetto PyPI: `agentharness`
+- nome progetto PyPI: `agentharness-verifier`
 - owner GitHub: `fabioscialanga`
 - repository GitHub: `AgentHarness`
 - file workflow: `release.yml`
@@ -49,7 +49,7 @@ Il workflow attivato dal tag:
 
 ```bash
 python3 -m venv /tmp/agentharness-release-check
-/tmp/agentharness-release-check/bin/python -m pip install agentharness==0.1.0
+/tmp/agentharness-release-check/bin/python -m pip install agentharness-verifier==0.1.0
 /tmp/agentharness-release-check/bin/agentharness --help
 ```
 

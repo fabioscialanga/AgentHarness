@@ -14,7 +14,7 @@ AgentHarness can turn a pull-request test claim into a persistent verification a
 
 ## Install it
 
-After the `0.1.0` package is published on PyPI:
+After `agentharness-verifier` version `0.1.0` is published on PyPI:
 
 ```bash
 mkdir -p .github/workflows
@@ -25,7 +25,7 @@ Before that release, replace the PyPI install line in the copied workflow with a
 
 ```bash
 python -m pip install \
-  "agentharness @ git+https://github.com/fabioscialanga/AgentHarness.git@3d17631808481671d06740769d5ea30d41198bc0"
+  "git+https://github.com/fabioscialanga/AgentHarness.git@main"
 ```
 
 ## Adapt it to the project

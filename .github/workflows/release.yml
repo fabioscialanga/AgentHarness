@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/agentharness
+      url: https://pypi.org/p/agentharness-verifier
     permissions:
       id-token: write
 
