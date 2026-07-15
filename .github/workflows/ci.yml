@@ -81,7 +81,7 @@ jobs:
         run: |
           python -m venv /tmp/agentharness-smoke-venv
           /tmp/agentharness-smoke-venv/bin/python -m pip install --upgrade pip
-          /tmp/agentharness-smoke-venv/bin/python -m pip install dist/agentharness-*.whl
+          /tmp/agentharness-smoke-venv/bin/python -m pip install dist/agentharness_verifier-*.whl
 
       - name: Verify installed CLI and one-command product path
         shell: bash
