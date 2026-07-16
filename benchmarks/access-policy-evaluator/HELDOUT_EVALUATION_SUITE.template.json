@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "case_id": "access_policy_evaluator_1",
+      "kind": "functional"
+    },
+    {
+      "case_id": "access_policy_evaluator_2",
+      "kind": "functional"
+    },
+    {
+      "case_id": "access_policy_evaluator_3",
+      "kind": "functional"
+    },
+    {
+      "case_id": "access_policy_evaluator_4",
+      "kind": "functional"
+    },
+    {
+      "case_id": "access_policy_evaluator_5",
+      "kind": "functional"
+    },
+    {
+      "case_id": "evaluation_result_schema",
+      "kind": "schema"
+    }
+  ],
+  "schema_version": 1,
+  "task_id": "access-policy-evaluator"
+}

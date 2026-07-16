@@ -1,0 +1,4 @@
+[project]
+name="safe-archive-reference"
+version="0.1.0"
+dependencies=["pytest"]

@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "case_id": "safe_archive_extraction_1",
+      "kind": "functional"
+    },
+    {
+      "case_id": "safe_archive_extraction_2",
+      "kind": "functional"
+    },
+    {
+      "case_id": "safe_archive_extraction_3",
+      "kind": "functional"
+    },
+    {
+      "case_id": "safe_archive_extraction_4",
+      "kind": "functional"
+    },
+    {
+      "case_id": "safe_archive_extraction_5",
+      "kind": "functional"
+    },
+    {
+      "case_id": "evaluation_result_schema",
+      "kind": "schema"
+    }
+  ],
+  "schema_version": 1,
+  "task_id": "safe-archive-extraction"
+}

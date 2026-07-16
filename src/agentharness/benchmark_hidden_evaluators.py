@@ -1106,6 +1106,15 @@ def _evaluate_benchmark_task_in_worker(workspace: Path, task_id: str, evaluation
         from .benchmark_hidden_evaluators_batch1 import evaluate_batch1_task
 
         result = evaluate_batch1_task(workspace, normalized_task_id)
+    elif normalized_task_id in {
+        "dependency-impact-planner",
+        "access-policy-evaluator",
+        "versioned-document-api",
+        "safe-archive-extraction",
+    }:
+        from .benchmark_hidden_evaluators_batch2 import evaluate_batch2_task
+
+        result = evaluate_batch2_task(workspace, normalized_task_id)
     else:
         raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
     result.evaluation_instance_id = evaluation_instance_id

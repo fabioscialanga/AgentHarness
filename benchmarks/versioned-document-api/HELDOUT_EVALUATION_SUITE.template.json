@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "case_id": "versioned_document_api_1",
+      "kind": "functional"
+    },
+    {
+      "case_id": "versioned_document_api_2",
+      "kind": "functional"
+    },
+    {
+      "case_id": "versioned_document_api_3",
+      "kind": "functional"
+    },
+    {
+      "case_id": "versioned_document_api_4",
+      "kind": "functional"
+    },
+    {
+      "case_id": "versioned_document_api_5",
+      "kind": "functional"
+    },
+    {
+      "case_id": "evaluation_result_schema",
+      "kind": "schema"
+    }
+  ],
+  "schema_version": 1,
+  "task_id": "versioned-document-api"
+}

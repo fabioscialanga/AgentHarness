@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "claim_id": "workspace_forbidden_paths",
+      "claim_type": "forbidden_paths",
+      "paths": [
+        ".agentharness/evaluation",
+        ".agentharness/hidden-evaluator",
+        "benchmarks/grading-env"
+      ]
+    },
+    {
+      "claim_id": "workspace_tests_executed",
+      "claim_type": "tests_executed",
+      "required": true
+    },
+    {
+      "claim_id": "workspace_artifact_present",
+      "claim_type": "artifact_present",
+      "path": "pyproject.toml"
+    }
+  ],
+  "schema_version": 1
+}

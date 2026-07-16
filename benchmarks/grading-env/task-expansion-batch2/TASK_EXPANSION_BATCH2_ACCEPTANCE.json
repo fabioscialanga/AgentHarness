@@ -1,0 +1,724 @@
+{
+  "all_prior_overlap_matrix": [
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent.",
+      "prior_task": "support-ticket-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting.",
+      "prior_task": "csv-member-import",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases.",
+      "prior_task": "incident-escalation-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts.",
+      "prior_task": "inventory-adjustment-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules.",
+      "prior_task": "leave-request-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can implement a threshold-based approval flow with staged authorization rules.",
+      "prior_task": "refund-approval-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can implement a threshold-based approval flow with staged authorization rules."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding.",
+      "prior_task": "report-export-job",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules.",
+      "prior_task": "webhook-ingestion-service",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability.",
+      "prior_task": "appointment-booking-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants.",
+      "prior_task": "shipment-event-api",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output.",
+      "prior_task": "jsonl-event-aggregation",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output."
+    },
+    {
+      "new_construct": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning",
+      "new_task": "dependency-impact-planner",
+      "prior_objective": "Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs.",
+      "prior_task": "invoice-payment-reconciliation",
+      "substantive_difference": "reverse graph closure, topological parallel levels, cycle rejection, and canonical offline planning; unlike the prior task objective: Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent.",
+      "prior_task": "support-ticket-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting.",
+      "prior_task": "csv-member-import",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases.",
+      "prior_task": "incident-escalation-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts.",
+      "prior_task": "inventory-adjustment-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules.",
+      "prior_task": "leave-request-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can implement a threshold-based approval flow with staged authorization rules.",
+      "prior_task": "refund-approval-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can implement a threshold-based approval flow with staged authorization rules."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding.",
+      "prior_task": "report-export-job",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules.",
+      "prior_task": "webhook-ingestion-service",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability.",
+      "prior_task": "appointment-booking-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants.",
+      "prior_task": "shipment-event-api",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output.",
+      "prior_task": "jsonl-event-aggregation",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output."
+    },
+    {
+      "new_construct": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity",
+      "new_task": "access-policy-evaluator",
+      "prior_objective": "Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs.",
+      "prior_task": "invoice-payment-reconciliation",
+      "substantive_difference": "stateless wildcard policy matching, subject/group composition, deny precedence, and request-supplied temporal validity; unlike the prior task objective: Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent.",
+      "prior_task": "support-ticket-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting.",
+      "prior_task": "csv-member-import",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases.",
+      "prior_task": "incident-escalation-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts.",
+      "prior_task": "inventory-adjustment-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules.",
+      "prior_task": "leave-request-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can implement a threshold-based approval flow with staged authorization rules.",
+      "prior_task": "refund-approval-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can implement a threshold-based approval flow with staged authorization rules."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding.",
+      "prior_task": "report-export-job",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules.",
+      "prior_task": "webhook-ingestion-service",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability.",
+      "prior_task": "appointment-booking-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants.",
+      "prior_task": "shipment-event-api",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output.",
+      "prior_task": "jsonl-event-aggregation",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output."
+    },
+    {
+      "new_construct": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision",
+      "new_task": "versioned-document-api",
+      "prior_objective": "Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs.",
+      "prior_task": "invoice-payment-reconciliation",
+      "substantive_difference": "generic JSON revision history, RFC 7396 merge patch, ETag compare-and-swap, and restore-as-new-revision; unlike the prior task objective: Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent.",
+      "prior_task": "support-ticket-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: This benchmark is designed to test whether AgentHarness produces a materially better engineering outcome than a no-framework baseline when both start from the same product intent."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting.",
+      "prior_task": "csv-member-import",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can implement a deterministic import utility where correctness depends on normalization, duplicate handling, and rejection reporting."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases.",
+      "prior_task": "incident-escalation-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can implement time-based escalation rules that are easy to mishandle in edge cases."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts.",
+      "prior_task": "inventory-adjustment-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can implement inventory business rules that are easy to violate subtly, while still producing reviewable run artifacts."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules.",
+      "prior_task": "leave-request-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can implement a compact approval workflow with overlap checks and terminal-state rules."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can implement a threshold-based approval flow with staged authorization rules.",
+      "prior_task": "refund-approval-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can implement a threshold-based approval flow with staged authorization rules."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding.",
+      "prior_task": "report-export-job",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can build a deterministic export job where business correctness lives in totals, filters, and output formatting rather than HTTP scaffolding."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules.",
+      "prior_task": "webhook-ingestion-service",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure whether the agent can implement a compact event-ingestion service with signature checking, idempotency, and normalization rules."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability.",
+      "prior_task": "appointment-booking-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure implementation of interval scheduling, resource-scoped conflicts, atomic rescheduling, cancellation, and availability."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants.",
+      "prior_task": "shipment-event-api",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure implementation of an append-only event log, ordered state projection, idempotency, and terminal-state invariants."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output.",
+      "prior_task": "jsonl-event-aggregation",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure deterministic streaming-style aggregation, UTC normalization, validation, duplicate semantics, and auditable rejection output."
+    },
+    {
+      "new_construct": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization",
+      "new_task": "safe-archive-extraction",
+      "prior_objective": "Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs.",
+      "prior_task": "invoice-payment-reconciliation",
+      "substantive_difference": "adversarial ZIP metadata validation, filesystem containment, namespace collision preflight, and atomic materialization; unlike the prior task objective: Measure exact decimal reconciliation, cutoff semantics, one-to-many matching, duplicate handling, and internally consistent financial outputs."
+    }
+  ],
+  "artifact_sha256": {
+    "benchmarks/access-policy-evaluator/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/access-policy-evaluator/HELDOUT_EVALUATION_SUITE.template.json": "851b7185adf54d144c33907a7254c31446d55ddf7ea201509b820352a3bc1b5d",
+    "benchmarks/access-policy-evaluator/QUALITY_GATE.md": "048b57d86074181a4866033156f7f6c6562025cb536e07a26ad6165632308106",
+    "benchmarks/access-policy-evaluator/SPEC.md": "84c31f1f87126f05cdc2173234e168ce1f8575d43efe8adcea4065f42944be1b",
+    "benchmarks/dependency-impact-planner/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/dependency-impact-planner/HELDOUT_EVALUATION_SUITE.template.json": "96b2be86d6579a544969637a9979bc424c91e65dd038ac2083e706e4906fbbe5",
+    "benchmarks/dependency-impact-planner/QUALITY_GATE.md": "0e6e50b18e66f803b631ea8dfd5a09572e0e361ad84230920e8deea9be09bcf1",
+    "benchmarks/dependency-impact-planner/SPEC.md": "d7f0e8017a6e8bc7a79d35ae3ad24628ce111ef549331669956b86f67467a7fb",
+    "benchmarks/grading-env/audit_task_expansion_batch2.py": "aa4a135c94c596ae2b414549f4cd6f0dc91ec2f02b6d6a55ffe7955591ca172f",
+    "benchmarks/grading-env/task-expansion-batch2/MUTATION_SENSITIVITY.json": "d5ce8a1b3c18c8733e149945b405cbc16649b4f538e2a490e5f7c18473a63453",
+    "benchmarks/grading-env/task-expansion-batch2/references/access-policy-evaluator/README.md": "cb9e3f8abdfe5ae5b5d8cdaa7f71447b53f3a4467ebec7461cda34524ec0b5b9",
+    "benchmarks/grading-env/task-expansion-batch2/references/access-policy-evaluator/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch2/references/access-policy-evaluator/app/evaluate_policy.py": "925ec4397011f9458c1e2c81385256ad4ea3442a128ab529ec04153a3540bdd6",
+    "benchmarks/grading-env/task-expansion-batch2/references/access-policy-evaluator/pyproject.toml": "a8bb2ddc23c9c3ce61af085812973f1db0bfc66bbb252f6eadc4830c0125d2a9",
+    "benchmarks/grading-env/task-expansion-batch2/references/dependency-impact-planner/README.md": "cb9e3f8abdfe5ae5b5d8cdaa7f71447b53f3a4467ebec7461cda34524ec0b5b9",
+    "benchmarks/grading-env/task-expansion-batch2/references/dependency-impact-planner/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch2/references/dependency-impact-planner/app/plan_dependencies.py": "17011eade5155fa6ae4781f3bd418ed848c73a1e1b30397270243188d02a35f7",
+    "benchmarks/grading-env/task-expansion-batch2/references/dependency-impact-planner/pyproject.toml": "66e89d2c2010922f5d14b2acdf67a6d2145fb66b920f04fdf603dc90d7a4afa8",
+    "benchmarks/grading-env/task-expansion-batch2/references/safe-archive-extraction/README.md": "cb9e3f8abdfe5ae5b5d8cdaa7f71447b53f3a4467ebec7461cda34524ec0b5b9",
+    "benchmarks/grading-env/task-expansion-batch2/references/safe-archive-extraction/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch2/references/safe-archive-extraction/app/extract_archive.py": "39ba440d80a124f0b29bcdcd75adb12297fb7aea111ba1548bdfd1b79e93c6d8",
+    "benchmarks/grading-env/task-expansion-batch2/references/safe-archive-extraction/pyproject.toml": "cdcbcea75a2fe5cd8b4a111bd47af63457c86d9896bbc47b0d92969d41488660",
+    "benchmarks/grading-env/task-expansion-batch2/references/versioned-document-api/README.md": "cb9e3f8abdfe5ae5b5d8cdaa7f71447b53f3a4467ebec7461cda34524ec0b5b9",
+    "benchmarks/grading-env/task-expansion-batch2/references/versioned-document-api/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch2/references/versioned-document-api/app/main.py": "9ea7f20a73a96a69a62fe44cece336416aed8392c38ff14982b5d3f1fc8b6f1e",
+    "benchmarks/grading-env/task-expansion-batch2/references/versioned-document-api/pyproject.toml": "2df0802dbba3712b48fbde740073a283b766f89af250a6e3dda5d6401c74eb17",
+    "benchmarks/safe-archive-extraction/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/safe-archive-extraction/HELDOUT_EVALUATION_SUITE.template.json": "e93072eb80329fe3b0d4384a6792f10103ad8704144a49c41b812af6de3a63c3",
+    "benchmarks/safe-archive-extraction/QUALITY_GATE.md": "91a8d95bd5dbeef47cc342d7762829b7ff582d32f13e177b0ce42fd27ba26baf",
+    "benchmarks/safe-archive-extraction/SPEC.md": "a4281f93bb9cc6dcc873c3362b4eaf463f606e7e78872ba123078c647f42e3da",
+    "benchmarks/versioned-document-api/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/versioned-document-api/HELDOUT_EVALUATION_SUITE.template.json": "50820b14c6c8036aba44c8f75cab028589507000a850f3fb2f1c3d295105384c",
+    "benchmarks/versioned-document-api/QUALITY_GATE.md": "75cafb9ceca22797e04b512e4ddbbb7f98102f24562a0b14fa668f777dd9f6dc",
+    "benchmarks/versioned-document-api/SPEC.md": "85494830a13b8f9fcb3396dc935b022f40b142d96621f55607c0767a6a66425b",
+    "src/agentharness/benchmark_hidden_evaluators.py": "9dd4bea55182c3d62b11112c7ffdb66fd8ca3ed66991299846cd39c9a43efb70",
+    "src/agentharness/benchmark_hidden_evaluators_batch2.py": "8a4b16f239140fcac1df1e15bcf72cccc2f5c6038588841767513ce2bceec4ab",
+    "tests/test_task_expansion_batch2.py": "3f15f9f3d3604a06a47032e507416cd408ef3a118886e708c7781374669053c2"
+  },
+  "authorization": "task-pack acceptance only; no A/B or confirmatory launch",
+  "base_commit": "c717087921dce822bc38369ce5386889e55bc9a2",
+  "dynamic_tests": {
+    "command": "PYTHONPATH=src /home/fabio/AgentHarness/.venv/bin/python -m pytest -q tests/test_task_expansion_batch2.py",
+    "exit_code": 0,
+    "ok": true,
+    "python_executable": "/home/fabio/AgentHarness/.venv/bin/python",
+    "python_version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+    "stderr": "",
+    "stdout": ".....                                    [100%]\n5 passed, 32 subtests passed in 375.55s (0:06:15)\n"
+  },
+  "efficacy_cells_collected": 0,
+  "generated_at": "2026-07-16T19:26:13.820517Z",
+  "go": true,
+  "new_task_pairwise_overlap": [
+    {
+      "left": "dependency-impact-planner",
+      "right": "access-policy-evaluator",
+      "shared_shell": "deterministic JSON CLI",
+      "substantive_difference": "graph closure/topological layers versus policy matching and deny precedence"
+    },
+    {
+      "left": "dependency-impact-planner",
+      "right": "versioned-document-api",
+      "shared_shell": "JSON validation and atomic failure",
+      "substantive_difference": "offline graph planning versus durable optimistic-concurrency revision service"
+    },
+    {
+      "left": "dependency-impact-planner",
+      "right": "safe-archive-extraction",
+      "shared_shell": "preflight validation before artifact commit",
+      "substantive_difference": "graph semantics and cycles versus adversarial ZIP/filesystem containment"
+    },
+    {
+      "left": "access-policy-evaluator",
+      "right": "versioned-document-api",
+      "shared_shell": "JSON objects and controlled invalid handling",
+      "substantive_difference": "stateless rule interpretation versus mutable versioned persistence with ETags"
+    },
+    {
+      "left": "access-policy-evaluator",
+      "right": "safe-archive-extraction",
+      "shared_shell": "deterministic CLI outputs",
+      "substantive_difference": "authorization decision algebra versus binary archive and filesystem safety"
+    },
+    {
+      "left": "versioned-document-api",
+      "right": "safe-archive-extraction",
+      "shared_shell": "atomic mutation/commit guarantees",
+      "substantive_difference": "revision-preserving online writes versus all-or-nothing filesystem materialization"
+    }
+  ],
+  "overlap_matrix": [
+    {
+      "check_id": "dependency_reverse_impact",
+      "nearest_existing_task": "jsonl-event-aggregation",
+      "substantive_difference": "reverse transitive graph closure rather than grouped record aggregation",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "check_id": "dependency_parallel_levels",
+      "nearest_existing_task": "jsonl-event-aggregation",
+      "substantive_difference": "topological parallel layers rather than sorted output groups",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "check_id": "dependency_deterministic_output",
+      "nearest_existing_task": "jsonl-event-aggregation",
+      "substantive_difference": "canonical graph plans under equivalent graph order rather than stream aggregation order",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "check_id": "dependency_graph_validation",
+      "nearest_existing_task": "jsonl-event-aggregation",
+      "substantive_difference": "referential graph integrity rather than per-line record validation",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "check_id": "dependency_cycle_atomic",
+      "nearest_existing_task": "jsonl-event-aggregation",
+      "substantive_difference": "cycle impossibility with no partial plan rather than malformed-line rejection",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "check_id": "policy_wildcard_matching",
+      "nearest_existing_task": "refund-approval-api",
+      "substantive_difference": "pattern-based action/resource interpretation rather than numeric approval routing",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "check_id": "policy_subject_group_composition",
+      "nearest_existing_task": "refund-approval-api",
+      "substantive_difference": "stateless subject/group rule composition rather than persisted workflow roles",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "check_id": "policy_deny_default_precedence",
+      "nearest_existing_task": "refund-approval-api",
+      "substantive_difference": "deny-overrides policy algebra rather than approval-state transitions",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "check_id": "policy_temporal_validity",
+      "nearest_existing_task": "refund-approval-api",
+      "substantive_difference": "request-supplied temporal rule windows rather than workflow timestamps",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "check_id": "policy_rejections_determinism",
+      "nearest_existing_task": "refund-approval-api",
+      "substantive_difference": "mixed valid/invalid policy request streaming rather than CRUD error responses",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "check_id": "document_create_etag_persistence",
+      "nearest_existing_task": "shipment-event-api",
+      "substantive_difference": "durable generic JSON revision plus ETag rather than shipment creation/state",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "check_id": "document_if_match_atomic",
+      "nearest_existing_task": "shipment-event-api",
+      "substantive_difference": "optimistic compare-and-swap rather than event idempotency",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "check_id": "document_merge_patch",
+      "nearest_existing_task": "shipment-event-api",
+      "substantive_difference": "RFC 7396 structural merge rather than domain event projection",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "check_id": "document_revision_history",
+      "nearest_existing_task": "shipment-event-api",
+      "substantive_difference": "immutable full JSON snapshots rather than shipment event history",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "check_id": "document_restore_history",
+      "nearest_existing_task": "shipment-event-api",
+      "substantive_difference": "historical snapshot restored as a new revision rather than lifecycle reversal",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "check_id": "archive_extract_manifest",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "binary ZIP extraction with cryptographic content manifest rather than CSV row import",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "check_id": "archive_path_containment_atomic",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "adversarial filesystem path containment rather than field validation",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "check_id": "archive_special_entry_rejection",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "ZIP metadata type safety rather than data-record typing",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "check_id": "archive_collision_atomic",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "normalized filesystem namespace collision preflight rather than duplicate member records",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "check_id": "archive_limits_corruption_atomic",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "archive resource limits and binary corruption handling rather than row rejection",
+      "task_id": "safe-archive-extraction"
+    }
+  ],
+  "schema_version": 1,
+  "static_checks": {
+    "_batch": {
+      "all_prior_overlap_complete": {
+        "detail": "pairs=48",
+        "ok": true
+      },
+      "pairwise_complete": {
+        "detail": "[('access-policy-evaluator', 'dependency-impact-planner'), ('access-policy-evaluator', 'safe-archive-extraction'), ('access-policy-evaluator', 'versioned-document-api'), ('dependency-impact-planner', 'safe-archive-extraction'), ('dependency-impact-planner', 'versioned-document-api'), ('safe-archive-extraction', 'versioned-document-api')]",
+        "ok": true
+      }
+    },
+    "access-policy-evaluator": {
+      "claims_process_only": {
+        "detail": "process claims only",
+        "ok": true
+      },
+      "clean_tree": {
+        "detail": "[]",
+        "ok": true
+      },
+      "five_plus_schema": {
+        "detail": "['access_policy_evaluator_1', 'access_policy_evaluator_2', 'access_policy_evaluator_3', 'access_policy_evaluator_4', 'access_policy_evaluator_5', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "forbidden_text_absent": {
+        "detail": "no treatment/evaluator leakage",
+        "ok": true
+      },
+      "hidden_ids_absent": {
+        "detail": "functional IDs absent from visible bundle",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/task-expansion-batch2/references/access-policy-evaluator",
+        "ok": true
+      },
+      "nearest_overlap_complete": {
+        "detail": "refund-approval-api",
+        "ok": true
+      },
+      "sensitivity_complete": {
+        "detail": "mutants=5",
+        "ok": true
+      },
+      "visible_allowlist": {
+        "detail": "['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      }
+    },
+    "dependency-impact-planner": {
+      "claims_process_only": {
+        "detail": "process claims only",
+        "ok": true
+      },
+      "clean_tree": {
+        "detail": "[]",
+        "ok": true
+      },
+      "five_plus_schema": {
+        "detail": "['dependency_impact_planner_1', 'dependency_impact_planner_2', 'dependency_impact_planner_3', 'dependency_impact_planner_4', 'dependency_impact_planner_5', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "forbidden_text_absent": {
+        "detail": "no treatment/evaluator leakage",
+        "ok": true
+      },
+      "hidden_ids_absent": {
+        "detail": "functional IDs absent from visible bundle",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/task-expansion-batch2/references/dependency-impact-planner",
+        "ok": true
+      },
+      "nearest_overlap_complete": {
+        "detail": "jsonl-event-aggregation",
+        "ok": true
+      },
+      "sensitivity_complete": {
+        "detail": "mutants=5",
+        "ok": true
+      },
+      "visible_allowlist": {
+        "detail": "['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      }
+    },
+    "safe-archive-extraction": {
+      "claims_process_only": {
+        "detail": "process claims only",
+        "ok": true
+      },
+      "clean_tree": {
+        "detail": "[]",
+        "ok": true
+      },
+      "five_plus_schema": {
+        "detail": "['safe_archive_extraction_1', 'safe_archive_extraction_2', 'safe_archive_extraction_3', 'safe_archive_extraction_4', 'safe_archive_extraction_5', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "forbidden_text_absent": {
+        "detail": "no treatment/evaluator leakage",
+        "ok": true
+      },
+      "hidden_ids_absent": {
+        "detail": "functional IDs absent from visible bundle",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/task-expansion-batch2/references/safe-archive-extraction",
+        "ok": true
+      },
+      "nearest_overlap_complete": {
+        "detail": "csv-member-import",
+        "ok": true
+      },
+      "sensitivity_complete": {
+        "detail": "mutants=5",
+        "ok": true
+      },
+      "visible_allowlist": {
+        "detail": "['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      }
+    },
+    "versioned-document-api": {
+      "claims_process_only": {
+        "detail": "process claims only",
+        "ok": true
+      },
+      "clean_tree": {
+        "detail": "[]",
+        "ok": true
+      },
+      "five_plus_schema": {
+        "detail": "['versioned_document_api_1', 'versioned_document_api_2', 'versioned_document_api_3', 'versioned_document_api_4', 'versioned_document_api_5', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "forbidden_text_absent": {
+        "detail": "no treatment/evaluator leakage",
+        "ok": true
+      },
+      "hidden_ids_absent": {
+        "detail": "functional IDs absent from visible bundle",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/task-expansion-batch2/references/versioned-document-api",
+        "ok": true
+      },
+      "nearest_overlap_complete": {
+        "detail": "shipment-event-api",
+        "ok": true
+      },
+      "sensitivity_complete": {
+        "detail": "mutants=5",
+        "ok": true
+      },
+      "visible_allowlist": {
+        "detail": "['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      }
+    }
+  },
+  "task_ids": [
+    "dependency-impact-planner",
+    "access-policy-evaluator",
+    "versioned-document-api",
+    "safe-archive-extraction"
+  ]
+}

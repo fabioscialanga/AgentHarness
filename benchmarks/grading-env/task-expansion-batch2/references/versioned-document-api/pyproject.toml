@@ -1,0 +1,4 @@
+[project]
+name="versioned-document-reference"
+version="0.1.0"
+dependencies=["fastapi","pydantic","sqlalchemy","pytest"]

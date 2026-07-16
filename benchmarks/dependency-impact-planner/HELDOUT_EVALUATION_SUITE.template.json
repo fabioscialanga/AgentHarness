@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "case_id": "dependency_impact_planner_1",
+      "kind": "functional"
+    },
+    {
+      "case_id": "dependency_impact_planner_2",
+      "kind": "functional"
+    },
+    {
+      "case_id": "dependency_impact_planner_3",
+      "kind": "functional"
+    },
+    {
+      "case_id": "dependency_impact_planner_4",
+      "kind": "functional"
+    },
+    {
+      "case_id": "dependency_impact_planner_5",
+      "kind": "functional"
+    },
+    {
+      "case_id": "evaluation_result_schema",
+      "kind": "schema"
+    }
+  ],
+  "schema_version": 1,
+  "task_id": "dependency-impact-planner"
+}

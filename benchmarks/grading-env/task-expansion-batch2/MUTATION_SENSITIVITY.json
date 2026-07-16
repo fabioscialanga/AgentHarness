@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "tasks": {
+    "dependency-impact-planner": {
+      "dependency_graph_validation": {"expected_failed_checks": ["dependency_graph_validation"], "rationale": "Graph validation defect."},
+      "dependency_reverse_impact": {"expected_failed_checks": ["dependency_reverse_impact"], "rationale": "Reverse closure defect."},
+      "dependency_parallel_levels": {"expected_failed_checks": ["dependency_parallel_levels"], "rationale": "Layering defect."},
+      "dependency_deterministic_output": {"expected_failed_checks": ["dependency_deterministic_output"], "rationale": "Byte determinism defect."},
+      "dependency_cycle_atomic": {"expected_failed_checks": ["dependency_cycle_atomic"], "rationale": "Cycle atomicity defect."}
+    },
+    "access-policy-evaluator": {
+      "policy_wildcard_matching": {"expected_failed_checks": ["policy_wildcard_matching"], "rationale": "Wildcard defect."},
+      "policy_subject_group_composition": {"expected_failed_checks": ["policy_subject_group_composition"], "rationale": "Subject composition defect."},
+      "policy_deny_default_precedence": {"expected_failed_checks": ["policy_deny_default_precedence"], "rationale": "Deny precedence defect."},
+      "policy_temporal_validity": {"expected_failed_checks": ["policy_temporal_validity"], "rationale": "Temporal boundary defect."},
+      "policy_rejections_determinism": {"expected_failed_checks": ["policy_rejections_determinism"], "rationale": "Rejection/determinism defect."}
+    },
+    "versioned-document-api": {
+      "document_create_etag_persistence": {"expected_failed_checks": ["document_create_etag_persistence"], "rationale": "Cross-process persistence defect."},
+      "document_if_match_atomic": {"expected_failed_checks": ["document_if_match_atomic"], "rationale": "CAS defect."},
+      "document_merge_patch": {"expected_failed_checks": ["document_merge_patch"], "rationale": "Merge semantics defect."},
+      "document_revision_history": {"expected_failed_checks": ["document_revision_history"], "rationale": "History ordering defect."},
+      "document_restore_history": {"expected_failed_checks": ["document_restore_history"], "rationale": "Restore revision defect."}
+    },
+    "safe-archive-extraction": {
+      "archive_extract_manifest": {"expected_failed_checks": ["archive_extract_manifest"], "rationale": "Manifest integrity defect."},
+      "archive_path_containment_atomic": {"expected_failed_checks": ["archive_path_containment_atomic"], "rationale": "Containment defect."},
+      "archive_special_entry_rejection": {"expected_failed_checks": ["archive_special_entry_rejection"], "rationale": "Special entry defect."},
+      "archive_collision_atomic": {"expected_failed_checks": ["archive_collision_atomic"], "rationale": "Collision defect."},
+      "archive_limits_corruption_atomic": {"expected_failed_checks": ["archive_limits_corruption_atomic"], "rationale": "Limit atomicity defect."}
+    }
+  }
+}
