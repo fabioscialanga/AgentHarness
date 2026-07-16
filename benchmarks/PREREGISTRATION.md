@@ -1123,6 +1123,23 @@ Interpretation boundary:
 - it is not evidence that condition B improves task quality, does not estimate any treatment effect, and does not alter or supersede the official 2026-07-15 result
 - this execution record does not itself authorize a renewed efficacy campaign, choose a campaign design, recalculate power, or support a public efficacy claim
 
+#### 17.20 Model-transition safety-pilot amendment (2026-07-16, before any GPT-5.6 safety-pilot data)
+
+The replacement pilot recorded in section 17.19 explicitly overrode the Hermes default and ran on `openai-codex/gpt-5.4`, matching the earlier campaign provider/model pin. The live Hermes default is now `openai-codex/gpt-5.6-sol`. The section 17.19 GO remains valid evidence for GPT-5.4 only and must not be represented as live delivery evidence for GPT-5.6 Sol.
+
+Before any efficacy campaign using GPT-5.6 Sol, one model-transition safety pilot is authorized under these frozen rules:
+- use exactly six entirely fresh cells: `inventory-adjustment-api`, `leave-request-api`, and `refund-approval-api`, one replicate in each of `A-baseline` and `B-agentharness`
+- pin provider `openai-codex`, model `gpt-5.6-sol`, maximum turns 40, agent timeout 1800 seconds, pytest timeout 180 seconds, and inter-cell delay 30 seconds before the first provider call
+- use the same amended treatment, correction 32, repair-safety gate, hidden-evaluator prohibition, held-out-score prohibition, contrast prohibition, GO conditions, and immediate STOP rule frozen in sections 17.17 and 17.18
+- create a new run root and fresh workspaces; no workspace, result, or GO status from the GPT-5.4 pilots may be reused
+- persist launch SHA, matching origin/main SHA, launcher path and SHA-256, model pin, randomization seed and method, and exact six-cell order before the first provider call
+- do not invoke a hidden evaluator, produce or read a held-out task score, calculate an A-versus-B endpoint, or interpret arm differences
+
+Interpretation rule:
+- six of six GO permits the treatment-delivery and repair-safety channel to be treated as operationally validated for GPT-5.6 Sol
+- any failed GO condition triggers STOP after the affected cell and requires a new dated diagnosis before any additional cell or campaign
+- even a complete GO is not efficacy evidence and does not authorize a public treatment-effect claim
+
 ---
 
 ## Freeze
