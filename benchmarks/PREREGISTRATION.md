@@ -1102,6 +1102,27 @@ Replacement pilot rules:
 
 This dated amendment authorizes one replacement safety pilot under these frozen corrections only. It still does not authorize a hidden evaluation, efficacy campaign, power recalculation, A-versus-B contrast, or public efficacy claim.
 
+#### 17.19 Replacement safety-pilot execution record (2026-07-16, post-pilot)
+
+The replacement pilot authorized by section 17.18 completed from launch and origin/main SHA `d5d27108c9415e7051a56c2c893b41cec4985cfd`. Its immutable launch metadata, exact randomized order, raw cell artifacts, result records, and independent audit are stored under `/home/fabio/AgentHarness-benchmark-runs/repair-safety-pilot-v2-20260716T075933Z`.
+
+Operational result:
+- all 6 frozen fresh cells completed and passed the cell-level GO audit
+- all 6 invocations had exit code 0 with captured invocation evidence
+- all required treatment artifacts were present and non-empty; both B prompts referenced valid structured verify-run reports with feedback
+- all applicable B canonical commands completed controlled reexecution with the recorded workspace interpreter, cwd, `PYTHONPATH`, and grading environment, and declared versus reexecuted pytest exits agreed
+- all 6 cells emitted a repair-safety report and cumulative diff
+- no safety-gate infrastructure error, treatment-delivery error, rollback error, unclassified invalid, or forbidden hidden-evaluation artifact was observed
+- no rollback was required in these six live cells; therefore live rollback recovery was not exercised by this pilot, while the deterministic regression and exception paths remain covered by the versioned automated test suite
+- no hidden evaluator was invoked, no held-out score was produced or read, and no A-versus-B endpoint or contrast was computed
+- the independently recomputed launcher SHA-256 matched the preregistered metadata value `464894b6e89da2f50a799e466684803c78ff8e39c68a38e660effc3c61cb7220`
+- the independent audit is `pilot-independent-audit.json` in the replacement run root and records `pilot_go = true`
+
+Interpretation boundary:
+- this is a GO for the amended treatment-delivery, canonical-reexecution, and repair-safety channel under the six-cell pilot protocol
+- it is not evidence that condition B improves task quality, does not estimate any treatment effect, and does not alter or supersede the official 2026-07-15 result
+- this execution record does not itself authorize a renewed efficacy campaign, choose a campaign design, recalculate power, or support a public efficacy claim
+
 ---
 
 ## Freeze
