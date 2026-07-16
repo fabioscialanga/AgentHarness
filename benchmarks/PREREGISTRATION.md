@@ -1278,6 +1278,45 @@ Batch GO rule:
 - fixes based only on structural gate failures or reference-fixture diagnostics are allowed before batch acceptance and must be documented in the acceptance report
 - after GO, a dated post-build amendment must record task hashes and acceptance-report hash; it still does not authorize efficacy collection
 
+### 17.25 Stage 2 task-expansion batch 1 accepted under non-efficacy gates (2026-07-16)
+
+Artifact commit:
+- `1c2cff8249d80e416de1025904cc7aea69793ffc`
+- pushed to `origin/main` before this post-build amendment
+
+Accepted task identities:
+- `appointment-booking-api`
+- `shipment-event-api`
+- `jsonl-event-aggregation`
+- `invoice-payment-reconciliation`
+
+Acceptance evidence:
+- machine-readable report: `benchmarks/grading-env/task-expansion-batch1/TASK_EXPANSION_BATCH1_ACCEPTANCE.json`
+- report SHA-256: `bdce1dc6705aa77a388e609ff74d104697346c1caf11facd1a9e4c16ae297673`
+- human-readable report: `benchmarks/grading-env/task-expansion-batch1/TASK_EXPANSION_BATCH1_ACCEPTANCE.md`
+- Markdown report SHA-256: `edbd6fdf5644f1f76558a9f6f3e1eca987ae27293b825676a1fadd150bcb5f07`
+- the JSON report freezes 37 artifact hashes, including all four task packs, both evaluator modules, all hidden reference implementations, the mutation-sensitivity matrix, the audit program, and the batch test module
+- the task-pack generator reproduced all 16 visible pack files byte-identically
+
+Gate results:
+- all four independent reference-positive implementations passed all five functional checks
+- all 20 targeted mutants matched their exact preregistered failed-check and passed-check sets
+- 12 clean-room evaluations across three hash seeds per task produced identical classifications
+- API persistence was tested by creating in a child process that terminated before the evaluator worker performed the read; write-ack/rollback mutants were rejected by that cross-process probe
+- malformed or timezone-naive timestamp probes returned controlled 4xx responses and left persisted state unchanged
+- all six pairwise comparisons among the four new tasks and all 20 nearest-existing-task comparisons have explicit shared-shell and substantive-difference records
+- batch validation result: `4 passed, 32 subtests passed in 356.99s`
+- pre-existing repository suite result, excluding only the already-certified batch matrix: `170 passed, 15 skipped in 456.69s`
+- final independent blind gate review: GO with no blocking findings
+
+Interpretation and authorization boundary:
+- this amendment accepts only construction, non-leakage, determinism, persistence, mutation adequacy, and evaluator reachability for these four task packs
+- efficacy cells collected during this batch: `0`
+- no A/B contrast was read or used to build, repair, or accept any task
+- these four tasks may count toward the 24-task expansion target
+- this amendment does not authorize a task-solving pilot, an A/B run, the 672-cell confirmatory campaign, or any efficacy claim
+- the next task-expansion batch requires its own pre-build identity freeze and the same non-efficacy acceptance gates before it can count toward the target
+
 ---
 
 ## Freeze
