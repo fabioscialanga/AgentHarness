@@ -1249,6 +1249,35 @@ Authorization state:
 - the 672-cell confirmatory campaign is not yet authorized
 - no hidden efficacy run may begin from this amendment alone
 
+### 17.24 Task-expansion batch 1 identity and acceptance freeze (2026-07-16)
+
+Scope:
+- this batch is development and evaluator validation only; no A/B agent cell, held-out efficacy score, task-level contrast, or campaign launcher is authorized
+- batch size is four tasks, balanced as two HTTP APIs and two deterministic CLI/batch utilities
+
+Frozen task IDs and public problem families:
+- `appointment-booking-api`: appointment-slot publication, booking, conflict prevention, cancellation, and availability
+- `shipment-event-api`: shipment creation, ordered event ingestion, idempotency, current-state projection, and event history
+- `jsonl-event-aggregation`: deterministic JSONL ingestion, normalization, duplicate handling, rejection reporting, and aggregate output
+- `invoice-payment-reconciliation`: deterministic invoice/payment reconciliation with matched, unmatched, rejected, and summary outputs
+
+Acceptance contract for every task:
+- exactly five functional held-out checks plus one stable result-envelope schema case
+- visible specifications may pin packaging, module/entrypoint location, CLI flags, route names, public fields, output filenames, and high-level business rules
+- visible specifications must not include hidden literal fixtures, boundary examples chosen only for grading, evaluator check IDs, expected hidden outputs, or implementation instructions that reveal how to satisfy the evaluator
+- evaluator must reach and pass all five functional checks on an independent reference-positive implementation
+- evaluator must run to a coherent real-failure result and fail at least two functional checks on an intentionally deficient reference-negative implementation
+- repeated evaluation of the same immutable reference workspace must produce identical functional pass/fail sets and score
+- task package and entrypoint must be reachable in a clean copied workspace under the frozen grading environment
+- no task workspace or visible task bundle may contain hidden evaluator source, held-out fixture payloads, prior run artifacts, or sibling-task solutions
+- each evaluator must preserve the frozen execution-status taxonomy and six-case endpoint contract
+
+Batch GO rule:
+- GO requires all four tasks to pass every acceptance item above
+- any failed task remains excluded from the 24-task target and cannot be replaced, rewritten, or accepted using A/B performance evidence
+- fixes based only on structural gate failures or reference-fixture diagnostics are allowed before batch acceptance and must be documented in the acceptance report
+- after GO, a dated post-build amendment must record task hashes and acceptance-report hash; it still does not authorize efficacy collection
+
 ---
 
 ## Freeze
