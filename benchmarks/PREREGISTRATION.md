@@ -1140,6 +1140,30 @@ Interpretation rule:
 - any failed GO condition triggers STOP after the affected cell and requires a new dated diagnosis before any additional cell or campaign
 - even a complete GO is not efficacy evidence and does not authorize a public treatment-effect claim
 
+#### 17.21 GPT-5.6 stream-watchdog STOP amendment (2026-07-16, after the first GPT-5.6 cell stopped and before any replacement data)
+
+The section 17.20 pilot launched from `e3f9adc53ab7b4ca61eda387f6d2287abd103689` and stopped after its first randomized cell, `leave-request-api/A-baseline/r1`. The remaining five cells were not started. The stopped run root is `/home/fabio/AgentHarness-benchmark-runs/repair-safety-pilot-gpt56-20260716T101623Z`. No hidden evaluator was invoked, no held-out score was produced or read, and no A-versus-B contrast was computed.
+
+Diagnosis:
+- all three initial Hermes retries opened a session but exited 1 with `Codex stream produced no SSE events for 12s after first byte`
+- the empty initial workspace consequently produced canonical pytest exit 5 and a missing-manifest result
+- the bounded repair invocation later exited 0 and produced a runnable workspace; the deterministic repair-safety gate itself completed safely, with post-repair pytest exit 0 and no rollback requirement
+- the cell nevertheless correctly failed GO because the initial provider invocation was not valid; the later repair must not be used to retroactively validate the failed initial treatment
+- the installed Hermes 0.16.0 runtime defines `HERMES_CODEX_EVENT_STALE_TIMEOUT_SECONDS` as the supported Codex SSE-idle watchdog control; its default is 12 seconds below approximately 10,000 estimated context tokens and 60 seconds above that range
+
+Frozen operational correction 33:
+- set `HERMES_CODEX_EVENT_STALE_TIMEOUT_SECONDS=60` in the GPT-5.6 benchmark launcher process before importing or invoking Hermes components
+- do not change the user's global Hermes configuration; the override is scoped to the launcher and inherited by its Hermes child processes only
+- retain the separate 120-second no-byte TTFB watchdog, 1800-second agent timeout, 180-second pytest timeout, and all existing retry limits
+- persist the exact SSE-idle threshold in launch metadata
+- before a replacement pilot, run one non-benchmark preflight on GPT-5.6 Sol under the 60-second override that requires a bounded tool-using response; the preflight is availability validation only and is not a benchmark cell
+
+Replacement rule:
+- the stopped cell remains invalid and must not be reused
+- after a successful preflight, start all six cells from entirely fresh workspaces and a new run root
+- preserve every other section 17.20 parameter, prohibition, GO condition, and STOP rule
+- another invocation or stream-watchdog failure stops the replacement immediately and does not authorize further automatic reruns
+
 ---
 
 ## Freeze
