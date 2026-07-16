@@ -1046,7 +1046,8 @@ Consequences for estimand and data lineage:
 - this is a substantive treatment amendment because it changes the executable repair policy and can prevent or reverse harmful repair mutations
 - data collected before correction 27 through correction 31 must not be pooled with data collected after these corrections as if they came from one unchanged treatment
 - no prior cell is rescored, deleted, or reclassified by this amendment
-- the implementation commit is frozen by the first code commit containing corrections 27 through 31; the exact SHA must be recorded in the safety-pilot launcher and every pilot provenance record
+- the implementation commit frozen for corrections 27 through 31 is `0504b34a01a01dfea5ca8aeecd7b1b4c7e13cc6e`
+- the exact implementation SHA must be recorded in the safety-pilot launcher and every pilot provenance record
 
 Frozen safety-pilot protocol, not an efficacy campaign:
 - tasks: `inventory-adjustment-api`, `leave-request-api`, and `refund-approval-api`, selected before launch because they instantiate the three audited harmful-repair mechanisms
