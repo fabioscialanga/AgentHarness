@@ -9,7 +9,7 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from agentharness.checks import _claim_result_from_reexecution
+from agentharness.checks import _claim_result_from_reexecution, _commands_equivalent
 from agentharness.models import CommandArtifact
 from agentharness.reexecution import (
     ReexecutionResult,
@@ -31,6 +31,18 @@ CLAIMS_LIE_FIXTURE = FIXTURES / "claims_invite_lie.json"
 
 
 class VerifyRunTests(unittest.TestCase):
+    def test_required_pytest_command_matches_absolute_canonical_interpreter(self) -> None:
+        declared = "/tmp/cell/.stageb-test-venv/bin/python -m pytest -q"
+        self.assertTrue(_commands_equivalent("pytest -q", declared))
+        self.assertTrue(_commands_equivalent("python -m pytest -q", declared))
+        self.assertTrue(_commands_equivalent("pytest -q", "uv run python -m pytest -q"))
+
+    def test_required_pytest_command_equivalence_preserves_all_arguments(self) -> None:
+        declared = "/tmp/cell/.stageb-test-venv/bin/python -m pytest tests/unit -q"
+        self.assertFalse(_commands_equivalent("pytest -q", declared))
+        self.assertFalse(_commands_equivalent("pytest tests/integration -q", declared))
+        self.assertFalse(_commands_equivalent("ruff -q", "/tmp/cell/.stageb-test-venv/bin/python -m pytest -q"))
+
     def test_python_module_pytest_uses_the_running_interpreter(self) -> None:
         prepared = prepare_execution_tokens(["python", "-m", "pytest", "-q"])
         self.assertEqual(prepared, [sys.executable, "-m", "pytest", "-q"])

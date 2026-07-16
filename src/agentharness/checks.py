@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shlex
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
@@ -165,6 +166,35 @@ def _check_forbidden_paths(run: RunRecord, claim: Claim) -> ClaimResult:
     )
 
 
+def _normalized_pytest_command(command: str) -> tuple[str, ...] | None:
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return None
+    if not tokens:
+        return None
+    executable = Path(tokens[0]).name.lower()
+    if executable in {"uv", "uv.exe"} and len(tokens) > 1 and tokens[1] == "run":
+        tokens = tokens[2:]
+        if not tokens:
+            return None
+        executable = Path(tokens[0]).name.lower()
+    if executable in {"pytest", "pytest.exe"}:
+        return ("pytest", *tokens[1:])
+    if re.fullmatch(r"python(?:\d+(?:\.\d+)*)?(?:\.exe)?", executable):
+        if len(tokens) >= 3 and tokens[1:3] == ["-m", "pytest"]:
+            return ("pytest", *tokens[3:])
+    return None
+
+
+def _commands_equivalent(required: str, executed: str) -> bool:
+    if required == executed:
+        return True
+    required_pytest = _normalized_pytest_command(required)
+    executed_pytest = _normalized_pytest_command(executed)
+    return required_pytest is not None and required_pytest == executed_pytest
+
+
 def _check_tests_executed(
     run: RunRecord,
     claim: Claim,
@@ -174,10 +204,15 @@ def _check_tests_executed(
     required_commands = [str(item) for item in claim.expected.get("required_commands", [])]
     required_command_patterns = [str(item) for item in claim.expected.get("required_command_patterns", [])]
     require_evidence_files = bool(claim.expected.get("require_evidence_files", True))
-    executed_commands = {command.cmd: command for command in run.commands}
     command_list = list(run.commands)
-
-    missing = [command for command in required_commands if command not in executed_commands]
+    required_matches: list[CommandArtifact] = []
+    missing: list[str] = []
+    for required in required_commands:
+        match = next((command for command in command_list if _commands_equivalent(required, command.cmd)), None)
+        if match is None:
+            missing.append(required)
+        else:
+            required_matches.append(match)
     missing_patterns = [
         pattern for pattern in required_command_patterns if not any(fnmatch(command.cmd, pattern) for command in command_list)
     ]
@@ -192,7 +227,7 @@ def _check_tests_executed(
             truth_source="run-artifact",
         )
 
-    matched_commands: list[CommandArtifact] = [executed_commands[command] for command in required_commands]
+    matched_commands: list[CommandArtifact] = list(required_matches)
     for pattern in required_command_patterns:
         for command in command_list:
             if fnmatch(command.cmd, pattern):
