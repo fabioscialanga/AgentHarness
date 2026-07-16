@@ -1184,6 +1184,71 @@ Interpretation boundary:
 - the amended treatment-delivery, canonical-reexecution, and repair-safety channel is operationally validated for GPT-5.6 Sol under this six-cell pilot and launcher-scoped 60-second SSE-idle threshold
 - this GO does not estimate efficacy, does not compare the arms, does not alter the official 2026-07-15 result, and does not by itself choose or authorize a renewed efficacy campaign
 
+### 17.23 Substantive amendment: cluster-aware GPT-5.6 campaign sizing and task-expansion gate (2026-07-16)
+
+Timing and data boundary:
+- this amendment is recorded before any renewed GPT-5.6 efficacy cell or hidden held-out score is collected
+- all execution after amendment 17.22 has been synthetic validation or code/test work; no new real A-vs-B contrast has been produced or inspected
+- commit `28e518cce2951119913d5800c8720d126dd832d3` introduced the exact six-case endpoint gate, strict MME numerical boundary, campaign-shape validator, and formal robustness/public-claim classification
+- commit `653f7956fc63644b66314a4a2a1445facf78fd9a` withdraws the underpowered 8-task-by-20-replicate wrapper before use and freezes the corrected cluster-aware sizing artifacts
+
+Endpoint and inferential freeze:
+- a valid held-out endpoint contains exactly six terminal cases, each with status `passed` or `failed`; the score is passed cases divided by six
+- any evaluator failure, non-list result, case-count mismatch, or nonterminal case status makes the cell `harness_invalid` with score zero only in the prespecified invalid-as-zero sensitivity
+- the primary estimator remains the equally task-weighted paired task-level mean difference `B - A` with small-cluster t inference
+- MME remains `0.10`
+- `improvement_supported` requires the primary 95% CI lower bound to be strictly above `0.10`
+- `no_meaningful_effect` requires the primary 95% CI upper bound to be strictly below `0.10`
+- values numerically within `1e-12` of the MME boundary are treated as equal to the boundary and therefore do not satisfy either strict inequality
+- all remaining cases are `inconclusive`
+
+Public-claim gate:
+- the primary headline is not rewritten by robustness checks
+- `robust_improvement_supported` additionally requires both cluster-bootstrap CIs above zero, every leave-one-task-out point estimate above zero, and the invalid-as-zero sensitivity effect above zero
+- if the primary headline is `improvement_supported` but one or more robustness requirements fail, the only allowed classification is `primary_supported_robustness_qualified`; no broad robust-improvement claim is allowed
+
+Corrected sizing model:
+- executable source: `benchmarks/grading-env/stage2_cluster_sizing.py`
+- frozen outputs: `STAGE2_CLUSTER_SIZING_FREEZE_2026-07-16.json` and `.md`
+- simulations per design cell: `50,000`
+- seed base: `2026071605`
+- observed within-task-condition SD used for planning: `0.224`
+- task-specific treatment effects are simulated separately with heterogeneity SD sensitivity values `0.08`, `0.10`, and `0.14`
+- this separation is mandatory because increasing replications cannot remove treatment-effect heterogeneity across task clusters
+
+Design decision:
+- the 8-task-by-20-replicate design is withdrawn before launch; under the central cluster-aware model its estimated power at true effect `0.18` is materially below `0.80`
+- the provisional candidate is `24 tasks x 14 replicates x 2 conditions = 672 cells`
+- at effect `0.18`, frozen power is `0.899` for heterogeneity SD `0.08`, `0.815` for `0.10`, and `0.630` for `0.14`
+- at effect `0.12`, frozen power is only `0.125`, `0.108`, and `0.084` respectively; therefore this campaign cannot support a claim that it is adequately powered for a `0.12` effect
+- the target for planning is explicitly effect `0.18`, not `0.12`
+
+Task-expansion gate:
+- the current eight task IDs remain frozen: `csv-member-import`, `incident-escalation-api`, `inventory-adjustment-api`, `leave-request-api`, `refund-approval-api`, `report-export-job`, `support-ticket-api`, and `webhook-ingestion-service`
+- sixteen additional tasks must be created and validated before a confirmatory launcher may exist
+- every new task must use the same neutral structural specification policy: packaging, import path, runnable entrypoint, file placement, and public input/output schema may be clarified; no hint may disclose held-out behavior, corner cases, expected implementation logic, or evaluator assertions
+- each new task must have exactly six held-out terminal cases and must pass evaluator-schema, reference-positive, reference-negative, determinism, packaging, and forbidden-artifact checks
+- no new task may be selected, dropped, or rewritten based on an A-vs-B result
+- new-task acceptance records must be produced without computing an efficacy contrast
+- after all sixteen tasks pass, a separate dated amendment must freeze their IDs, hashes, exact randomized order, launch commit, and launcher hash before any confirmatory cell starts
+
+Operational budget gate:
+- nominal campaign budget is `672` cells and `1,344` agent invocations before CLI-level retries
+- the hard theoretical ceiling with three CLI attempts for each agent invocation is `4,032` provider calls; this is a ceiling, not an expected budget
+- the completed six-cell GPT-5.6 safety pilot took `54.074` wall-clock minutes; direct serial extrapolation is approximately `100.94` hours for 672 cells
+- no confirmatory launch is authorized until the user explicitly approves provider quota, concurrency, maximum wall-clock budget, checkpoint frequency, and abort thresholds
+
+Blinding and execution discipline:
+- no interim task mean, arm mean, effect, confidence interval, rank, or A-vs-B contrast may be computed or displayed
+- progress output before completion is limited to cell counts, execution-status categories, treatment-delivery/safety gate status, retry counts, elapsed time, and quota state
+- any treatment-delivery failure, endpoint-contract failure, forbidden artifact, failed rollback, cross-cell contamination, or launcher/hash mismatch triggers STOP before the next cell
+- infrastructure invalids follow the symmetric frozen policy; valid task failures remain observed outcomes and are not converted into infrastructure invalids
+
+Authorization state:
+- task expansion and non-efficacy validation are authorized by this amendment
+- the 672-cell confirmatory campaign is not yet authorized
+- no hidden efficacy run may begin from this amendment alone
+
 ---
 
 ## Freeze
