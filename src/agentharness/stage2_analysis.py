@@ -89,6 +89,16 @@ class DatasetSummary:
 
 
 TASK_WEIGHTING_RULE = "equal_weight_per_task_unweighted_by_valid_cell_count"
+EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR = 6
+DECISION_NUMERICAL_TOLERANCE = 1e-12
+
+
+def _strictly_greater(value: float, threshold: float) -> bool:
+    return value - threshold > DECISION_NUMERICAL_TOLERANCE
+
+
+def _strictly_less(value: float, threshold: float) -> bool:
+    return threshold - value > DECISION_NUMERICAL_TOLERANCE
 
 
 def _normal_quantile(prob: float) -> float:
@@ -189,6 +199,11 @@ def _normalize_row(row: dict[str, Any]) -> dict[str, Any]:
         ),
         "verify_run_ok": _coerce_bool(row.get("verify_run_ok")),
         "feedback_delivered": _coerce_bool(row.get("feedback_delivered")),
+        "heldout_endpoint_denominator": int(
+            row.get("heldout_endpoint_denominator", EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR)
+        ),
+        "heldout_endpoint_valid": _coerce_bool(row.get("heldout_endpoint_valid", True)),
+        "heldout_endpoint_error": row.get("heldout_endpoint_error"),
     }
     if condition == "B-agentharness" and not normalized["feedback_delivered"]:
         normalized["feedback_delivered"] = row.get("verify_run_ok") is not None
@@ -229,6 +244,11 @@ def build_dataset_from_progress(progress_path: Path) -> list[dict[str, Any]]:
             ),
             "verify_run_ok": final.get("verify_run_ok", False),
             "feedback_delivered": final.get("verify_run_ok", False),
+            "heldout_endpoint_denominator": final.get(
+                "heldout_endpoint_denominator", EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR
+            ),
+            "heldout_endpoint_valid": final.get("heldout_endpoint_valid", False),
+            "heldout_endpoint_error": final.get("heldout_endpoint_error"),
         }
         rows.append(_normalize_row(row))
     return rows
@@ -252,6 +272,61 @@ def summarize_dataset(rows: list[dict[str, Any]]) -> DatasetSummary:
         counts_by_category=counts_by_category,
         counts_by_condition=counts_by_condition,
     )
+
+
+def validate_campaign_dataset(
+    rows: list[dict[str, Any]],
+    *,
+    expected_task_ids: list[str],
+    expected_replicates_per_condition: int,
+) -> None:
+    expected_tasks = set(expected_task_ids)
+    observed_tasks = {str(row["task_id"]) for row in rows}
+    if observed_tasks != expected_tasks:
+        raise Stage2AnalysisError(
+            f"Task set mismatch: observed={sorted(observed_tasks)} expected={sorted(expected_tasks)}"
+        )
+    expected_conditions = {"A-baseline", "B-agentharness"}
+    observed_conditions = {str(row["condition"]) for row in rows}
+    if observed_conditions != expected_conditions:
+        raise Stage2AnalysisError(
+            f"Condition set mismatch: observed={sorted(observed_conditions)} expected={sorted(expected_conditions)}"
+        )
+    expected_replicates = {f"r{index}" for index in range(1, expected_replicates_per_condition + 1)}
+    observed_keys: set[tuple[str, str, str]] = set()
+    for row in rows:
+        key = (str(row["task_id"]), str(row["condition"]), str(row["replicate_id"]))
+        if key in observed_keys:
+            raise Stage2AnalysisError(f"Duplicate campaign row: {key}")
+        observed_keys.add(key)
+        score = float(row["score"])
+        if not 0.0 <= score <= 1.0:
+            raise Stage2AnalysisError(f"Score outside [0, 1] for {key}: {score}")
+        if not _is_invalid_category(str(row["category"])):
+            if not _coerce_bool(row.get("heldout_endpoint_valid")):
+                raise Stage2AnalysisError(f"Valid cell lacks a valid held-out endpoint: {key}")
+            denominator = int(row.get("heldout_endpoint_denominator", 0))
+            if denominator != EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR:
+                raise Stage2AnalysisError(f"Held-out denominator mismatch for {key}: {denominator}")
+            quantized = round(score * EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR)
+            if not math.isclose(
+                score,
+                quantized / EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR,
+                abs_tol=1e-9,
+            ):
+                raise Stage2AnalysisError(f"Score is not quantized to sixths for {key}: {score}")
+    for task_id in sorted(expected_tasks):
+        for condition in sorted(expected_conditions):
+            reps = {
+                replicate_id
+                for task, cond, replicate_id in observed_keys
+                if task == task_id and cond == condition
+            }
+            if reps != expected_replicates:
+                raise Stage2AnalysisError(
+                    f"Replicate set mismatch for {(task_id, condition)}: "
+                    f"observed={sorted(reps)} expected={sorted(expected_replicates)}"
+                )
 
 
 def apply_invalid_policy(rows: list[dict[str, Any]], policy: str) -> list[dict[str, Any]]:
@@ -376,7 +451,7 @@ def primary_analysis(
         ci_lower=ci_lower,
         ci_upper=ci_upper,
         mme=mme,
-        mme_cleared=ci_lower >= mme,
+        mme_cleared=_strictly_greater(ci_lower, mme),
         ci_entirely_above_zero=ci_lower > 0.0,
         mixedlm_effect_b_minus_a=mixedlm_effect,
         mixedlm_converged=mixedlm_converged,
@@ -406,7 +481,7 @@ def cluster_bootstrap(rows: list[dict[str, Any]], *, seed: int, resamples: int, 
         ci_upper=ci_upper,
         bootstrap_mean=_mean(estimates),
         mme=mme,
-        mme_cleared=ci_lower >= mme,
+        mme_cleared=_strictly_greater(ci_lower, mme),
         ci_entirely_above_zero=ci_lower > 0.0,
     )
 
@@ -434,7 +509,7 @@ def wild_cluster_bootstrap(rows: list[dict[str, Any]], *, seed: int, resamples: 
         ci_upper=ci_upper,
         bootstrap_mean=_mean(estimates),
         mme=mme,
-        mme_cleared=ci_lower >= mme,
+        mme_cleared=_strictly_greater(ci_lower, mme),
         ci_entirely_above_zero=ci_lower > 0.0,
     )
 
@@ -568,9 +643,9 @@ def synthetic_dataset(
 
 
 def decision_headline(primary: PrimaryAnalysisResult) -> str:
-    if primary.ci_lower > primary.mme:
+    if _strictly_greater(primary.ci_lower, primary.mme):
         return "improvement_supported"
-    if primary.ci_upper < primary.mme:
+    if _strictly_less(primary.ci_upper, primary.mme):
         return "no_meaningful_effect"
     return "inconclusive"
 
@@ -594,26 +669,61 @@ def run_full_analysis(
     sensitivity_zero = primary_analysis(sensitivity_zero_rows, mme=mme)
     summary = summarize_dataset(rows)
     manipulation = manipulation_checks(rows)
+    robustness_checks = {
+        "cluster_bootstrap_ci_above_zero": cluster.ci_entirely_above_zero,
+        "wild_cluster_bootstrap_ci_above_zero": wild.ci_entirely_above_zero,
+        "all_leave_one_task_out_point_estimates_above_zero": all(
+            row.effect_b_minus_a > 0.0 for row in loto
+        ),
+        "invalid_as_zero_sensitivity_effect_above_zero": sensitivity_zero.effect_b_minus_a > 0.0,
+    }
+    headline = decision_headline(primary)
+    robustness_passed = all(robustness_checks.values())
+    if headline == "improvement_supported" and robustness_passed:
+        public_claim_classification = "robust_improvement_supported"
+    elif headline == "improvement_supported":
+        public_claim_classification = "primary_supported_robustness_qualified"
+    else:
+        public_claim_classification = headline
     decision = {
         "rule": {
             "improvement_supported": "primary ci lower bound strictly above mme",
             "no_meaningful_effect": "primary ci upper bound strictly below mme",
             "inconclusive": "all remaining cases",
         },
-        "mixed_model_favors_b": primary.effect_b_minus_a > 0.0,
+        "mixed_model_favors_b": (
+            primary.mixedlm_effect_b_minus_a > 0.0
+            if primary.mixedlm_effect_b_minus_a is not None
+            else None
+        ),
         "cluster_bootstrap_favors_b": cluster.effect_b_minus_a > 0.0,
         "ci_entirely_above_zero": primary.ci_entirely_above_zero,
         "mme_cleared": primary.mme_cleared,
-        "not_driven_by_single_task": all(row.ci_entirely_above_zero for row in loto),
-        "headline": decision_headline(primary),
+        "not_driven_by_single_task": robustness_checks[
+            "all_leave_one_task_out_point_estimates_above_zero"
+        ],
+        "robustness_checks": robustness_checks,
+        "robustness_passed": robustness_passed,
+        "headline": headline,
+        "public_claim_classification": public_claim_classification,
     }
     return {
         "analysis_spec": {
             "task_weighting_rule": TASK_WEIGHTING_RULE,
+            "heldout_endpoint": {
+                "denominator": EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR,
+                "score": "passed terminal held-out cases divided by six",
+                "valid_statuses": ["passed", "failed"],
+            },
             "decision_rule": {
                 "improvement_supported": "primary ci lower bound strictly above mme",
                 "no_meaningful_effect": "primary ci upper bound strictly below mme",
                 "inconclusive": "all remaining cases",
+            },
+            "public_claim_gate": {
+                "primary_requirement": "headline is improvement_supported",
+                "robustness_requirements": list(robustness_checks.keys()),
+                "failure_wording": "primary_supported_robustness_qualified",
             },
             "primary_invalid_policy": "exclude_infrastructure_invalids",
             "sensitivity_invalid_policy": "count_infrastructure_invalids_as_zero",

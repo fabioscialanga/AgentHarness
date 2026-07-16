@@ -39,6 +39,7 @@ PYTEST_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_PYTEST_TIMEOUT_SECONDS
 VERIFY_RUN_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_VERIFY_TIMEOUT_SECONDS", "300"))
 BENCHMARK_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_BENCHMARK_TIMEOUT_SECONDS", "300"))
 HELDOUT_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_EVALUATION_TIMEOUT_SECONDS", "300"))
+EXPECTED_HELDOUT_CASES = 6
 
 PROVIDER_UNAVAILABLE_MARKERS = (
     "HTTP 429",
@@ -1079,12 +1080,27 @@ def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs
     }
 
 
-def score_from_evaluation(payload: dict[str, object]) -> float:
+def heldout_endpoint_error(payload: dict[str, object]) -> str | None:
+    if payload.get("ok") is not True:
+        return "heldout_evaluation_not_ok"
     results = payload.get("results", [])
-    if not isinstance(results, list) or not results:
+    if not isinstance(results, list):
+        return "heldout_results_not_a_list"
+    if len(results) != EXPECTED_HELDOUT_CASES:
+        return f"heldout_case_count_mismatch:{len(results)}!={EXPECTED_HELDOUT_CASES}"
+    statuses = [item.get("status") if isinstance(item, dict) else None for item in results]
+    if any(status not in {"passed", "failed"} for status in statuses):
+        return "heldout_case_status_invalid"
+    return None
+
+
+def score_from_evaluation(payload: dict[str, object]) -> float:
+    if heldout_endpoint_error(payload) is not None:
         return 0.0
+    results = payload.get("results", [])
+    assert isinstance(results, list)
     passed = sum(1 for item in results if isinstance(item, dict) and item.get("status") == "passed")
-    return passed / len(results)
+    return passed / EXPECTED_HELDOUT_CASES
 
 
 def write_provenance(
@@ -1203,6 +1219,15 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         run_path=run_path,
         outputs_dir=outputs_dir,
     )
+    endpoint_error = heldout_endpoint_error(eval_payload)
+    endpoint_score = score_from_evaluation(eval_payload)
+    benchmark_execution_status = benchmark_payload.get("execution_status")
+    benchmark_outcome_status = benchmark_payload.get("outcome_status")
+    benchmark_classification_reason = benchmark_payload.get("classification_reason")
+    if endpoint_error is not None:
+        benchmark_execution_status = "harness_invalid"
+        benchmark_outcome_status = "invalid"
+        benchmark_classification_reason = endpoint_error
     provenance = write_provenance(
         provenance_path=cell_dir / "provenance.json",
         manifest=manifest,
@@ -1217,11 +1242,14 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "run_id": manifest["run_id"],
         "repair_passes_used": max(0, len((invocation_result or AgentInvocationResult(attempts=[])).attempts) - 1),
         "final_pytest_exit_code": pytest_result["exit_code"],
-        "scorable_score": score_from_evaluation(eval_payload),
+        "scorable_score": endpoint_score,
+        "heldout_endpoint_denominator": EXPECTED_HELDOUT_CASES,
+        "heldout_endpoint_valid": endpoint_error is None,
+        "heldout_endpoint_error": endpoint_error,
         "verify_run_ok": verify_payload.get("ok"),
-        "benchmark_execution_status": benchmark_payload.get("execution_status"),
-        "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
-        "benchmark_classification_reason": benchmark_payload.get("classification_reason"),
+        "benchmark_execution_status": benchmark_execution_status,
+        "benchmark_outcome_status": benchmark_outcome_status,
+        "benchmark_classification_reason": benchmark_classification_reason,
         "solution_hash": provenance["solution_hash"],
         "attempt_solution_hashes": provenance["attempt_solution_hashes"],
         "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
@@ -1244,10 +1272,13 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "replicate_id": manifest["replicate_id"],
         "pytest_exit_code": pytest_result["exit_code"],
         "verify_run_ok": verify_payload.get("ok"),
-        "benchmark_execution_status": benchmark_payload.get("execution_status"),
-        "benchmark_outcome_status": benchmark_payload.get("outcome_status"),
-        "benchmark_classification_reason": benchmark_payload.get("classification_reason"),
-        "score": score_from_evaluation(eval_payload),
+        "benchmark_execution_status": benchmark_execution_status,
+        "benchmark_outcome_status": benchmark_outcome_status,
+        "benchmark_classification_reason": benchmark_classification_reason,
+        "heldout_endpoint_denominator": EXPECTED_HELDOUT_CASES,
+        "heldout_endpoint_valid": endpoint_error is None,
+        "heldout_endpoint_error": endpoint_error,
+        "score": endpoint_score,
         "evaluation_summary": eval_payload.get("summary", {}),
         "solution_hash": provenance["solution_hash"],
         "attempt_solution_hashes": provenance["attempt_solution_hashes"],

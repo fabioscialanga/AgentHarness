@@ -9,6 +9,7 @@ from pathlib import Path
 from agentharness.stage2_analysis import (
     CLUSTER_BOOTSTRAP_SEED_DEFAULT,
     MME_DEFAULT,
+    Stage2AnalysisError,
     TASK_WEIGHTING_RULE,
     WILD_BOOTSTRAP_SEED_DEFAULT,
     apply_invalid_policy,
@@ -19,6 +20,7 @@ from agentharness.stage2_analysis import (
     primary_analysis,
     run_full_analysis,
     synthetic_dataset,
+    validate_campaign_dataset,
     write_json,
 )
 
@@ -35,6 +37,62 @@ class Stage2AnalysisTests(unittest.TestCase):
         self.assertEqual(result.task_weighting_rule, TASK_WEIGHTING_RULE)
         self.assertTrue(result.ci_entirely_above_zero)
         self.assertTrue(result.mme_cleared)
+
+    def test_primary_mme_boundary_is_strictly_inconclusive(self) -> None:
+        rows = synthetic_dataset(
+            n_tasks=8,
+            replicates=20,
+            true_effect=MME_DEFAULT,
+            task_step=0.0,
+            replicate_step=0.0,
+            include_invalids=False,
+        )
+        result = primary_analysis(rows, mme=MME_DEFAULT, include_mixedlm=False)
+        self.assertAlmostEqual(result.ci_lower, MME_DEFAULT)
+        self.assertAlmostEqual(result.ci_upper, MME_DEFAULT)
+        self.assertFalse(result.mme_cleared)
+        self.assertEqual(decision_headline(result), "inconclusive")
+
+    def test_campaign_dataset_validator_accepts_exact_8_by_2_by_20_shape(self) -> None:
+        task_ids = [f"task-{index}" for index in range(1, 9)]
+        rows: list[dict[str, object]] = []
+        for task_id in task_ids:
+            for condition, score in (("A-baseline", 2 / 6), ("B-agentharness", 3 / 6)):
+                for replicate in range(1, 21):
+                    rows.append(
+                        {
+                            "task_id": task_id,
+                            "condition": condition,
+                            "replicate_id": f"r{replicate}",
+                            "score": score,
+                            "category": "success",
+                            "benchmark_execution_status": "valid",
+                            "benchmark_outcome_status": "success",
+                            "heldout_endpoint_denominator": 6,
+                            "heldout_endpoint_valid": True,
+                        }
+                    )
+        validate_campaign_dataset(
+            rows,
+            expected_task_ids=task_ids,
+            expected_replicates_per_condition=20,
+        )
+
+        with self.assertRaisesRegex(Stage2AnalysisError, "Replicate set mismatch"):
+            validate_campaign_dataset(
+                rows[:-1],
+                expected_task_ids=task_ids,
+                expected_replicates_per_condition=20,
+            )
+
+        non_quantized = [dict(row) for row in rows]
+        non_quantized[0]["score"] = 0.2
+        with self.assertRaisesRegex(Stage2AnalysisError, "not quantized to sixths"):
+            validate_campaign_dataset(
+                non_quantized,
+                expected_task_ids=task_ids,
+                expected_replicates_per_condition=20,
+            )
 
     def test_invalid_sensitivity_zero_is_weaker_than_exclusion(self) -> None:
         rows = synthetic_dataset(true_effect=0.18, include_invalids=True)

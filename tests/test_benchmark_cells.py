@@ -22,7 +22,9 @@ from agentharness.benchmark_cells import (
     assert_nonshared_solution_hashes,
     compute_solution_hash,
     execute_cell,
+    heldout_endpoint_error,
     prepare_fresh_cell,
+    score_from_evaluation,
     write_run_json,
 )
 
@@ -180,6 +182,34 @@ class _PreRepairFailureInvoker:
 
 
 class BenchmarkCellsTests(unittest.TestCase):
+    def test_heldout_endpoint_requires_exactly_six_terminal_cases(self) -> None:
+        valid = {
+            "ok": True,
+            "results": [
+                {"status": "passed"},
+                {"status": "passed"},
+                {"status": "passed"},
+                {"status": "failed"},
+                {"status": "failed"},
+                {"status": "failed"},
+            ],
+        }
+        self.assertIsNone(heldout_endpoint_error(valid))
+        self.assertEqual(score_from_evaluation(valid), 0.5)
+
+        wrong_count = {"ok": True, "results": [{"status": "passed"}] * 5}
+        self.assertEqual(heldout_endpoint_error(wrong_count), "heldout_case_count_mismatch:5!=6")
+        self.assertEqual(score_from_evaluation(wrong_count), 0.0)
+
+        invalid_status = {"ok": True, "results": [{"status": "passed"}] * 5 + [{"status": "invalid"}]}
+        self.assertEqual(heldout_endpoint_error(invalid_status), "heldout_case_status_invalid")
+        self.assertEqual(score_from_evaluation(invalid_status), 0.0)
+
+    def test_heldout_endpoint_requires_successful_evaluator(self) -> None:
+        payload = {"ok": False, "results": [{"status": "passed"}] * 6}
+        self.assertEqual(heldout_endpoint_error(payload), "heldout_evaluation_not_ok")
+        self.assertEqual(score_from_evaluation(payload), 0.0)
+
     def test_prepare_fresh_cell_copies_only_allowed_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             cell_dir = Path(tmp_dir) / "support-ticket-api" / "A-baseline" / "r1"
@@ -316,8 +346,9 @@ class BenchmarkCellsTests(unittest.TestCase):
                 mock.patch(
                     "agentharness.benchmark_cells.run_heldout_evaluation",
                     return_value={
-                        "summary": {"passed": 1, "failed": 0, "invalid": 0},
-                        "results": [{"status": "passed"}],
+                        "ok": True,
+                        "summary": {"passed": 6, "failed": 0, "invalid": 0},
+                        "results": [{"status": "passed"} for _ in range(6)],
                     },
                 ),
             ):
@@ -337,8 +368,12 @@ class BenchmarkCellsTests(unittest.TestCase):
             )
             self.assertTrue(provenance["solution_hash_changed_between_attempt_and_repair"])
             self.assertTrue(result["solution_hash_changed_between_attempt_and_repair"])
+            self.assertTrue(result["heldout_endpoint_valid"])
+            self.assertEqual(result["heldout_endpoint_denominator"], 6)
+            self.assertIsNone(result["heldout_endpoint_error"])
             metadata = json.loads((cell_dir / "metadata.json").read_text(encoding="utf-8"))
             self.assertTrue(metadata["solution_hash_changed_between_attempt_and_repair"])
+            self.assertTrue(metadata["heldout_endpoint_valid"])
             self.assertTrue((cell_dir / "run.json").is_file())
             self.assertTrue((cell_dir / "claims.json").is_file())
 
@@ -401,7 +436,7 @@ class BenchmarkCellsTests(unittest.TestCase):
                 mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
                 mock.patch("agentharness.benchmark_cells.run_verify_run", return_value={"ok": True}),
                 mock.patch("agentharness.benchmark_cells.run_hidden_benchmark", return_value={"execution_status": "valid", "outcome_status": "success"}),
-                mock.patch("agentharness.benchmark_cells.run_heldout_evaluation", return_value={"summary": {"passed": 1, "failed": 0, "invalid": 0}, "results": [{"status": "passed"}]}),
+                mock.patch("agentharness.benchmark_cells.run_heldout_evaluation", return_value={"ok": True, "summary": {"passed": 6, "failed": 0, "invalid": 0}, "results": [{"status": "passed"} for _ in range(6)]}),
             ):
                 execute_cell(cell_dir, _FakeInvoker())
             self.assertFalse((workspace / ".agentharness" / "traces" / "evaluation" / "old.jsonl").exists())
