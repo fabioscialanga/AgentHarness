@@ -1,0 +1,1430 @@
+{
+  "acceptance_gate": {
+    "atomicity": "full pre/post state or output snapshots are equal after every controlled failure",
+    "blind_review": "independent review returns GO before post-build acceptance",
+    "campaign_boundary": "no task-solving pilot, A/B cell, hidden efficacy score, contrast, or confirmatory launch",
+    "clean_room": "three independent copied-workspace evaluations per task are classification-identical",
+    "concurrency": "promised concurrent behavior is exercised by simultaneous writers, not sequential stale requests",
+    "diversity": "64 new-versus-prior, 20 nearest-check, and 6 within-batch distinctions remain complete after implementation",
+    "endpoint": "exactly five functional checks plus one result-envelope schema check per task",
+    "forbidden_artifact": "visible task bundles are allowlisted and must exclude this pre-build ledger, check IDs, probes, mutants, hidden evaluator source, references, and prior run artifacts",
+    "mutation_sensitivity": "one planned mutant per functional check with an exact one-check failure set",
+    "persistence": "API durable state is proven across process termination",
+    "reference_positive": "all five functional checks pass"
+  },
+  "all_prior_overlap_matrix": [
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on support-ticket-api does not imply success on signed-artifact-verifier: ticket correctness is mutable workflow behavior; signing competence does not establish cryptographic authenticity, exact filesystem inventory, or key validity",
+      "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+      "prior_task": "support-ticket-api",
+      "shared_shell_or_surface": "both expose deterministic success/failure results",
+      "substantive_difference": "ticket correctness is mutable workflow behavior; signing competence does not establish cryptographic authenticity, exact filesystem inventory, or key validity"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on csv-member-import does not imply success on signed-artifact-verifier: member import reasons over tabular rows do not require a signed canonical payload or byte-level verification of an existing file tree",
+      "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+      "prior_task": "csv-member-import",
+      "shared_shell_or_surface": "both validate a complete input set and summarize rejection",
+      "substantive_difference": "member import reasons over tabular rows do not require a signed canonical payload or byte-level verification of an existing file tree"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on incident-escalation-api does not imply success on signed-artifact-verifier: incident time advances a domain state; verifier time decides whether a key and manifest are cryptographically trusted without mutating domain state",
+      "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+      "prior_task": "incident-escalation-api",
+      "shared_shell_or_surface": "both use explicit RFC3339 boundary instants",
+      "substantive_difference": "incident time advances a domain state; verifier time decides whether a key and manifest are cryptographically trusted without mutating domain state"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on inventory-adjustment-api does not imply success on signed-artifact-verifier: stock inventory is a mutable business quantity; artifact inventory is an exact signed enumeration of regular filesystem objects",
+      "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+      "prior_task": "inventory-adjustment-api",
+      "shared_shell_or_surface": "both use the word inventory and enforce completeness/invariants",
+      "substantive_difference": "stock inventory is a mutable business quantity; artifact inventory is an exact signed enumeration of regular filesystem objects"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on leave-request-api does not imply success on signed-artifact-verifier: approval and overlap workflow competence does not imply canonical signing, key selection, path safety, or content-hash verification",
+      "prior_construct": "overlap-aware leave approval and terminal workflow states",
+      "prior_task": "leave-request-api",
+      "shared_shell_or_surface": "both reject invalid requests atomically",
+      "substantive_difference": "approval and overlap workflow competence does not imply canonical signing, key selection, path safety, or content-hash verification"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on refund-approval-api does not imply success on signed-artifact-verifier: monetary authorization thresholds do not exercise cryptographic payload canonicalization or whole-tree integrity",
+      "prior_construct": "threshold-based staged refund authorization",
+      "prior_task": "refund-approval-api",
+      "shared_shell_or_surface": "both apply validity rules before accepting an operation",
+      "substantive_difference": "monetary authorization thresholds do not exercise cryptographic payload canonicalization or whole-tree integrity"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on report-export-job does not imply success on signed-artifact-verifier: export correctness concerns filters and totals; verifier output is a trust verdict gated on signature, inventory, path, and byte integrity",
+      "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+      "prior_task": "report-export-job",
+      "shared_shell_or_surface": "both are deterministic CLIs with committed output files",
+      "substantive_difference": "export correctness concerns filters and totals; verifier output is a trust verdict gated on signature, inventory, path, and byte integrity"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on webhook-ingestion-service does not imply success on signed-artifact-verifier: webhook HMAC authenticates one inbound body before ingestion; artifact verification authenticates a canonical manifest and then proves every declared file",
+      "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+      "prior_task": "webhook-ingestion-service",
+      "shared_shell_or_surface": "both use HMAC authentication and key material",
+      "substantive_difference": "webhook HMAC authenticates one inbound body before ingestion; artifact verification authenticates a canonical manifest and then proves every declared file"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on appointment-booking-api does not imply success on signed-artifact-verifier: booking handles resource interval conflicts and cancellation; verifier intervals govern key and manifest trust without scheduling resources",
+      "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+      "prior_task": "appointment-booking-api",
+      "shared_shell_or_surface": "both evaluate explicit interval boundaries",
+      "substantive_difference": "booking handles resource interval conflicts and cancellation; verifier intervals govern key and manifest trust without scheduling resources"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on shipment-event-api does not imply success on signed-artifact-verifier: shipment projection and terminal-state events do not require filesystem inventory or cryptographic binding of evidence bytes",
+      "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+      "prior_task": "shipment-event-api",
+      "shared_shell_or_surface": "both retain auditable ordered evidence",
+      "substantive_difference": "shipment projection and terminal-state events do not require filesystem inventory or cryptographic binding of evidence bytes"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on jsonl-event-aggregation does not imply success on signed-artifact-verifier: JSONL aggregation reasons over records do not prove signer identity, exact tree membership, or per-file hash integrity",
+      "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+      "prior_task": "jsonl-event-aggregation",
+      "shared_shell_or_surface": "both validate complete inputs and emit deterministic audit-like output",
+      "substantive_difference": "JSONL aggregation reasons over records do not prove signer identity, exact tree membership, or per-file hash integrity"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on invoice-payment-reconciliation does not imply success on signed-artifact-verifier: financial matching uses amounts and cutoff semantics; signed inventory reconciliation uses normalized paths, sizes, hashes, and key trust",
+      "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+      "prior_task": "invoice-payment-reconciliation",
+      "shared_shell_or_surface": "both reconcile a declared set against observed data",
+      "substantive_difference": "financial matching uses amounts and cutoff semantics; signed inventory reconciliation uses normalized paths, sizes, hashes, and key trust"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on dependency-impact-planner does not imply success on signed-artifact-verifier: graph closure and topological ordering do not exercise authentication, key windows, or filesystem byte integrity",
+      "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+      "prior_task": "dependency-impact-planner",
+      "shared_shell_or_surface": "both are deterministic offline CLIs over canonical structured input",
+      "substantive_difference": "graph closure and topological ordering do not exercise authentication, key windows, or filesystem byte integrity"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on access-policy-evaluator does not imply success on signed-artifact-verifier: authorization decides allow or deny from matching rules; verifier establishes cryptographic trust in a manifest and artifact set",
+      "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+      "prior_task": "access-policy-evaluator",
+      "shared_shell_or_surface": "both select keyed/rule material and use request-supplied time",
+      "substantive_difference": "authorization decides allow or deny from matching rules; verifier establishes cryptographic trust in a manifest and artifact set"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on versioned-document-api does not imply success on signed-artifact-verifier: document revisions coordinate mutable content through ETags; verifier performs stateless authenticity and whole-tree consistency checks",
+      "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+      "prior_task": "versioned-document-api",
+      "shared_shell_or_surface": "both protect integrity and expose immutable evidence",
+      "substantive_difference": "document revisions coordinate mutable content through ETags; verifier performs stateless authenticity and whole-tree consistency checks"
+    },
+    {
+      "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "new_task": "signed-artifact-verifier",
+      "non_implication": "Success on safe-archive-extraction does not imply success on signed-artifact-verifier: archive extraction controls creation from untrusted ZIP members; verifier never extracts and instead authenticates an exact pre-existing tree with a signed manifest",
+      "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+      "prior_task": "safe-archive-extraction",
+      "shared_shell_or_surface": "both enforce normalized path safety and produce hash manifests",
+      "substantive_difference": "archive extraction controls creation from untrusted ZIP members; verifier never extracts and instead authenticates an exact pre-existing tree with a signed manifest"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on support-ticket-api does not imply success on pii-redaction-pipeline: ticket routes mutate workflow entities; redaction recursively transforms selected values while proving all non-selected content is preserved",
+      "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+      "prior_task": "support-ticket-api",
+      "shared_shell_or_surface": "both process structured JSON fields",
+      "substantive_difference": "ticket routes mutate workflow entities; redaction recursively transforms selected values while proving all non-selected content is preserved"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on csv-member-import does not imply success on pii-redaction-pipeline: CSV import classifies tabular rows; redaction applies recursive selectors, precedence, removal, and keyed pseudonymization to arbitrary JSON",
+      "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+      "prior_task": "csv-member-import",
+      "shared_shell_or_surface": "both perform deterministic data normalization/transformation",
+      "substantive_difference": "CSV import classifies tabular rows; redaction applies recursive selectors, precedence, removal, and keyed pseudonymization to arbitrary JSON"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on incident-escalation-api does not imply success on pii-redaction-pipeline: escalation follows temporal domain transitions; redaction follows selector-specific privacy actions without a workflow clock",
+      "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+      "prior_task": "incident-escalation-api",
+      "shared_shell_or_surface": "both preserve unrelated state while changing selected fields",
+      "substantive_difference": "escalation follows temporal domain transitions; redaction follows selector-specific privacy actions without a workflow clock"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on inventory-adjustment-api does not imply success on pii-redaction-pipeline: inventory adjusts business quantities; redaction transforms a recursive document and emits a field-level audit in one output bundle",
+      "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+      "prior_task": "inventory-adjustment-api",
+      "shared_shell_or_surface": "both require atomic multi-field changes",
+      "substantive_difference": "inventory adjusts business quantities; redaction transforms a recursive document and emits a field-level audit in one output bundle"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on leave-request-api does not imply success on pii-redaction-pipeline: leave overlap/approval conflicts are domain states; redaction conflicts arise from equal-specificity selectors targeting the same JSON path",
+      "prior_construct": "overlap-aware leave approval and terminal workflow states",
+      "prior_task": "leave-request-api",
+      "shared_shell_or_surface": "both have rule conflicts and deterministic rejection",
+      "substantive_difference": "leave overlap/approval conflicts are domain states; redaction conflicts arise from equal-specificity selectors targeting the same JSON path"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on refund-approval-api does not imply success on pii-redaction-pipeline: refund rules authorize a monetary workflow; privacy rules transform values and must preserve every non-selected subtree",
+      "prior_construct": "threshold-based staged refund authorization",
+      "prior_task": "refund-approval-api",
+      "shared_shell_or_surface": "both interpret declarative rules",
+      "substantive_difference": "refund rules authorize a monetary workflow; privacy rules transform values and must preserve every non-selected subtree"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on report-export-job does not imply success on pii-redaction-pipeline: report export filters and aggregates records; redaction rewrites selected recursive values and binds every change to an audit record",
+      "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+      "prior_task": "report-export-job",
+      "shared_shell_or_surface": "both are deterministic CLIs producing structured output",
+      "substantive_difference": "report export filters and aggregates records; redaction rewrites selected recursive values and binds every change to an audit record"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on webhook-ingestion-service does not imply success on pii-redaction-pipeline: webhook HMAC authenticates a request; redaction HMAC pseudonymizes selected canonical JSON values and intentionally changes the document",
+      "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+      "prior_task": "webhook-ingestion-service",
+      "shared_shell_or_surface": "both use HMAC and structured JSON",
+      "substantive_difference": "webhook HMAC authenticates a request; redaction HMAC pseudonymizes selected canonical JSON values and intentionally changes the document"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on appointment-booking-api does not imply success on pii-redaction-pipeline: appointment overlap is temporal resource exclusion; selector overlap is precedence among recursive JSON paths and actions",
+      "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+      "prior_task": "appointment-booking-api",
+      "shared_shell_or_surface": "both resolve overlapping selections or intervals",
+      "substantive_difference": "appointment overlap is temporal resource exclusion; selector overlap is precedence among recursive JSON paths and actions"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on shipment-event-api does not imply success on pii-redaction-pipeline: shipment history is an append-only domain event log; redaction audit describes field transformations in a single deterministic bundle",
+      "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+      "prior_task": "shipment-event-api",
+      "shared_shell_or_surface": "both preserve an audit trail",
+      "substantive_difference": "shipment history is an append-only domain event log; redaction audit describes field transformations in a single deterministic bundle"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on jsonl-event-aggregation does not imply success on pii-redaction-pipeline: JSONL work is row-oriented aggregation; redaction is path-oriented recursive transformation with non-selected structure preservation",
+      "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+      "prior_task": "jsonl-event-aggregation",
+      "shared_shell_or_surface": "both validate JSON and produce deterministic audit/rejection material",
+      "substantive_difference": "JSONL work is row-oriented aggregation; redaction is path-oriented recursive transformation with non-selected structure preservation"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on invoice-payment-reconciliation does not imply success on pii-redaction-pipeline: invoice/payment matching does not exercise selector grammar, recursive mutation, keyed pseudonymization, or removal precedence",
+      "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+      "prior_task": "invoice-payment-reconciliation",
+      "shared_shell_or_surface": "both reconcile inputs to auditable outputs",
+      "substantive_difference": "invoice/payment matching does not exercise selector grammar, recursive mutation, keyed pseudonymization, or removal precedence"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on dependency-impact-planner does not imply success on pii-redaction-pipeline: graph traversal follows dependency edges; redaction traversal follows JSON path selectors and mutates selected values",
+      "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+      "prior_task": "dependency-impact-planner",
+      "shared_shell_or_surface": "both traverse structured relationships deterministically",
+      "substantive_difference": "graph traversal follows dependency edges; redaction traversal follows JSON path selectors and mutates selected values"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on access-policy-evaluator does not imply success on pii-redaction-pipeline: policy rules return an authorization decision without changing input; redaction rules choose irreversible/transforming actions over recursive data",
+      "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+      "prior_task": "access-policy-evaluator",
+      "shared_shell_or_surface": "both interpret wildcard rules with precedence",
+      "substantive_difference": "policy rules return an authorization decision without changing input; redaction rules choose irreversible/transforming actions over recursive data"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on versioned-document-api does not imply success on pii-redaction-pipeline: merge patch versions a mutable document through CAS; redaction performs one offline privacy transform with selector audit and no revision history",
+      "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+      "prior_task": "versioned-document-api",
+      "shared_shell_or_surface": "both operate on recursive JSON document values",
+      "substantive_difference": "merge patch versions a mutable document through CAS; redaction performs one offline privacy transform with selector audit and no revision history"
+    },
+    {
+      "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "new_task": "pii-redaction-pipeline",
+      "non_implication": "Success on safe-archive-extraction does not imply success on pii-redaction-pipeline: archive safety concerns filesystem members and extraction; redaction concerns semantic JSON selectors, value transformation, and privacy audit",
+      "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+      "prior_task": "safe-archive-extraction",
+      "shared_shell_or_surface": "both require atomic output and reject unsafe input",
+      "substantive_difference": "archive safety concerns filesystem members and extraction; redaction concerns semantic JSON selectors, value transformation, and privacy audit"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on support-ticket-api does not imply success on lease-coordination-api: ticket transitions model assignment/status rules; lease correctness is exclusive temporal ownership guarded by monotonic fencing under concurrent writers",
+      "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+      "prior_task": "support-ticket-api",
+      "shared_shell_or_surface": "both are persistent APIs with mutable state",
+      "substantive_difference": "ticket transitions model assignment/status rules; lease correctness is exclusive temporal ownership guarded by monotonic fencing under concurrent writers"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on csv-member-import does not imply success on lease-coordination-api: batch row import has no durable ownership generation, expiry, concurrent contention, or stale-holder capability",
+      "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+      "prior_task": "csv-member-import",
+      "shared_shell_or_surface": "both reject malformed input deterministically",
+      "substantive_difference": "batch row import has no durable ownership generation, expiry, concurrent contention, or stale-holder capability"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on incident-escalation-api does not imply success on lease-coordination-api: incident time triggers escalation state; lease time controls exclusivity, expiry takeover, renewal, and fencing-token validity",
+      "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+      "prior_task": "incident-escalation-api",
+      "shared_shell_or_surface": "both use explicit RFC3339 time and boundary behavior",
+      "substantive_difference": "incident time triggers escalation state; lease time controls exclusivity, expiry takeover, renewal, and fencing-token validity"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on inventory-adjustment-api does not imply success on lease-coordination-api: stock deltas/recounts do not arbitrate temporary owners or invalidate stale actors through fencing generations",
+      "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+      "prior_task": "inventory-adjustment-api",
+      "shared_shell_or_surface": "both use SQLite transactions and enforce invariants under writes",
+      "substantive_difference": "stock deltas/recounts do not arbitrate temporary owners or invalidate stale actors through fencing generations"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on leave-request-api does not imply success on lease-coordination-api: leave conflicts are durable calendar overlaps; a lease is one expiring ownership claim with renew/release and stale-token rejection",
+      "prior_construct": "overlap-aware leave approval and terminal workflow states",
+      "prior_task": "leave-request-api",
+      "shared_shell_or_surface": "both prevent conflicting claims",
+      "substantive_difference": "leave conflicts are durable calendar overlaps; a lease is one expiring ownership claim with renew/release and stale-token rejection"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on refund-approval-api does not imply success on lease-coordination-api: approval authorization has staged thresholds; lease authority derives from current owner plus fencing token and temporal validity",
+      "prior_construct": "threshold-based staged refund authorization",
+      "prior_task": "refund-approval-api",
+      "shared_shell_or_surface": "both reject unauthorized state changes",
+      "substantive_difference": "approval authorization has staged thresholds; lease authority derives from current owner plus fencing token and temporal validity"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on report-export-job does not imply success on lease-coordination-api: report generation has no concurrent mutation, persistent token counter, expiration, or ownership arbitration",
+      "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+      "prior_task": "report-export-job",
+      "shared_shell_or_surface": "both expose deterministic state/output",
+      "substantive_difference": "report generation has no concurrent mutation, persistent token counter, expiration, or ownership arbitration"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on webhook-ingestion-service does not imply success on lease-coordination-api: webhook deduplicates event identities; lease coordination serializes competing owners and issues monotonic fencing capabilities",
+      "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+      "prior_task": "webhook-ingestion-service",
+      "shared_shell_or_surface": "both require idempotent durable API behavior",
+      "substantive_difference": "webhook deduplicates event identities; lease coordination serializes competing owners and issues monotonic fencing capabilities"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on appointment-booking-api does not imply success on lease-coordination-api: bookings allow multiple non-overlapping durable intervals; a resource lease allows exactly one current owner and supports renew/release/fencing",
+      "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+      "prior_task": "appointment-booking-api",
+      "shared_shell_or_surface": "both manage time-bound resource conflicts",
+      "substantive_difference": "bookings allow multiple non-overlapping durable intervals; a resource lease allows exactly one current owner and supports renew/release/fencing"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on shipment-event-api does not imply success on lease-coordination-api: shipment generations are domain events; lease tokens are capabilities that protect external work after ownership changes",
+      "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+      "prior_task": "shipment-event-api",
+      "shared_shell_or_surface": "both retain monotonic state generations and reject stale transitions",
+      "substantive_difference": "shipment generations are domain events; lease tokens are capabilities that protect external work after ownership changes"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on jsonl-event-aggregation does not imply success on lease-coordination-api: offline record aggregation cannot demonstrate simultaneous acquisition, durable ownership, or fencing after process restart",
+      "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+      "prior_task": "jsonl-event-aggregation",
+      "shared_shell_or_surface": "both handle malformed values with stable classification",
+      "substantive_difference": "offline record aggregation cannot demonstrate simultaneous acquisition, durable ownership, or fencing after process restart"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on invoice-payment-reconciliation does not imply success on lease-coordination-api: financial matching is deterministic batch reconciliation; leases are mutable concurrent coordination with expiry and owner capabilities",
+      "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+      "prior_task": "invoice-payment-reconciliation",
+      "shared_shell_or_surface": "both enforce atomic consistency",
+      "substantive_difference": "financial matching is deterministic batch reconciliation; leases are mutable concurrent coordination with expiry and owner capabilities"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on dependency-impact-planner does not imply success on lease-coordination-api: topological levels order dependent work statically; fencing tokens order successive owners dynamically under concurrent API operations",
+      "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+      "prior_task": "dependency-impact-planner",
+      "shared_shell_or_surface": "both reason about ordering",
+      "substantive_difference": "topological levels order dependent work statically; fencing tokens order successive owners dynamically under concurrent API operations"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on access-policy-evaluator does not imply success on lease-coordination-api: policy evaluation is stateless allow/deny composition; leases persist and mutate exclusive ownership generations",
+      "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+      "prior_task": "access-policy-evaluator",
+      "shared_shell_or_surface": "both use request-supplied time and reject unauthorized operations",
+      "substantive_difference": "policy evaluation is stateless allow/deny composition; leases persist and mutate exclusive ownership generations"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on versioned-document-api does not imply success on lease-coordination-api: document CAS protects content revisions; lease CAS chooses temporal owners and emits monotonic fencing tokens that outlive lease expiry",
+      "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+      "prior_task": "versioned-document-api",
+      "shared_shell_or_surface": "both use SQLite compare-and-swap, stale rejection, and cross-process persistence",
+      "substantive_difference": "document CAS protects content revisions; lease CAS chooses temporal owners and emits monotonic fencing tokens that outlive lease expiry"
+    },
+    {
+      "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "new_task": "lease-coordination-api",
+      "non_implication": "Success on safe-archive-extraction does not imply success on lease-coordination-api: filesystem staging atomicity has no shared mutable database contender; lease atomicity is tested under simultaneous writers and durable state",
+      "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+      "prior_task": "safe-archive-extraction",
+      "shared_shell_or_surface": "both promise failure atomicity",
+      "substantive_difference": "filesystem staging atomicity has no shared mutable database contender; lease atomicity is tested under simultaneous writers and durable state"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on support-ticket-api does not imply success on double-entry-ledger-api: ticket state/assignment transitions do not enforce exact decimal balancing, immutable postings, or compensating reversal",
+      "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+      "prior_task": "support-ticket-api",
+      "shared_shell_or_surface": "both are persistent CRUD-like APIs",
+      "substantive_difference": "ticket state/assignment transitions do not enforce exact decimal balancing, immutable postings, or compensating reversal"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on csv-member-import does not imply success on double-entry-ledger-api: member import accepts/rejects independent rows; ledger entries form one atomic balanced transaction with derived account state",
+      "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+      "prior_task": "csv-member-import",
+      "shared_shell_or_surface": "both validate structured records and reject malformed values",
+      "substantive_difference": "member import accepts/rejects independent rows; ledger entries form one atomic balanced transaction with derived account state"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on incident-escalation-api does not imply success on double-entry-ledger-api: incident escalation is time-triggered workflow behavior; ledger state derives solely from balanced append-only financial entries",
+      "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+      "prior_task": "incident-escalation-api",
+      "shared_shell_or_surface": "both expose immutable evidence of state changes",
+      "substantive_difference": "incident escalation is time-triggered workflow behavior; ledger state derives solely from balanced append-only financial entries"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on inventory-adjustment-api does not imply success on double-entry-ledger-api: inventory permits domain updates and recounts; ledger requires equal debit/credit totals and corrects history only by compensation",
+      "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+      "prior_task": "inventory-adjustment-api",
+      "shared_shell_or_surface": "both enforce transactional quantity invariants",
+      "substantive_difference": "inventory permits domain updates and recounts; ledger requires equal debit/credit totals and corrects history only by compensation"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on leave-request-api does not imply success on double-entry-ledger-api: leave conflicts depend on dates and approval state; ledger conflicts concern idempotency identity and balanced financial posting",
+      "prior_construct": "overlap-aware leave approval and terminal workflow states",
+      "prior_task": "leave-request-api",
+      "shared_shell_or_surface": "both reject conflicting operations atomically",
+      "substantive_difference": "leave conflicts depend on dates and approval state; ledger conflicts concern idempotency identity and balanced financial posting"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on refund-approval-api does not imply success on double-entry-ledger-api: refund approval authorizes thresholds and stages; ledger posting proves double-entry balance and immutable journal effects",
+      "prior_construct": "threshold-based staged refund authorization",
+      "prior_task": "refund-approval-api",
+      "shared_shell_or_surface": "both use monetary amounts and financial-domain terminology",
+      "substantive_difference": "refund approval authorizes thresholds and stages; ledger posting proves double-entry balance and immutable journal effects"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on report-export-job does not imply success on double-entry-ledger-api: report totals are exported snapshots; ledger balances are derived continuously from immutable debit/credit entries",
+      "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+      "prior_task": "report-export-job",
+      "shared_shell_or_surface": "both calculate exact totals and deterministic ordered output",
+      "substantive_difference": "report totals are exported snapshots; ledger balances are derived continuously from immutable debit/credit entries"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on webhook-ingestion-service does not imply success on double-entry-ledger-api: webhook idempotency suppresses duplicate events; ledger idempotency binds an order-insensitive canonical multi-entry transaction and detects payload conflict",
+      "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+      "prior_task": "webhook-ingestion-service",
+      "shared_shell_or_surface": "both require durable idempotency",
+      "substantive_difference": "webhook idempotency suppresses duplicate events; ledger idempotency binds an order-insensitive canonical multi-entry transaction and detects payload conflict"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on appointment-booking-api does not imply success on double-entry-ledger-api: booking protects time intervals; ledger protects balanced posting, idempotency identity, and one compensating reversal",
+      "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+      "prior_task": "appointment-booking-api",
+      "shared_shell_or_surface": "both have concurrent conflict prevention",
+      "substantive_difference": "booking protects time intervals; ledger protects balanced posting, idempotency identity, and one compensating reversal"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on shipment-event-api does not imply success on double-entry-ledger-api: shipment events project a domain state machine; ledger entries preserve a mathematical debit/credit invariant and derived balances",
+      "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+      "prior_task": "shipment-event-api",
+      "shared_shell_or_surface": "both use idempotency and append-only history",
+      "substantive_difference": "shipment events project a domain state machine; ledger entries preserve a mathematical debit/credit invariant and derived balances"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on jsonl-event-aggregation does not imply success on double-entry-ledger-api: aggregation computes batch metrics over events; ledger atomically appends balanced entries and exposes persistent journals",
+      "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+      "prior_task": "jsonl-event-aggregation",
+      "shared_shell_or_surface": "both use exact parsing and deterministic summaries",
+      "substantive_difference": "aggregation computes batch metrics over events; ledger atomically appends balanced entries and exposes persistent journals"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on invoice-payment-reconciliation does not imply success on double-entry-ledger-api: reconciliation matches pre-existing invoices/payments at a cutoff; ledger accepts new balanced postings and compensation under transactional concurrency",
+      "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+      "prior_task": "invoice-payment-reconciliation",
+      "shared_shell_or_surface": "both use exact decimals and financial records",
+      "substantive_difference": "reconciliation matches pre-existing invoices/payments at a cutoff; ledger accepts new balanced postings and compensation under transactional concurrency"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on dependency-impact-planner does not imply success on double-entry-ledger-api: graph planning orders components by dependencies; ledger ordering is an immutable transaction/entry journal with financial semantics",
+      "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+      "prior_task": "dependency-impact-planner",
+      "shared_shell_or_surface": "both produce deterministic orderings",
+      "substantive_difference": "graph planning orders components by dependencies; ledger ordering is an immutable transaction/entry journal with financial semantics"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on access-policy-evaluator does not imply success on double-entry-ledger-api: policy returns stateless allow/deny; ledger commits balanced economic events and derives account balances",
+      "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+      "prior_task": "access-policy-evaluator",
+      "shared_shell_or_surface": "both validate operations against public rules",
+      "substantive_difference": "policy returns stateless allow/deny; ledger commits balanced economic events and derives account balances"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on versioned-document-api does not imply success on double-entry-ledger-api: document restore copies historical content into a new revision; ledger reversal appends direction-swapped entries and never restores mutable snapshots",
+      "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+      "prior_task": "versioned-document-api",
+      "shared_shell_or_surface": "both preserve immutable history and use concurrent write guards",
+      "substantive_difference": "document restore copies historical content into a new revision; ledger reversal appends direction-swapped entries and never restores mutable snapshots"
+    },
+    {
+      "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "new_task": "double-entry-ledger-api",
+      "non_implication": "Success on safe-archive-extraction does not imply success on double-entry-ledger-api: archive commit creates a filesystem tree; ledger commit creates interdependent financial rows whose totals must balance exactly",
+      "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+      "prior_task": "safe-archive-extraction",
+      "shared_shell_or_surface": "both require all-or-nothing commit on validation",
+      "substantive_difference": "archive commit creates a filesystem tree; ledger commit creates interdependent financial rows whose totals must balance exactly"
+    }
+  ],
+  "authorization": "pre-build task identity, public contract planning, and non-efficacy evaluator construction only",
+  "base_commit": "6178b855d806687bd09624c43815f2688f82008d",
+  "efficacy_cells_collected": 0,
+  "freeze_date": "2026-07-16",
+  "nearest_check_matrix": [
+    {
+      "expected_mutant_failed_checks": [
+        "signed_manifest_authenticity"
+      ],
+      "expected_mutant_passed_checks": [
+        "signed_manifest_inventory",
+        "signed_manifest_content_integrity",
+        "signed_manifest_trust_window",
+        "signed_manifest_atomic_report"
+      ],
+      "nearest_existing_task": "webhook-ingestion-service",
+      "new_check": "signed_manifest_authenticity",
+      "new_task": "signed-artifact-verifier",
+      "planned_mutant": "accepts an invalid signature",
+      "planned_probe": "Exercise valid signing plus altered payload, signature, and unknown-key failures without exposing literal fixtures.",
+      "substantive_difference": "verifies a complete offline artifact-set trust statement and key identity, not an individual inbound webhook request"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "signed_manifest_inventory"
+      ],
+      "expected_mutant_passed_checks": [
+        "signed_manifest_authenticity",
+        "signed_manifest_content_integrity",
+        "signed_manifest_trust_window",
+        "signed_manifest_atomic_report"
+      ],
+      "nearest_existing_task": "safe-archive-extraction",
+      "new_check": "signed_manifest_inventory",
+      "new_task": "signed-artifact-verifier",
+      "planned_mutant": "ignores unexpected files",
+      "planned_probe": "Exercise missing, unexpected, duplicate-normalized, and unsafe inventory entries.",
+      "substantive_difference": "audits an already materialized tree against a signed inventory rather than safely extracting archive members"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "signed_manifest_content_integrity"
+      ],
+      "expected_mutant_passed_checks": [
+        "signed_manifest_authenticity",
+        "signed_manifest_inventory",
+        "signed_manifest_trust_window",
+        "signed_manifest_atomic_report"
+      ],
+      "nearest_existing_task": "safe-archive-extraction",
+      "new_check": "signed_manifest_content_integrity",
+      "new_task": "signed-artifact-verifier",
+      "planned_mutant": "skips SHA-256 comparison",
+      "planned_probe": "Exercise same-size content mutation, size mismatch, and non-regular file rejection.",
+      "substantive_difference": "checks authenticity-bound integrity of a complete existing artifact set rather than producing an extraction manifest"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "signed_manifest_trust_window"
+      ],
+      "expected_mutant_passed_checks": [
+        "signed_manifest_authenticity",
+        "signed_manifest_inventory",
+        "signed_manifest_content_integrity",
+        "signed_manifest_atomic_report"
+      ],
+      "nearest_existing_task": "access-policy-evaluator",
+      "new_check": "signed_manifest_trust_window",
+      "new_task": "signed-artifact-verifier",
+      "planned_mutant": "ignores only the key valid_until boundary",
+      "planned_probe": "Exercise inclusive start, exclusive end, expired manifest, inactive key, and malformed timestamps.",
+      "substantive_difference": "evaluates cryptographic key and signed-manifest trust windows rather than authorization-rule applicability"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "signed_manifest_atomic_report"
+      ],
+      "expected_mutant_passed_checks": [
+        "signed_manifest_authenticity",
+        "signed_manifest_inventory",
+        "signed_manifest_content_integrity",
+        "signed_manifest_trust_window"
+      ],
+      "nearest_existing_task": "report-export-job",
+      "new_check": "signed_manifest_atomic_report",
+      "new_task": "signed-artifact-verifier",
+      "planned_mutant": "writes a partial report before validation completes",
+      "planned_probe": "Exercise malformed JSON, invalid field types, deterministic pre-commit validation failure, rerun byte stability, staging cleanup, and pre-existing report preservation.",
+      "substantive_difference": "the output is a trust verdict committed only after whole-set cryptographic verification, not a business data export"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "pii_selector_resolution"
+      ],
+      "expected_mutant_passed_checks": [
+        "pii_redaction_actions",
+        "pii_structure_preservation",
+        "pii_rule_precedence",
+        "pii_atomic_audit"
+      ],
+      "nearest_existing_task": "access-policy-evaluator",
+      "new_check": "pii_selector_resolution",
+      "new_task": "pii-redaction-pipeline",
+      "planned_mutant": "treats wildcard selectors as shallow matches",
+      "planned_probe": "Exercise nested objects, arrays, wildcard segments, escaped pointer tokens, and unmatched selectors.",
+      "substantive_difference": "selectors locate fields inside recursive JSON values for transformation, not action/resource strings for authorization"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "pii_redaction_actions"
+      ],
+      "expected_mutant_passed_checks": [
+        "pii_selector_resolution",
+        "pii_structure_preservation",
+        "pii_rule_precedence",
+        "pii_atomic_audit"
+      ],
+      "nearest_existing_task": "webhook-ingestion-service",
+      "new_check": "pii_redaction_actions",
+      "new_task": "pii-redaction-pipeline",
+      "planned_mutant": "uses unkeyed hashing for pseudonymization",
+      "planned_probe": "Exercise all actions on strings, numbers, booleans, nulls, objects, and arrays according to public type rules.",
+      "substantive_difference": "performs keyed privacy transformation over selected data fields rather than authenticating and normalizing events"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "pii_structure_preservation"
+      ],
+      "expected_mutant_passed_checks": [
+        "pii_selector_resolution",
+        "pii_redaction_actions",
+        "pii_rule_precedence",
+        "pii_atomic_audit"
+      ],
+      "nearest_existing_task": "csv-member-import",
+      "new_check": "pii_structure_preservation",
+      "new_task": "pii-redaction-pipeline",
+      "planned_mutant": "rebuilds only selected branches and drops unrelated data",
+      "planned_probe": "Exercise adjacent array/object selections, non-selected sentinels, and removal from multiple nesting levels.",
+      "substantive_difference": "preserves arbitrary recursive JSON structure while transforming selected fields, rather than normalizing tabular member rows"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "pii_rule_precedence"
+      ],
+      "expected_mutant_passed_checks": [
+        "pii_selector_resolution",
+        "pii_redaction_actions",
+        "pii_structure_preservation",
+        "pii_atomic_audit"
+      ],
+      "nearest_existing_task": "access-policy-evaluator",
+      "new_check": "pii_rule_precedence",
+      "new_task": "pii-redaction-pipeline",
+      "planned_mutant": "uses first-rule-wins input order",
+      "planned_probe": "Exercise exact-over-wildcard precedence, conflicting ties, duplicate rule IDs, and input-order permutations.",
+      "substantive_difference": "resolves transformation specificity and rejects ambiguous mutations, rather than combining allow/deny decisions"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "pii_atomic_audit"
+      ],
+      "expected_mutant_passed_checks": [
+        "pii_selector_resolution",
+        "pii_redaction_actions",
+        "pii_structure_preservation",
+        "pii_rule_precedence"
+      ],
+      "nearest_existing_task": "jsonl-event-aggregation",
+      "new_check": "pii_atomic_audit",
+      "new_task": "pii-redaction-pipeline",
+      "planned_mutant": "commits a bundle whose audit omits one transformed field",
+      "planned_probe": "Exercise exact bundle consistency, rerun byte stability, malformed inputs, staging cleanup, and preservation of a pre-existing bundle.",
+      "substantive_difference": "produces a field-level privacy transformation audit over one recursive document, not row rejection and aggregate statistics"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "lease_acquire_fencing"
+      ],
+      "expected_mutant_passed_checks": [
+        "lease_concurrent_contention",
+        "lease_renewal",
+        "lease_release_reacquire",
+        "lease_state_and_failure_atomicity"
+      ],
+      "nearest_existing_task": "versioned-document-api",
+      "new_check": "lease_acquire_fencing",
+      "new_task": "lease-coordination-api",
+      "planned_mutant": "fails to persist the next-token counter across a process restart before expiry takeover",
+      "planned_probe": "Exercise first acquisition, expiry takeover, process restart, and monotonic token continuity.",
+      "substantive_difference": "coordinates temporary ownership with fencing across lease generations, rather than versioning document content"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "lease_concurrent_contention"
+      ],
+      "expected_mutant_passed_checks": [
+        "lease_acquire_fencing",
+        "lease_renewal",
+        "lease_release_reacquire",
+        "lease_state_and_failure_atomicity"
+      ],
+      "nearest_existing_task": "appointment-booking-api",
+      "new_check": "lease_concurrent_contention",
+      "new_task": "lease-coordination-api",
+      "planned_mutant": "reports success to a losing barrier-synchronized contender while durable state contains one winner",
+      "planned_probe": "Launch genuinely concurrent same-resource acquisitions and verify one winner, one durable lease, and one token increment.",
+      "substantive_difference": "arbitrates one ephemeral ownership lease under simultaneous writers, not interval bookings among scheduled appointments"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "lease_renewal"
+      ],
+      "expected_mutant_passed_checks": [
+        "lease_acquire_fencing",
+        "lease_concurrent_contention",
+        "lease_release_reacquire",
+        "lease_state_and_failure_atomicity"
+      ],
+      "nearest_existing_task": "incident-escalation-api",
+      "new_check": "lease_renewal",
+      "new_task": "lease-coordination-api",
+      "planned_mutant": "renews based on owner alone and ignores the fencing token",
+      "planned_probe": "Exercise valid renew, wrong owner, stale token, expired lease, and non-increasing expiry.",
+      "substantive_difference": "guards continuation of exclusive ownership using a fencing capability, not escalation transitions based on elapsed incident time"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "lease_release_reacquire"
+      ],
+      "expected_mutant_passed_checks": [
+        "lease_acquire_fencing",
+        "lease_concurrent_contention",
+        "lease_renewal",
+        "lease_state_and_failure_atomicity"
+      ],
+      "nearest_existing_task": "shipment-event-api",
+      "new_check": "lease_release_reacquire",
+      "new_task": "lease-coordination-api",
+      "planned_mutant": "accepts a stale token after a newer lease generation exists",
+      "planned_probe": "Exercise valid release, stale release, double release, reacquire, and stale operations after reacquisition.",
+      "substantive_difference": "uses fencing generations to invalidate stale actors, rather than enforcing append-only domain-event transitions"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "lease_state_and_failure_atomicity"
+      ],
+      "expected_mutant_passed_checks": [
+        "lease_acquire_fencing",
+        "lease_concurrent_contention",
+        "lease_renewal",
+        "lease_release_reacquire"
+      ],
+      "nearest_existing_task": "versioned-document-api",
+      "new_check": "lease_state_and_failure_atomicity",
+      "new_task": "lease-coordination-api",
+      "planned_mutant": "GET reports a released lease generation as active while active and expired generation reads remain correct",
+      "planned_probe": "Compare full database-visible state before and after every controlled failure and across process termination.",
+      "substantive_difference": "audits lease ownership and fencing state under temporal operations, not immutable content revision history"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "ledger_account_identity"
+      ],
+      "expected_mutant_passed_checks": [
+        "ledger_balanced_posting",
+        "ledger_idempotency_conflict",
+        "ledger_balances_and_journal",
+        "ledger_compensating_reversal"
+      ],
+      "nearest_existing_task": "inventory-adjustment-api",
+      "new_check": "ledger_account_identity",
+      "new_task": "double-entry-ledger-api",
+      "planned_mutant": "accepts a lowercase two-letter currency code while valid account creation and persistence remain correct",
+      "planned_probe": "Exercise persistence across process termination, duplicate IDs, malformed IDs, unsupported currency codes, and absence of any account-update operation.",
+      "substantive_difference": "establishes immutable posting identities and currencies, not mutable stock quantities"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "ledger_balanced_posting"
+      ],
+      "expected_mutant_passed_checks": [
+        "ledger_account_identity",
+        "ledger_idempotency_conflict",
+        "ledger_balances_and_journal",
+        "ledger_compensating_reversal"
+      ],
+      "nearest_existing_task": "invoice-payment-reconciliation",
+      "new_check": "ledger_balanced_posting",
+      "new_task": "double-entry-ledger-api",
+      "planned_mutant": "accepts a transaction whose aggregate debits and credits differ",
+      "planned_probe": "Exercise balanced multi-entry postings, imbalance, mixed currencies, zero/negative amounts, and unknown accounts.",
+      "substantive_difference": "enforces an immutable accounting equation at write time rather than matching external invoices and payments"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "ledger_idempotency_conflict"
+      ],
+      "expected_mutant_passed_checks": [
+        "ledger_account_identity",
+        "ledger_balanced_posting",
+        "ledger_balances_and_journal",
+        "ledger_compensating_reversal"
+      ],
+      "nearest_existing_task": "shipment-event-api",
+      "new_check": "ledger_idempotency_conflict",
+      "new_task": "double-entry-ledger-api",
+      "planned_mutant": "creates a second transaction on identical replay",
+      "planned_probe": "Exercise identical replay, reordered-equivalent payload, conflicting payload, process restart, and concurrent duplicate submission.",
+      "substantive_difference": "binds a complete balanced multi-entry posting to one idempotency identity, not a single shipment event"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "ledger_balances_and_journal"
+      ],
+      "expected_mutant_passed_checks": [
+        "ledger_account_identity",
+        "ledger_balanced_posting",
+        "ledger_idempotency_conflict",
+        "ledger_compensating_reversal"
+      ],
+      "nearest_existing_task": "report-export-job",
+      "new_check": "ledger_balances_and_journal",
+      "new_task": "double-entry-ledger-api",
+      "planned_mutant": "GET account journal reverses canonical entry order within one transaction while balances remain correct",
+      "planned_probe": "Exercise multiple postings, decimal exactness, debit/credit orientation, filtered account journal, and process restart.",
+      "substantive_difference": "derives auditable financial state from immutable postings, not a one-time filtered export"
+    },
+    {
+      "expected_mutant_failed_checks": [
+        "ledger_compensating_reversal"
+      ],
+      "expected_mutant_passed_checks": [
+        "ledger_account_identity",
+        "ledger_balanced_posting",
+        "ledger_idempotency_conflict",
+        "ledger_balances_and_journal"
+      ],
+      "nearest_existing_task": "versioned-document-api",
+      "new_check": "ledger_compensating_reversal",
+      "new_task": "double-entry-ledger-api",
+      "planned_mutant": "allows a second compensating reversal for the same original transaction while leaving the original journal intact",
+      "planned_probe": "Exercise reversal balance restoration, immutable original, double reversal, unknown transaction, and concurrent reversal attempts.",
+      "substantive_difference": "corrects immutable financial history through compensating entries rather than restoring prior document content as a new revision"
+    }
+  ],
+  "neutrality_policy": {
+    "allowed": [
+      "packaging",
+      "import path",
+      "runnable entrypoint",
+      "route and CLI interface",
+      "public schemas",
+      "public business rules"
+    ],
+    "forbidden": [
+      "held-out literal fixtures",
+      "hidden expected outputs",
+      "evaluator check IDs in visible files",
+      "implementation recipes",
+      "A/B performance evidence"
+    ]
+  },
+  "new_task_pairwise_matrix": [
+    {
+      "left": "signed-artifact-verifier",
+      "right": "pii-redaction-pipeline",
+      "shared_shell": "deterministic CLI, canonical JSON, HMAC, validation before atomic file commit",
+      "substantive_difference": "trust verification rejects or accepts an immutable artifact set; privacy redaction intentionally transforms selected JSON fields"
+    },
+    {
+      "left": "signed-artifact-verifier",
+      "right": "lease-coordination-api",
+      "shared_shell": "request-supplied RFC3339 boundaries and controlled failure classification",
+      "substantive_difference": "offline cryptographic and filesystem verification is stateless across runs; lease coordination measures durable temporal ownership under concurrency"
+    },
+    {
+      "left": "signed-artifact-verifier",
+      "right": "double-entry-ledger-api",
+      "shared_shell": "integrity invariants, canonical identity, and no partial commit",
+      "substantive_difference": "artifact authenticity and integrity have no mutable business journal; the ledger measures balanced immutable financial postings"
+    },
+    {
+      "left": "pii-redaction-pipeline",
+      "right": "lease-coordination-api",
+      "shared_shell": "structured JSON validation, preservation of unrelated state, and atomic rejection",
+      "substantive_difference": "recursive deterministic data transformation is a CLI batch operation; lease coordination is a concurrent persistent API state machine"
+    },
+    {
+      "left": "pii-redaction-pipeline",
+      "right": "double-entry-ledger-api",
+      "shared_shell": "canonical structured values, deterministic auditability, and all-or-nothing output/state",
+      "substantive_difference": "privacy rules transform arbitrary JSON structure; ledger rules append balanced domain transactions without rewriting history"
+    },
+    {
+      "left": "lease-coordination-api",
+      "right": "double-entry-ledger-api",
+      "shared_shell": "FastAPI, SQLite persistence, simultaneous writers, and stale/conflicting operation rejection",
+      "substantive_difference": "leases expire and are replaced by higher fencing generations; financial postings never expire and are corrected only by compensation"
+    }
+  ],
+  "schema_version": 1,
+  "tasks": {
+    "double-entry-ledger-api": {
+      "checks": [
+        {
+          "difference": "establishes immutable posting identities and currencies, not mutable stock quantities",
+          "expected_mutant_failed_checks": [
+            "ledger_account_identity"
+          ],
+          "expected_mutant_passed_checks": [
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "failure_atomicity": "rejected account creation leaves no row",
+          "id": "ledger_account_identity",
+          "nearest": "inventory-adjustment-api",
+          "planned_mutant": "accepts a lowercase two-letter currency code while valid account creation and persistence remain correct",
+          "planned_probe": "Exercise persistence across process termination, duplicate IDs, malformed IDs, unsupported currency codes, and absence of any account-update operation.",
+          "public_contract": "Create durable uniquely identified accounts with immutable currency and reject duplicate or malformed account definitions."
+        },
+        {
+          "difference": "enforces an immutable accounting equation at write time rather than matching external invoices and payments",
+          "expected_mutant_failed_checks": [
+            "ledger_balanced_posting"
+          ],
+          "expected_mutant_passed_checks": [
+            "ledger_account_identity",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "failure_atomicity": "invalid posting creates neither transaction nor entries nor balance changes",
+          "id": "ledger_balanced_posting",
+          "nearest": "invoice-payment-reconciliation",
+          "planned_mutant": "accepts a transaction whose aggregate debits and credits differ",
+          "planned_probe": "Exercise balanced multi-entry postings, imbalance, mixed currencies, zero/negative amounts, and unknown accounts.",
+          "public_contract": "Commit a transaction only when exact per-currency debit and credit totals balance and every entry is valid."
+        },
+        {
+          "difference": "binds a complete balanced multi-entry posting to one idempotency identity, not a single shipment event",
+          "expected_mutant_failed_checks": [
+            "ledger_idempotency_conflict"
+          ],
+          "expected_mutant_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "failure_atomicity": "conflicts do not add journal entries or change balances",
+          "id": "ledger_idempotency_conflict",
+          "nearest": "shipment-event-api",
+          "planned_mutant": "creates a second transaction on identical replay",
+          "planned_probe": "Exercise identical replay, reordered-equivalent payload, conflicting payload, process restart, and concurrent duplicate submission.",
+          "public_contract": "Replay the same idempotency key and canonical payload without duplication, but reject reuse with a different payload."
+        },
+        {
+          "difference": "derives auditable financial state from immutable postings, not a one-time filtered export",
+          "expected_mutant_failed_checks": [
+            "ledger_balances_and_journal"
+          ],
+          "expected_mutant_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_compensating_reversal"
+          ],
+          "failure_atomicity": "reads never mutate journal or balances",
+          "id": "ledger_balances_and_journal",
+          "nearest": "report-export-job",
+          "planned_mutant": "GET account journal reverses canonical entry order within one transaction while balances remain correct",
+          "planned_probe": "Exercise multiple postings, decimal exactness, debit/credit orientation, filtered account journal, and process restart.",
+          "public_contract": "Derive exact account balances from the immutable journal and return canonical transaction and entry ordering."
+        },
+        {
+          "difference": "corrects immutable financial history through compensating entries rather than restoring prior document content as a new revision",
+          "expected_mutant_failed_checks": [
+            "ledger_compensating_reversal"
+          ],
+          "expected_mutant_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal"
+          ],
+          "failure_atomicity": "exactly one concurrent reversal wins and losers leave the journal unchanged",
+          "id": "ledger_compensating_reversal",
+          "nearest": "versioned-document-api",
+          "planned_mutant": "allows a second compensating reversal for the same original transaction while leaving the original journal intact",
+          "planned_probe": "Exercise reversal balance restoration, immutable original, double reversal, unknown transaction, and concurrent reversal attempts.",
+          "public_contract": "Reverse a posted transaction exactly once by appending a linked compensating transaction; never edit or delete original entries."
+        }
+      ],
+      "construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+      "interface": "FastAPI plus SQLite/SQLAlchemy service for accounts, transactions, entries, balances, and reversals using exact decimal strings",
+      "public_interface": {
+        "accounts": "POST /accounts body exact id,currency returns 201 exact id,currency; GET /accounts/{id} returns the same exact object; IDs match [A-Za-z0-9][A-Za-z0-9._-]{0,63}; no account update or delete route",
+        "amount_canonicalization": "parse with exact Decimal, require grammar and value, then render exactly two fractional digits; 1, 1.0, and 1.00 are one canonical amount and response entries use that form",
+        "balance_rule": "sum debit amounts must equal sum credit amounts exactly in decimal arithmetic; reported account balance is total credits minus total debits",
+        "currency_rule": "account currency is exactly three uppercase ASCII letters; every transaction is single-currency and all referenced accounts must share that currency",
+        "decimal_grammar": "positive base-10 string matching 0|[1-9][0-9]* followed optionally by dot and one or two digits; value must be greater than zero; signs, exponent, locale separators, leading zeroes, NaN, and infinity are invalid",
+        "entrypoint": "ledger_api.main:app with SQLite path from LEDGER_DB_PATH",
+        "failure": "all invalid, stale, duplicate-conflict, and losing concurrent operations preserve complete accounts, transactions, entries, and derived balances",
+        "idempotency": "canonical payload normalizes amounts to two decimals and sorts entries by account_id,direction,canonical amount; initial commit returns 201, same key plus same canonical payload returns 200 with the same transaction, and same key plus different payload returns 409",
+        "posting": "POST /transactions with Idempotency-Key matching the ID grammar and exact body entries; each exact entry is account_id,direction,amount where direction is debit or credit",
+        "reads": "GET /transactions/{id} returns the exact transaction schema; GET /accounts/{id}/balance returns exact account_id,currency,balance; GET /accounts/{id}/journal returns exact account_id,entries where each exact record is transaction_id,sequence,account_id,direction,amount ordered by transaction sequence then canonical entry order",
+        "reversal": "POST /transactions/{id}/reverse with Idempotency-Key appends one linked transaction with every debit/credit swapped; initial success is 201, replay with the same key is 200 with the same reversal, another key after reversal is 409; no original row is edited or deleted",
+        "transaction_schema": "exact id,idempotency_key,currency,entries,reverses object; entries use the exact entry schema and canonical amount; reverses is null or the original transaction ID"
+      }
+    },
+    "lease-coordination-api": {
+      "checks": [
+        {
+          "difference": "coordinates temporary ownership with fencing across lease generations, rather than versioning document content",
+          "expected_mutant_failed_checks": [
+            "lease_acquire_fencing"
+          ],
+          "expected_mutant_passed_checks": [
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "failure_atomicity": "failed acquisition creates no lease or token advancement",
+          "id": "lease_acquire_fencing",
+          "nearest": "versioned-document-api",
+          "planned_mutant": "fails to persist the next-token counter across a process restart before expiry takeover",
+          "planned_probe": "Exercise first acquisition, expiry takeover, process restart, and monotonic token continuity.",
+          "public_contract": "Acquire an absent or expired resource lease and issue a persistent strictly increasing fencing token for that resource."
+        },
+        {
+          "difference": "arbitrates one ephemeral ownership lease under simultaneous writers, not interval bookings among scheduled appointments",
+          "expected_mutant_failed_checks": [
+            "lease_concurrent_contention"
+          ],
+          "expected_mutant_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_renewal",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "failure_atomicity": "losers do not mutate owner, expiry, or fencing state",
+          "id": "lease_concurrent_contention",
+          "nearest": "appointment-booking-api",
+          "planned_mutant": "reports success to a losing barrier-synchronized contender while durable state contains one winner",
+          "planned_probe": "Launch genuinely concurrent same-resource acquisitions and verify one winner, one durable lease, and one token increment.",
+          "public_contract": "For concurrent acquisition of the same available resource, commit exactly one owner and reject every loser atomically."
+        },
+        {
+          "difference": "guards continuation of exclusive ownership using a fencing capability, not escalation transitions based on elapsed incident time",
+          "expected_mutant_failed_checks": [
+            "lease_renewal"
+          ],
+          "expected_mutant_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "failure_atomicity": "rejected renewals preserve the complete lease row",
+          "id": "lease_renewal",
+          "nearest": "incident-escalation-api",
+          "planned_mutant": "renews based on owner alone and ignores the fencing token",
+          "planned_probe": "Exercise valid renew, wrong owner, stale token, expired lease, and non-increasing expiry.",
+          "public_contract": "Allow only the current unexpired owner with the current fencing token to extend expiry, without issuing a new token."
+        },
+        {
+          "difference": "uses fencing generations to invalidate stale actors, rather than enforcing append-only domain-event transitions",
+          "expected_mutant_failed_checks": [
+            "lease_release_reacquire"
+          ],
+          "expected_mutant_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_state_and_failure_atomicity"
+          ],
+          "failure_atomicity": "invalid release leaves the current generation unchanged",
+          "id": "lease_release_reacquire",
+          "nearest": "shipment-event-api",
+          "planned_mutant": "accepts a stale token after a newer lease generation exists",
+          "planned_probe": "Exercise valid release, stale release, double release, reacquire, and stale operations after reacquisition.",
+          "public_contract": "Allow only the current owner/token to release; a later acquisition receives a higher token and stale holders remain powerless."
+        },
+        {
+          "difference": "audits lease ownership and fencing state under temporal operations, not immutable content revision history",
+          "expected_mutant_failed_checks": [
+            "lease_state_and_failure_atomicity"
+          ],
+          "expected_mutant_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_release_reacquire"
+          ],
+          "failure_atomicity": "all rejected operations preserve complete durable state",
+          "id": "lease_state_and_failure_atomicity",
+          "nearest": "versioned-document-api",
+          "planned_mutant": "GET reports a released lease generation as active while active and expired generation reads remain correct",
+          "planned_probe": "Compare full database-visible state before and after every controlled failure and across process termination.",
+          "public_contract": "Expose the current lease deterministically and preserve complete state across malformed, missing, stale, and unknown-resource operations."
+        }
+      ],
+      "construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+      "interface": "FastAPI plus SQLite/SQLAlchemy service with explicit resource, owner, duration, and request-supplied RFC3339 now values",
+      "public_interface": {
+        "acquire": "POST /leases/{resource}/acquire body owner,duration_seconds,now; success 201",
+        "concurrency": "simultaneous acquire operations for one resource must have one durable winner; SQLite busy/lock errors are not valid business responses",
+        "entrypoint": "lease_api.main:app with SQLite path from LEASE_DB_PATH",
+        "generation_rules": "first token is 1 per resource; every acquisition after release or expiry increments by one; renew and release never increment; counters survive release, expiry, and process restart",
+        "lease_schema": "every successful operation and GET returns an exact resource,owner,fencing_token,acquired_at,expires_at,status object where status is active,expired,or released",
+        "read": "GET /leases/{resource}?as_of=RFC3339 returns latest generation or 404 if the resource has never had a lease",
+        "release": "POST /leases/{resource}/release body owner,fencing_token,now; success 200",
+        "renew": "POST /leases/{resource}/renew body owner,fencing_token,duration_seconds,now; success 200",
+        "request_schema": "resource and owner match [A-Za-z0-9][A-Za-z0-9._-]{0,63}; request bodies have exactly the documented fields and reject additional fields",
+        "statuses": "unknown resource is 404; malformed/extra fields are 422; active-owner conflict and double release are 409; wrong owner or stale token are 412; all preserve full state",
+        "time_rules": "now/as_of require Z or explicit offset; duration_seconds is integer 1..86400; expiry=now+duration; each mutating now is not earlier than the latest accepted operation time; GET as_of before the latest generation acquired_at is invalid; released when as_of is at/after release, else expired when as_of is at/after expiry, else active"
+      }
+    },
+    "pii-redaction-pipeline": {
+      "checks": [
+        {
+          "difference": "selectors locate fields inside recursive JSON values for transformation, not action/resource strings for authorization",
+          "expected_mutant_failed_checks": [
+            "pii_selector_resolution"
+          ],
+          "expected_mutant_passed_checks": [
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "failure_atomicity": "selector-validation failure commits neither output nor audit",
+          "id": "pii_selector_resolution",
+          "nearest": "access-policy-evaluator",
+          "planned_mutant": "treats wildcard selectors as shallow matches",
+          "planned_probe": "Exercise nested objects, arrays, wildcard segments, escaped pointer tokens, and unmatched selectors.",
+          "public_contract": "Resolve documented JSON-pointer-like exact and wildcard selectors over nested objects and arrays without implicit fuzzy matching."
+        },
+        {
+          "difference": "performs keyed privacy transformation over selected data fields rather than authenticating and normalizing events",
+          "expected_mutant_failed_checks": [
+            "pii_redaction_actions"
+          ],
+          "expected_mutant_passed_checks": [
+            "pii_selector_resolution",
+            "pii_structure_preservation",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "failure_atomicity": "unsupported action/type combinations preserve prior outputs",
+          "id": "pii_redaction_actions",
+          "nearest": "webhook-ingestion-service",
+          "planned_mutant": "uses unkeyed hashing for pseudonymization",
+          "planned_probe": "Exercise all actions on strings, numbers, booleans, nulls, objects, and arrays according to public type rules.",
+          "public_contract": "Apply the documented redact, remove, and HMAC-SHA256 pseudonymize actions with deterministic canonical value encoding."
+        },
+        {
+          "difference": "preserves arbitrary recursive JSON structure while transforming selected fields, rather than normalizing tabular member rows",
+          "expected_mutant_failed_checks": [
+            "pii_structure_preservation"
+          ],
+          "expected_mutant_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "failure_atomicity": "input remains immutable and output appears only after full transformation",
+          "id": "pii_structure_preservation",
+          "nearest": "csv-member-import",
+          "planned_mutant": "rebuilds only selected branches and drops unrelated data",
+          "planned_probe": "Exercise adjacent array/object selections, non-selected sentinels, and removal from multiple nesting levels.",
+          "public_contract": "Preserve ordering-independent JSON meaning and every non-selected value while applying removals without index drift."
+        },
+        {
+          "difference": "resolves transformation specificity and rejects ambiguous mutations, rather than combining allow/deny decisions",
+          "expected_mutant_failed_checks": [
+            "pii_rule_precedence"
+          ],
+          "expected_mutant_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_atomic_audit"
+          ],
+          "failure_atomicity": "conflict rejection preserves existing output and audit bundles",
+          "id": "pii_rule_precedence",
+          "nearest": "access-policy-evaluator",
+          "planned_mutant": "uses first-rule-wins input order",
+          "planned_probe": "Exercise exact-over-wildcard precedence, conflicting ties, duplicate rule IDs, and input-order permutations.",
+          "public_contract": "Reject conflicting equal-specificity rules and apply the documented most-specific selector precedence deterministically."
+        },
+        {
+          "difference": "produces a field-level privacy transformation audit over one recursive document, not row rejection and aggregate statistics",
+          "expected_mutant_failed_checks": [
+            "pii_atomic_audit"
+          ],
+          "expected_mutant_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_rule_precedence"
+          ],
+          "failure_atomicity": "one same-filesystem staging file is renamed over the single output-bundle path only after complete validation",
+          "id": "pii_atomic_audit",
+          "nearest": "jsonl-event-aggregation",
+          "planned_mutant": "commits a bundle whose audit omits one transformed field",
+          "planned_probe": "Exercise exact bundle consistency, rerun byte stability, malformed inputs, staging cleanup, and preservation of a pre-existing bundle.",
+          "public_contract": "Atomically commit one deterministic JSON bundle containing the redacted document and a sorted audit with selector, action, and canonical path for every transformed field."
+        }
+      ],
+      "construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+      "interface": "deterministic CLI with input JSON, rule document, secret-key file, and one atomic output-bundle path",
+      "public_interface": {
+        "actions": "redact replaces any selected JSON value with the rule replacement string; remove deletes the selected object member or array element with array removals applied by descending original index; pseudonymize replaces any selected value with hmac-sha256:HEX over canonical compact sorted-key UTF-8 JSON",
+        "bundle_schema": "exact object redacted,audit; audit records are exact path,rule_id,selector,action objects sorted by canonical path then rule_id",
+        "entrypoint": "python -m pii_redactor.redact --input INPUT --rules RULES --key KEY --output-bundle BUNDLE",
+        "failure": "controlled nonzero exit and byte-identical preservation of a pre-existing single bundle; staging is same-filesystem and removed after failure",
+        "input_schema": "one UTF-8 JSON object or array root",
+        "key_schema": "exact object secret_hex with a non-empty even-length hexadecimal HMAC key",
+        "rules_schema": "exact object schema_version=1,rules; each unique rule is id,selector,action and replacement only for redact",
+        "selector_grammar": "non-root RFC6901-style pointer beginning slash; segments use ~0 and ~1 escapes; a whole segment * matches one object key or one existing array index",
+        "selector_semantics": "unmatched selectors are valid no-ops; exact segments outrank wildcard segments; equal-specificity rules selecting one path must be identical or the rules document is invalid"
+      }
+    },
+    "signed-artifact-verifier": {
+      "checks": [
+        {
+          "difference": "verifies a complete offline artifact-set trust statement and key identity, not an individual inbound webhook request",
+          "expected_mutant_failed_checks": [
+            "signed_manifest_authenticity"
+          ],
+          "expected_mutant_passed_checks": [
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "failure_atomicity": "no success report is committed on authentication failure",
+          "id": "signed_manifest_authenticity",
+          "nearest": "webhook-ingestion-service",
+          "planned_mutant": "accepts an invalid signature",
+          "planned_probe": "Exercise valid signing plus altered payload, signature, and unknown-key failures without exposing literal fixtures.",
+          "public_contract": "Select the declared key ID and verify an HMAC-SHA256 signature over the documented canonical manifest payload."
+        },
+        {
+          "difference": "audits an already materialized tree against a signed inventory rather than safely extracting archive members",
+          "expected_mutant_failed_checks": [
+            "signed_manifest_inventory"
+          ],
+          "expected_mutant_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "failure_atomicity": "inventory rejection preserves any pre-existing report",
+          "id": "signed_manifest_inventory",
+          "nearest": "safe-archive-extraction",
+          "planned_mutant": "ignores unexpected files",
+          "planned_probe": "Exercise missing, unexpected, duplicate-normalized, and unsafe inventory entries.",
+          "public_contract": "Require a normalized, unique, exact file inventory with no missing, unexpected, absolute, escaping, or ambiguous paths."
+        },
+        {
+          "difference": "checks authenticity-bound integrity of a complete existing artifact set rather than producing an extraction manifest",
+          "expected_mutant_failed_checks": [
+            "signed_manifest_content_integrity"
+          ],
+          "expected_mutant_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "failure_atomicity": "integrity rejection writes no replacement success report",
+          "id": "signed_manifest_content_integrity",
+          "nearest": "safe-archive-extraction",
+          "planned_mutant": "skips SHA-256 comparison",
+          "planned_probe": "Exercise same-size content mutation, size mismatch, and non-regular file rejection.",
+          "public_contract": "Verify declared byte size and SHA-256 for every regular file in the exact inventory."
+        },
+        {
+          "difference": "evaluates cryptographic key and signed-manifest trust windows rather than authorization-rule applicability",
+          "expected_mutant_failed_checks": [
+            "signed_manifest_trust_window"
+          ],
+          "expected_mutant_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_atomic_report"
+          ],
+          "failure_atomicity": "temporal rejection does not replace an existing report",
+          "id": "signed_manifest_trust_window",
+          "nearest": "access-policy-evaluator",
+          "planned_mutant": "ignores only the key valid_until boundary",
+          "planned_probe": "Exercise inclusive start, exclusive end, expired manifest, inactive key, and malformed timestamps.",
+          "public_contract": "Evaluate key and manifest validity intervals only against the required request-supplied RFC3339 as-of instant."
+        },
+        {
+          "difference": "the output is a trust verdict committed only after whole-set cryptographic verification, not a business data export",
+          "expected_mutant_failed_checks": [
+            "signed_manifest_atomic_report"
+          ],
+          "expected_mutant_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window"
+          ],
+          "failure_atomicity": "complete byte-identical preservation on every controlled failure",
+          "id": "signed_manifest_atomic_report",
+          "nearest": "report-export-job",
+          "planned_mutant": "writes a partial report before validation completes",
+          "planned_probe": "Exercise malformed JSON, invalid field types, deterministic pre-commit validation failure, rerun byte stability, staging cleanup, and pre-existing report preservation.",
+          "public_contract": "Validate the complete input before atomically committing one deterministic verification report; malformed input and I/O failures preserve prior output."
+        }
+      ],
+      "construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+      "interface": "deterministic CLI with manifest, keyring, artifact-root, as-of, and output-report arguments",
+      "public_interface": {
+        "entrypoint": "python -m artifact_verifier.verify --manifest MANIFEST --keyring KEYRING --artifact-root ROOT --as-of RFC3339 --output REPORT",
+        "failure": "controlled nonzero exit, diagnostic on stderr, and byte-identical preservation of a pre-existing report",
+        "inventory_boundary": "all regular files recursively below artifact-root must appear exactly once; output must be outside artifact-root",
+        "keyring_schema": "exact object: schema_version=1, keys; each exact key object is key_id,secret_hex,valid_from,valid_until; key IDs are unique and secret_hex encodes 16..64 bytes",
+        "manifest_schema": "exact object: schema_version=1, key_id, valid_from, valid_until, files, signature; IDs match [A-Za-z0-9][A-Za-z0-9._-]{0,63}; signature and sha256 are 64 lowercase hex; size is integer 0..9223372036854775807; files are exact path,size,sha256 objects",
+        "path_rules": "POSIX relative regular-file paths only; reject absolute, empty, dot, dot-dot, backslash, duplicate-normalized, symlink, device, FIFO, and socket entries; directories are not inventory records",
+        "signature_payload": "manifest without signature, UTF-8 JSON with sorted object keys, compact separators, ensure_ascii=false; HMAC-SHA256 lowercase hex",
+        "success_report": "exact object: ok=true,key_id,manifest_sha256,file_count,total_bytes,files; files sorted by path with path,size,sha256",
+        "time_boundary": "each valid_from must precede valid_until; valid_from <= as_of < valid_until for both selected key and manifest; Z or explicit offset required and compared as instants"
+      }
+    }
+  }
+}

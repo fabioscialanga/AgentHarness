@@ -1420,6 +1420,93 @@ Interpretation and authorization boundary:
 - this amendment does not authorize a task-solving pilot, an A/B run, the 672-cell confirmatory campaign, or any efficacy claim
 - the next task-expansion batch requires its own pre-build identity freeze and the same non-efficacy acceptance gates before it can count toward the target
 
+### 17.28 Stage 2 task-expansion batch 3 pre-build identity and construct freeze (2026-07-16)
+
+This amendment is registered before any reference implementation, hidden evaluator, mutant implementation, task-solving pilot, A/B cell, or efficacy output for batch 3.
+
+Frozen base:
+- `origin/main` and local HEAD at authoring: `6178b855d806687bd09624c43815f2688f82008d`
+- accepted task identities before this batch: 16
+- efficacy cells collected while selecting or reviewing this batch: 0
+- no prior A/B score, contrast, or task-arm result was inspected or used
+
+Frozen machine-readable contract:
+- generator: `benchmarks/grading-env/build_task_expansion_batch3_prebuild.py`
+- generator SHA-256: `738108592c86892f7c0f6e8318fbe291e86773db2cf787078c1ed5e92800784d`
+- JSON freeze: `benchmarks/grading-env/task-expansion-batch3/BATCH3_PREBUILD_FREEZE.json`
+- JSON SHA-256: `63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713`
+- human-readable freeze: `benchmarks/grading-env/task-expansion-batch3/BATCH3_PREBUILD_FREEZE.md`
+- Markdown SHA-256: `d8f150095fa5ba9804e153dd56ae15f376ab7563d535338a9626cde55592748f`
+- the JSON is the normative source for exact public interfaces, functional promises, planned probes, mutant defects, expected failed/passed sets, and overlap records
+
+Frozen batch 3 identities and functional check IDs:
+
+1. `signed-artifact-verifier`
+   - deterministic CLI for canonical HMAC-signed manifests, key/manifest validity windows, exact regular-file inventory, and byte integrity
+   - `signed_manifest_authenticity`
+   - `signed_inventory_completeness`
+   - `signed_content_integrity`
+   - `signed_trust_time_boundaries`
+   - `signed_manifest_atomic_report`
+
+2. `pii-redaction-pipeline`
+   - deterministic CLI for recursive selector resolution, privacy actions, keyed pseudonymization, non-selected structure preservation, and one atomic output bundle
+   - `pii_selector_resolution`
+   - `pii_redaction_actions`
+   - `pii_structure_preservation`
+   - `pii_rule_validation_precedence`
+   - `pii_atomic_audit`
+
+3. `lease-coordination-api`
+   - FastAPI plus SQLite service for expiring exclusive ownership, durable monotonic fencing tokens, renew/release, and simultaneous contention
+   - `lease_acquire_fencing`
+   - `lease_concurrent_contention`
+   - `lease_renew_boundaries`
+   - `lease_release_reacquire_stale_holder`
+   - `lease_state_and_failure_atomicity`
+
+4. `double-entry-ledger-api`
+   - FastAPI plus SQLite service for immutable exact-decimal balanced postings, canonical idempotency, derived balances/journals, and compensating reversal
+   - `ledger_account_identity`
+   - `ledger_balanced_atomic_posting`
+   - `ledger_idempotency_conflict`
+   - `ledger_balances_and_journal`
+   - `ledger_compensating_reversal`
+
+Frozen structural decisions:
+- the two CLI tasks commit exactly one output artifact; `pii-redaction-pipeline` uses one JSON bundle containing both `redacted` and `audit`
+- all public entrypoints, routes, exact field sets, selector/path rules, canonicalization rules, temporal boundaries, decimal grammar, replay semantics, success statuses, and controlled conflict statuses are frozen in the normative JSON before implementation
+- all visible specifications must remain neutral to hidden fixture values and may expose only the frozen behavioral contract
+- hidden evaluator implementation details, check IDs, probes, mutant switches, references, and this ledger are forbidden from visible task bundles
+
+Frozen sensitivity contract:
+- exactly 5 functional checks per task and one terminal task-shape check
+- exactly 1 deterministic mutant per functional check, 20 mutants total
+- each mutant has a preregistered singleton `expected_mutant_failed_checks` set
+- each mutant has the complementary four-check `expected_mutant_passed_checks` set
+- acceptance requires the exact failure set, not merely detection by at least one check
+- full pre/post state or output snapshots must be equal after every controlled failure
+- persistence claims require cross-process observation
+- concurrency claims require simultaneous contenders, one durable winner, no partial rows, and no raw SQLite busy/lock response
+
+Frozen diversity evidence:
+- 64 unique pair-specific comparisons between the 4 new identities and all 16 accepted identities
+- every comparison records the actual shared surface, the different functional unit, and why success on the prior task does not imply success on the new task
+- 20 unique nearest-existing comparisons, one for each functional check
+- 6 unique pairwise comparisons within batch 3
+- all records are contained in the normative JSON and are frozen before build
+
+Preventive review gate:
+- first independent review: `NO-GO`; it identified generic overlap text, incomplete public boundaries, two-file PII atomicity, and insufficiently isolated planned mutants
+- second independent review: `NO-GO`; it identified the PII audit schema contradiction, an overbroad account mutant, ambiguous decimal canonicalization, and remaining interface ambiguity
+- third independent read-only review: `GO` with zero substantive blockers
+- review inspected the 16 accepted visible specifications but no run directory, efficacy cell, A/B output, or contrast
+
+Build authorization after publication of this amendment:
+- batch 3 reference implementations, hidden evaluators, deterministic mutants, visible neutral specs, generator and structural tests may be built
+- no task-solving pilot, efficacy cell, A/B comparison, campaign sizing update, or confirmatory launch is authorized
+- post-build acceptance requires generator byte identity, 4/4 reference positives, exact 20/20 mutation sensitivity, clean-room agreement, full forbidden-artifact gate, complete 64/20/6 diversity evidence, legacy compatibility, independent blind GO, artifact hashes, and a dated post-build amendment
+
 ---
 
 ## Freeze
