@@ -1,0 +1,2616 @@
+{
+  "mme": 0.1,
+  "within_task_condition_sd": 0.224,
+  "simulations_per_design_cell": 50000,
+  "base_seed": 2026071605,
+  "decision_rule": "improvement_supported iff primary 95% CI lower bound is strictly above MME",
+  "model": {
+    "task_effect": "Normal(true_effect, effect_heterogeneity_sd)",
+    "condition_mean_difference_noise_sd": "sqrt(2) * within_task_condition_sd / sqrt(replicates_per_condition)",
+    "inference": "paired task-level mean difference with t critical value and df=tasks-1"
+  },
+  "selection": {
+    "status": "provisional_pending_task_expansion_and_quality_gates",
+    "tasks": 24,
+    "replicates_per_condition": 14,
+    "cells": 672,
+    "target_effect": 0.18,
+    "central_effect_heterogeneity_sd": 0.1,
+    "central_power": 0.81546,
+    "reason": "smallest task expansion among the frozen candidate grid that clears 0.80 central power at effect 0.18"
+  },
+  "rows": [
+    {
+      "tasks": 8,
+      "replicates_per_condition": 6,
+      "cells": 96,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0497
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 6,
+      "cells": 96,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.25076
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 8,
+      "cells": 128,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05342
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 8,
+      "cells": 128,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.29774
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 10,
+      "cells": 160,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05718
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 10,
+      "cells": 160,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.33316
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 12,
+      "cells": 192,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05982
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 12,
+      "cells": 192,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.36442
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 14,
+      "cells": 224,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0641
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 14,
+      "cells": 224,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.3938
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 20,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06718
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 20,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.44594
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 6,
+      "cells": 192,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07222
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 6,
+      "cells": 192,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.502
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 8,
+      "cells": 256,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0788
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 8,
+      "cells": 256,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.58222
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 10,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08376
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 10,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.64688
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 12,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.089
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 12,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.69472
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 14,
+      "cells": 448,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09258
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 14,
+      "cells": 448,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.72654
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 20,
+      "cells": 640,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10294
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 20,
+      "cells": 640,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.80102
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 6,
+      "cells": 240,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08186
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 6,
+      "cells": 240,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.60638
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 8,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08746
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 8,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.69406
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 10,
+      "cells": 400,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09846
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 10,
+      "cells": 400,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.75556
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 12,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10316
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 12,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.79682
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 14,
+      "cells": 560,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10824
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 14,
+      "cells": 560,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.83226
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 20,
+      "cells": 800,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12164
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 20,
+      "cells": 800,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.88866
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 6,
+      "cells": 288,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08968
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 6,
+      "cells": 288,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.6985
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 8,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10124
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 8,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.7784
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 10,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10904
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 10,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.83112
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 12,
+      "cells": 576,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11784
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 12,
+      "cells": 576,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.87082
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 14,
+      "cells": 672,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12474
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 14,
+      "cells": 672,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.89858
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 20,
+      "cells": 960,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.14108
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 20,
+      "cells": 960,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.94002
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 6,
+      "cells": 336,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09734
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 6,
+      "cells": 336,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.76504
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 8,
+      "cells": 448,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11132
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 8,
+      "cells": 448,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.84016
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 10,
+      "cells": 560,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12384
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 10,
+      "cells": 560,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.8888
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 12,
+      "cells": 672,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.13216
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 12,
+      "cells": 672,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.91978
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 14,
+      "cells": 784,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.13694
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 14,
+      "cells": 784,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.93962
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 20,
+      "cells": 1120,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.15752
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 20,
+      "cells": 1120,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.96854
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 6,
+      "cells": 360,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09976
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 6,
+      "cells": 360,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.7923
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 8,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11472
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 8,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.86798
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 10,
+      "cells": 600,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12836
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 10,
+      "cells": 600,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.90828
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 12,
+      "cells": 720,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.137
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 12,
+      "cells": 720,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.93698
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 14,
+      "cells": 840,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1458
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 14,
+      "cells": 840,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.95492
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 20,
+      "cells": 1200,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1686
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 20,
+      "cells": 1200,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.9779
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 6,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10836
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 6,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.8224
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 8,
+      "cells": 512,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12144
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 8,
+      "cells": 512,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.88722
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 10,
+      "cells": 640,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.13412
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 10,
+      "cells": 640,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.92622
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 12,
+      "cells": 768,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.14626
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 12,
+      "cells": 768,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.95104
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 14,
+      "cells": 896,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.15448
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 14,
+      "cells": 896,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.96322
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 20,
+      "cells": 1280,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.17294
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 20,
+      "cells": 1280,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.98424
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 6,
+      "cells": 432,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11514
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 6,
+      "cells": 432,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.86386
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 8,
+      "cells": 576,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.13268
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 8,
+      "cells": 576,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.92296
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 10,
+      "cells": 720,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.14574
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 10,
+      "cells": 720,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.95314
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 12,
+      "cells": 864,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1605
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 12,
+      "cells": 864,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.96894
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 14,
+      "cells": 1008,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.17062
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 14,
+      "cells": 1008,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.97914
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 20,
+      "cells": 1440,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.19156
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 20,
+      "cells": 1440,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.08,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.99184
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 6,
+      "cells": 96,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0483
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 6,
+      "cells": 96,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.22486
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 8,
+      "cells": 128,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05118
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 8,
+      "cells": 128,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.25512
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 10,
+      "cells": 160,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05446
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 10,
+      "cells": 160,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.28142
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 12,
+      "cells": 192,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05552
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 12,
+      "cells": 192,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.30212
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 14,
+      "cells": 224,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05576
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 14,
+      "cells": 224,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.31942
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 20,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05878
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 20,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.36276
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 6,
+      "cells": 192,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06628
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 6,
+      "cells": 192,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.4493
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 8,
+      "cells": 256,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07084
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 8,
+      "cells": 256,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.5152
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 10,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07506
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 10,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.56224
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 12,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0791
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 12,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.60076
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 14,
+      "cells": 448,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07944
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 14,
+      "cells": 448,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.62942
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 20,
+      "cells": 640,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08874
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 20,
+      "cells": 640,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.68714
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 6,
+      "cells": 240,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0754
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 6,
+      "cells": 240,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.54782
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 8,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08142
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 8,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.62162
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 10,
+      "cells": 400,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08598
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 10,
+      "cells": 400,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.66678
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 12,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09048
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 12,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.70282
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 14,
+      "cells": 560,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0947
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 14,
+      "cells": 560,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.73544
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 20,
+      "cells": 800,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10386
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 20,
+      "cells": 800,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.78948
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 6,
+      "cells": 288,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08252
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 6,
+      "cells": 288,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.63384
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 8,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09104
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 8,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.70686
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 10,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09664
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 10,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.75616
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 12,
+      "cells": 576,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10208
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 12,
+      "cells": 576,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.79038
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 14,
+      "cells": 672,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10772
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 14,
+      "cells": 672,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.81546
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 20,
+      "cells": 960,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11632
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 20,
+      "cells": 960,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.86564
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 6,
+      "cells": 336,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09162
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 6,
+      "cells": 336,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.70642
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 8,
+      "cells": 448,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09802
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 8,
+      "cells": 448,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.77724
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 10,
+      "cells": 560,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1063
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 10,
+      "cells": 560,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.82394
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 12,
+      "cells": 672,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11364
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 12,
+      "cells": 672,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.85322
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 14,
+      "cells": 784,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11898
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 14,
+      "cells": 784,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.87622
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 20,
+      "cells": 1120,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12984
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 20,
+      "cells": 1120,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.91382
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 6,
+      "cells": 360,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09304
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 6,
+      "cells": 360,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.73614
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 8,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10386
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 8,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.80476
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 10,
+      "cells": 600,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11456
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 10,
+      "cells": 600,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.85178
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 12,
+      "cells": 720,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11954
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 12,
+      "cells": 720,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.87838
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 14,
+      "cells": 840,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12536
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 14,
+      "cells": 840,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.89826
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 20,
+      "cells": 1200,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1389
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 20,
+      "cells": 1200,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.93288
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 6,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10078
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 6,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.76326
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 8,
+      "cells": 512,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1074
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 8,
+      "cells": 512,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.83162
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 10,
+      "cells": 640,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11974
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 10,
+      "cells": 640,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.87384
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 12,
+      "cells": 768,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12382
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 12,
+      "cells": 768,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.89708
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 14,
+      "cells": 896,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.12938
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 14,
+      "cells": 896,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.91646
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 20,
+      "cells": 1280,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1415
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 20,
+      "cells": 1280,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.94916
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 6,
+      "cells": 432,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10702
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 6,
+      "cells": 432,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.8132
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 8,
+      "cells": 576,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1198
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 8,
+      "cells": 576,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.87468
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 10,
+      "cells": 720,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1274
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 10,
+      "cells": 720,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.9104
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 12,
+      "cells": 864,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1356
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 12,
+      "cells": 864,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.9311
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 14,
+      "cells": 1008,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.14164
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 14,
+      "cells": 1008,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.94576
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 20,
+      "cells": 1440,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1575
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 20,
+      "cells": 1440,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.1,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.96774
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 6,
+      "cells": 96,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.04444
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 6,
+      "cells": 96,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.17496
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 8,
+      "cells": 128,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0474
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 8,
+      "cells": 128,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1943
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 10,
+      "cells": 160,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.04848
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 10,
+      "cells": 160,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.2076
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 12,
+      "cells": 192,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.04736
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 12,
+      "cells": 192,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.21718
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 14,
+      "cells": 224,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.04734
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 14,
+      "cells": 224,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.2235
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 20,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05114
+    },
+    {
+      "tasks": 8,
+      "replicates_per_condition": 20,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.23904
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 6,
+      "cells": 192,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.05786
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 6,
+      "cells": 192,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.34734
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 8,
+      "cells": 256,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0625
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 8,
+      "cells": 256,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.38488
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 10,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06186
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 10,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.41548
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 12,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06352
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 12,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.43006
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 14,
+      "cells": 448,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06774
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 14,
+      "cells": 448,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.44932
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 20,
+      "cells": 640,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06892
+    },
+    {
+      "tasks": 16,
+      "replicates_per_condition": 20,
+      "cells": 640,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.47732
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 6,
+      "cells": 240,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06478
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 6,
+      "cells": 240,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.42862
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 8,
+      "cells": 320,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.06786
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 8,
+      "cells": 320,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.47354
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 10,
+      "cells": 400,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07108
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 10,
+      "cells": 400,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.5035
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 12,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07362
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 12,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.52784
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 14,
+      "cells": 560,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07482
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 14,
+      "cells": 560,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.54398
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 20,
+      "cells": 800,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.077
+    },
+    {
+      "tasks": 20,
+      "replicates_per_condition": 20,
+      "cells": 800,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.58036
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 6,
+      "cells": 288,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07116
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 6,
+      "cells": 288,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.50646
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 8,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07716
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 8,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.55216
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 10,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07838
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 10,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.586
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 12,
+      "cells": 576,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08204
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 12,
+      "cells": 576,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.61516
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 14,
+      "cells": 672,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08438
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 14,
+      "cells": 672,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.62968
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 20,
+      "cells": 960,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0883
+    },
+    {
+      "tasks": 24,
+      "replicates_per_condition": 20,
+      "cells": 960,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.66906
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 6,
+      "cells": 336,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07714
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 6,
+      "cells": 336,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.57122
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 8,
+      "cells": 448,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08478
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 8,
+      "cells": 448,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.61986
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 10,
+      "cells": 560,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08388
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 10,
+      "cells": 560,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.66068
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 12,
+      "cells": 672,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09018
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 12,
+      "cells": 672,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.6862
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 14,
+      "cells": 784,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09092
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 14,
+      "cells": 784,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.69954
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 20,
+      "cells": 1120,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09446
+    },
+    {
+      "tasks": 28,
+      "replicates_per_condition": 20,
+      "cells": 1120,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.73886
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 6,
+      "cells": 360,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.07884
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 6,
+      "cells": 360,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.59934
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 8,
+      "cells": 480,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0843
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 8,
+      "cells": 480,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.65472
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 10,
+      "cells": 600,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0887
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 10,
+      "cells": 600,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.6917
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 12,
+      "cells": 720,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0913
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 12,
+      "cells": 720,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.71262
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 14,
+      "cells": 840,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09504
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 14,
+      "cells": 840,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.73304
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 20,
+      "cells": 1200,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09788
+    },
+    {
+      "tasks": 30,
+      "replicates_per_condition": 20,
+      "cells": 1200,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.77012
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 6,
+      "cells": 384,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.08366
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 6,
+      "cells": 384,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.63102
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 8,
+      "cells": 512,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0882
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 8,
+      "cells": 512,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.68616
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 10,
+      "cells": 640,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09382
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 10,
+      "cells": 640,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.71906
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 12,
+      "cells": 768,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09436
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 12,
+      "cells": 768,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.74138
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 14,
+      "cells": 896,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09908
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 14,
+      "cells": 896,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.7612
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 20,
+      "cells": 1280,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1041
+    },
+    {
+      "tasks": 32,
+      "replicates_per_condition": 20,
+      "cells": 1280,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.80032
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 6,
+      "cells": 432,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.0892
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 6,
+      "cells": 432,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.68858
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 8,
+      "cells": 576,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09676
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 8,
+      "cells": 576,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.74106
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 10,
+      "cells": 720,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.09872
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 10,
+      "cells": 720,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.77316
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 12,
+      "cells": 864,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.1021
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 12,
+      "cells": 864,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.79972
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 14,
+      "cells": 1008,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.10694
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 14,
+      "cells": 1008,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.81188
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 20,
+      "cells": 1440,
+      "true_effect": 0.12,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.11374
+    },
+    {
+      "tasks": 36,
+      "replicates_per_condition": 20,
+      "cells": 1440,
+      "true_effect": 0.18,
+      "effect_heterogeneity_sd": 0.14,
+      "within_task_condition_sd": 0.224,
+      "improvement_supported_power": 0.84644
+    }
+  ]
+}

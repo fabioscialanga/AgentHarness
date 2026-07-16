@@ -53,12 +53,12 @@ class Stage2AnalysisTests(unittest.TestCase):
         self.assertFalse(result.mme_cleared)
         self.assertEqual(decision_headline(result), "inconclusive")
 
-    def test_campaign_dataset_validator_accepts_exact_8_by_2_by_20_shape(self) -> None:
-        task_ids = [f"task-{index}" for index in range(1, 9)]
+    def test_campaign_dataset_validator_accepts_exact_24_by_2_by_14_shape(self) -> None:
+        task_ids = [f"task-{index}" for index in range(1, 25)]
         rows: list[dict[str, object]] = []
         for task_id in task_ids:
             for condition, score in (("A-baseline", 2 / 6), ("B-agentharness", 3 / 6)):
-                for replicate in range(1, 21):
+                for replicate in range(1, 15):
                     rows.append(
                         {
                             "task_id": task_id,
@@ -75,14 +75,14 @@ class Stage2AnalysisTests(unittest.TestCase):
         validate_campaign_dataset(
             rows,
             expected_task_ids=task_ids,
-            expected_replicates_per_condition=20,
+            expected_replicates_per_condition=14,
         )
 
         with self.assertRaisesRegex(Stage2AnalysisError, "Replicate set mismatch"):
             validate_campaign_dataset(
                 rows[:-1],
                 expected_task_ids=task_ids,
-                expected_replicates_per_condition=20,
+                expected_replicates_per_condition=14,
             )
 
         non_quantized = [dict(row) for row in rows]
@@ -91,7 +91,7 @@ class Stage2AnalysisTests(unittest.TestCase):
             validate_campaign_dataset(
                 non_quantized,
                 expected_task_ids=task_ids,
-                expected_replicates_per_condition=20,
+                expected_replicates_per_condition=14,
             )
 
     def test_invalid_sensitivity_zero_is_weaker_than_exclusion(self) -> None:
