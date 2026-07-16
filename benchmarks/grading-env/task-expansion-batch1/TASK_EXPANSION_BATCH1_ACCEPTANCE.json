@@ -1,0 +1,390 @@
+{
+  "artifact_sha256": {
+    "benchmarks/appointment-booking-api/CLAIMS_CONTRACT.template.json": "d5229f4cf4465bce5f2fde768289110e33705f9fb6071b5de5de20bbf70362c4",
+    "benchmarks/appointment-booking-api/HELDOUT_EVALUATION_SUITE.template.json": "04b002dbe96e13fc49c981beef14328d2929cf6aa1104f05c072650a971128dc",
+    "benchmarks/appointment-booking-api/QUALITY_GATE.md": "b3c70b3f7471fdaa98afd614fbe35be065a5b64d6a4234b7cbfde91af6d09a7e",
+    "benchmarks/appointment-booking-api/SPEC.md": "9347512549d22cef4c31521d98beb92f4d6ab886b68cef1dd3dedabdbcf4ca9e",
+    "benchmarks/grading-env/audit_task_expansion_batch1.py": "9501b1a5a0982bd9e48d4143ce7b7c16cd93fcc54f8c3a7ffbf87145896debba",
+    "benchmarks/grading-env/task-expansion-batch1/MUTATION_SENSITIVITY.json": "0088112c162e3baa8418c73f73301cf59877239c8da2f611e8cb940f5941835c",
+    "benchmarks/grading-env/task-expansion-batch1/references/appointment-booking-api/README.md": "0a3e0fca60f4b729fdb6014b3aed7b516da0c6f9eb0c7a71aea9b8e8b3660153",
+    "benchmarks/grading-env/task-expansion-batch1/references/appointment-booking-api/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch1/references/appointment-booking-api/app/main.py": "556e87858cf7c1767b388715ccc8215a349f04c15e00fef8621e2b793678deff",
+    "benchmarks/grading-env/task-expansion-batch1/references/appointment-booking-api/pyproject.toml": "44a973a62882093af517c11ee292f6f22bc533ab0cd7030fbd6e007ba0667a0e",
+    "benchmarks/grading-env/task-expansion-batch1/references/invoice-payment-reconciliation/README.md": "776f9d7a1280c207a317251490440d5669b2ea9b2913f5b8625178f54e4bf51c",
+    "benchmarks/grading-env/task-expansion-batch1/references/invoice-payment-reconciliation/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch1/references/invoice-payment-reconciliation/app/reconcile_invoices.py": "4dd14c610fd87ddb5d4cf273f4b27465457e70aef62456b95e18500568698e62",
+    "benchmarks/grading-env/task-expansion-batch1/references/invoice-payment-reconciliation/pyproject.toml": "17f255dbbce2803d508725ea606b4377fdd68b1067637ac406a3492e71dcec52",
+    "benchmarks/grading-env/task-expansion-batch1/references/jsonl-event-aggregation/README.md": "4db85cc85ce8207a846c3dc39194df78072f42f1bfa1f08ece97448f2c9f0127",
+    "benchmarks/grading-env/task-expansion-batch1/references/jsonl-event-aggregation/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch1/references/jsonl-event-aggregation/app/aggregate_events.py": "acd47cf225a5fe62c4bfd87d340a68d92c31c9c4f7c4cff55f2800800439e2b7",
+    "benchmarks/grading-env/task-expansion-batch1/references/jsonl-event-aggregation/pyproject.toml": "a00a32bf89bb9239730501d4657e68e808c75b6e51b396e0597f3d6229faf12c",
+    "benchmarks/grading-env/task-expansion-batch1/references/shipment-event-api/README.md": "7150bf6210f3b762c5c3b7b63fdf2ae9fb65099c67a867d6a3466ad2da734f2e",
+    "benchmarks/grading-env/task-expansion-batch1/references/shipment-event-api/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch1/references/shipment-event-api/app/main.py": "d65525b928afa22a0a761fa3221b91bb81aef0d6cbfe0f42f98912fbcdc9d448",
+    "benchmarks/grading-env/task-expansion-batch1/references/shipment-event-api/pyproject.toml": "bc5c32257ee4cae11399e885762f6c12743bda41a1d67aa54fa8eb7a7b8a1fe6",
+    "benchmarks/invoice-payment-reconciliation/CLAIMS_CONTRACT.template.json": "3023f064d87925d2494671cb4b761300acac6b32531405325ce67352b07c6a21",
+    "benchmarks/invoice-payment-reconciliation/HELDOUT_EVALUATION_SUITE.template.json": "52d0659e85724e50c15dcdb4b255a64a1a94e7dcc8ae9721362056fbb946c223",
+    "benchmarks/invoice-payment-reconciliation/QUALITY_GATE.md": "4bcf8a876a45eb4c366850af4a5e02fd7a84290e552ac042f44c8cd1bbccb0cd",
+    "benchmarks/invoice-payment-reconciliation/SPEC.md": "426e45ed774bb546650cc57bd04a35d8ee10ccf2f25d90d83c58f0087050727f",
+    "benchmarks/jsonl-event-aggregation/CLAIMS_CONTRACT.template.json": "84ec22707b32e0e51d19814fca697e5a63b20261f3b5d893751bc76f6b521ff8",
+    "benchmarks/jsonl-event-aggregation/HELDOUT_EVALUATION_SUITE.template.json": "1909a052755ff21673e833f3ed508c5a13ea0a3640bb795f506ed12d6d11c4c9",
+    "benchmarks/jsonl-event-aggregation/QUALITY_GATE.md": "01fa4ebd594a3662718ddcb3f7aef648a34fbf5b5354383b7a6ac9e3a53b7463",
+    "benchmarks/jsonl-event-aggregation/SPEC.md": "1beedbb84bc37b9e6016a91c712f034240db3afc37a4ad7a4b480c8345f97046",
+    "benchmarks/shipment-event-api/CLAIMS_CONTRACT.template.json": "742daec7bffdeb4bae5f00bea06c55d22c0e09d924af54c50e9e72f50a5c758d",
+    "benchmarks/shipment-event-api/HELDOUT_EVALUATION_SUITE.template.json": "8317481eacae69906375de03f4bb8b5272f3b6e3da3cd0e2ce318736ead766cf",
+    "benchmarks/shipment-event-api/QUALITY_GATE.md": "e8e23603f60c30a48c6123be6cb5d27e5d87bc1927e80af200e7befecbc5b7f1",
+    "benchmarks/shipment-event-api/SPEC.md": "626ca6ff1f3fb36ecda4a18edd9de6b15f89acfcf48e19f5769cdec6bd8774af",
+    "src/agentharness/benchmark_hidden_evaluators.py": "6bd93faaf1ca85a218dda6426ce7911cc9b69786ef6be15c0feaa11b26683098",
+    "src/agentharness/benchmark_hidden_evaluators_batch1.py": "c4f81c7b59a624147ac43a6de773cd8c6aae8a19cc0cb5cbee7d036f63c088a4",
+    "tests/test_task_expansion_batch1.py": "aa36877fe5f1eb6196dbc56dab17c2bdf56d0402c93526293be2ad7f4e886ccf"
+  },
+  "authorization": "task-pack acceptance only; no A/B or confirmatory launch",
+  "base_commit": "520bcb6ca3b4311d38647f021b959eaa6a099536",
+  "dynamic_tests": {
+    "command": "PYTHONPATH=src /home/fabio/AgentHarness/.venv/bin/python -m pytest -q tests/test_task_expansion_batch1.py",
+    "exit_code": 0,
+    "ok": true,
+    "python_executable": "/home/fabio/AgentHarness/.venv/bin/python",
+    "python_version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+    "stderr": "",
+    "stdout": "....                                     [100%]\n4 passed, 32 subtests passed in 356.99s (0:05:56)\n"
+  },
+  "efficacy_cells_collected": 0,
+  "generated_at": "2026-07-16T16:38:26.833298Z",
+  "go": true,
+  "new_task_pairwise_overlap": [
+    {
+      "left": "appointment-booking-api",
+      "right": "shipment-event-api",
+      "shared_shell": "durable FastAPI create/detail/filter surface",
+      "substantive_difference": "half-open resource interval allocation and atomic rescheduling versus append-only ordered event projection and exact next-state transitions"
+    },
+    {
+      "left": "appointment-booking-api",
+      "right": "jsonl-event-aggregation",
+      "shared_shell": "timestamp normalization",
+      "substantive_difference": "stateful resource capacity and terminal release versus stateless deterministic multi-key stream aggregation"
+    },
+    {
+      "left": "appointment-booking-api",
+      "right": "invoice-payment-reconciliation",
+      "shared_shell": "validation with atomic rejection",
+      "substantive_difference": "interactive interval scheduling versus exact-decimal two-ledger cutoff reconciliation"
+    },
+    {
+      "left": "shipment-event-api",
+      "right": "jsonl-event-aggregation",
+      "shared_shell": "event records with identity and timestamps",
+      "substantive_difference": "per-aggregate ordered lifecycle projection versus cross-record UTC grouping and conservation totals"
+    },
+    {
+      "left": "shipment-event-api",
+      "right": "invoice-payment-reconciliation",
+      "shared_shell": "identity, ordering, and auditable projections",
+      "substantive_difference": "online finite-state event ingestion versus offline exact-decimal payment allocation across ledgers"
+    },
+    {
+      "left": "jsonl-event-aggregation",
+      "right": "invoice-payment-reconciliation",
+      "shared_shell": "deterministic CLI artifacts and rejected/unmatched evidence",
+      "substantive_difference": "single-stream multi-key aggregation versus two-input one-to-many financial reconciliation with cutoff"
+    }
+  ],
+  "overlap_matrix": [
+    {
+      "check_id": "appointment_create_and_filters",
+      "construct": "durable resource reservation projection across app reload plus compound filtering",
+      "family": "interval_scheduling",
+      "nearest_existing_task": "leave-request-api",
+      "substantive_difference": "resource-scoped half-open interval allocation with atomic rescheduling and slot release, not approval workflow or leave policy",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "check_id": "appointment_interval_validation",
+      "construct": "strict timestamp interval validity with timezone normalization",
+      "family": "interval_scheduling",
+      "nearest_existing_task": "leave-request-api",
+      "substantive_difference": "resource-scoped half-open interval allocation with atomic rescheduling and slot release, not approval workflow or leave policy",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "check_id": "appointment_provider_conflicts",
+      "construct": "resource-keyed half-open overlap semantics",
+      "family": "interval_scheduling",
+      "nearest_existing_task": "leave-request-api",
+      "substantive_difference": "resource-scoped half-open interval allocation with atomic rescheduling and slot release, not approval workflow or leave policy",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "check_id": "appointment_reschedule_atomic",
+      "construct": "atomic replacement of a reserved interval",
+      "family": "interval_scheduling",
+      "nearest_existing_task": "leave-request-api",
+      "substantive_difference": "resource-scoped half-open interval allocation with atomic rescheduling and slot release, not approval workflow or leave policy",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "check_id": "appointment_cancel_releases_slot",
+      "construct": "terminal cancellation coupled to capacity release",
+      "family": "interval_scheduling",
+      "nearest_existing_task": "leave-request-api",
+      "substantive_difference": "resource-scoped half-open interval allocation with atomic rescheduling and slot release, not approval workflow or leave policy",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "check_id": "shipment_create_and_filters",
+      "construct": "durable empty event projection across app reload plus shipment filters",
+      "family": "ordered_event_projection",
+      "nearest_existing_task": "webhook-ingestion-service",
+      "substantive_difference": "ordered append-only lifecycle projection with exact next-state and temporal monotonicity, not signature validation or generic webhook ingestion",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "check_id": "shipment_valid_transition_path",
+      "construct": "full ordered finite-state transition path",
+      "family": "ordered_event_projection",
+      "nearest_existing_task": "webhook-ingestion-service",
+      "substantive_difference": "ordered append-only lifecycle projection with exact next-state and temporal monotonicity, not signature validation or generic webhook ingestion",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "check_id": "shipment_skipped_transition_atomic",
+      "construct": "exact-next-transition rejection with immutable projection",
+      "family": "ordered_event_projection",
+      "nearest_existing_task": "webhook-ingestion-service",
+      "substantive_difference": "ordered append-only lifecycle projection with exact next-state and temporal monotonicity, not signature validation or generic webhook ingestion",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "check_id": "shipment_event_idempotency",
+      "construct": "per-aggregate replay identity versus conflicting replay",
+      "family": "ordered_event_projection",
+      "nearest_existing_task": "webhook-ingestion-service",
+      "substantive_difference": "ordered append-only lifecycle projection with exact next-state and temporal monotonicity, not signature validation or generic webhook ingestion",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "check_id": "shipment_time_and_terminal_invariants",
+      "construct": "monotonic event time and terminal projected state",
+      "family": "ordered_event_projection",
+      "nearest_existing_task": "webhook-ingestion-service",
+      "substantive_difference": "ordered append-only lifecycle projection with exact next-state and temporal monotonicity, not signature validation or generic webhook ingestion",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "check_id": "jsonl_grouped_counts",
+      "construct": "multi-dimensional aggregate counts, cardinality, and totals",
+      "family": "stream_aggregation",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "multi-key UTC aggregation with unique-actor cardinality and deterministic group totals, not row import/update semantics",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "check_id": "jsonl_utc_date_normalization",
+      "construct": "timezone-offset normalization before grouping",
+      "family": "stream_aggregation",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "multi-key UTC aggregation with unique-actor cardinality and deterministic group totals, not row import/update semantics",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "check_id": "jsonl_invalid_and_duplicate_handling",
+      "construct": "first-valid stream identity and auditable rejection ordering",
+      "family": "stream_aggregation",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "multi-key UTC aggregation with unique-actor cardinality and deterministic group totals, not row import/update semantics",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "check_id": "jsonl_summary_consistency",
+      "construct": "conservation invariants across groups and rejected records",
+      "family": "stream_aggregation",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "multi-key UTC aggregation with unique-actor cardinality and deterministic group totals, not row import/update semantics",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "check_id": "jsonl_deterministic_outputs",
+      "construct": "byte-stable aggregate and rejection artifacts",
+      "family": "stream_aggregation",
+      "nearest_existing_task": "csv-member-import",
+      "substantive_difference": "multi-key UTC aggregation with unique-actor cardinality and deterministic group totals, not row import/update semantics",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "check_id": "reconciliation_rows_and_order",
+      "construct": "eligibility cutoff and complete ordered ledger projection",
+      "family": "exact_reconciliation",
+      "nearest_existing_task": "report-export-job",
+      "substantive_difference": "one-to-many exact-decimal matching with cutoff, overpayment, and unmatched conservation, not export formatting of precomputed records",
+      "task_id": "invoice-payment-reconciliation"
+    },
+    {
+      "check_id": "reconciliation_cutoff_and_duplicates",
+      "construct": "as-of and first-valid payment identity semantics",
+      "family": "exact_reconciliation",
+      "nearest_existing_task": "report-export-job",
+      "substantive_difference": "one-to-many exact-decimal matching with cutoff, overpayment, and unmatched conservation, not export formatting of precomputed records",
+      "task_id": "invoice-payment-reconciliation"
+    },
+    {
+      "check_id": "reconciliation_status_and_decimals",
+      "construct": "exact decimal allocation including negative overpayment balance",
+      "family": "exact_reconciliation",
+      "nearest_existing_task": "report-export-job",
+      "substantive_difference": "one-to-many exact-decimal matching with cutoff, overpayment, and unmatched conservation, not export formatting of precomputed records",
+      "task_id": "invoice-payment-reconciliation"
+    },
+    {
+      "check_id": "reconciliation_unmatched_reporting",
+      "construct": "conserved unmatched and duplicate payment trail",
+      "family": "exact_reconciliation",
+      "nearest_existing_task": "report-export-job",
+      "substantive_difference": "one-to-many exact-decimal matching with cutoff, overpayment, and unmatched conservation, not export formatting of precomputed records",
+      "task_id": "invoice-payment-reconciliation"
+    },
+    {
+      "check_id": "reconciliation_summary_and_validation",
+      "construct": "cross-artifact financial reconciliation and atomic invalid-input failure",
+      "family": "exact_reconciliation",
+      "nearest_existing_task": "report-export-job",
+      "substantive_difference": "one-to-many exact-decimal matching with cutoff, overpayment, and unmatched conservation, not export formatting of precomputed records",
+      "task_id": "invoice-payment-reconciliation"
+    }
+  ],
+  "schema_version": 1,
+  "static_checks": {
+    "_batch": {
+      "complete_pairwise_new_task_overlap": {
+        "detail": "pairs=[('appointment-booking-api', 'invoice-payment-reconciliation'), ('appointment-booking-api', 'jsonl-event-aggregation'), ('appointment-booking-api', 'shipment-event-api'), ('invoice-payment-reconciliation', 'jsonl-event-aggregation'), ('invoice-payment-reconciliation', 'shipment-event-api'), ('jsonl-event-aggregation', 'shipment-event-api')]",
+        "ok": true
+      }
+    },
+    "appointment-booking-api": {
+      "claims_process_only": {
+        "detail": "types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+        "ok": true
+      },
+      "clean_pack_tree": {
+        "detail": "bad_nodes=[]",
+        "ok": true
+      },
+      "five_functional_plus_schema": {
+        "detail": "case_ids=['appointment_create_and_filters', 'appointment_interval_validation', 'appointment_provider_conflicts', 'appointment_reschedule_atomic', 'appointment_cancel_releases_slot', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "frozen_mutation_sensitivity": {
+        "detail": "mutants=['appointment_cancel_releases_slot', 'appointment_create_and_filters', 'appointment_interval_validation', 'appointment_provider_conflicts', 'appointment_reschedule_atomic']",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "benchmarks/grading-env/task-expansion-batch1/references/appointment-booking-api",
+        "ok": true
+      },
+      "required_pack_files": {
+        "detail": "present=['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      },
+      "visible_allowlist_non_leakage": {
+        "detail": "token_hits=[]; canary_hits=[]; check_id_hits=[]",
+        "ok": true
+      }
+    },
+    "invoice-payment-reconciliation": {
+      "claims_process_only": {
+        "detail": "types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+        "ok": true
+      },
+      "clean_pack_tree": {
+        "detail": "bad_nodes=[]",
+        "ok": true
+      },
+      "five_functional_plus_schema": {
+        "detail": "case_ids=['reconciliation_rows_and_order', 'reconciliation_cutoff_and_duplicates', 'reconciliation_status_and_decimals', 'reconciliation_unmatched_reporting', 'reconciliation_summary_and_validation', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "frozen_mutation_sensitivity": {
+        "detail": "mutants=['reconciliation_cutoff_and_duplicates', 'reconciliation_rows_and_order', 'reconciliation_status_and_decimals', 'reconciliation_summary_and_validation', 'reconciliation_unmatched_reporting']",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "benchmarks/grading-env/task-expansion-batch1/references/invoice-payment-reconciliation",
+        "ok": true
+      },
+      "required_pack_files": {
+        "detail": "present=['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      },
+      "visible_allowlist_non_leakage": {
+        "detail": "token_hits=[]; canary_hits=[]; check_id_hits=[]",
+        "ok": true
+      }
+    },
+    "jsonl-event-aggregation": {
+      "claims_process_only": {
+        "detail": "types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+        "ok": true
+      },
+      "clean_pack_tree": {
+        "detail": "bad_nodes=[]",
+        "ok": true
+      },
+      "five_functional_plus_schema": {
+        "detail": "case_ids=['jsonl_grouped_counts', 'jsonl_utc_date_normalization', 'jsonl_invalid_and_duplicate_handling', 'jsonl_summary_consistency', 'jsonl_deterministic_outputs', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "frozen_mutation_sensitivity": {
+        "detail": "mutants=['jsonl_deterministic_outputs', 'jsonl_grouped_counts', 'jsonl_invalid_and_duplicate_handling', 'jsonl_summary_consistency', 'jsonl_utc_date_normalization']",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "benchmarks/grading-env/task-expansion-batch1/references/jsonl-event-aggregation",
+        "ok": true
+      },
+      "required_pack_files": {
+        "detail": "present=['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      },
+      "visible_allowlist_non_leakage": {
+        "detail": "token_hits=[]; canary_hits=[]; check_id_hits=[]",
+        "ok": true
+      }
+    },
+    "shipment-event-api": {
+      "claims_process_only": {
+        "detail": "types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+        "ok": true
+      },
+      "clean_pack_tree": {
+        "detail": "bad_nodes=[]",
+        "ok": true
+      },
+      "five_functional_plus_schema": {
+        "detail": "case_ids=['shipment_create_and_filters', 'shipment_valid_transition_path', 'shipment_skipped_transition_atomic', 'shipment_event_idempotency', 'shipment_time_and_terminal_invariants', 'evaluation_result_schema']",
+        "ok": true
+      },
+      "frozen_mutation_sensitivity": {
+        "detail": "mutants=['shipment_create_and_filters', 'shipment_event_idempotency', 'shipment_skipped_transition_atomic', 'shipment_time_and_terminal_invariants', 'shipment_valid_transition_path']",
+        "ok": true
+      },
+      "hidden_reference_present": {
+        "detail": "benchmarks/grading-env/task-expansion-batch1/references/shipment-event-api",
+        "ok": true
+      },
+      "required_pack_files": {
+        "detail": "present=['CLAIMS_CONTRACT.template.json', 'HELDOUT_EVALUATION_SUITE.template.json', 'QUALITY_GATE.md', 'SPEC.md']",
+        "ok": true
+      },
+      "visible_allowlist_non_leakage": {
+        "detail": "token_hits=[]; canary_hits=[]; check_id_hits=[]",
+        "ok": true
+      }
+    }
+  },
+  "task_ids": [
+    "appointment-booking-api",
+    "shipment-event-api",
+    "jsonl-event-aggregation",
+    "invoice-payment-reconciliation"
+  ]
+}

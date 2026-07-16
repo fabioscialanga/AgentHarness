@@ -1,0 +1,155 @@
+{
+  "suite_id": "invoice-payment-reconciliation_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "reconciliation_rows_and_order",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/invoice-payment-reconciliation/summary.txt",
+      "description": "Eligible invoice rows are complete and deterministically ordered.",
+      "expected": {
+        "contains": [
+          "reconciliation_rows_and_order=pass"
+        ],
+        "forbidden": [
+          "reconciliation_rows_and_order=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "reconciliation_cutoff_and_duplicates",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/invoice-payment-reconciliation/summary.txt",
+      "description": "As-of cutoff and first-valid payment-id semantics are correct.",
+      "expected": {
+        "contains": [
+          "reconciliation_cutoff_and_duplicates=pass"
+        ],
+        "forbidden": [
+          "reconciliation_cutoff_and_duplicates=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "reconciliation_status_and_decimals",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/invoice-payment-reconciliation/summary.txt",
+      "description": "Statuses, overpayments, and exact decimal arithmetic are correct.",
+      "expected": {
+        "contains": [
+          "reconciliation_status_and_decimals=pass"
+        ],
+        "forbidden": [
+          "reconciliation_status_and_decimals=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "reconciliation_unmatched_reporting",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/invoice-payment-reconciliation/summary.txt",
+      "description": "Unknown and duplicate payments are reported while future payments are ignored.",
+      "expected": {
+        "contains": [
+          "reconciliation_unmatched_reporting=pass"
+        ],
+        "forbidden": [
+          "reconciliation_unmatched_reporting=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "reconciliation_summary_and_validation",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/invoice-payment-reconciliation/summary.txt",
+      "description": "Summary reconciles and invalid invoice input fails without partial outputs.",
+      "expected": {
+        "contains": [
+          "reconciliation_summary_and_validation=pass"
+        ],
+        "forbidden": [
+          "reconciliation_summary_and_validation=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/invoice-payment-reconciliation/result.json",
+      "description": "The hidden evaluator emits the frozen result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

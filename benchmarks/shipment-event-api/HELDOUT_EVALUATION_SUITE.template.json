@@ -1,0 +1,155 @@
+{
+  "suite_id": "shipment-event-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "shipment_create_and_filters",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/shipment-event-api/summary.txt",
+      "description": "Creation, empty history, detail, and filters are coherent.",
+      "expected": {
+        "contains": [
+          "shipment_create_and_filters=pass"
+        ],
+        "forbidden": [
+          "shipment_create_and_filters=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "shipment_valid_transition_path",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/shipment-event-api/summary.txt",
+      "description": "The full ordered lifecycle updates state and history correctly.",
+      "expected": {
+        "contains": [
+          "shipment_valid_transition_path=pass"
+        ],
+        "forbidden": [
+          "shipment_valid_transition_path=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "shipment_skipped_transition_atomic",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/shipment-event-api/summary.txt",
+      "description": "Skipped transitions are rejected without mutation.",
+      "expected": {
+        "contains": [
+          "shipment_skipped_transition_atomic=pass"
+        ],
+        "forbidden": [
+          "shipment_skipped_transition_atomic=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "shipment_event_idempotency",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/shipment-event-api/summary.txt",
+      "description": "Identical replay is idempotent and conflicting replay is rejected.",
+      "expected": {
+        "contains": [
+          "shipment_event_idempotency=pass"
+        ],
+        "forbidden": [
+          "shipment_event_idempotency=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "shipment_time_and_terminal_invariants",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/shipment-event-api/summary.txt",
+      "description": "Timestamp monotonicity and delivered terminality are enforced.",
+      "expected": {
+        "contains": [
+          "shipment_time_and_terminal_invariants=pass"
+        ],
+        "forbidden": [
+          "shipment_time_and_terminal_invariants=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/shipment-event-api/result.json",
+      "description": "The hidden evaluator emits the frozen result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

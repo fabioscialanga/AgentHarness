@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "interpretation": "Each mutant must produce exactly the declared failed-check set. Multi-check effects are permitted only where one defect necessarily changes multiple independently specified public artifacts.",
+  "tasks": {
+    "appointment-booking-api": {
+      "appointment_create_and_filters": {
+        "expected_failed_checks": ["appointment_create_and_filters"],
+        "rationale": "Filtering/persistence projection defect is confined to the projection check."
+      },
+      "appointment_interval_validation": {
+        "expected_failed_checks": ["appointment_interval_validation"],
+        "rationale": "Invalid interval acceptance is isolated from other appointment behavior."
+      },
+      "appointment_provider_conflicts": {
+        "expected_failed_checks": ["appointment_provider_conflicts"],
+        "rationale": "Boundary-overlap defect is isolated to provider conflict semantics."
+      },
+      "appointment_reschedule_atomic": {
+        "expected_failed_checks": ["appointment_reschedule_atomic"],
+        "rationale": "Pre-validation mutation is isolated to atomic rescheduling."
+      },
+      "appointment_cancel_releases_slot": {
+        "expected_failed_checks": ["appointment_cancel_releases_slot"],
+        "rationale": "Cancellation state/capacity defect is isolated to terminal release semantics."
+      }
+    },
+    "shipment-event-api": {
+      "shipment_create_and_filters": {
+        "expected_failed_checks": ["shipment_create_and_filters"],
+        "rationale": "Filtering/persistence projection defect is confined to the projection check."
+      },
+      "shipment_valid_transition_path": {
+        "expected_failed_checks": ["shipment_valid_transition_path"],
+        "rationale": "The projected-state defect is isolated to the complete transition path."
+      },
+      "shipment_skipped_transition_atomic": {
+        "expected_failed_checks": ["shipment_skipped_transition_atomic"],
+        "rationale": "Skipped-transition acceptance is isolated to exact-next transition atomicity."
+      },
+      "shipment_event_idempotency": {
+        "expected_failed_checks": ["shipment_event_idempotency"],
+        "rationale": "Replay mutation is isolated to event identity semantics."
+      },
+      "shipment_time_and_terminal_invariants": {
+        "expected_failed_checks": ["shipment_time_and_terminal_invariants"],
+        "rationale": "Stale/terminal event acceptance is isolated to temporal and terminal invariants."
+      }
+    },
+    "jsonl-event-aggregation": {
+      "jsonl_grouped_counts": {
+        "expected_failed_checks": ["jsonl_grouped_counts"],
+        "rationale": "Aggregate total corruption leaves timezone placement and summary conservation unchanged."
+      },
+      "jsonl_utc_date_normalization": {
+        "expected_failed_checks": ["jsonl_grouped_counts", "jsonl_utc_date_normalization"],
+        "rationale": "Local-date grouping necessarily changes both the UTC sentinel placement and the emitted groups."
+      },
+      "jsonl_invalid_and_duplicate_handling": {
+        "expected_failed_checks": ["jsonl_grouped_counts", "jsonl_invalid_and_duplicate_handling", "jsonl_summary_consistency"],
+        "rationale": "Accepting a duplicate necessarily changes rejection evidence, aggregates, and conservation totals."
+      },
+      "jsonl_summary_consistency": {
+        "expected_failed_checks": ["jsonl_summary_consistency"],
+        "rationale": "Summary corruption is isolated from detailed artifacts."
+      },
+      "jsonl_deterministic_outputs": {
+        "expected_failed_checks": ["jsonl_deterministic_outputs"],
+        "rationale": "Seed-dependent extra metadata leaves business content intact but breaks byte determinism."
+      }
+    },
+    "invoice-payment-reconciliation": {
+      "reconciliation_rows_and_order": {
+        "expected_failed_checks": ["reconciliation_rows_and_order"],
+        "rationale": "Including an ineligible invoice is isolated from calculations on eligible rows."
+      },
+      "reconciliation_cutoff_and_duplicates": {
+        "expected_failed_checks": ["reconciliation_cutoff_and_duplicates", "reconciliation_status_and_decimals", "reconciliation_summary_and_validation"],
+        "rationale": "Applying a post-cutoff payment necessarily changes an invoice balance/status and cross-artifact financial totals."
+      },
+      "reconciliation_status_and_decimals": {
+        "expected_failed_checks": ["reconciliation_status_and_decimals", "reconciliation_summary_and_validation"],
+        "rationale": "A wrong status necessarily changes both row semantics and status counts in the summary."
+      },
+      "reconciliation_unmatched_reporting": {
+        "expected_failed_checks": ["reconciliation_unmatched_reporting", "reconciliation_summary_and_validation"],
+        "rationale": "Dropping unmatched evidence necessarily changes both the report and unmatched summary counts."
+      },
+      "reconciliation_summary_and_validation": {
+        "expected_failed_checks": ["reconciliation_summary_and_validation"],
+        "rationale": "Summary corruption and invalid-input atomicity are isolated from valid detail artifacts."
+      }
+    }
+  }
+}

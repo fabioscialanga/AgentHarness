@@ -1,0 +1,4 @@
+[project]
+name = "jsonl-event-aggregation-reference"
+version = "0.1.0"
+dependencies = ["pytest"]

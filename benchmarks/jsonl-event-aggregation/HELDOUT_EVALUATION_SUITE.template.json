@@ -1,0 +1,155 @@
+{
+  "suite_id": "jsonl-event-aggregation_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "jsonl_grouped_counts",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/jsonl-event-aggregation/summary.txt",
+      "description": "Grouped counts, unique actors, and totals are correct.",
+      "expected": {
+        "contains": [
+          "jsonl_grouped_counts=pass"
+        ],
+        "forbidden": [
+          "jsonl_grouped_counts=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "jsonl_utc_date_normalization",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/jsonl-event-aggregation/summary.txt",
+      "description": "Offset timestamps are grouped by UTC date.",
+      "expected": {
+        "contains": [
+          "jsonl_utc_date_normalization=pass"
+        ],
+        "forbidden": [
+          "jsonl_utc_date_normalization=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "jsonl_invalid_and_duplicate_handling",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/jsonl-event-aggregation/summary.txt",
+      "description": "Invalid and duplicate records use the frozen precedence and first-valid semantics.",
+      "expected": {
+        "contains": [
+          "jsonl_invalid_and_duplicate_handling=pass"
+        ],
+        "forbidden": [
+          "jsonl_invalid_and_duplicate_handling=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "jsonl_summary_consistency",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/jsonl-event-aggregation/summary.txt",
+      "description": "Summary values reconcile with accepted groups and rejections.",
+      "expected": {
+        "contains": [
+          "jsonl_summary_consistency=pass"
+        ],
+        "forbidden": [
+          "jsonl_summary_consistency=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "jsonl_deterministic_outputs",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/jsonl-event-aggregation/summary.txt",
+      "description": "Required artifacts are byte-stable and missing input fails cleanly.",
+      "expected": {
+        "contains": [
+          "jsonl_deterministic_outputs=pass"
+        ],
+        "forbidden": [
+          "jsonl_deterministic_outputs=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/jsonl-event-aggregation/result.json",
+      "description": "The hidden evaluator emits the frozen result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

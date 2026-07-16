@@ -1,0 +1,155 @@
+{
+  "suite_id": "appointment-booking-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "appointment_create_and_filters",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/appointment-booking-api/summary.txt",
+      "description": "Creation, detail, and combined list filters are coherent.",
+      "expected": {
+        "contains": [
+          "appointment_create_and_filters=pass"
+        ],
+        "forbidden": [
+          "appointment_create_and_filters=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "appointment_interval_validation",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/appointment-booking-api/summary.txt",
+      "description": "Invalid intervals are rejected without mutation.",
+      "expected": {
+        "contains": [
+          "appointment_interval_validation=pass"
+        ],
+        "forbidden": [
+          "appointment_interval_validation=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "appointment_provider_conflicts",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/appointment-booking-api/summary.txt",
+      "description": "Conflict scope and half-open boundary behavior are correct.",
+      "expected": {
+        "contains": [
+          "appointment_provider_conflicts=pass"
+        ],
+        "forbidden": [
+          "appointment_provider_conflicts=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "appointment_reschedule_atomic",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/appointment-booking-api/summary.txt",
+      "description": "Rescheduling enforces conflicts atomically.",
+      "expected": {
+        "contains": [
+          "appointment_reschedule_atomic=pass"
+        ],
+        "forbidden": [
+          "appointment_reschedule_atomic=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "appointment_cancel_releases_slot",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/appointment-booking-api/summary.txt",
+      "description": "Cancellation is terminal and releases the provider interval.",
+      "expected": {
+        "contains": [
+          "appointment_cancel_releases_slot=pass"
+        ],
+        "forbidden": [
+          "appointment_cancel_releases_slot=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/appointment-booking-api/result.json",
+      "description": "The hidden evaluator emits the frozen result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}
