@@ -1013,6 +1013,65 @@ Methodological declaration for this range:
 - packaging, release, CI, and invocation adaptations in this range are operational prerequisites only; they do not change the estimand or authorize reading an A-versus-B contrast from the masked noise-remeasurement run
 - the next run is restricted to treatment-delivery integrity checks, invalid classification, masked dispersion estimation, and blind wiring-versus-logic diagnosis
 
+#### 17.17 Post-contrast repair-safety amendment (2026-07-16, before any safety pilot or renewed efficacy campaign)
+A post-contrast causal-forensic audit of the masked noise-remeasurement run identified three condition-B cells in which cumulative repair changes directly damaged solutions that had passed canonical pre-repair pytest. This amendment is necessarily post-contrast. It does not alter, exclude, or replace the preregistered result from the 2026-07-15 run. The official estimate and confidence interval remain unchanged, and the post-hoc exclusion sensitivity remains diagnostic only.
+
+- correction 27: canonical pytest reexecution must preserve the benchmark runner's interpreter, working directory, and allowlisted environment
+  - `run.json` must record the absolute `.stageb-test-venv` Python command rather than the generic text `pytest -q`
+  - the reexecution policy may preserve that absolute interpreter only when it belongs to an approved virtualenv path inside the declared workspace
+  - command-level `PYTHONPATH` must remain inside the workspace
+  - command-level `AGENTHARNESS_GRADING_ENV_DIR` must equal the versioned repository grading environment
+  - a declared-versus-reexecuted exit-code mismatch must be labeled `environment_mismatch` in diagnostics, but no caller-controlled run field may downgrade a reexecuted failure from `unsupported`
+- correction 28: all repair retries are cumulative and must be audited as one intervention
+  - every cell must retain a pre-repair workspace snapshot outside the agent-editable workspace
+  - every cell must emit `repair-cumulative.diff`, including introduced or retargeted symlinks
+  - provenance must retain both the raw post-repair solution hash and the final accepted or restored solution hash
+- correction 29: the repair pass in both conditions is subject to the same deterministic safety gate
+  - post-repair canonical pytest must not regress from green to non-green
+  - when both pre- and post-repair pytest are non-green, observable failure/error counts must not increase, passing counts must not decrease, and the pytest exit class must not worsen
+  - a manifest that installed before repair must still install offline under the frozen constraints and wheelhouse after repair
+  - a repair after green canonical pytest may not change dependency manifests, abandon a declared dependency used by the working implementation, create a local package that shadows a declared third-party dependency, or introduce a workspace symlink
+  - the protected `.stageb-test-venv` is fingerprinted; modification forces rollback without executing post-repair tests in the altered environment
+- correction 30: an unsafe repair is rolled back before final grading
+  - rollback deletes runtime virtualenvs, restores the pre-repair solution snapshot, rebuilds the canonical test environment, and reruns canonical pytest
+  - a rollback that does not restore the pre-repair pytest exit state is `harness_invalid`
+  - an exception or timeout anywhere in the post-repair safety gate must attempt rollback before the cell exits and must be recorded as `harness_invalid`, never left as an accepted mutated workspace
+  - the safety decision, reasons, cumulative diff, rollback status, and rollback validation are mandatory raw artifacts
+- correction 31: the repair prompt receives the same safety constraints in both arms
+  - both arms are told that canonical pytest is authoritative, all retries are cumulative, speculative infrastructure workarounds are disallowed, and local dependency shadow packages are forbidden
+  - when canonical pytest is green, both arms are told not to change dependency versions, replace the persistence layer, or rewrite working architecture
+  - condition B is additionally told that `environment_mismatch` is inconclusive feedback and must not be repaired by changing the solution to fit a different environment
+
+Consequences for estimand and data lineage:
+- this is a substantive treatment amendment because it changes the executable repair policy and can prevent or reverse harmful repair mutations
+- data collected before correction 27 through correction 31 must not be pooled with data collected after these corrections as if they came from one unchanged treatment
+- no prior cell is rescored, deleted, or reclassified by this amendment
+- the implementation commit is frozen by the first code commit containing corrections 27 through 31; the exact SHA must be recorded in the safety-pilot launcher and every pilot provenance record
+
+Frozen safety-pilot protocol, not an efficacy campaign:
+- tasks: `inventory-adjustment-api`, `leave-request-api`, and `refund-approval-api`, selected before launch because they instantiate the three audited harmful-repair mechanisms
+- cells: one fresh replicate per task and condition, for 6 cells total
+- repair policy: exactly the amended symmetric repair policy above
+- provider, model, maximum turns, timeouts, grading constraints, and wheelhouse must be recorded before launch
+- no hidden evaluator is run during the pilot
+- no held-out task score is read or produced
+- no A-versus-B endpoint or contrast is computed
+- pilot outputs are restricted to treatment delivery, canonical reexecution parity, cumulative repair provenance, safety-gate decision, rollback behavior, and invalid classification
+
+Pilot GO gate, all conditions required:
+1. all 6 cells materialize their required arm-specific treatment artifacts
+2. all canonical commands are reexecuted with the recorded workspace interpreter, cwd, `PYTHONPATH`, and frozen grading environment
+3. declared and reexecuted pytest exit codes agree in every cell
+4. every repair emits a non-missing safety report and cumulative diff, including an explicitly empty diff when no files changed
+5. every triggered rollback restores the pre-repair pytest exit state
+6. no safety-gate infrastructure error, rollback error, treatment-not-delivered error, or unclassified invalid occurs
+
+Pilot STOP rule:
+- failure of any GO condition stops the protocol after the affected cell's artifacts are persisted
+- no additional pilot cell, efficacy campaign, power recalculation, or public claim is authorized until the failure is diagnosed and a new dated amendment is recorded
+
+This amendment freezes the safety protocol before the pilot. It does not authorize the pilot to schedule a renewed efficacy campaign and does not choose the size or shape of any later campaign.
+
 ---
 
 ## Freeze

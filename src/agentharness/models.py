@@ -12,15 +12,23 @@ class CommandArtifact:
     stdout_path: str | None = None
     stderr_path: str | None = None
     working_dir: str | None = None
+    environment: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "CommandArtifact":
+        raw_environment = payload.get("environment", {})
+        environment = (
+            {str(name): str(value) for name, value in raw_environment.items()}
+            if isinstance(raw_environment, dict)
+            else {}
+        )
         return cls(
             cmd=str(payload.get("cmd", "")),
             exit_code=payload.get("exit_code"),
             stdout_path=payload.get("stdout_path"),
             stderr_path=payload.get("stderr_path"),
             working_dir=payload.get("working_dir"),
+            environment=environment,
         )
 
 

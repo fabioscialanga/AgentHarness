@@ -155,7 +155,9 @@ def prepare_execution_tokens(tokens: list[str]) -> list[str]:
     if normalized[:5] == ["uv", "run", "python", "-m", "pytest"]:
         return [sys.executable, "-m", "pytest", *tokens[5:]]
     if normalized[:3] == ["python", "-m", "pytest"] and importlib.util.find_spec("pytest") is not None:
-        return [sys.executable, "-m", "pytest", *tokens[3:]]
+        declared_interpreter = Path(tokens[0])
+        interpreter = str(declared_interpreter) if declared_interpreter.is_absolute() else sys.executable
+        return [interpreter, "-m", "pytest", *tokens[3:]]
     if normalized and normalized[0] == "pytest" and importlib.util.find_spec("pytest") is not None:
         return [sys.executable, "-m", "pytest", *tokens[1:]]
     return tokens
@@ -224,6 +226,57 @@ def sanitized_environment(policy: ExecutionPolicy) -> dict[str, str]:
     return env
 
 
+def _controlled_command_environment(
+    workspace: Path,
+    policy: ExecutionPolicy,
+    overrides: dict[str, str] | None,
+) -> tuple[dict[str, str] | None, str | None]:
+    env = sanitized_environment(policy)
+    if not overrides:
+        return env, None
+    unsupported = sorted(set(overrides) - {"PYTHONPATH", "AGENTHARNESS_GRADING_ENV_DIR"})
+    if unsupported:
+        return None, f"command environment overrides are not allowed for: {', '.join(unsupported)}"
+    workspace_root = workspace.resolve()
+    resolved_entries: list[str] = []
+    for raw_entry in overrides.get("PYTHONPATH", "").split(os.pathsep):
+        if not raw_entry:
+            continue
+        entry = Path(raw_entry)
+        candidate = entry.resolve() if entry.is_absolute() else (workspace_root / entry).resolve()
+        try:
+            candidate.relative_to(workspace_root)
+        except ValueError:
+            return None, "command PYTHONPATH must stay inside the declared workspace"
+        resolved_entries.append(str(candidate))
+    env["PYTHONPATH"] = os.pathsep.join(resolved_entries)
+    grading_env_override = overrides.get("AGENTHARNESS_GRADING_ENV_DIR")
+    if grading_env_override is not None:
+        expected_grading_env = (Path(__file__).resolve().parents[2] / "benchmarks" / "grading-env").resolve()
+        candidate_grading_env = Path(grading_env_override).resolve()
+        if candidate_grading_env != expected_grading_env:
+            return None, "command AGENTHARNESS_GRADING_ENV_DIR must match the repository grading environment"
+        env["AGENTHARNESS_GRADING_ENV_DIR"] = str(expected_grading_env)
+    return env, None
+
+
+def _explicit_interpreter_error(workspace: Path, tokens: list[str]) -> str | None:
+    if not tokens or not Path(tokens[0]).is_absolute():
+        return None
+    interpreter = Path(tokens[0]).absolute()
+    workspace_root = workspace.resolve()
+    try:
+        relative = interpreter.relative_to(workspace_root)
+    except ValueError:
+        return "absolute interpreter must be located inside the declared workspace"
+    allowed_venv_names = {".stageb-test-venv", ".venv", "venv"}
+    if not relative.parts or relative.parts[0] not in allowed_venv_names:
+        return "absolute interpreter must belong to an approved workspace virtual environment"
+    if not interpreter.is_file():
+        return "declared workspace interpreter does not exist"
+    return None
+
+
 def reexecute_command(
     workspace: Path,
     run_id: str,
@@ -231,16 +284,21 @@ def reexecute_command(
     *,
     working_dir: str | None,
     policy: ExecutionPolicy,
+    environment: dict[str, str] | None = None,
 ) -> ReexecutionResult:
     allowed, tokens, denial_reason = is_command_allowed(command, policy)
-    if not allowed:
+    interpreter_error = _explicit_interpreter_error(workspace, tokens) if allowed else None
+    controlled_env, environment_error = (
+        _controlled_command_environment(workspace, policy, environment) if allowed else (None, None)
+    )
+    if not allowed or interpreter_error or environment_error:
         return ReexecutionResult(
             attempted=False,
             allowed=False,
             completed=False,
             command=command,
             command_tokens=tokens,
-            reason=denial_reason,
+            reason=denial_reason or interpreter_error or environment_error,
             timeout_seconds=policy.timeout_seconds,
         )
 
@@ -279,7 +337,7 @@ def reexecute_command(
         completed = subprocess.run(
             execution_tokens,
             cwd=str(cwd),
-            env=sanitized_environment(policy),
+            env=controlled_env or sanitized_environment(policy),
             capture_output=True,
             text=True,
             timeout=policy.timeout_seconds,

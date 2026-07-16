@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,17 @@ from pathlib import Path
 from typing import Protocol
 
 from .benchmarking import render_json_template, write_rendered_json_template
+from .repair_safety import (
+    assess_repair_safety,
+    manifest_install_state,
+    restore_workspace,
+    snapshot_workspace,
+    static_repair_guardrails,
+    tree_fingerprint,
+    write_cumulative_diff,
+    write_safety_report,
+)
+from .reexecution import default_execution_policy, sanitized_environment
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BENCHMARKS_DIR = REPO_ROOT / "benchmarks"
@@ -75,6 +87,7 @@ class AgentAttempt:
 class AgentInvocationResult:
     attempts: list[AgentAttempt]
     attempt_solution_hashes: dict[str, str | None] | None = None
+    repair_safety: dict[str, object] | None = None
 
     def to_dict(self) -> list[dict[str, object]]:
         return [attempt.to_dict() for attempt in self.attempts]
@@ -163,6 +176,12 @@ class HermesCliInvoker:
                 invocation_result=AgentInvocationResult(attempts=attempts),
             ) from exc
 
+        snapshot_dir = outputs_dir / "pre-repair-workspace"
+        snapshot_workspace(workspace, snapshot_dir)
+        pre_manifest_install = manifest_install_state(workspace, task_id)
+        protected_test_env = workspace / ".stageb-test-venv"
+        pre_test_env_fingerprint = tree_fingerprint(protected_test_env)
+
         repair_prompt_path = outputs_dir / "pre-repair-treatment-prompt.txt"
         try:
             if condition == "A-baseline":
@@ -182,6 +201,7 @@ class HermesCliInvoker:
                     run_path=provisional_run_path,
                     manifest=manifest,
                     workspace=workspace,
+                    pytest_command=_pytest_command_from_result(pytest_result),
                     pytest_exit=int(str(pytest_result["exit_code"])),
                     pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
                     pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
@@ -223,10 +243,153 @@ class HermesCliInvoker:
                 workspace=workspace,
             )
         )
+        try:
+            raw_repair_hash = compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+            attempt_solution_hashes["attempt_2_repair_raw"] = raw_repair_hash
+            cumulative_diff = write_cumulative_diff(
+                snapshot_dir,
+                workspace,
+                outputs_dir / "repair-cumulative.diff",
+            )
+            post_test_env_fingerprint = tree_fingerprint(protected_test_env)
+            protected_runtime_changed = post_test_env_fingerprint != pre_test_env_fingerprint
+            if protected_runtime_changed:
+                post_pytest = pytest_result
+                post_manifest_install = pre_manifest_install
+            else:
+                post_pytest = run_workspace_pytest(workspace, outputs_dir / "post-repair-safety-pytest.json")
+                post_manifest_install = manifest_install_state(workspace, task_id)
+            static_guardrails = static_repair_guardrails(
+                snapshot_dir,
+                workspace,
+                pre_pytest_exit=int(str(pytest_result["exit_code"])),
+            )
+            repair_safety = assess_repair_safety(
+                pre_pytest=pytest_result,
+                post_pytest=post_pytest,
+                pre_manifest_install=pre_manifest_install,
+                post_manifest_install=post_manifest_install,
+                static_guardrails=static_guardrails,
+                cumulative_diff=cumulative_diff,
+                protected_runtime_changed=protected_runtime_changed,
+            )
+        except Exception as exc:
+            repair_safety = {
+                "safe": False,
+                "rollback_required": True,
+                "reasons": ["repair_safety_gate_error"],
+                "gate_error": f"{type(exc).__name__}: {exc}",
+                "rollback_performed": False,
+                "rollback_validation": None,
+            }
+            try:
+                self._rollback_repair_workspace(
+                    workspace=workspace,
+                    snapshot_dir=snapshot_dir,
+                    outputs_dir=outputs_dir,
+                    pre_pytest=pytest_result,
+                    repair_safety=repair_safety,
+                )
+            except Exception as rollback_exc:
+                repair_safety["rollback_error"] = f"{type(rollback_exc).__name__}: {rollback_exc}"
+            write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
+            try:
+                attempt_solution_hashes["attempt_2_repair"] = (
+                    compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+                )
+            except Exception as hash_exc:
+                attempt_solution_hashes["attempt_2_repair"] = None
+                repair_safety["final_hash_error"] = f"{type(hash_exc).__name__}: {hash_exc}"
+                write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"repair safety gate failed after repair; rollback attempted: {type(exc).__name__}: {exc}",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes,
+                    repair_safety=repair_safety,
+                ),
+            ) from exc
+
+        if bool(repair_safety["rollback_required"]):
+            try:
+                self._rollback_repair_workspace(
+                    workspace=workspace,
+                    snapshot_dir=snapshot_dir,
+                    outputs_dir=outputs_dir,
+                    pre_pytest=pytest_result,
+                    repair_safety=repair_safety,
+                )
+            except Exception as exc:
+                repair_safety["rollback_error"] = f"{type(exc).__name__}: {exc}"
+                write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    f"repair rollback failed: {type(exc).__name__}: {exc}",
+                    invocation_result=AgentInvocationResult(
+                        attempts=attempts,
+                        attempt_solution_hashes=attempt_solution_hashes,
+                        repair_safety=repair_safety,
+                    ),
+                ) from exc
+            validation = repair_safety.get("rollback_validation")
+            if not isinstance(validation, dict) or not bool(validation.get("ok")):
+                write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    "repair rollback failed to restore the canonical pre-repair pytest state",
+                    invocation_result=AgentInvocationResult(
+                        attempts=attempts,
+                        attempt_solution_hashes=attempt_solution_hashes,
+                        repair_safety=repair_safety,
+                    ),
+                )
+        if bool(repair_safety.get("harness_invalid_required")):
+            attempt_solution_hashes["attempt_2_repair"] = (
+                compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+            )
+            write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                "repair safety gate infrastructure error; workspace rolled back",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes,
+                    repair_safety=repair_safety,
+                ),
+            )
+        write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
         attempt_solution_hashes["attempt_2_repair"] = (
             compute_solution_hash(workspace) if rel_solution_files(workspace) else None
         )
-        return AgentInvocationResult(attempts=attempts, attempt_solution_hashes=attempt_solution_hashes)
+        return AgentInvocationResult(
+            attempts=attempts,
+            attempt_solution_hashes=attempt_solution_hashes,
+            repair_safety=repair_safety,
+        )
+
+    def _rollback_repair_workspace(
+        self,
+        *,
+        workspace: Path,
+        snapshot_dir: Path,
+        outputs_dir: Path,
+        pre_pytest: dict[str, object],
+        repair_safety: dict[str, object],
+    ) -> None:
+        restore_workspace(workspace, snapshot_dir)
+        rollback_pytest = run_workspace_pytest(
+            workspace,
+            outputs_dir / "post-rollback-validation-pytest.json",
+        )
+        expected_exit = int(str(pre_pytest["exit_code"]))
+        restored_exit = int(str(rollback_pytest["exit_code"]))
+        repair_safety["rollback_performed"] = True
+        repair_safety["rollback_validation"] = {
+            "ok": restored_exit == expected_exit,
+            "expected_pytest_exit": expected_exit,
+            "restored_pytest_exit": restored_exit,
+        }
 
     def _invoke(self, *, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path, workspace: Path) -> AgentAttempt:
         command = [
@@ -406,6 +569,7 @@ def _write_invalid_cell_artifacts(
         "solution_hash_changed_between_attempt_and_repair": False,
         "attempt_count": len(invocation_result.attempts),
         "attempts": invocation_result.to_dict(),
+        "repair_safety": invocation_result.repair_safety,
         "pytest": None,
     }
     (cell_dir / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
@@ -425,6 +589,11 @@ def _write_invalid_cell_artifacts(
         "attempt_solution_hashes": provenance["attempt_solution_hashes"],
         "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
         "attempt_count": provenance["attempt_count"],
+        "repair_safety": provenance["repair_safety"],
+        "repair_rollback_performed": bool(
+            isinstance(provenance["repair_safety"], dict)
+            and provenance["repair_safety"].get("rollback_performed")
+        ),
     }
     (cell_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     try:
@@ -445,6 +614,11 @@ def _write_invalid_cell_artifacts(
         "evaluation_summary": eval_payload["summary"],
         "solution_hash": provenance["solution_hash"],
         "attempt_count": provenance["attempt_count"],
+        "repair_safety": provenance["repair_safety"],
+        "repair_rollback_performed": bool(
+            isinstance(provenance["repair_safety"], dict)
+            and provenance["repair_safety"].get("rollback_performed")
+        ),
     }
 
 
@@ -584,6 +758,13 @@ def _base_env() -> dict[str, str]:
     return env
 
 
+def _canonical_pytest_env(workspace: Path) -> dict[str, str]:
+    env = sanitized_environment(default_execution_policy())
+    env["AGENTHARNESS_GRADING_ENV_DIR"] = str(GRADING_ENV_DIR.resolve())
+    env["PYTHONPATH"] = str(workspace.resolve())
+    return env
+
+
 def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object]:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     python_path = ensure_test_venv(workspace)
@@ -598,7 +779,7 @@ def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object
             capture_output=True,
             text=True,
             check=False,
-            env={**_base_env(), "PYTHONPATH": str(workspace)},
+            env=_canonical_pytest_env(workspace),
             timeout=PYTEST_TIMEOUT_SECONDS,
         )
     except subprocess.TimeoutExpired as exc:
@@ -623,11 +804,19 @@ def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object
     return payload
 
 
+def _pytest_command_from_result(result: dict[str, object]) -> list[str]:
+    raw_command = result.get("command")
+    if not isinstance(raw_command, list) or not raw_command:
+        raise ClassifiedCellFailure("harness_invalid", "Canonical pytest result did not contain a command")
+    return [str(item) for item in raw_command]
+
+
 def write_run_json(
     *,
     run_path: Path,
     manifest: dict[str, object],
     workspace: Path,
+    pytest_command: list[str],
     pytest_exit: int,
     pytest_stdout_path: Path,
     pytest_stderr_path: Path,
@@ -640,10 +829,15 @@ def write_run_json(
             "changed_files": rel_solution_files(workspace),
             "commands": [
                 {
-                    "cmd": "pytest -q",
+                    "cmd": shlex.join(pytest_command),
                     "exit_code": pytest_exit,
                     "stdout_path": str(pytest_stdout_path),
                     "stderr_path": str(pytest_stderr_path),
+                    "working_dir": ".",
+                    "environment": {
+                        "PYTHONPATH": str(workspace.resolve()),
+                        "AGENTHARNESS_GRADING_ENV_DIR": str(GRADING_ENV_DIR.resolve()),
+                    },
                 }
             ],
             "outputs": [
@@ -912,6 +1106,7 @@ def write_provenance(
         "solution_hash_changed_between_attempt_and_repair": _solution_hash_changed_between_attempt_and_repair(invocation_result),
         "attempt_count": len(invocation_result.attempts),
         "attempts": invocation_result.to_dict(),
+        "repair_safety": invocation_result.repair_safety,
         "pytest": pytest_result,
     }
     provenance_path.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
@@ -986,6 +1181,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         run_path=run_path,
         manifest=manifest,
         workspace=workspace,
+        pytest_command=_pytest_command_from_result(pytest_result),
         pytest_exit=int(str(pytest_result["exit_code"])),
         pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
         pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
@@ -1030,6 +1226,11 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "attempt_solution_hashes": provenance["attempt_solution_hashes"],
         "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
         "attempt_count": provenance["attempt_count"],
+        "repair_safety": provenance["repair_safety"],
+        "repair_rollback_performed": bool(
+            isinstance(provenance["repair_safety"], dict)
+            and provenance["repair_safety"].get("rollback_performed")
+        ),
     }
     (cell_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     try:
@@ -1052,6 +1253,11 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "attempt_solution_hashes": provenance["attempt_solution_hashes"],
         "solution_hash_changed_between_attempt_and_repair": provenance["solution_hash_changed_between_attempt_and_repair"],
         "attempt_count": provenance["attempt_count"],
+        "repair_safety": provenance["repair_safety"],
+        "repair_rollback_performed": bool(
+            isinstance(provenance["repair_safety"], dict)
+            and provenance["repair_safety"].get("rollback_performed")
+        ),
     }
 
 
@@ -1123,6 +1329,12 @@ Review the implementation against the task spec, not against any framework guida
 Use these raw local test outputs only as ordinary development feedback:
 - pytest stdout: {pytest_stdout_ref}
 - pytest stderr: {pytest_stderr_ref}
+Safety constraints for this bounded repair:
+- treat the canonical pytest result above as authoritative
+- if canonical pytest is already green, do not change dependency versions, replace the persistence layer, or rewrite working architecture
+- never create local packages that shadow declared third-party dependencies
+- prefer a no-op over a speculative infrastructure workaround
+- all changes across retries are cumulative and will be checked as one repair diff
 Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
@@ -1151,6 +1363,13 @@ Use the structured verify-run feedback here: {verify_feedback_ref}
 You may also consult the raw local test outputs:
 - pytest stdout: {pytest_stdout_ref}
 - pytest stderr: {pytest_stderr_ref}
+Safety constraints for this bounded repair:
+- treat the canonical pytest result above as authoritative
+- treat environment_mismatch feedback as inconclusive; do not modify the solution to satisfy a different execution environment
+- if canonical pytest is already green, do not change dependency versions, replace the persistence layer, or rewrite working architecture
+- never create local packages that shadow declared third-party dependencies
+- prefer a no-op over a speculative infrastructure workaround
+- all changes across retries are cumulative and will be checked as one repair diff
 Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()

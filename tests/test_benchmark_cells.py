@@ -12,6 +12,7 @@ from agentharness.benchmark_cells import (
     AgentAttempt,
     AgentInvocationResult,
     ClassifiedCellFailure,
+    GRADING_ENV_DIR,
     HermesCliInvoker,
     _build_agentharness_repair_prompt,
     _build_baseline_repair_prompt,
@@ -22,6 +23,7 @@ from agentharness.benchmark_cells import (
     compute_solution_hash,
     execute_cell,
     prepare_fresh_cell,
+    write_run_json,
 )
 
 
@@ -251,6 +253,35 @@ class BenchmarkCellsTests(unittest.TestCase):
             for prompt in (initial_prompt, baseline_repair_prompt, agentharness_repair_prompt):
                 self.assertNotIn(task_dir, prompt)
                 self.assertNotIn(str((Path(__file__).resolve().parents[1] / "benchmarks").resolve()), prompt)
+
+    def test_write_run_json_preserves_canonical_pytest_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            python_path = workspace / ".stageb-test-venv" / "bin" / "python"
+            report_path = root / "run.json"
+            stdout_path = root / "pytest.stdout"
+            stderr_path = root / "pytest.stderr"
+            write_run_json(
+                run_path=report_path,
+                manifest={"run_id": "run-1", "task_id": "task-1"},
+                workspace=workspace,
+                pytest_command=[str(python_path), "-m", "pytest", "-q"],
+                pytest_exit=0,
+                pytest_stdout_path=stdout_path,
+                pytest_stderr_path=stderr_path,
+            )
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            command = payload["artifacts"]["commands"][0]
+            self.assertIn(str(python_path), command["cmd"])
+            self.assertEqual(
+                command["environment"],
+                {
+                    "PYTHONPATH": str(workspace.resolve()),
+                    "AGENTHARNESS_GRADING_ENV_DIR": str(GRADING_ENV_DIR.resolve()),
+                },
+            )
 
     def test_execute_cell_records_provenance_and_solution_hash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -597,6 +628,119 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertEqual(run_mock.call_args_list[0].kwargs["cwd"], str(outputs_dir))
         self.assertEqual(run_mock.call_args_list[1].kwargs["cwd"], str(outputs_dir))
         sleep_mock.assert_called_once_with(0.01)
+
+    def test_run_cell_rolls_back_manifest_regression_and_preserves_raw_repair_evidence(self) -> None:
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            spec_path = root / "SPEC.md"
+            claims_template_path = root / "CLAIMS_CONTRACT.template.json"
+            spec_path.write_text("spec\n", encoding="utf-8")
+            claims_template_path.write_text("{}\n", encoding="utf-8")
+            outputs_dir = root / "outputs"
+            manifest: dict[str, object] = {
+                "task_id": "inventory-adjustment-api",
+                "condition": "A-baseline",
+                "run_id": "stageb_inventory_adjustment_api_a_r1",
+                "spec_path": str(spec_path),
+                "claims_template_path": str(claims_template_path),
+            }
+            initial_pyproject = "[project]\nname='demo'\nversion='0.1.0'\ndependencies=['sqlalchemy>=2']\n"
+
+            def fake_invoke(*, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path, workspace: Path) -> AgentAttempt:
+                del prompt
+                if prompt_kind == "initial":
+                    package = workspace / "src" / "demo"
+                    package.mkdir(parents=True, exist_ok=True)
+                    (package / "__init__.py").write_text("", encoding="utf-8")
+                    (package / "models.py").write_text("from sqlalchemy import create_engine\n", encoding="utf-8")
+                    (workspace / "pyproject.toml").write_text(initial_pyproject, encoding="utf-8")
+                else:
+                    (workspace / "pyproject.toml").write_text(
+                        "[project]\nname='demo'\nversion='0.1.0'\ndependencies=['sqlalchemy>=2','pytest>=9']\n",
+                        encoding="utf-8",
+                    )
+                stdout_path = outputs_dir / f"{attempt_name}.stdout"
+                stderr_path = outputs_dir / f"{attempt_name}.stderr"
+                stdout_path.parent.mkdir(parents=True, exist_ok=True)
+                stdout_path.write_text("session_id: fake\n", encoding="utf-8")
+                stderr_path.write_text("", encoding="utf-8")
+                return AgentAttempt(
+                    attempt_name=attempt_name,
+                    prompt_kind=prompt_kind,
+                    command=["fake"],
+                    exit_code=0,
+                    stdout_path=stdout_path,
+                    stderr_path=stderr_path,
+                    working_directory=workspace,
+                    session_id="fake",
+                    started_at="2026-01-01T00:00:00Z",
+                    finished_at="2026-01-01T00:00:01Z",
+                    duration_seconds=1.0,
+                )
+
+            def fake_pytest(workspace: Path, report_path: Path) -> dict[str, object]:
+                stdout_path = report_path.with_suffix(".stdout")
+                stderr_path = report_path.with_suffix(".stderr")
+                stdout_path.write_text("1 passed\n", encoding="utf-8")
+                stderr_path.write_text("", encoding="utf-8")
+                return {
+                    "command": [str(workspace / ".stageb-test-venv" / "bin" / "python"), "-m", "pytest", "-q"],
+                    "exit_code": 0,
+                    "stdout_path": str(stdout_path),
+                    "stderr_path": str(stderr_path),
+                }
+
+            with (
+                mock.patch.object(invoker, "_invoke", side_effect=fake_invoke),
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", side_effect=fake_pytest),
+                mock.patch(
+                    "agentharness.benchmark_cells.manifest_install_state",
+                    side_effect=[
+                        {"ok": True, "detail": "pre install ok", "infrastructure_error": False},
+                        {"ok": False, "detail": "pytest>=9 conflicts with frozen constraints", "infrastructure_error": False},
+                    ],
+                ),
+            ):
+                result = invoker.run_cell(manifest, outputs_dir, workspace)
+
+            self.assertIsNotNone(result.repair_safety)
+            safety = cast(dict[str, object], result.repair_safety)
+            self.assertTrue(safety["rollback_performed"])
+            reasons = cast(list[str], safety["reasons"])
+            self.assertIn("canonical_manifest_install_regressed", reasons)
+            self.assertEqual((workspace / "pyproject.toml").read_text(encoding="utf-8"), initial_pyproject)
+            hashes = cast(dict[str, str | None], result.attempt_solution_hashes)
+            self.assertNotEqual(hashes["attempt_2_repair_raw"], hashes["attempt_2_repair"])
+            self.assertEqual(hashes["attempt_1_initial"], hashes["attempt_2_repair"])
+            self.assertTrue((outputs_dir / "repair-cumulative.diff").is_file())
+            self.assertIn("pytest>=9", (outputs_dir / "repair-cumulative.diff").read_text(encoding="utf-8"))
+            self.assertTrue((outputs_dir / "repair-safety-gate.json").is_file())
+
+            with (
+                mock.patch.object(invoker, "_invoke", side_effect=fake_invoke),
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", side_effect=fake_pytest),
+                mock.patch(
+                    "agentharness.benchmark_cells.manifest_install_state",
+                    side_effect=[
+                        {"ok": True, "detail": "pre install ok", "infrastructure_error": False},
+                        {"ok": True, "detail": "post install ok", "infrastructure_error": False},
+                    ],
+                ),
+                mock.patch(
+                    "agentharness.benchmark_cells.static_repair_guardrails",
+                    side_effect=RuntimeError("synthetic safety gate crash"),
+                ),
+            ):
+                with self.assertRaises(ClassifiedCellFailure) as captured:
+                    invoker.run_cell(manifest, outputs_dir, workspace)
+            self.assertEqual(captured.exception.execution_status, "harness_invalid")
+            self.assertEqual((workspace / "pyproject.toml").read_text(encoding="utf-8"), initial_pyproject)
+            crash_report = json.loads((outputs_dir / "repair-safety-gate.json").read_text(encoding="utf-8"))
+            self.assertTrue(crash_report["rollback_performed"])
+            self.assertIn("repair_safety_gate_error", crash_report["reasons"])
 
     def test_run_cell_invokes_agent_in_workspace(self) -> None:
         invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)

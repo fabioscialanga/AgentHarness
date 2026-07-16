@@ -294,6 +294,7 @@ def _verify_test_command_proof(
             command.cmd,
             working_dir=command.working_dir,
             policy=execution_policy,
+            environment=command.environment,
         )
         if reexecution.completed:
             return _claim_result_from_reexecution(command, reexecution)
@@ -349,14 +350,19 @@ def _verify_test_command_proof(
 
 def _claim_result_from_reexecution(command: CommandArtifact, reexecution: ReexecutionResult) -> ClaimResult:
     evidence_paths = reexecution.evidence_paths()
+    exit_conflict = command.exit_code is not None and command.exit_code != reexecution.exit_code
     status = "supported" if reexecution.exit_code == 0 else "unsupported"
     reason = (
         "AgentHarness reexecuted the command and observed exit_code 0"
         if status == "supported"
         else f"AgentHarness reexecuted the command and observed exit_code {reexecution.exit_code}"
     )
-    if command.exit_code is not None and command.exit_code != reexecution.exit_code:
-        reason += f"; the declared exit_code {command.exit_code} did not match the authoritative result"
+    if exit_conflict:
+        reason += (
+            f"; environment_mismatch with declared exit_code {command.exit_code}, "
+            "but reexecution evidence is authoritative"
+        )
+    truth_source = "reexecuted"
     return ClaimResult(
         claim_id=command.cmd,
         claim_type="tests_executed",
@@ -364,7 +370,7 @@ def _claim_result_from_reexecution(command: CommandArtifact, reexecution: Reexec
         status=status,
         reason=reason,
         evidence=evidence_paths,
-        truth_source="reexecuted",
+        truth_source=truth_source,
         audit={
             "command": command.cmd,
             "declared_exit_code": command.exit_code,

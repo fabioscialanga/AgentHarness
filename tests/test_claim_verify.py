@@ -9,7 +9,14 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from agentharness.reexecution import default_execution_policy, prepare_execution_tokens, sanitized_environment
+from agentharness.checks import _claim_result_from_reexecution
+from agentharness.models import CommandArtifact
+from agentharness.reexecution import (
+    ReexecutionResult,
+    default_execution_policy,
+    prepare_execution_tokens,
+    sanitized_environment,
+)
 from agentharness.verify import default_verify_run_report_path, verify_run
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +38,30 @@ class VerifyRunTests(unittest.TestCase):
     def test_python_versioned_module_pytest_uses_the_running_interpreter(self) -> None:
         prepared = prepare_execution_tokens(["python3.13", "-m", "pytest", "tests", "-q"])
         self.assertEqual(prepared, [sys.executable, "-m", "pytest", "tests", "-q"])
+
+    def test_absolute_python_module_pytest_preserves_declared_interpreter(self) -> None:
+        declared = str(Path(tempfile.gettempdir()) / "cell" / ".stageb-test-venv" / "bin" / "python")
+        prepared = prepare_execution_tokens([declared, "-m", "pytest", "-q"])
+        self.assertEqual(prepared, [declared, "-m", "pytest", "-q"])
+
+    def test_reexecution_exit_conflict_remains_unsupported_and_reports_environment_mismatch(self) -> None:
+        command = CommandArtifact(cmd="pytest -q", exit_code=0)
+        reexecution = ReexecutionResult(
+            attempted=True,
+            allowed=True,
+            completed=True,
+            command="pytest -q",
+            command_tokens=["pytest", "-q"],
+            exit_code=1,
+            stdout_path=None,
+            stderr_path=None,
+            reason=None,
+            duration_ms=10,
+        )
+        result = _claim_result_from_reexecution(command, reexecution)
+        self.assertEqual(result.status, "unsupported")
+        self.assertIn("environment_mismatch", result.reason)
+        self.assertEqual(result.truth_source, "reexecuted")
 
     def test_sanitized_environment_preserves_windows_runtime_variables(self) -> None:
         policy = default_execution_policy()
