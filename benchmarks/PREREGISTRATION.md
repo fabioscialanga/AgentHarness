@@ -1073,6 +1073,35 @@ Pilot STOP rule:
 
 This amendment freezes the safety protocol before the pilot. It does not authorize the pilot to schedule a renewed efficacy campaign and does not choose the size or shape of any later campaign.
 
+#### 17.18 Safety-pilot STOP-1 amendment (2026-07-16, after pilot 1 stopped and before any replacement pilot data)
+
+Pilot 1 was launched from `7ab10965650dbc5b7446d5941992ffa09921dc04` under the frozen section 17.17 protocol. Its run root is `/home/fabio/AgentHarness-benchmark-runs/repair-safety-pilot-20260716T073240Z`. The preregistered STOP rule fired after the first randomized cell, `leave-request-api/B-agentharness/r1`, and the remaining five cells were not started. No hidden evaluator was invoked, no held-out score was produced, and no A-versus-B contrast was computed.
+
+Observed integrity facts from the stopped cell:
+- both agent invocations returned exit code 0 and materialized non-empty workspace and treatment artifacts, although the Hermes CLI did not print a parseable `session_id` in the captured stdout
+- the B verify-run report existed, was non-empty valid JSON, and was referenced by the repair prompt
+- the symmetric repair safety gate completed without infrastructure error, emitted a cumulative diff, required no rollback, preserved manifest installability, and improved canonical pytest from exit 1 to exit 0
+- verify-run did not reexecute the canonical test command because the claims contract required the literal command `pytest -q`, while `run.json` correctly recorded the canonical absolute command `<workspace>/.stageb-test-venv/bin/python -m pytest -q`
+- the pilot launcher also incorrectly resolved the expected `.stageb-test-venv/bin/python` symlink before comparing it with the intentionally unrevolved recorded command, and required a parseable `session_id` even though section 17.17 did not preregister that field as a GO condition
+
+Diagnosis and correction 32:
+- required-command resolution may treat only semantically identical pytest wrapper forms as equivalent
+- accepted equivalent prefixes are `pytest`, `python -m pytest`, an absolute Python interpreter followed by `-m pytest`, and the same forms under `uv run`
+- every pytest argument after the normalized prefix must remain exactly identical and in the same order; this amendment does not permit fuzzy matching, argument deletion, command substitution, or equivalence for non-pytest commands
+- the frozen implementation commit for correction 32 is `dd114e77c2a1edcbe461dd62891ffb3e9096061f`
+- a diagnostic re-verification of the already collected stopped-cell artifacts, without a provider call or hidden evaluator, confirmed that correction 32 resolves the command, performs controlled reexecution, and emits a `truth_source = reexecuted` audit
+
+Replacement pilot rules:
+- pilot 1 remains a stopped, non-GO pilot and its cell must not be counted as replacement-pilot data
+- the replacement pilot must start from six entirely fresh cells and a new run root; no workspace, result, or GO status from pilot 1 may be reused
+- tasks, conditions, replicate count, provider, model, maximum turns, timeouts, treatment, randomization method, hidden-evaluator prohibition, held-out-score prohibition, contrast prohibition, GO gate, and STOP rule remain those frozen in section 17.17
+- the replacement launcher must compare the recorded canonical interpreter path without resolving its virtualenv symlink
+- invocation evidence is sufficient when the Hermes attempt exits 0 and has non-empty captured stdout or stderr, consistent with the versioned benchmark runner; a parseable `session_id` remains useful provenance but is not an additional GO requirement
+- B feedback delivery is established by a valid non-empty `feedback.items` list, not by a nonexistent top-level `claims` field
+- the replacement launch SHA, origin/main SHA, launcher path, launcher SHA-256, and exact six-cell randomized order must be persisted before its first provider call
+
+This dated amendment authorizes one replacement safety pilot under these frozen corrections only. It still does not authorize a hidden evaluation, efficacy campaign, power recalculation, A-versus-B contrast, or public efficacy claim.
+
 ---
 
 ## Freeze
