@@ -1381,6 +1381,45 @@ Authorization boundary:
 - only task-pack construction and non-efficacy validation are authorized
 - a dated post-build amendment with exact artifact SHA and report hashes is required before these tasks count toward the 24-task target
 
+### 17.27 Stage 2 task-expansion batch 2 accepted under non-efficacy gates (2026-07-16)
+
+Artifact commit:
+- `338e7248745c3a06f1ef6e6cf40c656b340fc72a`
+- pushed to `origin/main` before this post-build amendment
+
+Accepted task identities:
+- `dependency-impact-planner`
+- `access-policy-evaluator`
+- `versioned-document-api`
+- `safe-archive-extraction`
+
+Acceptance evidence:
+- machine-readable report: `benchmarks/grading-env/task-expansion-batch2/TASK_EXPANSION_BATCH2_ACCEPTANCE.json`
+- report SHA-256: `6a22b9864e60b111fa4a58f2bdd454bdfb8f02d959c2e3c18a0491e2e576b5de`
+- human-readable report: `benchmarks/grading-env/task-expansion-batch2/TASK_EXPANSION_BATCH2_ACCEPTANCE.md`
+- Markdown report SHA-256: `4bf1e006aaac590167f5ea9af7b9e20e5d62e6d43a17792cfbe4ebbc5598f8cc`
+- the JSON report freezes 37 artifact hashes, including all four visible task packs, evaluator modules, hidden reference implementations, mutation-sensitivity matrix, audit program, and test module
+- the task-pack generator reproduced all 16 visible pack files byte-identically
+
+Gate results:
+- all four independent reference-positive implementations passed all five functional checks
+- all 20 targeted mutants matched their exact preregistered failed-check and passed-check sets
+- 12 clean-room evaluations across three hash seeds per task produced identical classifications
+- `versioned-document-api` persistence was verified across process termination, including a strong POST ETag, SQL compare-and-swap with one winner under concurrent same-ETag writers, failed-write snapshot preservation, immutable history, and restore preconditions
+- `safe-archive-extraction` was verified for path containment, special-entry rejection, normalized collision detection, limits, corruption, exact manifest schema, and complete preservation of pre-existing output state on failure
+- diversity evidence contains all 48 comparisons between the four new tasks and the 12 prior tasks, all 20 nearest-existing-task check comparisons, and all 6 pairwise comparisons within batch 2
+- batch validation result: `5 passed, 32 subtests passed in 375.55s`
+- pre-existing repository suite result, excluding the separately certified batch matrices: `170 passed, 15 skipped in 506.17s`
+- final independent blind blocker review: GO with no blocking findings and no files modified by the reviewer
+
+Interpretation and authorization boundary:
+- this amendment accepts only construction, non-leakage, construct diversity, determinism, persistence, atomicity, mutation adequacy, and evaluator reachability for these four task packs
+- efficacy cells collected during this batch: `0`
+- no A/B contrast was read or used to select, build, repair, or accept any task
+- these four tasks may count toward the 24-task expansion target; together with the original eight tasks and accepted batch 1, sixteen task identities are now accepted and eight additional tasks remain
+- this amendment does not authorize a task-solving pilot, an A/B run, the 672-cell confirmatory campaign, or any efficacy claim
+- the next task-expansion batch requires its own pre-build identity freeze and the same non-efficacy acceptance gates before it can count toward the target
+
 ---
 
 ## Freeze
