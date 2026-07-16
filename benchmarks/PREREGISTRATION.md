@@ -1164,6 +1164,26 @@ Replacement rule:
 - preserve every other section 17.20 parameter, prohibition, GO condition, and STOP rule
 - another invocation or stream-watchdog failure stops the replacement immediately and does not authorize further automatic reruns
 
+#### 17.22 GPT-5.6 Sol model-transition pilot execution record (2026-07-16, post-pilot)
+
+The section 17.21 non-benchmark tool-using preflight succeeded under `HERMES_CODEX_EVENT_STALE_TIMEOUT_SECONDS=60`. The fresh replacement pilot then completed from launch and origin/main SHA `06ffc5f3296a76eaa83f4572cd82515c1b8f6a20`. Its run root is `/home/fabio/AgentHarness-benchmark-runs/repair-safety-pilot-gpt56-sse60-20260716T103803Z`.
+
+Operational result:
+- provider/model was pinned to `openai-codex/gpt-5.6-sol` and the launcher-scoped Codex SSE-idle threshold was pinned to 60 seconds
+- all 6 fresh frozen cells completed and passed the cell-level GO audit
+- all 6 cells had valid invocation evidence and all required treatment-delivery checks passed
+- all required canonical reexecution parity checks passed
+- all 6 cells emitted a repair-safety report and cumulative diff
+- no safety infrastructure error, treatment-delivery error, rollback error, unclassified invalid, stream-watchdog failure, or forbidden hidden-evaluation artifact was observed
+- no rollback was required in these six cells; live rollback recovery was therefore not exercised by this pilot and remains supported by the versioned automated regression suite rather than new live evidence
+- no hidden evaluator was invoked, no held-out score was produced or read, and no A-versus-B endpoint or contrast was computed
+- the independent audit `pilot-independent-audit.json` records `pilot_go = true`
+- the independently recomputed launcher SHA-256 matches the launch metadata value `4a63fa5ae4daf7e1b5f0d547395150a963da4b18e903c06a9c66eda9ffa7ad50`
+
+Interpretation boundary:
+- the amended treatment-delivery, canonical-reexecution, and repair-safety channel is operationally validated for GPT-5.6 Sol under this six-cell pilot and launcher-scoped 60-second SSE-idle threshold
+- this GO does not estimate efficacy, does not compare the arms, does not alter the official 2026-07-15 result, and does not by itself choose or authorize a renewed efficacy campaign
+
 ---
 
 ## Freeze
