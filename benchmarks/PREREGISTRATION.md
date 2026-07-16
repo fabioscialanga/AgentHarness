@@ -1317,6 +1317,70 @@ Interpretation and authorization boundary:
 - this amendment does not authorize a task-solving pilot, an A/B run, the 672-cell confirmatory campaign, or any efficacy claim
 - the next task-expansion batch requires its own pre-build identity freeze and the same non-efficacy acceptance gates before it can count toward the target
 
+### 17.26 Stage 2 task-expansion batch 2 pre-build identity and construct freeze (2026-07-16)
+
+Purpose:
+- add the next four task clusters toward the frozen 24-task target
+- increase construct diversity without using agent performance, hidden efficacy scores, or any A/B contrast to select or refine tasks
+- preserve the exact five-functional-check plus one result-schema contract used by batch 1
+
+Frozen task identities and interfaces:
+1. `dependency-impact-planner`: deterministic CLI over a component dependency graph
+2. `access-policy-evaluator`: deterministic CLI over a policy document and request JSONL stream
+3. `versioned-document-api`: FastAPI plus SQLite/SQLAlchemy document service with optimistic concurrency
+4. `safe-archive-extraction`: deterministic ZIP extraction CLI with filesystem-safety constraints
+
+Frozen functional constructs:
+
+`dependency-impact-planner`:
+- graph validation for unique identifiers, existing references, and self-loop rejection
+- reverse transitive impact closure from an explicit changed-component set
+- precedence-respecting parallel execution levels
+- deterministic ordering and byte-stable output
+- cycle detection with atomic failure and no partial plan artifact
+
+`access-policy-evaluator`:
+- documented action/resource wildcard matching
+- composition of direct-subject and declared-group rules
+- explicit-deny precedence with default deny
+- RFC 3339 temporal validity using only request-provided `as_of`
+- deterministic auditable decisions plus isolated rejection of malformed request lines
+
+`versioned-document-api`:
+- durable creation/read with revision 1 and strong version ETag
+- compare-and-swap updates through `If-Match`, with stale writes rejected atomically
+- RFC 7396 JSON Merge Patch semantics for object-root documents
+- immutable contiguous revision history with no revisions for reads or failed writes
+- restoration of a historical revision as a new revision without rewriting prior history
+
+`safe-archive-extraction`:
+- correct extraction of regular files/directories with ordered size and SHA-256 manifest
+- atomic rejection of absolute, parent-traversal, drive-prefixed, backslash-ambiguous, or escaping paths
+- rejection of symlinks and non-regular special entries from ZIP metadata
+- preflight collision detection after frozen path normalization, including file/directory conflicts
+- atomic `max-entries` and uncompressed `max-bytes` enforcement plus corrupt-archive handling
+
+Pre-build diversity findings:
+- the graph planner adds transitive closure, topological layering, and cycle semantics absent from the existing 12 tasks
+- the policy evaluator is a stateless rule-composition interpreter, not an approval workflow or mutable CRUD service
+- the document API measures optimistic concurrency, structural merge, and immutable version history rather than a domain state machine or webhook deduplication
+- the archive extractor measures adversarial binary/filesystem safety rather than retention, import, migration, or report generation
+- pairwise overlap among these four tasks must be audited again after implementation; shared CLI/API shells do not count as substantive construct diversity
+
+Batch 2 acceptance gates:
+- all batch 1 non-leakage, visible-allowlist, claims-separation, reference-positive, exact mutation-sensitivity, clean-room determinism, reachability, forbidden-artifact, hash-freeze, and independent blind-review gates apply unchanged
+- persistence for `versioned-document-api` must be demonstrated across process termination using a write-ack/rollback negative control
+- ZIP safety fixtures must remain small and portable; no resource-exhaustion payload may be materialized
+- every functional mutant must match an exact preregistered failed-check and passed-check set
+- all six pairwise comparisons within batch 2 and each check's nearest existing construct must have explicit substantive distinctions
+- GO requires all four tasks to pass every gate; partial acceptance is forbidden
+
+Authorization boundary:
+- efficacy cells collected before this freeze: `0`
+- no task-solving agent run, A/B pilot, confirmatory cell, or hidden efficacy contrast is authorized by this amendment
+- only task-pack construction and non-efficacy validation are authorized
+- a dated post-build amendment with exact artifact SHA and report hashes is required before these tasks count toward the 24-task target
+
 ---
 
 ## Freeze
