@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -46,6 +47,28 @@ def _expected(resource: str, owner: str, token: int, acquired: str, expires: str
 
 def _response(response: Any) -> tuple[int, Any]:
     return response.status_code, _json_payload(response)
+
+
+def _sqlite_state(db_path: Path) -> tuple[tuple[str, tuple[str, ...], tuple[tuple[str, ...], ...]], ...]:
+    """Return every user table and row as a stable logical SQLite snapshot."""
+    if not db_path.exists():
+        return ()
+    with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as connection:
+        tables = [
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+            )
+        ]
+        snapshot = []
+        for table in tables:
+            quoted = '"' + table.replace('"', '""') + '"'
+            columns = tuple(row[1] for row in connection.execute(f"PRAGMA table_info({quoted})"))
+            rows = []
+            for row in connection.execute(f"SELECT * FROM {quoted}"):
+                rows.append(tuple(value.hex() if isinstance(value, bytes) else repr(value) for value in row))
+            snapshot.append((table, columns, tuple(sorted(rows))))
+        return tuple(snapshot)
 
 
 def _child_request(
@@ -105,12 +128,14 @@ def _durable_failure(
     """Reject an operation and compare its complete public row before/after a restart."""
     before_response = client.get(_get_path(resource, as_of))
     before = _response(before_response)
+    before_sqlite = _sqlite_state(db_path)
     failed_response = client.request(method, f"/leases/{quote(resource, safe='')}/{suffix}", json=body)
     failed = _response(failed_response)
     after_status, after_payload, child_detail = _child_request(
         workspace, db_path, "get", _get_path(resource, as_of)
     )
     after = (after_status, after_payload)
+    after_sqlite = _sqlite_state(db_path)
     controlled = (
         failed[0] == expected_status
         and isinstance(failed[1], dict)
@@ -118,8 +143,11 @@ def _durable_failure(
         and "sqlite" not in json.dumps(failed[1]).lower()
         and "locked" not in json.dumps(failed[1]).lower()
     )
-    ok = controlled and before == after and after_status != 599
-    return ok, f"op={failed}; snapshot_before={before}; snapshot_after={after}; {child_detail}"
+    ok = controlled and before == after and before_sqlite == after_sqlite and after_status != 599
+    return ok, (
+        f"op={failed}; public_state_equal={before == after}; "
+        f"full_sqlite_state_equal={before_sqlite == after_sqlite}; {child_detail}"
+    )
 
 
 def _independent_race(workspace: Path, db_path: Path, root: Path) -> tuple[list[tuple[int, Any, str]], str]:

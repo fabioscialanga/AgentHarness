@@ -219,32 +219,38 @@ def evaluate_pii(workspace: Path) -> HiddenEvaluationResult:
 
             # All actions apply to scalar and composite JSON. HMAC input is
             # canonical JSON and changing the key must change the pseudonym.
-            action_doc = ["scalar", {"z": 1, "a": [True, None]}, [3, 2, 1]]
+            action_doc = ["scalar", 42, True, None, {"z": 1, "a": [True, None]}, [3, 2, 1]]
             redact_items = [
                 {"id": f"r{i}", "selector": f"/{i}", "action": "redact", "replacement": f"R{i}"}
-                for i in range(3)
+                for i in range(len(action_doc))
             ]
             redact_run, redact_bundle = successful(action_doc, redact_items)
             pseudo_items = [
                 {"id": f"p{i}", "selector": f"/{i}", "action": "pseudonymize"}
-                for i in range(3)
+                for i in range(len(action_doc))
             ]
             key_a = {"secret_hex": "01020304"}
             key_b = {"secret_hex": "a1a2a3a4"}
             pseudo_a_run, pseudo_a = successful(action_doc, pseudo_items, key_a)
             pseudo_b_run, pseudo_b = successful(action_doc, pseudo_items, key_b)
             pseudo_expected = [_pseudonym(key_a["secret_hex"], x) for x in action_doc]
-            remove_doc = [{"drop": {"composite": True}, "keep": 7}, ["a", "b", "c", "d"]]
+            remove_doc = {
+                "values": {
+                    "string": "s", "number": 1, "boolean": True, "null": None,
+                    "object": {"nested": 1}, "array": [1, 2],
+                },
+                "adjacent": ["a", "b", "c", "d"],
+            }
             remove_items = [
-                {"id": "object", "selector": "/0/drop", "action": "remove"},
-                {"id": "array-one", "selector": "/1/1", "action": "remove"},
-                {"id": "array-two", "selector": "/1/2", "action": "remove"},
+                {"id": "all-types", "selector": "/values/*", "action": "remove"},
+                {"id": "array-one", "selector": "/adjacent/1", "action": "remove"},
+                {"id": "array-two", "selector": "/adjacent/2", "action": "remove"},
             ]
             remove_run, remove_bundle = successful(remove_doc, remove_items)
             actions_ok = (
                 redact_run.returncode == 0
                 and redact_bundle is not None
-                and redact_bundle.get("redacted") == ["R0", "R1", "R2"]
+                and redact_bundle.get("redacted") == [f"R{i}" for i in range(len(action_doc))]
                 and pseudo_a_run.returncode == pseudo_b_run.returncode == 0
                 and pseudo_a is not None
                 and pseudo_b is not None
@@ -254,7 +260,7 @@ def evaluate_pii(workspace: Path) -> HiddenEvaluationResult:
                 and pseudo_a.get("redacted") != pseudo_b.get("redacted")
                 and remove_run.returncode == 0
                 and remove_bundle is not None
-                and remove_bundle.get("redacted") == [{"keep": 7}, ["a", "d"]]
+                and remove_bundle.get("redacted") == {"values": {}, "adjacent": ["a", "d"]}
             )
             record(
                 _CHECKS[1],

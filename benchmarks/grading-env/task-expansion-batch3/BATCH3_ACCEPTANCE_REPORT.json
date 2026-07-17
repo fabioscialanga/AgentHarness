@@ -46,13 +46,13 @@
     "benchmarks/signed-artifact-verifier/pyproject.toml": "78bfe1b54af0c488cb40cf8dd7287947cabc6fd5d4a0d24c37fad74592362a65",
     "src/agentharness/benchmark_hidden_evaluators.py": "5ae11dfbebe3220a6b8e719a162ffd551c2b275ab52568cef55c2858203fcbd1",
     "src/agentharness/benchmark_hidden_evaluators_batch3.py": "d1f23cad4cdd1f40e72d9d1c95323039c9c2b7ebbaf81e5df50bd7c393075def",
-    "src/agentharness/benchmark_hidden_evaluators_batch3_lease.py": "b2bda8e4d67104a11b72590b03671369013da43c8da680be20bc585090d99db7",
-    "src/agentharness/benchmark_hidden_evaluators_batch3_ledger.py": "bb5764a901ce46f17d5f154dec0fa6cd8fe028db377163b0de691ad58de0457b",
-    "src/agentharness/benchmark_hidden_evaluators_batch3_pii.py": "8187ba0e86929d3fff376c61923866700ef06a3d971798fad884f0b68c9be565",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_lease.py": "859f192fec7e9df5bc3154133bad976537d96fa8313eb6bcf68d766c5389ae46",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_ledger.py": "0d92e27a591bdf3bcc0e423b086eb382630cffdeb1efd7c9cb52fc91ce39b1f8",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_pii.py": "58ada5ad942df2ad75ecd3f2413f9db83f45775668f24ea3bac81e4dab096fd5",
     "src/agentharness/benchmark_hidden_evaluators_batch3_signed.py": "4f553282ae112554956155d32c3b81fac979529413ebba09ca5fb8d28a40719a",
     "tests/test_task_expansion_batch3.py": "c137057fdd7abba2aea66b4057c35b1a60a9fe5523b1ea1bd4c8ab46e1cbc266"
   },
-  "base_commit": "fd34b884e2c044a27728f098dfc5b76a5fa6e482",
+  "base_commit": "66a231ff49b13acf307f985da43a2febd0679865",
   "campaign_boundary": "Task-pack acceptance only. No task-solving pilot, A/B cell, hidden efficacy score, contrast, confirmatory campaign, or efficacy claim is authorized or evaluated by this auditor.",
   "diversity_evidence": {
     "all_prior_overlap_matrix": [
@@ -1019,7 +1019,7 @@
       "double-entry-ledger-api": {
         "copies": [
           {
-            "duration_seconds": 19.320801,
+            "duration_seconds": 18.456366,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1059,7 +1059,7 @@
             }
           },
           {
-            "duration_seconds": 19.449164,
+            "duration_seconds": 18.183823,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1099,7 +1099,7 @@
             }
           },
           {
-            "duration_seconds": 19.059014,
+            "duration_seconds": 19.545313,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1145,7 +1145,7 @@
       "lease-coordination-api": {
         "copies": [
           {
-            "duration_seconds": 35.627603,
+            "duration_seconds": 35.298704,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1185,7 +1185,7 @@
             }
           },
           {
-            "duration_seconds": 36.007238,
+            "duration_seconds": 34.670748,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1225,7 +1225,7 @@
             }
           },
           {
-            "duration_seconds": 37.53682,
+            "duration_seconds": 36.163358,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1271,7 +1271,7 @@
       "pii-redaction-pipeline": {
         "copies": [
           {
-            "duration_seconds": 9.886956,
+            "duration_seconds": 10.291382,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1311,7 +1311,7 @@
             }
           },
           {
-            "duration_seconds": 10.251094,
+            "duration_seconds": 10.454812,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1351,7 +1351,7 @@
             }
           },
           {
-            "duration_seconds": 9.874509,
+            "duration_seconds": 10.556859,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1397,7 +1397,7 @@
       "signed-artifact-verifier": {
         "copies": [
           {
-            "duration_seconds": 16.396534,
+            "duration_seconds": 16.49657,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1437,7 +1437,7 @@
             }
           },
           {
-            "duration_seconds": 15.889856,
+            "duration_seconds": 16.193283,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1477,7 +1477,7 @@
             }
           },
           {
-            "duration_seconds": 15.848342,
+            "duration_seconds": 16.807841,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1530,7 +1530,7 @@
       "detail": "recognized=['double-entry-ledger-api', 'lease-coordination-api', 'pii-redaction-pipeline', 'signed-artifact-verifier']",
       "ok": true
     },
-    "duration_seconds": 738.604662,
+    "duration_seconds": 742.660915,
     "exit_code": 0,
     "mutations": {
       "denominator": 20,
@@ -1547,7 +1547,7 @@
             "signed_manifest_trust_window",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 16.682171,
+          "duration_seconds": 16.650673,
           "expected_failed_checks": [
             "signed_manifest_authenticity"
           ],
@@ -1571,7 +1571,7 @@
             "signed_manifest_trust_window",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 16.274351,
+          "duration_seconds": 16.668573,
           "expected_failed_checks": [
             "signed_manifest_inventory"
           ],
@@ -1595,7 +1595,7 @@
             "signed_manifest_trust_window",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 15.942488,
+          "duration_seconds": 16.188683,
           "expected_failed_checks": [
             "signed_manifest_content_integrity"
           ],
@@ -1619,7 +1619,7 @@
             "signed_manifest_content_integrity",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 16.697642,
+          "duration_seconds": 16.757608,
           "expected_failed_checks": [
             "signed_manifest_trust_window"
           ],
@@ -1643,7 +1643,7 @@
             "signed_manifest_content_integrity",
             "signed_manifest_trust_window"
           ],
-          "duration_seconds": 16.480317,
+          "duration_seconds": 16.236009,
           "expected_failed_checks": [
             "signed_manifest_atomic_report"
           ],
@@ -1667,7 +1667,7 @@
             "pii_rule_precedence",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 9.937088,
+          "duration_seconds": 9.686051,
           "expected_failed_checks": [
             "pii_selector_resolution"
           ],
@@ -1691,7 +1691,7 @@
             "pii_rule_precedence",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 9.30039,
+          "duration_seconds": 9.56268,
           "expected_failed_checks": [
             "pii_redaction_actions"
           ],
@@ -1715,7 +1715,7 @@
             "pii_rule_precedence",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 9.758277,
+          "duration_seconds": 9.843368,
           "expected_failed_checks": [
             "pii_structure_preservation"
           ],
@@ -1739,7 +1739,7 @@
             "pii_structure_preservation",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 9.22762,
+          "duration_seconds": 9.678656,
           "expected_failed_checks": [
             "pii_rule_precedence"
           ],
@@ -1763,7 +1763,7 @@
             "pii_structure_preservation",
             "pii_rule_precedence"
           ],
-          "duration_seconds": 9.994023,
+          "duration_seconds": 10.013529,
           "expected_failed_checks": [
             "pii_atomic_audit"
           ],
@@ -1787,7 +1787,7 @@
             "lease_release_reacquire",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 36.609364,
+          "duration_seconds": 35.88785,
           "expected_failed_checks": [
             "lease_acquire_fencing"
           ],
@@ -1811,7 +1811,7 @@
             "lease_release_reacquire",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 36.532528,
+          "duration_seconds": 38.526534,
           "expected_failed_checks": [
             "lease_concurrent_contention"
           ],
@@ -1835,7 +1835,7 @@
             "lease_release_reacquire",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 36.715041,
+          "duration_seconds": 36.844863,
           "expected_failed_checks": [
             "lease_renewal"
           ],
@@ -1859,7 +1859,7 @@
             "lease_renewal",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 37.547584,
+          "duration_seconds": 35.578125,
           "expected_failed_checks": [
             "lease_release_reacquire"
           ],
@@ -1883,7 +1883,7 @@
             "lease_renewal",
             "lease_release_reacquire"
           ],
-          "duration_seconds": 35.611505,
+          "duration_seconds": 36.367861,
           "expected_failed_checks": [
             "lease_state_and_failure_atomicity"
           ],
@@ -1907,7 +1907,7 @@
             "ledger_balances_and_journal",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 19.047755,
+          "duration_seconds": 19.534721,
           "expected_failed_checks": [
             "ledger_account_identity"
           ],
@@ -1931,7 +1931,7 @@
             "ledger_balances_and_journal",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 18.837603,
+          "duration_seconds": 19.777774,
           "expected_failed_checks": [
             "ledger_balanced_posting"
           ],
@@ -1955,7 +1955,7 @@
             "ledger_balances_and_journal",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 18.562082,
+          "duration_seconds": 18.577088,
           "expected_failed_checks": [
             "ledger_idempotency_conflict"
           ],
@@ -1979,7 +1979,7 @@
             "ledger_idempotency_conflict",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 18.504249,
+          "duration_seconds": 20.291104,
           "expected_failed_checks": [
             "ledger_balances_and_journal"
           ],
@@ -2003,7 +2003,7 @@
             "ledger_idempotency_conflict",
             "ledger_balances_and_journal"
           ],
-          "duration_seconds": 19.894222,
+          "duration_seconds": 20.022763,
           "expected_failed_checks": [
             "ledger_compensating_reversal"
           ],
@@ -2025,27 +2025,27 @@
         "checks": [
           {
             "check_id": "ledger_account_identity",
-            "detail": "restart=[(200, {'currency': 'USD', 'id': 'acct.Main-1'}), (200, {'account_id': 'acct.Main-1', 'balance': '0.00', 'currency': 'USD'}), (200, {'account_id': 'acct.Main-1', 'entries': []})]; child_exit=0 | POST /accounts=(409, {'detail': 'account exists'}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': '', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': ' bad', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': '\u00e9', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'usd', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'us', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'US', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'USDX', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'U1D', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'missing', 'loc': ['body', 'currency'], 'msg': 'Field required', 'input': {'id': 'new'}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'id'], 'msg': 'Input should be a valid string', 'input': 7}]}); full_state_equal=True | PUT /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); full_state_equal=True | PATCH /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); full_state_equal=True | DELETE /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); full_state_equal=True",
+            "detail": "restart=[(200, {'currency': 'USD', 'id': 'acct.Main-1'}), (200, {'account_id': 'acct.Main-1', 'balance': '0.00', 'currency': 'USD'}), (200, {'account_id': 'acct.Main-1', 'entries': []})]; child_exit=0 | POST /accounts=(409, {'detail': 'account exists'}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': '', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': ' bad', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': '\u00e9', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'usd', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'us', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'US', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'USDX', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'U1D', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'missing', 'loc': ['body', 'currency'], 'msg': 'Field required', 'input': {'id': 'new'}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'id'], 'msg': 'Input should be a valid string', 'input': 7}]}); public_state_equal=True; full_sqlite_state_equal=True | PUT /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); public_state_equal=True; full_sqlite_state_equal=True | PATCH /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); public_state_equal=True; full_sqlite_state_equal=True | DELETE /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); public_state_equal=True; full_sqlite_state_equal=True",
             "status": "pass"
           },
           {
             "check_id": "ledger_balanced_posting",
-            "detail": "valid=(201, {'id': '4e708751-c53e-4321-9990-3e718d24ffc0', 'idempotency_key': 'bal-valid', 'currency': 'USD', 'entries': [{'account_id': 'bal.A', 'direction': 'debit', 'amount': '2.00'}, {'account_id': 'bal.B', 'direction': 'credit', 'amount': '0.50'}, {'account_id': 'bal.C', 'direction': 'credit', 'amount': '1.50'}], 'reverses': None}) | POST /transactions=(422, {'detail': 'unbalanced transaction'}); full_state_equal=True | POST /transactions=(422, {'detail': 'mixed currencies'}); full_state_equal=True | POST /transactions=(422, {'detail': 'unknown account'}); full_state_equal=True | POST /transactions=(422, {'detail': 'at least two entries required'}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0.0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '00.10', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '01', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '+1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '-1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '.1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.000', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1e2', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1,00', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'NaN', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'Infinity', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': None}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'direction'], 'msg': 'Value error, invalid direction', 'input': 'charge', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'account_id'], 'msg': 'Value error, invalid id', 'input': 'bad id', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'entries', 0, 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': 'Idempotency-Key required'}); full_state_equal=True | huge_status=201; huge_schema=True; huge_balances=((200, {'account_id': 'bal.largeA', 'currency': 'USD', 'balance': '-99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}), (200, {'account_id': 'bal.largeB', 'currency': 'USD', 'balance': '99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}))",
+            "detail": "valid=(201, {'id': '73c6c513-7cd8-4594-95f2-2669b3631d0e', 'idempotency_key': 'bal-valid', 'currency': 'USD', 'entries': [{'account_id': 'bal.A', 'direction': 'debit', 'amount': '2.00'}, {'account_id': 'bal.B', 'direction': 'credit', 'amount': '0.50'}, {'account_id': 'bal.C', 'direction': 'credit', 'amount': '1.50'}], 'reverses': None}) | POST /transactions=(422, {'detail': 'unbalanced transaction'}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': 'mixed currencies'}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': 'unknown account'}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': 'at least two entries required'}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0.0', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '00.10', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '01', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '+1', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '-1', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '.1', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.000', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1e2', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1,00', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'NaN', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'Infinity', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': None}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'direction'], 'msg': 'Value error, invalid direction', 'input': 'charge', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'account_id'], 'msg': 'Value error, invalid id', 'input': 'bad id', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'entries', 0, 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True | POST /transactions=(422, {'detail': 'Idempotency-Key required'}); public_state_equal=True; full_sqlite_state_equal=True | huge_status=201; huge_schema=True; huge_balances=((200, {'account_id': 'bal.largeA', 'currency': 'USD', 'balance': '-99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}), (200, {'account_id': 'bal.largeB', 'currency': 'USD', 'balance': '99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}))",
             "status": "pass"
           },
           {
             "check_id": "ledger_idempotency_conflict",
-            "detail": "first=(201, {'id': '368b3859-eab0-4391-b53f-44873279d177', 'idempotency_key': 'idem-key', 'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'direction': 'debit', 'amount': '5.00'}, {'account_id': 'idem.B', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'idem.C', 'direction': 'credit', 'amount': '3.00'}], 'reverses': None}); restart_replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'amount': '5.00', 'direction': 'debit'}, {'account_id': 'idem.B', 'amount': '2.00', 'direction': 'credit'}, {'account_id': 'idem.C', 'amount': '3.00', 'direction': 'credit'}], 'id': '368b3859-eab0-4391-b53f-44873279d177', 'idempotency_key': 'idem-key', 'reverses': None})]; child_exit=0 | POST /transactions=(409, {'detail': 'idempotency conflict'}); full_state_equal=True | race=[(201, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'idempotency_key': 'race-duplicate', 'reverses': None})]; journal={'account_id': 'race.A', 'entries': [{'transaction_id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'sequence': 4, 'account_id': 'race.A', 'direction': 'debit', 'amount': '7.00'}]}; durable=[(200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'account_id': 'race.A', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit', 'sequence': 4, 'transaction_id': 'eba48640-8385-484c-aaad-5a22ba4fee57'}]})]; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
+            "detail": "first=(201, {'id': '18cf2e60-a9d6-476b-9e98-6df83313a4bc', 'idempotency_key': 'idem-key', 'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'direction': 'debit', 'amount': '5.00'}, {'account_id': 'idem.B', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'idem.C', 'direction': 'credit', 'amount': '3.00'}], 'reverses': None}); restart_replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'amount': '5.00', 'direction': 'debit'}, {'account_id': 'idem.B', 'amount': '2.00', 'direction': 'credit'}, {'account_id': 'idem.C', 'amount': '3.00', 'direction': 'credit'}], 'id': '18cf2e60-a9d6-476b-9e98-6df83313a4bc', 'idempotency_key': 'idem-key', 'reverses': None})]; child_exit=0 | POST /transactions=(409, {'detail': 'idempotency conflict'}); public_state_equal=True; full_sqlite_state_equal=True | race=[(200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': '77a0ca05-52cb-428a-9c5e-d77729e49a00', 'idempotency_key': 'race-duplicate', 'reverses': None}), (201, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': '77a0ca05-52cb-428a-9c5e-d77729e49a00', 'idempotency_key': 'race-duplicate', 'reverses': None})]; journal={'account_id': 'race.A', 'entries': [{'transaction_id': '77a0ca05-52cb-428a-9c5e-d77729e49a00', 'sequence': 4, 'account_id': 'race.A', 'direction': 'debit', 'amount': '7.00'}]}; durable=[(200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': '77a0ca05-52cb-428a-9c5e-d77729e49a00', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'account_id': 'race.A', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit', 'sequence': 4, 'transaction_id': '77a0ca05-52cb-428a-9c5e-d77729e49a00'}]})]; /tmp/batch3-audit-double-entry-ledger-api-rsmdwig1/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-rsmdwig1/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "ledger_balances_and_journal",
-            "detail": "transactions=[{'id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'idempotency_key': 'journal-one', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}], 'reverses': None}, {'id': 'd4b447e5-35f0-41e4-b7d8-96b5c020fb81', 'idempotency_key': 'journal-two', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}, {'account_id': 'journal.C', 'direction': 'debit', 'amount': '4.25'}], 'reverses': None}]; balance=(200, {'account_id': 'journal.A', 'currency': 'USD', 'balance': '3.20'}); journal_a=(200, {'account_id': 'journal.A', 'entries': [{'transaction_id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'transaction_id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'transaction_id': 'd4b447e5-35f0-41e4-b7d8-96b5c020fb81', 'sequence': 6, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}]}); journal_b=(200, {'account_id': 'journal.B', 'entries': [{'transaction_id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'sequence': 5, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}, {'transaction_id': 'd4b447e5-35f0-41e4-b7d8-96b5c020fb81', 'sequence': 6, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}]}); restart_equal=True; child_exit=0",
+            "detail": "transactions=[{'id': '5afc77ed-6ae3-4e9d-a6f1-089e601879fc', 'idempotency_key': 'journal-one', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}], 'reverses': None}, {'id': '9ad47e18-5cda-4926-9006-5e65339c3b18', 'idempotency_key': 'journal-two', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}, {'account_id': 'journal.C', 'direction': 'debit', 'amount': '4.25'}], 'reverses': None}]; balance=(200, {'account_id': 'journal.A', 'currency': 'USD', 'balance': '3.20'}); journal_a=(200, {'account_id': 'journal.A', 'entries': [{'transaction_id': '5afc77ed-6ae3-4e9d-a6f1-089e601879fc', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'transaction_id': '5afc77ed-6ae3-4e9d-a6f1-089e601879fc', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'transaction_id': '9ad47e18-5cda-4926-9006-5e65339c3b18', 'sequence': 6, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}]}); journal_b=(200, {'account_id': 'journal.B', 'entries': [{'transaction_id': '5afc77ed-6ae3-4e9d-a6f1-089e601879fc', 'sequence': 5, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}, {'transaction_id': '9ad47e18-5cda-4926-9006-5e65339c3b18', 'sequence': 6, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}]}); restart_equal=True; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "ledger_compensating_reversal",
-            "detail": "POST /transactions/6da056d6-c556-4790-a5a3-0801688774ac/reverse=(409, {'detail': 'already reversed'}); full_state_equal=True | race=[(409, {'detail': 'already reversed'}), (201, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'idempotency_key': 'reverse-race-b', 'reverses': '6da056d6-c556-4790-a5a3-0801688774ac'})]; replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'idempotency_key': 'reverse-race-b', 'reverses': '6da056d6-c556-4790-a5a3-0801688774ac'})]; original_immutable=True; balances=((200, {'account_id': 'reverse.A', 'currency': 'USD', 'balance': '0.00'}), (200, {'account_id': 'reverse.B', 'currency': 'USD', 'balance': '0.00'})); journals=((200, {'account_id': 'reverse.A', 'entries': [{'transaction_id': '6da056d6-c556-4790-a5a3-0801688774ac', 'sequence': 7, 'account_id': 'reverse.A', 'direction': 'debit', 'amount': '8.75'}, {'transaction_id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'sequence': 8, 'account_id': 'reverse.A', 'direction': 'credit', 'amount': '8.75'}]}), (200, {'account_id': 'reverse.B', 'entries': [{'transaction_id': '6da056d6-c556-4790-a5a3-0801688774ac', 'sequence': 7, 'account_id': 'reverse.B', 'direction': 'credit', 'amount': '8.75'}, {'transaction_id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'sequence': 8, 'account_id': 'reverse.B', 'direction': 'debit', 'amount': '8.75'}]})); unknown=(404, {'detail': 'not found'}),atomic=True; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
+            "detail": "POST /transactions/ce62fafb-9b0f-4e07-b1d6-153540709bb6/reverse=(409, {'detail': 'already reversed'}); public_state_equal=True; full_sqlite_state_equal=True | race=[(409, {'detail': 'already reversed'}), (201, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': '835af432-a4da-4adb-ad2d-00186c5545bf', 'idempotency_key': 'reverse-race-b', 'reverses': 'ce62fafb-9b0f-4e07-b1d6-153540709bb6'})]; replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': '835af432-a4da-4adb-ad2d-00186c5545bf', 'idempotency_key': 'reverse-race-b', 'reverses': 'ce62fafb-9b0f-4e07-b1d6-153540709bb6'})]; original_immutable=True; balances=((200, {'account_id': 'reverse.A', 'currency': 'USD', 'balance': '0.00'}), (200, {'account_id': 'reverse.B', 'currency': 'USD', 'balance': '0.00'})); journals=((200, {'account_id': 'reverse.A', 'entries': [{'transaction_id': 'ce62fafb-9b0f-4e07-b1d6-153540709bb6', 'sequence': 7, 'account_id': 'reverse.A', 'direction': 'debit', 'amount': '8.75'}, {'transaction_id': '835af432-a4da-4adb-ad2d-00186c5545bf', 'sequence': 8, 'account_id': 'reverse.A', 'direction': 'credit', 'amount': '8.75'}]}), (200, {'account_id': 'reverse.B', 'entries': [{'transaction_id': 'ce62fafb-9b0f-4e07-b1d6-153540709bb6', 'sequence': 7, 'account_id': 'reverse.B', 'direction': 'credit', 'amount': '8.75'}, {'transaction_id': '835af432-a4da-4adb-ad2d-00186c5545bf', 'sequence': 8, 'account_id': 'reverse.B', 'direction': 'debit', 'amount': '8.75'}]})); unknown=(404, {'detail': 'not found'}),atomic=True; /tmp/batch3-audit-double-entry-ledger-api-rsmdwig1/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-rsmdwig1/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
             "status": "pass"
           },
           {
@@ -2054,7 +2054,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 18.769727,
+        "duration_seconds": 19.266221,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2066,27 +2066,27 @@
         "checks": [
           {
             "check_id": "lease_acquire_fencing",
-            "detail": "first=(201, {'resource': 'generations', 'owner': 'owner-a', 'fencing_token': 1, 'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'status': 'active'}) | op=(409, {'detail': 'lease active'}); snapshot_before=(200, {'resource': 'generations', 'owner': 'owner-a', 'fencing_token': 1, 'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'fencing_token': 1, 'owner': 'owner-a', 'resource': 'generations', 'status': 'active'}); child_exit=0 | second=(201, {'resource': 'generations', 'owner': 'owner-b', 'fencing_token': 2, 'acquired_at': '2040-01-01T00:00:10Z', 'expires_at': '2040-01-01T00:00:20Z', 'status': 'active'}); third=(201, {'resource': 'generations', 'owner': 'owner-c', 'fencing_token': 3, 'acquired_at': '2040-01-01T00:00:12Z', 'expires_at': '2040-01-01T00:00:22Z', 'status': 'active'}); fourth=(201, {'acquired_at': '2040-01-01T00:00:22Z', 'expires_at': '2040-01-01T00:00:32Z', 'fencing_token': 4, 'owner': 'owner-d', 'resource': 'generations', 'status': 'active'}); child_exit=0",
+            "detail": "first=(201, {'resource': 'generations', 'owner': 'owner-a', 'fencing_token': 1, 'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'status': 'active'}) | op=(409, {'detail': 'lease active'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | second=(201, {'resource': 'generations', 'owner': 'owner-b', 'fencing_token': 2, 'acquired_at': '2040-01-01T00:00:10Z', 'expires_at': '2040-01-01T00:00:20Z', 'status': 'active'}); third=(201, {'resource': 'generations', 'owner': 'owner-c', 'fencing_token': 3, 'acquired_at': '2040-01-01T00:00:12Z', 'expires_at': '2040-01-01T00:00:22Z', 'status': 'active'}); fourth=(201, {'acquired_at': '2040-01-01T00:00:22Z', 'expires_at': '2040-01-01T00:00:32Z', 'fencing_token': 4, 'owner': 'owner-d', 'resource': 'generations', 'status': 'active'}); child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "lease_concurrent_contention",
-            "detail": "outcomes=[(409, {'detail': 'lease active'}, '/tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa'), (201, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-b', 'resource': 'process-race', 'status': 'active'}, '/tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa')]; durable=(200, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-b', 'resource': 'process-race', 'status': 'active'}); takeover=(201, {'acquired_at': '2040-02-01T00:00:10Z', 'expires_at': '2040-02-01T00:00:20Z', 'fencing_token': 2, 'owner': 'race-next', 'resource': 'process-race', 'status': 'active'}); /tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0; child_exit=0",
+            "detail": "outcomes=[(409, {'detail': 'lease active'}, '/tmp/batch3-audit-lease-coordination-api-bd9k7qax/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa'), (201, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-b', 'resource': 'process-race', 'status': 'active'}, '/tmp/batch3-audit-lease-coordination-api-bd9k7qax/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa')]; durable=(200, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-b', 'resource': 'process-race', 'status': 'active'}); takeover=(201, {'acquired_at': '2040-02-01T00:00:10Z', 'expires_at': '2040-02-01T00:00:20Z', 'fencing_token': 2, 'owner': 'race-next', 'resource': 'process-race', 'status': 'active'}); /tmp/batch3-audit-lease-coordination-api-bd9k7qax/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-lease-coordination-api-bd9k7qax/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "lease_renewal",
-            "detail": "op=(412, {'detail': 'wrong owner'}); snapshot_before=(200, {'resource': 'renew-wrong', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-wrong', 'status': 'active'}); child_exit=0 | op=(412, {'detail': 'stale fencing token'}); snapshot_before=(200, {'resource': 'renew-stale', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-stale', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'renewal must extend expiry'}); snapshot_before=(200, {'resource': 'renew-short', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-short', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'operation time moved backwards'}); snapshot_before=(200, {'resource': 'renew-back', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-back', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'lease inactive'}); snapshot_before=(200, {'resource': 'renew-expired', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'expired'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-expired', 'status': 'expired'}); child_exit=0 | good=(200, {'resource': 'renew-good', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'status': 'active'}) | op=(409, {'detail': 'operation time moved backwards'}); snapshot_before=(200, {'resource': 'renew-good', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-good', 'status': 'active'}); child_exit=0",
+            "detail": "op=(412, {'detail': 'wrong owner'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(412, {'detail': 'stale fencing token'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(409, {'detail': 'renewal must extend expiry'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(409, {'detail': 'operation time moved backwards'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(409, {'detail': 'lease inactive'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | good=(200, {'resource': 'renew-good', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'status': 'active'}) | op=(409, {'detail': 'operation time moved backwards'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "lease_release_reacquire",
-            "detail": "release=200; reacquire=(201, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}) | op=(412, {'detail': 'stale fencing token'}); snapshot_before=(200, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'fencing_token': 2, 'owner': 'same', 'resource': 'release-cycle', 'status': 'active'}); child_exit=0 | op=(412, {'detail': 'stale fencing token'}); snapshot_before=(200, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'fencing_token': 2, 'owner': 'same', 'resource': 'release-cycle', 'status': 'active'}); child_exit=0 | op=(412, {'detail': 'wrong owner'}); snapshot_before=(200, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'fencing_token': 2, 'owner': 'same', 'resource': 'release-cycle', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'already released'}); snapshot_before=(200, {'resource': 'double-release', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-04-02T00:00:00Z', 'expires_at': '2040-04-02T00:00:20Z', 'status': 'released'}); snapshot_after=(200, {'acquired_at': '2040-04-02T00:00:00Z', 'expires_at': '2040-04-02T00:00:20Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'double-release', 'status': 'released'}); child_exit=0 | op=(409, {'detail': 'lease expired'}); snapshot_before=(200, {'resource': 'release-expired', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-04-03T00:00:00Z', 'expires_at': '2040-04-03T00:00:01Z', 'status': 'expired'}); snapshot_after=(200, {'acquired_at': '2040-04-03T00:00:00Z', 'expires_at': '2040-04-03T00:00:01Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'release-expired', 'status': 'expired'}); child_exit=0",
+            "detail": "release=200; reacquire=(201, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}) | op=(412, {'detail': 'stale fencing token'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(412, {'detail': 'stale fencing token'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(412, {'detail': 'wrong owner'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(409, {'detail': 'already released'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(409, {'detail': 'lease expired'}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "lease_state_and_failure_atomicity",
-            "detail": "active=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'active'}); expired=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'expired'}); release=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'released'}); historical=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'active'}); boundary=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'released'}) | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'duration_seconds'], 'msg': 'Value error, invalid duration', 'input': 0, 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'duration_seconds'], 'msg': 'Value error, invalid duration', 'input': 86401, 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'int_type', 'loc': ['body', 'duration_seconds'], 'msg': 'Input should be a valid integer', 'input': 1.5}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'int_type', 'loc': ['body', 'duration_seconds'], 'msg': 'Input should be a valid integer', 'input': '1'}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'owner'], 'msg': 'Value error, invalid owner', 'input': 'bad owner', 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'now'], 'msg': 'Value error, explicit offset required', 'input': 'not-a-time', 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'now'], 'msg': 'Value error, explicit offset required', 'input': '2040-06-01T00:00:01', 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | predate=(409, {'detail': 'as_of predates generation'}); unknown=(404, {'detail': 'not found'}); absent=((404, {'detail': 'not found'}), (404, {'detail': 'not found'})); bad_resource=422; query_times=(422, 422); offset=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); backward=(409, {'detail': 'operation time moved backwards'})",
+            "detail": "active=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'active'}); expired=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'expired'}); release=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'released'}); historical=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'active'}); boundary=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'released'}) | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'duration_seconds'], 'msg': 'Value error, invalid duration', 'input': 0, 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'duration_seconds'], 'msg': 'Value error, invalid duration', 'input': 86401, 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'int_type', 'loc': ['body', 'duration_seconds'], 'msg': 'Input should be a valid integer', 'input': 1.5}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'int_type', 'loc': ['body', 'duration_seconds'], 'msg': 'Input should be a valid integer', 'input': '1'}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'owner'], 'msg': 'Value error, invalid owner', 'input': 'bad owner', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'now'], 'msg': 'Value error, explicit offset required', 'input': 'not-a-time', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'now'], 'msg': 'Value error, explicit offset required', 'input': '2040-06-01T00:00:01', 'ctx': {'error': {}}}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); public_state_equal=True; full_sqlite_state_equal=True; child_exit=0 | predate=(409, {'detail': 'as_of predates generation'}); unknown=(404, {'detail': 'not found'}); absent=((404, {'detail': 'not found'}), (404, {'detail': 'not found'})); bad_resource=422; query_times=(422, 422); offset=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); backward=(409, {'detail': 'operation time moved backwards'})",
             "status": "pass"
           },
           {
@@ -2095,7 +2095,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 35.204428,
+        "duration_seconds": 36.237485,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2112,7 +2112,7 @@
           },
           {
             "check_id": "pii_redaction_actions",
-            "detail": "redact={'audit': [{'action': 'redact', 'path': '/0', 'rule_id': 'r0', 'selector': '/0'}, {'action': 'redact', 'path': '/1', 'rule_id': 'r1', 'selector': '/1'}, {'action': 'redact', 'path': '/2', 'rule_id': 'r2', 'selector': '/2'}], 'redacted': ['R0', 'R1', 'R2']}; pseudo_a=['hmac-sha256:0f43e92736d3cd3c2d39797ab1afd0026fe599ef285429ed12df4966c495d48b', 'hmac-sha256:025ec087fa9fd2240493ac781b40891e358b550361019f077a4778ca46092b28', 'hmac-sha256:e2d158e037b13fa3b6e21d8a2a673798d12124cfe8d94437cca7efa6f8f41e26']; pseudo_b=['hmac-sha256:8f60e0f934b339a73a5bbbe56daa8c6c8a2294ee80a51b466cac7cfac621b079', 'hmac-sha256:042649f0096684fe53fd88d1708738a49a7ac34f4cf7760cfbb746a082c26d1a', 'hmac-sha256:b41ae29228eeb6932ed260c6ff2ed2fc96270c1bc15d7a942264120fc7b8f935']; remove={'audit': [{'action': 'remove', 'path': '/0/drop', 'rule_id': 'object', 'selector': '/0/drop'}, {'action': 'remove', 'path': '/1/1', 'rule_id': 'array-one', 'selector': '/1/1'}, {'action': 'remove', 'path': '/1/2', 'rule_id': 'array-two', 'selector': '/1/2'}], 'redacted': [{'keep': 7}, ['a', 'd']]}",
+            "detail": "redact={'audit': [{'action': 'redact', 'path': '/0', 'rule_id': 'r0', 'selector': '/0'}, {'action': 'redact', 'path': '/1', 'rule_id': 'r1', 'selector': '/1'}, {'action': 'redact', 'path': '/2', 'rule_id': 'r2', 'selector': '/2'}, {'action': 'redact', 'path': '/3', 'rule_id': 'r3', 'selector': '/3'}, {'action': 'redact', 'path': '/4', 'rule_id': 'r4', 'selector': '/4'}, {'action': 'redact', 'path': '/5', 'rule_id': 'r5', 'selector': '/5'}], 'redacted': ['R0', 'R1', 'R2', 'R3', 'R4', 'R5']}; pseudo_a=['hmac-sha256:0f43e92736d3cd3c2d39797ab1afd0026fe599ef285429ed12df4966c495d48b', 'hmac-sha256:74dd92c02a1928f0fb825cdaf1d69a50f7fe51c43266442e833616e157253473', 'hmac-sha256:62c3d2d28fc0b7f19fa374d5f4a5ce1a93dd03f63d29af5d6fa5716b0d196e83', 'hmac-sha256:ae4a41b970f26cbc231aa9f737b73c6272785b7d6e240e89cd79b34de9221d37', 'hmac-sha256:025ec087fa9fd2240493ac781b40891e358b550361019f077a4778ca46092b28', 'hmac-sha256:e2d158e037b13fa3b6e21d8a2a673798d12124cfe8d94437cca7efa6f8f41e26']; pseudo_b=['hmac-sha256:8f60e0f934b339a73a5bbbe56daa8c6c8a2294ee80a51b466cac7cfac621b079', 'hmac-sha256:6cc24d4f52c4d9736141f26b49478aa9e987d59d8b89b436bfab963225d9ea70', 'hmac-sha256:34970d8d8165940d43e6aa5a32d0fdbab174f9472d8c287691e50814b4a6ad6b', 'hmac-sha256:bdad7d04721ce1536ec083ea9a86785f1644feeda3fad858d138032096ac2fce', 'hmac-sha256:042649f0096684fe53fd88d1708738a49a7ac34f4cf7760cfbb746a082c26d1a', 'hmac-sha256:b41ae29228eeb6932ed260c6ff2ed2fc96270c1bc15d7a942264120fc7b8f935']; remove={'audit': [{'action': 'remove', 'path': '/adjacent/1', 'rule_id': 'array-one', 'selector': '/adjacent/1'}, {'action': 'remove', 'path': '/adjacent/2', 'rule_id': 'array-two', 'selector': '/adjacent/2'}, {'action': 'remove', 'path': '/values/array', 'rule_id': 'all-types', 'selector': '/values/*'}, {'action': 'remove', 'path': '/values/boolean', 'rule_id': 'all-types', 'selector': '/values/*'}, {'action': 'remove', 'path': '/values/null', 'rule_id': 'all-types', 'selector': '/values/*'}, {'action': 'remove', 'path': '/values/number', 'rule_id': 'all-types', 'selector': '/values/*'}, {'action': 'remove', 'path': '/values/object', 'rule_id': 'all-types', 'selector': '/values/*'}, {'action': 'remove', 'path': '/values/string', 'rule_id': 'all-types', 'selector': '/values/*'}], 'redacted': {'adjacent': ['a', 'd'], 'values': {}}}",
             "status": "pass"
           },
           {
@@ -2136,7 +2136,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 9.47634,
+        "duration_seconds": 9.890862,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2177,7 +2177,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 17.161554,
+        "duration_seconds": 16.500091,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2188,7 +2188,7 @@
     }
   },
   "efficacy_cells": 0,
-  "generated_at": "2026-07-17T09:05:58.074209Z",
+  "generated_at": "2026-07-17T12:04:14.935827Z",
   "go": true,
   "independent_review": {
     "claimed": false,
@@ -2199,7 +2199,7 @@
     "cache_tag": "cpython-312",
     "executable": "/home/fabio/hermes-professore/.venv/bin/python3",
     "implementation": "CPython",
-    "platform": "Linux-6.8.0-134-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
     "version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]"
   },
   "legacy_compatibility": {
@@ -2214,11 +2214,11 @@
           "tests/test_task_expansion_batch2.py"
         ],
         "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-        "duration_seconds": 729.307994,
+        "duration_seconds": 712.061193,
         "exit_code": 0,
         "ok": true,
         "stderr": "",
-        "stdout": ".........                                                                [100%]\n9 passed in 728.88s (0:12:08)\n"
+        "stdout": ".........                                                                [100%]\n9 passed in 711.65s (0:11:51)\n"
       }
     ],
     "ok": true,
@@ -2226,14 +2226,40 @@
   },
   "mode": "full",
   "operations": {
-    "cleanup_removed": [],
+    "cleanup_removed": [
+      "src/agentharness/__pycache__",
+      "src/agentharness/__pycache__/__init__.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch1.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch2.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch3.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch3_lease.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch3_ledger.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch3_pii.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmark_hidden_evaluators_batch3_signed.cpython-312.pyc",
+      "src/agentharness/__pycache__/benchmarking.cpython-312.pyc",
+      "src/agentharness/__pycache__/bootstrap.cpython-312.pyc",
+      "src/agentharness/__pycache__/checks.cpython-312.pyc",
+      "src/agentharness/__pycache__/direct_check.cpython-312.pyc",
+      "src/agentharness/__pycache__/evaluation.cpython-312.pyc",
+      "src/agentharness/__pycache__/generation.cpython-312.pyc",
+      "src/agentharness/__pycache__/models.cpython-312.pyc",
+      "src/agentharness/__pycache__/observability.cpython-312.pyc",
+      "src/agentharness/__pycache__/reexecution.cpython-312.pyc",
+      "src/agentharness/__pycache__/resilience.cpython-312.pyc",
+      "src/agentharness/__pycache__/validation.cpython-312.pyc",
+      "src/agentharness/__pycache__/verification.cpython-312.pyc",
+      "src/agentharness/__pycache__/verify.cpython-312.pyc",
+      "tests/__pycache__",
+      "tests/__pycache__/test_task_expansion_batch3.cpython-312.pyc"
+    ],
     "generator": {
       "command": [
         "/home/fabio/hermes-professore/.venv/bin/python3",
         "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/build_task_expansion_batch3.py"
       ],
       "cwd": "/tmp",
-      "duration_seconds": 0.042406,
+      "duration_seconds": 0.057719,
       "exit_code": 0,
       "ok": true,
       "stderr": "",
@@ -2252,20 +2278,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-a5z2g9lv/install-double-entry-ledger-api",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-yj2_v6o8/install-double-entry-ledger-api",
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.472271,
+          "duration_seconds": 0.477089,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: double-entry-ledger-api-reference\nSuccessfully installed double-entry-ledger-api-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: double-entry-ledger-api-reference\nSuccessfully installed double-entry-ledger-api-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/ledger_api/main.py",
-          "duration_seconds": 0.004488,
+          "duration_seconds": 0.003996,
           "ok": true
         },
         "wheel": {
@@ -2277,15 +2303,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
-            "/tmp/batch3-packaging-a5z2g9lv/source-double-entry-ledger-api"
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse",
+            "/tmp/batch3-packaging-yj2_v6o8/source-double-entry-ledger-api"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.051542,
+          "duration_seconds": 1.114085,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-double-entry-ledger-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: double-entry-ledger-api-reference\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): started\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for double-entry-ledger-api-reference: filename=double_entry_ledger_api_reference-0.1.0-py3-none-any.whl size=4712 sha256=1799b83ef72e88728bd918c641eb7aee420bd29f8a16685c50842f23ebc0a3ac\n  Stored in directory: /home/fabio/.cache/pip/wheels/7f/7f/84/a325b35daf7f1509601fb116a57a4cc003e2050ff045ae77d9\nSuccessfully built double-entry-ledger-api-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/source-double-entry-ledger-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: double-entry-ledger-api-reference\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): started\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for double-entry-ledger-api-reference: filename=double_entry_ledger_api_reference-0.1.0-py3-none-any.whl size=4712 sha256=22791535ade928c6c40ce62490c4ac091b7354823c13acdf5ca15c62975c6228\n  Stored in directory: /home/fabio/.cache/pip/wheels/8b/46/90/a13b1e2b0844b00261b93c729584172e440ecb993794aab335\nSuccessfully built double-entry-ledger-api-reference\n"
         }
       },
       "lease-coordination-api": {
@@ -2297,20 +2323,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-a5z2g9lv/install-lease-coordination-api",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-yj2_v6o8/install-lease-coordination-api",
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.447419,
+          "duration_seconds": 0.465126,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: lease-coordination-api-reference\nSuccessfully installed lease-coordination-api-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: lease-coordination-api-reference\nSuccessfully installed lease-coordination-api-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/lease_api/main.py",
-          "duration_seconds": 0.007332,
+          "duration_seconds": 0.003591,
           "ok": true
         },
         "wheel": {
@@ -2322,15 +2348,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
-            "/tmp/batch3-packaging-a5z2g9lv/source-lease-coordination-api"
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse",
+            "/tmp/batch3-packaging-yj2_v6o8/source-lease-coordination-api"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.08249,
+          "duration_seconds": 1.121431,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-lease-coordination-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: lease-coordination-api-reference\n  Building wheel for lease-coordination-api-reference (pyproject.toml): started\n  Building wheel for lease-coordination-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for lease-coordination-api-reference: filename=lease_coordination_api_reference-0.1.0-py3-none-any.whl size=3954 sha256=9e5d920d9101507ec5440e904218b3a8562ae3a6437ec9a02389adf6830a1f28\n  Stored in directory: /home/fabio/.cache/pip/wheels/74/54/ad/1cfa695ee271aa1ba3afbe3b4e237bd8e3060f7099260ac052\nSuccessfully built lease-coordination-api-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/source-lease-coordination-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: lease-coordination-api-reference\n  Building wheel for lease-coordination-api-reference (pyproject.toml): started\n  Building wheel for lease-coordination-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for lease-coordination-api-reference: filename=lease_coordination_api_reference-0.1.0-py3-none-any.whl size=3954 sha256=80b7f73038f8740d50c3a04e85c25a8ea2c34ffab4e9b96a475ef48763ee76a3\n  Stored in directory: /home/fabio/.cache/pip/wheels/34/d3/e5/1ef0af29df792f41174aa9afa548185e8670afe66abc9d10fd\nSuccessfully built lease-coordination-api-reference\n"
         }
       },
       "pii-redaction-pipeline": {
@@ -2342,20 +2368,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-a5z2g9lv/install-pii-redaction-pipeline",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-yj2_v6o8/install-pii-redaction-pipeline",
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.490277,
+          "duration_seconds": 0.49043,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: pii-redaction-pipeline-reference\nSuccessfully installed pii-redaction-pipeline-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: pii-redaction-pipeline-reference\nSuccessfully installed pii-redaction-pipeline-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/pii_redactor/redact.py",
-          "duration_seconds": 0.004158,
+          "duration_seconds": 0.005438,
           "ok": true
         },
         "wheel": {
@@ -2367,15 +2393,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
-            "/tmp/batch3-packaging-a5z2g9lv/source-pii-redaction-pipeline"
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse",
+            "/tmp/batch3-packaging-yj2_v6o8/source-pii-redaction-pipeline"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.112189,
+          "duration_seconds": 1.069822,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-pii-redaction-pipeline\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pii-redaction-pipeline-reference\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): started\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): finished with status 'done'\n  Created wheel for pii-redaction-pipeline-reference: filename=pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl size=4353 sha256=a8b8f466c8cba9564e20b43f851de36b49264f4e630d312f71e5f135b6cfd5e0\n  Stored in directory: /home/fabio/.cache/pip/wheels/b4/cb/9b/7c65d7eacffaaa512a1c0a9c4eb4eaf9eb4cd962b4e8ea2f1a\nSuccessfully built pii-redaction-pipeline-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/source-pii-redaction-pipeline\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pii-redaction-pipeline-reference\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): started\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): finished with status 'done'\n  Created wheel for pii-redaction-pipeline-reference: filename=pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl size=4353 sha256=9fce0945fba20358a6ccd7afd041832114a64232c112c93f8ac38246dc628fe5\n  Stored in directory: /home/fabio/.cache/pip/wheels/bd/5a/53/98e74428cec766f2504ef630b81d638450468795f2e3276c53\nSuccessfully built pii-redaction-pipeline-reference\n"
         }
       },
       "signed-artifact-verifier": {
@@ -2387,20 +2413,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-a5z2g9lv/install-signed-artifact-verifier",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-yj2_v6o8/install-signed-artifact-verifier",
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.471337,
+          "duration_seconds": 0.449255,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: signed-artifact-verifier-reference\nSuccessfully installed signed-artifact-verifier-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: signed-artifact-verifier-reference\nSuccessfully installed signed-artifact-verifier-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/artifact_verifier/verify.py",
-          "duration_seconds": 0.003762,
+          "duration_seconds": 0.003638,
           "ok": true
         },
         "wheel": {
@@ -2412,15 +2438,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
-            "/tmp/batch3-packaging-a5z2g9lv/source-signed-artifact-verifier"
+            "/tmp/batch3-packaging-yj2_v6o8/wheelhouse",
+            "/tmp/batch3-packaging-yj2_v6o8/source-signed-artifact-verifier"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.137082,
+          "duration_seconds": 1.157882,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-signed-artifact-verifier\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: signed-artifact-verifier-reference\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): started\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): finished with status 'done'\n  Created wheel for signed-artifact-verifier-reference: filename=signed_artifact_verifier_reference-0.1.0-py3-none-any.whl size=4419 sha256=dc8f618f34426eb634ccc928c43d00a18bbac2615f8876861142c916b418c362\n  Stored in directory: /home/fabio/.cache/pip/wheels/0f/44/6b/e8afbe3a92097c48e9fdfe379e629058aecdf727870af2064f\nSuccessfully built signed-artifact-verifier-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-yj2_v6o8/source-signed-artifact-verifier\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: signed-artifact-verifier-reference\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): started\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): finished with status 'done'\n  Created wheel for signed-artifact-verifier-reference: filename=signed_artifact_verifier_reference-0.1.0-py3-none-any.whl size=4419 sha256=770b246f994a4f6eb31b2a879da959c98c5721173374359331822285d233df31\n  Stored in directory: /home/fabio/.cache/pip/wheels/5e/bb/6c/93c2778578f08fa21850c65d8c95f80ffdf9ef1f213144df6b\nSuccessfully built signed-artifact-verifier-reference\n"
         }
       }
     }

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -40,6 +41,28 @@ RECORD_FIELDS = {"transaction_id", "sequence", "account_id", "direction", "amoun
 
 def _response(response: Any) -> tuple[int, Any]:
     return response.status_code, _json_payload(response)
+
+
+def _sqlite_state(db_path: Path) -> tuple[tuple[str, tuple[str, ...], tuple[tuple[str, ...], ...]], ...]:
+    """Return every user table and row as a stable logical SQLite snapshot."""
+    if not db_path.exists():
+        return ()
+    with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as connection:
+        tables = [
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+            )
+        ]
+        snapshot = []
+        for table in tables:
+            quoted = '"' + table.replace('"', '""') + '"'
+            columns = tuple(row[1] for row in connection.execute(f"PRAGMA table_info({quoted})"))
+            rows = []
+            for row in connection.execute(f"SELECT * FROM {quoted}"):
+                rows.append(tuple(value.hex() if isinstance(value, bytes) else repr(value) for value in row))
+            snapshot.append((table, columns, tuple(sorted(rows))))
+        return tuple(snapshot)
 
 
 def _controlled(response: Any, status: int) -> bool:
@@ -94,6 +117,8 @@ def _reject_unchanged(
     headers: dict[str, str] | None = None,
 ) -> tuple[bool, str]:
     before = _snapshot(client, accounts, transactions)
+    db_path = Path(os.environ["LEDGER_DB_PATH"])
+    before_sqlite = _sqlite_state(db_path)
     kwargs: dict[str, Any] = {}
     if body is not None:
         kwargs["json"] = body
@@ -101,8 +126,12 @@ def _reject_unchanged(
         kwargs["headers"] = headers
     response = client.request(method, path, **kwargs)
     after = _snapshot(client, accounts, transactions)
-    ok = _controlled(response, status) and before == after
-    return ok, f"{method} {path}={_response(response)}; full_state_equal={before == after}"
+    after_sqlite = _sqlite_state(db_path)
+    ok = _controlled(response, status) and before == after and before_sqlite == after_sqlite
+    return ok, (
+        f"{method} {path}={_response(response)}; public_state_equal={before == after}; "
+        f"full_sqlite_state_equal={before_sqlite == after_sqlite}"
+    )
 
 
 def _child_batch(workspace: Path, db_path: Path, requests: list[dict[str, Any]]) -> tuple[list[tuple[int, Any]], str]:
