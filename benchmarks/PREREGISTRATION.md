@@ -1507,6 +1507,31 @@ Build authorization after publication of this amendment:
 - no task-solving pilot, efficacy cell, A/B comparison, campaign sizing update, or confirmatory launch is authorized
 - post-build acceptance requires generator byte identity, 4/4 reference positives, exact 20/20 mutation sensitivity, clean-room agreement, full forbidden-artifact gate, complete 64/20/6 diversity evidence, legacy compatibility, independent blind GO, artifact hashes, and a dated post-build amendment
 
+### 17.29 Batch 3 clerical check-ID alignment to the normative freeze (2026-07-16)
+
+This amendment records a clerical correction before hidden evaluator implementation, mutation execution, task-solving pilots, or efficacy cells.
+
+Authority and scope:
+- §17.28 already declares `benchmarks/grading-env/task-expansion-batch3/BATCH3_PREBUILD_FREEZE.json` the normative source
+- its SHA-256 remains `63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713`
+- task identities, public interfaces, functional contracts, planned probes, mutant defects, failed/passed sets, and diversity records are unchanged
+- only seven human-readable labels listed in §17.28 are aligned to the already-frozen JSON keys
+
+Normative labels:
+- `signed_inventory_completeness` in the §17.28 summary means `signed_manifest_inventory`
+- `signed_content_integrity` means `signed_manifest_content_integrity`
+- `signed_trust_time_boundaries` means `signed_manifest_trust_window`
+- `pii_rule_validation_precedence` means `pii_rule_precedence`
+- `lease_renew_boundaries` means `lease_renewal`
+- `lease_release_reacquire_stale_holder` means `lease_release_reacquire`
+- `ledger_balanced_atomic_posting` means `ledger_balanced_posting`
+
+Timing and boundary:
+- visible task-pack and reference scaffolding had begun when the mismatch was detected by an exact matrix-versus-freeze assertion
+- no hidden evaluator had been implemented and no mutant sensitivity run had started
+- efficacy cells remain 0 and no A/B output or contrast was read
+- all subsequent evaluator, mutant, report, and amendment records must use the normative JSON labels exactly
+
 ---
 
 ## Freeze
