@@ -1,0 +1,2604 @@
+{
+  "artifact_sha256": {
+    "benchmarks/double-entry-ledger-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/double-entry-ledger-api/README.md": "be3126f03ffca6acd16f3d92751d57d4d35b9e58a076152bc4b6e90ad05a31e3",
+    "benchmarks/double-entry-ledger-api/SPEC.md": "e1ca288f6e230bae0887a1b41dc136e31f2e30e74ffeffa3433422607b1556b0",
+    "benchmarks/double-entry-ledger-api/ledger_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/double-entry-ledger-api/ledger_api/main.py": "d8a6ab023aa34467b4deebd2c1b30047c079e9d7c4744a525343c6b411c45480",
+    "benchmarks/double-entry-ledger-api/pyproject.toml": "5aaab86b7151450a9d6e29fc3cfadf8bef2cbaf8124f1725fad7612231c932a0",
+    "benchmarks/grading-env/audit_task_expansion_batch3.py": "d6c321a5df00ac9f4b44b06b817448c33344637edf574ef85332e3b1aeb1befa",
+    "benchmarks/grading-env/build_task_expansion_batch3.py": "8fe6d3ca34e232f7a1e8fc49dbcb3fa085f73f32cf7ec6d63e854d2662ae5bb6",
+    "benchmarks/grading-env/task-expansion-batch3/BATCH3_PREBUILD_FREEZE.json": "63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713",
+    "benchmarks/grading-env/task-expansion-batch3/MUTATION_SENSITIVITY.json": "a3ab9b6f240ca1c1a47fb473c2a70160f907e4c3526933473b832444efc30518",
+    "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/README.md": "95d589c6ff2ac46400e3829dbc15d8ec2b9b2525fd22c7cfe805cf0646d80ee7",
+    "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/ledger_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/ledger_api/main.py": "3b80ad36516a0a8319d57a6a8893d7ec2e3bd77f164ff34283f826dd243913b1",
+    "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/pyproject.toml": "2ddefd694096ad623a6e017aeacde52c396883102b12d7dab405880a8cc1cec3",
+    "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/README.md": "1f4ec98e20ac3a7eca38f89dcbe07aa422ac88e30b779ff7593e3a19799ddf30",
+    "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/lease_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/lease_api/main.py": "55d6f06ae3d8dccd43b94ffdbc712d4a4c49bb7d5cfb34ba58b99b1339db83c7",
+    "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/pyproject.toml": "e1f32a3fbff26c1a0599bea1992d2f012bb7fb8d72081bed4261b5d70f02d61b",
+    "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/README.md": "29cca9220ac4c5a774f889b4be5f68cb2e5a5a584c056a53960bc93c416c0275",
+    "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/pii_redactor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/pii_redactor/redact.py": "7ea4a9a515a34cb66ab5a7df0d23acc31486f7d15e3a619618bea913e9907d26",
+    "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/pyproject.toml": "748b4dfa47d1bbc143ff0a34ee16fd6380b289750338d81cefb05888a6186e5d",
+    "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/README.md": "29cca9220ac4c5a774f889b4be5f68cb2e5a5a584c056a53960bc93c416c0275",
+    "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/artifact_verifier/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/artifact_verifier/verify.py": "66cf0fd7c5881ecd1cd40449c580fde270b6cfc9c290aba9db86b674366796ec",
+    "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/pyproject.toml": "5a000ecb5f7d9988929d08a76567879398cc58ac2a327462837a41af2be2fe30",
+    "benchmarks/lease-coordination-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/lease-coordination-api/README.md": "723881c57927221e994d5fdb10b91b95b9be0615f96522d5af3ee51a73b6f277",
+    "benchmarks/lease-coordination-api/SPEC.md": "388e83656382401e6d95d7d31df334f4a40884ab4a783219b118e1e89a63b15e",
+    "benchmarks/lease-coordination-api/lease_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/lease-coordination-api/lease_api/main.py": "d8a6ab023aa34467b4deebd2c1b30047c079e9d7c4744a525343c6b411c45480",
+    "benchmarks/lease-coordination-api/pyproject.toml": "3c2de3b0b4ba36c292cdec51f1e9e539be236b65b545c2f46b262dd139b5bb98",
+    "benchmarks/pii-redaction-pipeline/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/pii-redaction-pipeline/README.md": "62a295abba1190d284ea5b9eb2e05a78378c2ac8f7712888a5fe332f606d36da",
+    "benchmarks/pii-redaction-pipeline/SPEC.md": "dad2adc0ec8f71c691f4f86cd2d6a201f3aa9d6acb39d5a89ede26ad514e246d",
+    "benchmarks/pii-redaction-pipeline/pii_redactor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/pii-redaction-pipeline/pii_redactor/redact.py": "f67906440672b5a41aef89997c0246917ba631ebd45fb2c4beedc9a769cab158",
+    "benchmarks/pii-redaction-pipeline/pyproject.toml": "14257fe4a699575f7673098bd0ee90bc6a49e74beaab7c6678320d465d56adff",
+    "benchmarks/signed-artifact-verifier/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/signed-artifact-verifier/README.md": "b2899da57dfed11f8022705ae0230ef86f95bfcc5e4dd8b85e67867f2106046d",
+    "benchmarks/signed-artifact-verifier/SPEC.md": "7ad4fae62798c2cab63324ea53541bcb3d74c1d8bdd0578ac50225c382e50855",
+    "benchmarks/signed-artifact-verifier/artifact_verifier/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmarks/signed-artifact-verifier/artifact_verifier/verify.py": "f67906440672b5a41aef89997c0246917ba631ebd45fb2c4beedc9a769cab158",
+    "benchmarks/signed-artifact-verifier/pyproject.toml": "78bfe1b54af0c488cb40cf8dd7287947cabc6fd5d4a0d24c37fad74592362a65",
+    "src/agentharness/benchmark_hidden_evaluators.py": "5ae11dfbebe3220a6b8e719a162ffd551c2b275ab52568cef55c2858203fcbd1",
+    "src/agentharness/benchmark_hidden_evaluators_batch3.py": "d1f23cad4cdd1f40e72d9d1c95323039c9c2b7ebbaf81e5df50bd7c393075def",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_lease.py": "b2bda8e4d67104a11b72590b03671369013da43c8da680be20bc585090d99db7",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_ledger.py": "bb5764a901ce46f17d5f154dec0fa6cd8fe028db377163b0de691ad58de0457b",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_pii.py": "8187ba0e86929d3fff376c61923866700ef06a3d971798fad884f0b68c9be565",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_signed.py": "4f553282ae112554956155d32c3b81fac979529413ebba09ca5fb8d28a40719a",
+    "tests/test_task_expansion_batch3.py": "c137057fdd7abba2aea66b4057c35b1a60a9fe5523b1ea1bd4c8ab46e1cbc266"
+  },
+  "base_commit": "9b0e3ac3ab49e043bef860cbd13fe0bbf98b8efd",
+  "campaign_boundary": "Task-pack acceptance only. No task-solving pilot, A/B cell, hidden efficacy score, contrast, confirmatory campaign, or efficacy claim is authorized or evaluated by this auditor.",
+  "diversity_evidence": {
+    "all_prior_overlap_matrix": [
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on support-ticket-api does not imply success on signed-artifact-verifier: ticket correctness is mutable workflow behavior; signing competence does not establish cryptographic authenticity, exact filesystem inventory, or key validity",
+        "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+        "prior_task": "support-ticket-api",
+        "shared_shell_or_surface": "both expose deterministic success/failure results",
+        "substantive_difference": "ticket correctness is mutable workflow behavior; signing competence does not establish cryptographic authenticity, exact filesystem inventory, or key validity"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on csv-member-import does not imply success on signed-artifact-verifier: member import reasons over tabular rows do not require a signed canonical payload or byte-level verification of an existing file tree",
+        "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+        "prior_task": "csv-member-import",
+        "shared_shell_or_surface": "both validate a complete input set and summarize rejection",
+        "substantive_difference": "member import reasons over tabular rows do not require a signed canonical payload or byte-level verification of an existing file tree"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on incident-escalation-api does not imply success on signed-artifact-verifier: incident time advances a domain state; verifier time decides whether a key and manifest are cryptographically trusted without mutating domain state",
+        "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+        "prior_task": "incident-escalation-api",
+        "shared_shell_or_surface": "both use explicit RFC3339 boundary instants",
+        "substantive_difference": "incident time advances a domain state; verifier time decides whether a key and manifest are cryptographically trusted without mutating domain state"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on inventory-adjustment-api does not imply success on signed-artifact-verifier: stock inventory is a mutable business quantity; artifact inventory is an exact signed enumeration of regular filesystem objects",
+        "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+        "prior_task": "inventory-adjustment-api",
+        "shared_shell_or_surface": "both use the word inventory and enforce completeness/invariants",
+        "substantive_difference": "stock inventory is a mutable business quantity; artifact inventory is an exact signed enumeration of regular filesystem objects"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on leave-request-api does not imply success on signed-artifact-verifier: approval and overlap workflow competence does not imply canonical signing, key selection, path safety, or content-hash verification",
+        "prior_construct": "overlap-aware leave approval and terminal workflow states",
+        "prior_task": "leave-request-api",
+        "shared_shell_or_surface": "both reject invalid requests atomically",
+        "substantive_difference": "approval and overlap workflow competence does not imply canonical signing, key selection, path safety, or content-hash verification"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on refund-approval-api does not imply success on signed-artifact-verifier: monetary authorization thresholds do not exercise cryptographic payload canonicalization or whole-tree integrity",
+        "prior_construct": "threshold-based staged refund authorization",
+        "prior_task": "refund-approval-api",
+        "shared_shell_or_surface": "both apply validity rules before accepting an operation",
+        "substantive_difference": "monetary authorization thresholds do not exercise cryptographic payload canonicalization or whole-tree integrity"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on report-export-job does not imply success on signed-artifact-verifier: export correctness concerns filters and totals; verifier output is a trust verdict gated on signature, inventory, path, and byte integrity",
+        "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+        "prior_task": "report-export-job",
+        "shared_shell_or_surface": "both are deterministic CLIs with committed output files",
+        "substantive_difference": "export correctness concerns filters and totals; verifier output is a trust verdict gated on signature, inventory, path, and byte integrity"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on webhook-ingestion-service does not imply success on signed-artifact-verifier: webhook HMAC authenticates one inbound body before ingestion; artifact verification authenticates a canonical manifest and then proves every declared file",
+        "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+        "prior_task": "webhook-ingestion-service",
+        "shared_shell_or_surface": "both use HMAC authentication and key material",
+        "substantive_difference": "webhook HMAC authenticates one inbound body before ingestion; artifact verification authenticates a canonical manifest and then proves every declared file"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on appointment-booking-api does not imply success on signed-artifact-verifier: booking handles resource interval conflicts and cancellation; verifier intervals govern key and manifest trust without scheduling resources",
+        "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+        "prior_task": "appointment-booking-api",
+        "shared_shell_or_surface": "both evaluate explicit interval boundaries",
+        "substantive_difference": "booking handles resource interval conflicts and cancellation; verifier intervals govern key and manifest trust without scheduling resources"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on shipment-event-api does not imply success on signed-artifact-verifier: shipment projection and terminal-state events do not require filesystem inventory or cryptographic binding of evidence bytes",
+        "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+        "prior_task": "shipment-event-api",
+        "shared_shell_or_surface": "both retain auditable ordered evidence",
+        "substantive_difference": "shipment projection and terminal-state events do not require filesystem inventory or cryptographic binding of evidence bytes"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on jsonl-event-aggregation does not imply success on signed-artifact-verifier: JSONL aggregation reasons over records do not prove signer identity, exact tree membership, or per-file hash integrity",
+        "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+        "prior_task": "jsonl-event-aggregation",
+        "shared_shell_or_surface": "both validate complete inputs and emit deterministic audit-like output",
+        "substantive_difference": "JSONL aggregation reasons over records do not prove signer identity, exact tree membership, or per-file hash integrity"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on invoice-payment-reconciliation does not imply success on signed-artifact-verifier: financial matching uses amounts and cutoff semantics; signed inventory reconciliation uses normalized paths, sizes, hashes, and key trust",
+        "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+        "prior_task": "invoice-payment-reconciliation",
+        "shared_shell_or_surface": "both reconcile a declared set against observed data",
+        "substantive_difference": "financial matching uses amounts and cutoff semantics; signed inventory reconciliation uses normalized paths, sizes, hashes, and key trust"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on dependency-impact-planner does not imply success on signed-artifact-verifier: graph closure and topological ordering do not exercise authentication, key windows, or filesystem byte integrity",
+        "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+        "prior_task": "dependency-impact-planner",
+        "shared_shell_or_surface": "both are deterministic offline CLIs over canonical structured input",
+        "substantive_difference": "graph closure and topological ordering do not exercise authentication, key windows, or filesystem byte integrity"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on access-policy-evaluator does not imply success on signed-artifact-verifier: authorization decides allow or deny from matching rules; verifier establishes cryptographic trust in a manifest and artifact set",
+        "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+        "prior_task": "access-policy-evaluator",
+        "shared_shell_or_surface": "both select keyed/rule material and use request-supplied time",
+        "substantive_difference": "authorization decides allow or deny from matching rules; verifier establishes cryptographic trust in a manifest and artifact set"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on versioned-document-api does not imply success on signed-artifact-verifier: document revisions coordinate mutable content through ETags; verifier performs stateless authenticity and whole-tree consistency checks",
+        "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+        "prior_task": "versioned-document-api",
+        "shared_shell_or_surface": "both protect integrity and expose immutable evidence",
+        "substantive_difference": "document revisions coordinate mutable content through ETags; verifier performs stateless authenticity and whole-tree consistency checks"
+      },
+      {
+        "new_construct": "offline trust verification combining canonical signed manifests, key validity, exact inventory, and byte integrity",
+        "new_task": "signed-artifact-verifier",
+        "non_implication": "Success on safe-archive-extraction does not imply success on signed-artifact-verifier: archive extraction controls creation from untrusted ZIP members; verifier never extracts and instead authenticates an exact pre-existing tree with a signed manifest",
+        "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+        "prior_task": "safe-archive-extraction",
+        "shared_shell_or_surface": "both enforce normalized path safety and produce hash manifests",
+        "substantive_difference": "archive extraction controls creation from untrusted ZIP members; verifier never extracts and instead authenticates an exact pre-existing tree with a signed manifest"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on support-ticket-api does not imply success on pii-redaction-pipeline: ticket routes mutate workflow entities; redaction recursively transforms selected values while proving all non-selected content is preserved",
+        "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+        "prior_task": "support-ticket-api",
+        "shared_shell_or_surface": "both process structured JSON fields",
+        "substantive_difference": "ticket routes mutate workflow entities; redaction recursively transforms selected values while proving all non-selected content is preserved"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on csv-member-import does not imply success on pii-redaction-pipeline: CSV import classifies tabular rows; redaction applies recursive selectors, precedence, removal, and keyed pseudonymization to arbitrary JSON",
+        "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+        "prior_task": "csv-member-import",
+        "shared_shell_or_surface": "both perform deterministic data normalization/transformation",
+        "substantive_difference": "CSV import classifies tabular rows; redaction applies recursive selectors, precedence, removal, and keyed pseudonymization to arbitrary JSON"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on incident-escalation-api does not imply success on pii-redaction-pipeline: escalation follows temporal domain transitions; redaction follows selector-specific privacy actions without a workflow clock",
+        "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+        "prior_task": "incident-escalation-api",
+        "shared_shell_or_surface": "both preserve unrelated state while changing selected fields",
+        "substantive_difference": "escalation follows temporal domain transitions; redaction follows selector-specific privacy actions without a workflow clock"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on inventory-adjustment-api does not imply success on pii-redaction-pipeline: inventory adjusts business quantities; redaction transforms a recursive document and emits a field-level audit in one output bundle",
+        "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+        "prior_task": "inventory-adjustment-api",
+        "shared_shell_or_surface": "both require atomic multi-field changes",
+        "substantive_difference": "inventory adjusts business quantities; redaction transforms a recursive document and emits a field-level audit in one output bundle"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on leave-request-api does not imply success on pii-redaction-pipeline: leave overlap/approval conflicts are domain states; redaction conflicts arise from equal-specificity selectors targeting the same JSON path",
+        "prior_construct": "overlap-aware leave approval and terminal workflow states",
+        "prior_task": "leave-request-api",
+        "shared_shell_or_surface": "both have rule conflicts and deterministic rejection",
+        "substantive_difference": "leave overlap/approval conflicts are domain states; redaction conflicts arise from equal-specificity selectors targeting the same JSON path"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on refund-approval-api does not imply success on pii-redaction-pipeline: refund rules authorize a monetary workflow; privacy rules transform values and must preserve every non-selected subtree",
+        "prior_construct": "threshold-based staged refund authorization",
+        "prior_task": "refund-approval-api",
+        "shared_shell_or_surface": "both interpret declarative rules",
+        "substantive_difference": "refund rules authorize a monetary workflow; privacy rules transform values and must preserve every non-selected subtree"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on report-export-job does not imply success on pii-redaction-pipeline: report export filters and aggregates records; redaction rewrites selected recursive values and binds every change to an audit record",
+        "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+        "prior_task": "report-export-job",
+        "shared_shell_or_surface": "both are deterministic CLIs producing structured output",
+        "substantive_difference": "report export filters and aggregates records; redaction rewrites selected recursive values and binds every change to an audit record"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on webhook-ingestion-service does not imply success on pii-redaction-pipeline: webhook HMAC authenticates a request; redaction HMAC pseudonymizes selected canonical JSON values and intentionally changes the document",
+        "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+        "prior_task": "webhook-ingestion-service",
+        "shared_shell_or_surface": "both use HMAC and structured JSON",
+        "substantive_difference": "webhook HMAC authenticates a request; redaction HMAC pseudonymizes selected canonical JSON values and intentionally changes the document"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on appointment-booking-api does not imply success on pii-redaction-pipeline: appointment overlap is temporal resource exclusion; selector overlap is precedence among recursive JSON paths and actions",
+        "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+        "prior_task": "appointment-booking-api",
+        "shared_shell_or_surface": "both resolve overlapping selections or intervals",
+        "substantive_difference": "appointment overlap is temporal resource exclusion; selector overlap is precedence among recursive JSON paths and actions"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on shipment-event-api does not imply success on pii-redaction-pipeline: shipment history is an append-only domain event log; redaction audit describes field transformations in a single deterministic bundle",
+        "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+        "prior_task": "shipment-event-api",
+        "shared_shell_or_surface": "both preserve an audit trail",
+        "substantive_difference": "shipment history is an append-only domain event log; redaction audit describes field transformations in a single deterministic bundle"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on jsonl-event-aggregation does not imply success on pii-redaction-pipeline: JSONL work is row-oriented aggregation; redaction is path-oriented recursive transformation with non-selected structure preservation",
+        "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+        "prior_task": "jsonl-event-aggregation",
+        "shared_shell_or_surface": "both validate JSON and produce deterministic audit/rejection material",
+        "substantive_difference": "JSONL work is row-oriented aggregation; redaction is path-oriented recursive transformation with non-selected structure preservation"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on invoice-payment-reconciliation does not imply success on pii-redaction-pipeline: invoice/payment matching does not exercise selector grammar, recursive mutation, keyed pseudonymization, or removal precedence",
+        "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+        "prior_task": "invoice-payment-reconciliation",
+        "shared_shell_or_surface": "both reconcile inputs to auditable outputs",
+        "substantive_difference": "invoice/payment matching does not exercise selector grammar, recursive mutation, keyed pseudonymization, or removal precedence"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on dependency-impact-planner does not imply success on pii-redaction-pipeline: graph traversal follows dependency edges; redaction traversal follows JSON path selectors and mutates selected values",
+        "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+        "prior_task": "dependency-impact-planner",
+        "shared_shell_or_surface": "both traverse structured relationships deterministically",
+        "substantive_difference": "graph traversal follows dependency edges; redaction traversal follows JSON path selectors and mutates selected values"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on access-policy-evaluator does not imply success on pii-redaction-pipeline: policy rules return an authorization decision without changing input; redaction rules choose irreversible/transforming actions over recursive data",
+        "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+        "prior_task": "access-policy-evaluator",
+        "shared_shell_or_surface": "both interpret wildcard rules with precedence",
+        "substantive_difference": "policy rules return an authorization decision without changing input; redaction rules choose irreversible/transforming actions over recursive data"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on versioned-document-api does not imply success on pii-redaction-pipeline: merge patch versions a mutable document through CAS; redaction performs one offline privacy transform with selector audit and no revision history",
+        "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+        "prior_task": "versioned-document-api",
+        "shared_shell_or_surface": "both operate on recursive JSON document values",
+        "substantive_difference": "merge patch versions a mutable document through CAS; redaction performs one offline privacy transform with selector audit and no revision history"
+      },
+      {
+        "new_construct": "recursive structure-preserving privacy transformation with selector semantics, keyed pseudonymization, and field-level audit",
+        "new_task": "pii-redaction-pipeline",
+        "non_implication": "Success on safe-archive-extraction does not imply success on pii-redaction-pipeline: archive safety concerns filesystem members and extraction; redaction concerns semantic JSON selectors, value transformation, and privacy audit",
+        "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+        "prior_task": "safe-archive-extraction",
+        "shared_shell_or_surface": "both require atomic output and reject unsafe input",
+        "substantive_difference": "archive safety concerns filesystem members and extraction; redaction concerns semantic JSON selectors, value transformation, and privacy audit"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on support-ticket-api does not imply success on lease-coordination-api: ticket transitions model assignment/status rules; lease correctness is exclusive temporal ownership guarded by monotonic fencing under concurrent writers",
+        "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+        "prior_task": "support-ticket-api",
+        "shared_shell_or_surface": "both are persistent APIs with mutable state",
+        "substantive_difference": "ticket transitions model assignment/status rules; lease correctness is exclusive temporal ownership guarded by monotonic fencing under concurrent writers"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on csv-member-import does not imply success on lease-coordination-api: batch row import has no durable ownership generation, expiry, concurrent contention, or stale-holder capability",
+        "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+        "prior_task": "csv-member-import",
+        "shared_shell_or_surface": "both reject malformed input deterministically",
+        "substantive_difference": "batch row import has no durable ownership generation, expiry, concurrent contention, or stale-holder capability"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on incident-escalation-api does not imply success on lease-coordination-api: incident time triggers escalation state; lease time controls exclusivity, expiry takeover, renewal, and fencing-token validity",
+        "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+        "prior_task": "incident-escalation-api",
+        "shared_shell_or_surface": "both use explicit RFC3339 time and boundary behavior",
+        "substantive_difference": "incident time triggers escalation state; lease time controls exclusivity, expiry takeover, renewal, and fencing-token validity"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on inventory-adjustment-api does not imply success on lease-coordination-api: stock deltas/recounts do not arbitrate temporary owners or invalidate stale actors through fencing generations",
+        "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+        "prior_task": "inventory-adjustment-api",
+        "shared_shell_or_surface": "both use SQLite transactions and enforce invariants under writes",
+        "substantive_difference": "stock deltas/recounts do not arbitrate temporary owners or invalidate stale actors through fencing generations"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on leave-request-api does not imply success on lease-coordination-api: leave conflicts are durable calendar overlaps; a lease is one expiring ownership claim with renew/release and stale-token rejection",
+        "prior_construct": "overlap-aware leave approval and terminal workflow states",
+        "prior_task": "leave-request-api",
+        "shared_shell_or_surface": "both prevent conflicting claims",
+        "substantive_difference": "leave conflicts are durable calendar overlaps; a lease is one expiring ownership claim with renew/release and stale-token rejection"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on refund-approval-api does not imply success on lease-coordination-api: approval authorization has staged thresholds; lease authority derives from current owner plus fencing token and temporal validity",
+        "prior_construct": "threshold-based staged refund authorization",
+        "prior_task": "refund-approval-api",
+        "shared_shell_or_surface": "both reject unauthorized state changes",
+        "substantive_difference": "approval authorization has staged thresholds; lease authority derives from current owner plus fencing token and temporal validity"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on report-export-job does not imply success on lease-coordination-api: report generation has no concurrent mutation, persistent token counter, expiration, or ownership arbitration",
+        "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+        "prior_task": "report-export-job",
+        "shared_shell_or_surface": "both expose deterministic state/output",
+        "substantive_difference": "report generation has no concurrent mutation, persistent token counter, expiration, or ownership arbitration"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on webhook-ingestion-service does not imply success on lease-coordination-api: webhook deduplicates event identities; lease coordination serializes competing owners and issues monotonic fencing capabilities",
+        "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+        "prior_task": "webhook-ingestion-service",
+        "shared_shell_or_surface": "both require idempotent durable API behavior",
+        "substantive_difference": "webhook deduplicates event identities; lease coordination serializes competing owners and issues monotonic fencing capabilities"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on appointment-booking-api does not imply success on lease-coordination-api: bookings allow multiple non-overlapping durable intervals; a resource lease allows exactly one current owner and supports renew/release/fencing",
+        "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+        "prior_task": "appointment-booking-api",
+        "shared_shell_or_surface": "both manage time-bound resource conflicts",
+        "substantive_difference": "bookings allow multiple non-overlapping durable intervals; a resource lease allows exactly one current owner and supports renew/release/fencing"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on shipment-event-api does not imply success on lease-coordination-api: shipment generations are domain events; lease tokens are capabilities that protect external work after ownership changes",
+        "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+        "prior_task": "shipment-event-api",
+        "shared_shell_or_surface": "both retain monotonic state generations and reject stale transitions",
+        "substantive_difference": "shipment generations are domain events; lease tokens are capabilities that protect external work after ownership changes"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on jsonl-event-aggregation does not imply success on lease-coordination-api: offline record aggregation cannot demonstrate simultaneous acquisition, durable ownership, or fencing after process restart",
+        "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+        "prior_task": "jsonl-event-aggregation",
+        "shared_shell_or_surface": "both handle malformed values with stable classification",
+        "substantive_difference": "offline record aggregation cannot demonstrate simultaneous acquisition, durable ownership, or fencing after process restart"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on invoice-payment-reconciliation does not imply success on lease-coordination-api: financial matching is deterministic batch reconciliation; leases are mutable concurrent coordination with expiry and owner capabilities",
+        "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+        "prior_task": "invoice-payment-reconciliation",
+        "shared_shell_or_surface": "both enforce atomic consistency",
+        "substantive_difference": "financial matching is deterministic batch reconciliation; leases are mutable concurrent coordination with expiry and owner capabilities"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on dependency-impact-planner does not imply success on lease-coordination-api: topological levels order dependent work statically; fencing tokens order successive owners dynamically under concurrent API operations",
+        "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+        "prior_task": "dependency-impact-planner",
+        "shared_shell_or_surface": "both reason about ordering",
+        "substantive_difference": "topological levels order dependent work statically; fencing tokens order successive owners dynamically under concurrent API operations"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on access-policy-evaluator does not imply success on lease-coordination-api: policy evaluation is stateless allow/deny composition; leases persist and mutate exclusive ownership generations",
+        "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+        "prior_task": "access-policy-evaluator",
+        "shared_shell_or_surface": "both use request-supplied time and reject unauthorized operations",
+        "substantive_difference": "policy evaluation is stateless allow/deny composition; leases persist and mutate exclusive ownership generations"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on versioned-document-api does not imply success on lease-coordination-api: document CAS protects content revisions; lease CAS chooses temporal owners and emits monotonic fencing tokens that outlive lease expiry",
+        "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+        "prior_task": "versioned-document-api",
+        "shared_shell_or_surface": "both use SQLite compare-and-swap, stale rejection, and cross-process persistence",
+        "substantive_difference": "document CAS protects content revisions; lease CAS chooses temporal owners and emits monotonic fencing tokens that outlive lease expiry"
+      },
+      {
+        "new_construct": "durable expiring mutual exclusion with monotonic fencing tokens and concurrent stale-holder protection",
+        "new_task": "lease-coordination-api",
+        "non_implication": "Success on safe-archive-extraction does not imply success on lease-coordination-api: filesystem staging atomicity has no shared mutable database contender; lease atomicity is tested under simultaneous writers and durable state",
+        "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+        "prior_task": "safe-archive-extraction",
+        "shared_shell_or_surface": "both promise failure atomicity",
+        "substantive_difference": "filesystem staging atomicity has no shared mutable database contender; lease atomicity is tested under simultaneous writers and durable state"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on support-ticket-api does not imply success on double-entry-ledger-api: ticket state/assignment transitions do not enforce exact decimal balancing, immutable postings, or compensating reversal",
+        "prior_construct": "support-ticket state transitions, assignment, filtering, and API persistence",
+        "prior_task": "support-ticket-api",
+        "shared_shell_or_surface": "both are persistent CRUD-like APIs",
+        "substantive_difference": "ticket state/assignment transitions do not enforce exact decimal balancing, immutable postings, or compensating reversal"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on csv-member-import does not imply success on double-entry-ledger-api: member import accepts/rejects independent rows; ledger entries form one atomic balanced transaction with derived account state",
+        "prior_construct": "CSV normalization, duplicate handling, accepted/rejected rows, and import summaries",
+        "prior_task": "csv-member-import",
+        "shared_shell_or_surface": "both validate structured records and reject malformed values",
+        "substantive_difference": "member import accepts/rejects independent rows; ledger entries form one atomic balanced transaction with derived account state"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on incident-escalation-api does not imply success on double-entry-ledger-api: incident escalation is time-triggered workflow behavior; ledger state derives solely from balanced append-only financial entries",
+        "prior_construct": "time-based incident escalation and timezone-aware state transitions",
+        "prior_task": "incident-escalation-api",
+        "shared_shell_or_surface": "both expose immutable evidence of state changes",
+        "substantive_difference": "incident escalation is time-triggered workflow behavior; ledger state derives solely from balanced append-only financial entries"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on inventory-adjustment-api does not imply success on double-entry-ledger-api: inventory permits domain updates and recounts; ledger requires equal debit/credit totals and corrects history only by compensation",
+        "prior_construct": "transactional inventory adjustments, recount semantics, and stock invariants",
+        "prior_task": "inventory-adjustment-api",
+        "shared_shell_or_surface": "both enforce transactional quantity invariants",
+        "substantive_difference": "inventory permits domain updates and recounts; ledger requires equal debit/credit totals and corrects history only by compensation"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on leave-request-api does not imply success on double-entry-ledger-api: leave conflicts depend on dates and approval state; ledger conflicts concern idempotency identity and balanced financial posting",
+        "prior_construct": "overlap-aware leave approval and terminal workflow states",
+        "prior_task": "leave-request-api",
+        "shared_shell_or_surface": "both reject conflicting operations atomically",
+        "substantive_difference": "leave conflicts depend on dates and approval state; ledger conflicts concern idempotency identity and balanced financial posting"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on refund-approval-api does not imply success on double-entry-ledger-api: refund approval authorizes thresholds and stages; ledger posting proves double-entry balance and immutable journal effects",
+        "prior_construct": "threshold-based staged refund authorization",
+        "prior_task": "refund-approval-api",
+        "shared_shell_or_surface": "both use monetary amounts and financial-domain terminology",
+        "substantive_difference": "refund approval authorizes thresholds and stages; ledger posting proves double-entry balance and immutable journal effects"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on report-export-job does not imply success on double-entry-ledger-api: report totals are exported snapshots; ledger balances are derived continuously from immutable debit/credit entries",
+        "prior_construct": "deterministic filtered report generation, totals, and output formatting",
+        "prior_task": "report-export-job",
+        "shared_shell_or_surface": "both calculate exact totals and deterministic ordered output",
+        "substantive_difference": "report totals are exported snapshots; ledger balances are derived continuously from immutable debit/credit entries"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on webhook-ingestion-service does not imply success on double-entry-ledger-api: webhook idempotency suppresses duplicate events; ledger idempotency binds an order-insensitive canonical multi-entry transaction and detects payload conflict",
+        "prior_construct": "HMAC-authenticated ingestion, idempotency, and event normalization",
+        "prior_task": "webhook-ingestion-service",
+        "shared_shell_or_surface": "both require durable idempotency",
+        "substantive_difference": "webhook idempotency suppresses duplicate events; ledger idempotency binds an order-insensitive canonical multi-entry transaction and detects payload conflict"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on appointment-booking-api does not imply success on double-entry-ledger-api: booking protects time intervals; ledger protects balanced posting, idempotency identity, and one compensating reversal",
+        "prior_construct": "resource interval scheduling, conflicts, cancellation, and availability",
+        "prior_task": "appointment-booking-api",
+        "shared_shell_or_surface": "both have concurrent conflict prevention",
+        "substantive_difference": "booking protects time intervals; ledger protects balanced posting, idempotency identity, and one compensating reversal"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on shipment-event-api does not imply success on double-entry-ledger-api: shipment events project a domain state machine; ledger entries preserve a mathematical debit/credit invariant and derived balances",
+        "prior_construct": "append-only shipment events, idempotency, ordering, projection, and terminal states",
+        "prior_task": "shipment-event-api",
+        "shared_shell_or_surface": "both use idempotency and append-only history",
+        "substantive_difference": "shipment events project a domain state machine; ledger entries preserve a mathematical debit/credit invariant and derived balances"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on jsonl-event-aggregation does not imply success on double-entry-ledger-api: aggregation computes batch metrics over events; ledger atomically appends balanced entries and exposes persistent journals",
+        "prior_construct": "JSONL validation, UTC normalization, duplicate semantics, rejection, and aggregation",
+        "prior_task": "jsonl-event-aggregation",
+        "shared_shell_or_surface": "both use exact parsing and deterministic summaries",
+        "substantive_difference": "aggregation computes batch metrics over events; ledger atomically appends balanced entries and exposes persistent journals"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on invoice-payment-reconciliation does not imply success on double-entry-ledger-api: reconciliation matches pre-existing invoices/payments at a cutoff; ledger accepts new balanced postings and compensation under transactional concurrency",
+        "prior_construct": "decimal invoice/payment matching, cutoff semantics, duplicates, and financial summaries",
+        "prior_task": "invoice-payment-reconciliation",
+        "shared_shell_or_surface": "both use exact decimals and financial records",
+        "substantive_difference": "reconciliation matches pre-existing invoices/payments at a cutoff; ledger accepts new balanced postings and compensation under transactional concurrency"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on dependency-impact-planner does not imply success on double-entry-ledger-api: graph planning orders components by dependencies; ledger ordering is an immutable transaction/entry journal with financial semantics",
+        "prior_construct": "reverse dependency closure, topological levels, cycle rejection, and canonical plans",
+        "prior_task": "dependency-impact-planner",
+        "shared_shell_or_surface": "both produce deterministic orderings",
+        "substantive_difference": "graph planning orders components by dependencies; ledger ordering is an immutable transaction/entry journal with financial semantics"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on access-policy-evaluator does not imply success on double-entry-ledger-api: policy returns stateless allow/deny; ledger commits balanced economic events and derives account balances",
+        "prior_construct": "wildcard policy matching, subject/group composition, deny precedence, and temporal validity",
+        "prior_task": "access-policy-evaluator",
+        "shared_shell_or_surface": "both validate operations against public rules",
+        "substantive_difference": "policy returns stateless allow/deny; ledger commits balanced economic events and derives account balances"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on versioned-document-api does not imply success on double-entry-ledger-api: document restore copies historical content into a new revision; ledger reversal appends direction-swapped entries and never restores mutable snapshots",
+        "prior_construct": "optimistic concurrency, JSON Merge Patch, immutable revisions, and historical restore",
+        "prior_task": "versioned-document-api",
+        "shared_shell_or_surface": "both preserve immutable history and use concurrent write guards",
+        "substantive_difference": "document restore copies historical content into a new revision; ledger reversal appends direction-swapped entries and never restores mutable snapshots"
+      },
+      {
+        "new_construct": "immutable balanced double-entry posting with idempotency, derived balances, and compensating reversal",
+        "new_task": "double-entry-ledger-api",
+        "non_implication": "Success on safe-archive-extraction does not imply success on double-entry-ledger-api: archive commit creates a filesystem tree; ledger commit creates interdependent financial rows whose totals must balance exactly",
+        "prior_construct": "ZIP path and entry safety, normalized collisions, limits, and extraction manifests",
+        "prior_task": "safe-archive-extraction",
+        "shared_shell_or_surface": "both require all-or-nothing commit on validation",
+        "substantive_difference": "archive commit creates a filesystem tree; ledger commit creates interdependent financial rows whose totals must balance exactly"
+      }
+    ],
+    "nearest_check_matrix": [
+      {
+        "expected_mutant_failed_checks": [
+          "signed_manifest_authenticity"
+        ],
+        "expected_mutant_passed_checks": [
+          "signed_manifest_inventory",
+          "signed_manifest_content_integrity",
+          "signed_manifest_trust_window",
+          "signed_manifest_atomic_report"
+        ],
+        "nearest_existing_task": "webhook-ingestion-service",
+        "new_check": "signed_manifest_authenticity",
+        "new_task": "signed-artifact-verifier",
+        "planned_mutant": "accepts an invalid signature",
+        "planned_probe": "Exercise valid signing plus altered payload, signature, and unknown-key failures without exposing literal fixtures.",
+        "substantive_difference": "verifies a complete offline artifact-set trust statement and key identity, not an individual inbound webhook request"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "signed_manifest_inventory"
+        ],
+        "expected_mutant_passed_checks": [
+          "signed_manifest_authenticity",
+          "signed_manifest_content_integrity",
+          "signed_manifest_trust_window",
+          "signed_manifest_atomic_report"
+        ],
+        "nearest_existing_task": "safe-archive-extraction",
+        "new_check": "signed_manifest_inventory",
+        "new_task": "signed-artifact-verifier",
+        "planned_mutant": "ignores unexpected files",
+        "planned_probe": "Exercise missing, unexpected, duplicate-normalized, and unsafe inventory entries.",
+        "substantive_difference": "audits an already materialized tree against a signed inventory rather than safely extracting archive members"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "signed_manifest_content_integrity"
+        ],
+        "expected_mutant_passed_checks": [
+          "signed_manifest_authenticity",
+          "signed_manifest_inventory",
+          "signed_manifest_trust_window",
+          "signed_manifest_atomic_report"
+        ],
+        "nearest_existing_task": "safe-archive-extraction",
+        "new_check": "signed_manifest_content_integrity",
+        "new_task": "signed-artifact-verifier",
+        "planned_mutant": "skips SHA-256 comparison",
+        "planned_probe": "Exercise same-size content mutation, size mismatch, and non-regular file rejection.",
+        "substantive_difference": "checks authenticity-bound integrity of a complete existing artifact set rather than producing an extraction manifest"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "signed_manifest_trust_window"
+        ],
+        "expected_mutant_passed_checks": [
+          "signed_manifest_authenticity",
+          "signed_manifest_inventory",
+          "signed_manifest_content_integrity",
+          "signed_manifest_atomic_report"
+        ],
+        "nearest_existing_task": "access-policy-evaluator",
+        "new_check": "signed_manifest_trust_window",
+        "new_task": "signed-artifact-verifier",
+        "planned_mutant": "ignores only the key valid_until boundary",
+        "planned_probe": "Exercise inclusive start, exclusive end, expired manifest, inactive key, and malformed timestamps.",
+        "substantive_difference": "evaluates cryptographic key and signed-manifest trust windows rather than authorization-rule applicability"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "signed_manifest_atomic_report"
+        ],
+        "expected_mutant_passed_checks": [
+          "signed_manifest_authenticity",
+          "signed_manifest_inventory",
+          "signed_manifest_content_integrity",
+          "signed_manifest_trust_window"
+        ],
+        "nearest_existing_task": "report-export-job",
+        "new_check": "signed_manifest_atomic_report",
+        "new_task": "signed-artifact-verifier",
+        "planned_mutant": "writes a partial report before validation completes",
+        "planned_probe": "Exercise malformed JSON, invalid field types, deterministic pre-commit validation failure, rerun byte stability, staging cleanup, and pre-existing report preservation.",
+        "substantive_difference": "the output is a trust verdict committed only after whole-set cryptographic verification, not a business data export"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "pii_selector_resolution"
+        ],
+        "expected_mutant_passed_checks": [
+          "pii_redaction_actions",
+          "pii_structure_preservation",
+          "pii_rule_precedence",
+          "pii_atomic_audit"
+        ],
+        "nearest_existing_task": "access-policy-evaluator",
+        "new_check": "pii_selector_resolution",
+        "new_task": "pii-redaction-pipeline",
+        "planned_mutant": "treats wildcard selectors as shallow matches",
+        "planned_probe": "Exercise nested objects, arrays, wildcard segments, escaped pointer tokens, and unmatched selectors.",
+        "substantive_difference": "selectors locate fields inside recursive JSON values for transformation, not action/resource strings for authorization"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "pii_redaction_actions"
+        ],
+        "expected_mutant_passed_checks": [
+          "pii_selector_resolution",
+          "pii_structure_preservation",
+          "pii_rule_precedence",
+          "pii_atomic_audit"
+        ],
+        "nearest_existing_task": "webhook-ingestion-service",
+        "new_check": "pii_redaction_actions",
+        "new_task": "pii-redaction-pipeline",
+        "planned_mutant": "uses unkeyed hashing for pseudonymization",
+        "planned_probe": "Exercise all actions on strings, numbers, booleans, nulls, objects, and arrays according to public type rules.",
+        "substantive_difference": "performs keyed privacy transformation over selected data fields rather than authenticating and normalizing events"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "pii_structure_preservation"
+        ],
+        "expected_mutant_passed_checks": [
+          "pii_selector_resolution",
+          "pii_redaction_actions",
+          "pii_rule_precedence",
+          "pii_atomic_audit"
+        ],
+        "nearest_existing_task": "csv-member-import",
+        "new_check": "pii_structure_preservation",
+        "new_task": "pii-redaction-pipeline",
+        "planned_mutant": "rebuilds only selected branches and drops unrelated data",
+        "planned_probe": "Exercise adjacent array/object selections, non-selected sentinels, and removal from multiple nesting levels.",
+        "substantive_difference": "preserves arbitrary recursive JSON structure while transforming selected fields, rather than normalizing tabular member rows"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "pii_rule_precedence"
+        ],
+        "expected_mutant_passed_checks": [
+          "pii_selector_resolution",
+          "pii_redaction_actions",
+          "pii_structure_preservation",
+          "pii_atomic_audit"
+        ],
+        "nearest_existing_task": "access-policy-evaluator",
+        "new_check": "pii_rule_precedence",
+        "new_task": "pii-redaction-pipeline",
+        "planned_mutant": "uses first-rule-wins input order",
+        "planned_probe": "Exercise exact-over-wildcard precedence, conflicting ties, duplicate rule IDs, and input-order permutations.",
+        "substantive_difference": "resolves transformation specificity and rejects ambiguous mutations, rather than combining allow/deny decisions"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "pii_atomic_audit"
+        ],
+        "expected_mutant_passed_checks": [
+          "pii_selector_resolution",
+          "pii_redaction_actions",
+          "pii_structure_preservation",
+          "pii_rule_precedence"
+        ],
+        "nearest_existing_task": "jsonl-event-aggregation",
+        "new_check": "pii_atomic_audit",
+        "new_task": "pii-redaction-pipeline",
+        "planned_mutant": "commits a bundle whose audit omits one transformed field",
+        "planned_probe": "Exercise exact bundle consistency, rerun byte stability, malformed inputs, staging cleanup, and preservation of a pre-existing bundle.",
+        "substantive_difference": "produces a field-level privacy transformation audit over one recursive document, not row rejection and aggregate statistics"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "lease_acquire_fencing"
+        ],
+        "expected_mutant_passed_checks": [
+          "lease_concurrent_contention",
+          "lease_renewal",
+          "lease_release_reacquire",
+          "lease_state_and_failure_atomicity"
+        ],
+        "nearest_existing_task": "versioned-document-api",
+        "new_check": "lease_acquire_fencing",
+        "new_task": "lease-coordination-api",
+        "planned_mutant": "fails to persist the next-token counter across a process restart before expiry takeover",
+        "planned_probe": "Exercise first acquisition, expiry takeover, process restart, and monotonic token continuity.",
+        "substantive_difference": "coordinates temporary ownership with fencing across lease generations, rather than versioning document content"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "lease_concurrent_contention"
+        ],
+        "expected_mutant_passed_checks": [
+          "lease_acquire_fencing",
+          "lease_renewal",
+          "lease_release_reacquire",
+          "lease_state_and_failure_atomicity"
+        ],
+        "nearest_existing_task": "appointment-booking-api",
+        "new_check": "lease_concurrent_contention",
+        "new_task": "lease-coordination-api",
+        "planned_mutant": "reports success to a losing barrier-synchronized contender while durable state contains one winner",
+        "planned_probe": "Launch genuinely concurrent same-resource acquisitions and verify one winner, one durable lease, and one token increment.",
+        "substantive_difference": "arbitrates one ephemeral ownership lease under simultaneous writers, not interval bookings among scheduled appointments"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "lease_renewal"
+        ],
+        "expected_mutant_passed_checks": [
+          "lease_acquire_fencing",
+          "lease_concurrent_contention",
+          "lease_release_reacquire",
+          "lease_state_and_failure_atomicity"
+        ],
+        "nearest_existing_task": "incident-escalation-api",
+        "new_check": "lease_renewal",
+        "new_task": "lease-coordination-api",
+        "planned_mutant": "renews based on owner alone and ignores the fencing token",
+        "planned_probe": "Exercise valid renew, wrong owner, stale token, expired lease, and non-increasing expiry.",
+        "substantive_difference": "guards continuation of exclusive ownership using a fencing capability, not escalation transitions based on elapsed incident time"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "lease_release_reacquire"
+        ],
+        "expected_mutant_passed_checks": [
+          "lease_acquire_fencing",
+          "lease_concurrent_contention",
+          "lease_renewal",
+          "lease_state_and_failure_atomicity"
+        ],
+        "nearest_existing_task": "shipment-event-api",
+        "new_check": "lease_release_reacquire",
+        "new_task": "lease-coordination-api",
+        "planned_mutant": "accepts a stale token after a newer lease generation exists",
+        "planned_probe": "Exercise valid release, stale release, double release, reacquire, and stale operations after reacquisition.",
+        "substantive_difference": "uses fencing generations to invalidate stale actors, rather than enforcing append-only domain-event transitions"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "lease_state_and_failure_atomicity"
+        ],
+        "expected_mutant_passed_checks": [
+          "lease_acquire_fencing",
+          "lease_concurrent_contention",
+          "lease_renewal",
+          "lease_release_reacquire"
+        ],
+        "nearest_existing_task": "versioned-document-api",
+        "new_check": "lease_state_and_failure_atomicity",
+        "new_task": "lease-coordination-api",
+        "planned_mutant": "GET reports a released lease generation as active while active and expired generation reads remain correct",
+        "planned_probe": "Compare full database-visible state before and after every controlled failure and across process termination.",
+        "substantive_difference": "audits lease ownership and fencing state under temporal operations, not immutable content revision history"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "ledger_account_identity"
+        ],
+        "expected_mutant_passed_checks": [
+          "ledger_balanced_posting",
+          "ledger_idempotency_conflict",
+          "ledger_balances_and_journal",
+          "ledger_compensating_reversal"
+        ],
+        "nearest_existing_task": "inventory-adjustment-api",
+        "new_check": "ledger_account_identity",
+        "new_task": "double-entry-ledger-api",
+        "planned_mutant": "accepts a lowercase two-letter currency code while valid account creation and persistence remain correct",
+        "planned_probe": "Exercise persistence across process termination, duplicate IDs, malformed IDs, unsupported currency codes, and absence of any account-update operation.",
+        "substantive_difference": "establishes immutable posting identities and currencies, not mutable stock quantities"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "ledger_balanced_posting"
+        ],
+        "expected_mutant_passed_checks": [
+          "ledger_account_identity",
+          "ledger_idempotency_conflict",
+          "ledger_balances_and_journal",
+          "ledger_compensating_reversal"
+        ],
+        "nearest_existing_task": "invoice-payment-reconciliation",
+        "new_check": "ledger_balanced_posting",
+        "new_task": "double-entry-ledger-api",
+        "planned_mutant": "accepts a transaction whose aggregate debits and credits differ",
+        "planned_probe": "Exercise balanced multi-entry postings, imbalance, mixed currencies, zero/negative amounts, and unknown accounts.",
+        "substantive_difference": "enforces an immutable accounting equation at write time rather than matching external invoices and payments"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "ledger_idempotency_conflict"
+        ],
+        "expected_mutant_passed_checks": [
+          "ledger_account_identity",
+          "ledger_balanced_posting",
+          "ledger_balances_and_journal",
+          "ledger_compensating_reversal"
+        ],
+        "nearest_existing_task": "shipment-event-api",
+        "new_check": "ledger_idempotency_conflict",
+        "new_task": "double-entry-ledger-api",
+        "planned_mutant": "creates a second transaction on identical replay",
+        "planned_probe": "Exercise identical replay, reordered-equivalent payload, conflicting payload, process restart, and concurrent duplicate submission.",
+        "substantive_difference": "binds a complete balanced multi-entry posting to one idempotency identity, not a single shipment event"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "ledger_balances_and_journal"
+        ],
+        "expected_mutant_passed_checks": [
+          "ledger_account_identity",
+          "ledger_balanced_posting",
+          "ledger_idempotency_conflict",
+          "ledger_compensating_reversal"
+        ],
+        "nearest_existing_task": "report-export-job",
+        "new_check": "ledger_balances_and_journal",
+        "new_task": "double-entry-ledger-api",
+        "planned_mutant": "GET account journal reverses canonical entry order within one transaction while balances remain correct",
+        "planned_probe": "Exercise multiple postings, decimal exactness, debit/credit orientation, filtered account journal, and process restart.",
+        "substantive_difference": "derives auditable financial state from immutable postings, not a one-time filtered export"
+      },
+      {
+        "expected_mutant_failed_checks": [
+          "ledger_compensating_reversal"
+        ],
+        "expected_mutant_passed_checks": [
+          "ledger_account_identity",
+          "ledger_balanced_posting",
+          "ledger_idempotency_conflict",
+          "ledger_balances_and_journal"
+        ],
+        "nearest_existing_task": "versioned-document-api",
+        "new_check": "ledger_compensating_reversal",
+        "new_task": "double-entry-ledger-api",
+        "planned_mutant": "allows a second compensating reversal for the same original transaction while leaving the original journal intact",
+        "planned_probe": "Exercise reversal balance restoration, immutable original, double reversal, unknown transaction, and concurrent reversal attempts.",
+        "substantive_difference": "corrects immutable financial history through compensating entries rather than restoring prior document content as a new revision"
+      }
+    ],
+    "new_task_pairwise_matrix": [
+      {
+        "left": "signed-artifact-verifier",
+        "right": "pii-redaction-pipeline",
+        "shared_shell": "deterministic CLI, canonical JSON, HMAC, validation before atomic file commit",
+        "substantive_difference": "trust verification rejects or accepts an immutable artifact set; privacy redaction intentionally transforms selected JSON fields"
+      },
+      {
+        "left": "signed-artifact-verifier",
+        "right": "lease-coordination-api",
+        "shared_shell": "request-supplied RFC3339 boundaries and controlled failure classification",
+        "substantive_difference": "offline cryptographic and filesystem verification is stateless across runs; lease coordination measures durable temporal ownership under concurrency"
+      },
+      {
+        "left": "signed-artifact-verifier",
+        "right": "double-entry-ledger-api",
+        "shared_shell": "integrity invariants, canonical identity, and no partial commit",
+        "substantive_difference": "artifact authenticity and integrity have no mutable business journal; the ledger measures balanced immutable financial postings"
+      },
+      {
+        "left": "pii-redaction-pipeline",
+        "right": "lease-coordination-api",
+        "shared_shell": "structured JSON validation, preservation of unrelated state, and atomic rejection",
+        "substantive_difference": "recursive deterministic data transformation is a CLI batch operation; lease coordination is a concurrent persistent API state machine"
+      },
+      {
+        "left": "pii-redaction-pipeline",
+        "right": "double-entry-ledger-api",
+        "shared_shell": "canonical structured values, deterministic auditability, and all-or-nothing output/state",
+        "substantive_difference": "privacy rules transform arbitrary JSON structure; ledger rules append balanced domain transactions without rewriting history"
+      },
+      {
+        "left": "lease-coordination-api",
+        "right": "double-entry-ledger-api",
+        "shared_shell": "FastAPI, SQLite persistence, simultaneous writers, and stale/conflicting operation rejection",
+        "substantive_difference": "leases expire and are replaced by higher fencing generations; financial postings never expire and are corrected only by compensation"
+      }
+    ]
+  },
+  "dynamic": {
+    "clean_room": {
+      "double-entry-ledger-api": {
+        "copies": [
+          {
+            "duration_seconds": 18.356965,
+            "seed": "13",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "ledger_account_identity",
+                  "pass"
+                ],
+                [
+                  "ledger_balanced_posting",
+                  "pass"
+                ],
+                [
+                  "ledger_idempotency_conflict",
+                  "pass"
+                ],
+                [
+                  "ledger_balances_and_journal",
+                  "pass"
+                ],
+                [
+                  "ledger_compensating_reversal",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "ledger_account_identity",
+                "ledger_balanced_posting",
+                "ledger_idempotency_conflict",
+                "ledger_balances_and_journal",
+                "ledger_compensating_reversal"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 19.795508,
+            "seed": "47",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "ledger_account_identity",
+                  "pass"
+                ],
+                [
+                  "ledger_balanced_posting",
+                  "pass"
+                ],
+                [
+                  "ledger_idempotency_conflict",
+                  "pass"
+                ],
+                [
+                  "ledger_balances_and_journal",
+                  "pass"
+                ],
+                [
+                  "ledger_compensating_reversal",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "ledger_account_identity",
+                "ledger_balanced_posting",
+                "ledger_idempotency_conflict",
+                "ledger_balances_and_journal",
+                "ledger_compensating_reversal"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 19.297634,
+            "seed": "89",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "ledger_account_identity",
+                  "pass"
+                ],
+                [
+                  "ledger_balanced_posting",
+                  "pass"
+                ],
+                [
+                  "ledger_idempotency_conflict",
+                  "pass"
+                ],
+                [
+                  "ledger_balances_and_journal",
+                  "pass"
+                ],
+                [
+                  "ledger_compensating_reversal",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "ledger_account_identity",
+                "ledger_balanced_posting",
+                "ledger_idempotency_conflict",
+                "ledger_balances_and_journal",
+                "ledger_compensating_reversal"
+              ]
+            }
+          }
+        ],
+        "independent_copies": 3,
+        "ok": true
+      },
+      "lease-coordination-api": {
+        "copies": [
+          {
+            "duration_seconds": 39.531512,
+            "seed": "13",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "lease_acquire_fencing",
+                  "pass"
+                ],
+                [
+                  "lease_concurrent_contention",
+                  "pass"
+                ],
+                [
+                  "lease_renewal",
+                  "pass"
+                ],
+                [
+                  "lease_release_reacquire",
+                  "pass"
+                ],
+                [
+                  "lease_state_and_failure_atomicity",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "lease_acquire_fencing",
+                "lease_concurrent_contention",
+                "lease_renewal",
+                "lease_release_reacquire",
+                "lease_state_and_failure_atomicity"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 39.623809,
+            "seed": "47",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "lease_acquire_fencing",
+                  "pass"
+                ],
+                [
+                  "lease_concurrent_contention",
+                  "pass"
+                ],
+                [
+                  "lease_renewal",
+                  "pass"
+                ],
+                [
+                  "lease_release_reacquire",
+                  "pass"
+                ],
+                [
+                  "lease_state_and_failure_atomicity",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "lease_acquire_fencing",
+                "lease_concurrent_contention",
+                "lease_renewal",
+                "lease_release_reacquire",
+                "lease_state_and_failure_atomicity"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 36.521744,
+            "seed": "89",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "lease_acquire_fencing",
+                  "pass"
+                ],
+                [
+                  "lease_concurrent_contention",
+                  "pass"
+                ],
+                [
+                  "lease_renewal",
+                  "pass"
+                ],
+                [
+                  "lease_release_reacquire",
+                  "pass"
+                ],
+                [
+                  "lease_state_and_failure_atomicity",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "lease_acquire_fencing",
+                "lease_concurrent_contention",
+                "lease_renewal",
+                "lease_release_reacquire",
+                "lease_state_and_failure_atomicity"
+              ]
+            }
+          }
+        ],
+        "independent_copies": 3,
+        "ok": true
+      },
+      "pii-redaction-pipeline": {
+        "copies": [
+          {
+            "duration_seconds": 11.634849,
+            "seed": "13",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "pii_selector_resolution",
+                  "pass"
+                ],
+                [
+                  "pii_redaction_actions",
+                  "pass"
+                ],
+                [
+                  "pii_structure_preservation",
+                  "pass"
+                ],
+                [
+                  "pii_rule_precedence",
+                  "pass"
+                ],
+                [
+                  "pii_atomic_audit",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "pii_selector_resolution",
+                "pii_redaction_actions",
+                "pii_structure_preservation",
+                "pii_rule_precedence",
+                "pii_atomic_audit"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 10.894235,
+            "seed": "47",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "pii_selector_resolution",
+                  "pass"
+                ],
+                [
+                  "pii_redaction_actions",
+                  "pass"
+                ],
+                [
+                  "pii_structure_preservation",
+                  "pass"
+                ],
+                [
+                  "pii_rule_precedence",
+                  "pass"
+                ],
+                [
+                  "pii_atomic_audit",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "pii_selector_resolution",
+                "pii_redaction_actions",
+                "pii_structure_preservation",
+                "pii_rule_precedence",
+                "pii_atomic_audit"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 9.969784,
+            "seed": "89",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "pii_selector_resolution",
+                  "pass"
+                ],
+                [
+                  "pii_redaction_actions",
+                  "pass"
+                ],
+                [
+                  "pii_structure_preservation",
+                  "pass"
+                ],
+                [
+                  "pii_rule_precedence",
+                  "pass"
+                ],
+                [
+                  "pii_atomic_audit",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "pii_selector_resolution",
+                "pii_redaction_actions",
+                "pii_structure_preservation",
+                "pii_rule_precedence",
+                "pii_atomic_audit"
+              ]
+            }
+          }
+        ],
+        "independent_copies": 3,
+        "ok": true
+      },
+      "signed-artifact-verifier": {
+        "copies": [
+          {
+            "duration_seconds": 16.357284,
+            "seed": "13",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "signed_manifest_authenticity",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_inventory",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_content_integrity",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_trust_window",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_atomic_report",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "signed_manifest_authenticity",
+                "signed_manifest_inventory",
+                "signed_manifest_content_integrity",
+                "signed_manifest_trust_window",
+                "signed_manifest_atomic_report"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 16.278139,
+            "seed": "47",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "signed_manifest_authenticity",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_inventory",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_content_integrity",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_trust_window",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_atomic_report",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "signed_manifest_authenticity",
+                "signed_manifest_inventory",
+                "signed_manifest_content_integrity",
+                "signed_manifest_trust_window",
+                "signed_manifest_atomic_report"
+              ]
+            }
+          },
+          {
+            "duration_seconds": 16.835173,
+            "seed": "89",
+            "signature": {
+              "classification_reason": "",
+              "critical_ok": true,
+              "execution_status": "valid",
+              "failed_checks": [],
+              "observations": [
+                [
+                  "signed_manifest_authenticity",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_inventory",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_content_integrity",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_trust_window",
+                  "pass"
+                ],
+                [
+                  "signed_manifest_atomic_report",
+                  "pass"
+                ]
+              ],
+              "outcome_status": "success",
+              "passed_checks": [
+                "signed_manifest_authenticity",
+                "signed_manifest_inventory",
+                "signed_manifest_content_integrity",
+                "signed_manifest_trust_window",
+                "signed_manifest_atomic_report"
+              ]
+            }
+          }
+        ],
+        "independent_copies": 3,
+        "ok": true
+      }
+    },
+    "command": [
+      "/home/fabio/hermes-professore/.venv/bin/python3",
+      "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/audit_task_expansion_batch3.py",
+      "--full"
+    ],
+    "dispatcher_recognition": {
+      "detail": "recognized=['double-entry-ledger-api', 'lease-coordination-api', 'pii-redaction-pipeline', 'signed-artifact-verifier']",
+      "ok": true
+    },
+    "duration_seconds": 767.884045,
+    "exit_code": 0,
+    "mutations": {
+      "denominator": 20,
+      "ok": true,
+      "passed": 20,
+      "rows": [
+        {
+          "actual_failed_checks": [
+            "signed_manifest_authenticity"
+          ],
+          "actual_passed_checks": [
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "duration_seconds": 17.199686,
+          "expected_failed_checks": [
+            "signed_manifest_authenticity"
+          ],
+          "expected_passed_checks": [
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "mutant": "signed_manifest_authenticity",
+          "ok": true,
+          "task_id": "signed-artifact-verifier"
+        },
+        {
+          "actual_failed_checks": [
+            "signed_manifest_inventory"
+          ],
+          "actual_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "duration_seconds": 17.048087,
+          "expected_failed_checks": [
+            "signed_manifest_inventory"
+          ],
+          "expected_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "mutant": "signed_manifest_inventory",
+          "ok": true,
+          "task_id": "signed-artifact-verifier"
+        },
+        {
+          "actual_failed_checks": [
+            "signed_manifest_content_integrity"
+          ],
+          "actual_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "duration_seconds": 17.590308,
+          "expected_failed_checks": [
+            "signed_manifest_content_integrity"
+          ],
+          "expected_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_trust_window",
+            "signed_manifest_atomic_report"
+          ],
+          "mutant": "signed_manifest_content_integrity",
+          "ok": true,
+          "task_id": "signed-artifact-verifier"
+        },
+        {
+          "actual_failed_checks": [
+            "signed_manifest_trust_window"
+          ],
+          "actual_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_atomic_report"
+          ],
+          "duration_seconds": 17.417833,
+          "expected_failed_checks": [
+            "signed_manifest_trust_window"
+          ],
+          "expected_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_atomic_report"
+          ],
+          "mutant": "signed_manifest_trust_window",
+          "ok": true,
+          "task_id": "signed-artifact-verifier"
+        },
+        {
+          "actual_failed_checks": [
+            "signed_manifest_atomic_report"
+          ],
+          "actual_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window"
+          ],
+          "duration_seconds": 16.98115,
+          "expected_failed_checks": [
+            "signed_manifest_atomic_report"
+          ],
+          "expected_passed_checks": [
+            "signed_manifest_authenticity",
+            "signed_manifest_inventory",
+            "signed_manifest_content_integrity",
+            "signed_manifest_trust_window"
+          ],
+          "mutant": "signed_manifest_atomic_report",
+          "ok": true,
+          "task_id": "signed-artifact-verifier"
+        },
+        {
+          "actual_failed_checks": [
+            "pii_selector_resolution"
+          ],
+          "actual_passed_checks": [
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "duration_seconds": 10.289598,
+          "expected_failed_checks": [
+            "pii_selector_resolution"
+          ],
+          "expected_passed_checks": [
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "mutant": "pii_selector_resolution",
+          "ok": true,
+          "task_id": "pii-redaction-pipeline"
+        },
+        {
+          "actual_failed_checks": [
+            "pii_redaction_actions"
+          ],
+          "actual_passed_checks": [
+            "pii_selector_resolution",
+            "pii_structure_preservation",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "duration_seconds": 10.68,
+          "expected_failed_checks": [
+            "pii_redaction_actions"
+          ],
+          "expected_passed_checks": [
+            "pii_selector_resolution",
+            "pii_structure_preservation",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "mutant": "pii_redaction_actions",
+          "ok": true,
+          "task_id": "pii-redaction-pipeline"
+        },
+        {
+          "actual_failed_checks": [
+            "pii_structure_preservation"
+          ],
+          "actual_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "duration_seconds": 10.924135,
+          "expected_failed_checks": [
+            "pii_structure_preservation"
+          ],
+          "expected_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_rule_precedence",
+            "pii_atomic_audit"
+          ],
+          "mutant": "pii_structure_preservation",
+          "ok": true,
+          "task_id": "pii-redaction-pipeline"
+        },
+        {
+          "actual_failed_checks": [
+            "pii_rule_precedence"
+          ],
+          "actual_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_atomic_audit"
+          ],
+          "duration_seconds": 10.700736,
+          "expected_failed_checks": [
+            "pii_rule_precedence"
+          ],
+          "expected_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_atomic_audit"
+          ],
+          "mutant": "pii_rule_precedence",
+          "ok": true,
+          "task_id": "pii-redaction-pipeline"
+        },
+        {
+          "actual_failed_checks": [
+            "pii_atomic_audit"
+          ],
+          "actual_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_rule_precedence"
+          ],
+          "duration_seconds": 10.839798,
+          "expected_failed_checks": [
+            "pii_atomic_audit"
+          ],
+          "expected_passed_checks": [
+            "pii_selector_resolution",
+            "pii_redaction_actions",
+            "pii_structure_preservation",
+            "pii_rule_precedence"
+          ],
+          "mutant": "pii_atomic_audit",
+          "ok": true,
+          "task_id": "pii-redaction-pipeline"
+        },
+        {
+          "actual_failed_checks": [
+            "lease_acquire_fencing"
+          ],
+          "actual_passed_checks": [
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "duration_seconds": 36.768299,
+          "expected_failed_checks": [
+            "lease_acquire_fencing"
+          ],
+          "expected_passed_checks": [
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "mutant": "lease_acquire_fencing",
+          "ok": true,
+          "task_id": "lease-coordination-api"
+        },
+        {
+          "actual_failed_checks": [
+            "lease_concurrent_contention"
+          ],
+          "actual_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_renewal",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "duration_seconds": 34.761619,
+          "expected_failed_checks": [
+            "lease_concurrent_contention"
+          ],
+          "expected_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_renewal",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "mutant": "lease_concurrent_contention",
+          "ok": true,
+          "task_id": "lease-coordination-api"
+        },
+        {
+          "actual_failed_checks": [
+            "lease_renewal"
+          ],
+          "actual_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "duration_seconds": 36.973586,
+          "expected_failed_checks": [
+            "lease_renewal"
+          ],
+          "expected_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_release_reacquire",
+            "lease_state_and_failure_atomicity"
+          ],
+          "mutant": "lease_renewal",
+          "ok": true,
+          "task_id": "lease-coordination-api"
+        },
+        {
+          "actual_failed_checks": [
+            "lease_release_reacquire"
+          ],
+          "actual_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_state_and_failure_atomicity"
+          ],
+          "duration_seconds": 37.75181,
+          "expected_failed_checks": [
+            "lease_release_reacquire"
+          ],
+          "expected_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_state_and_failure_atomicity"
+          ],
+          "mutant": "lease_release_reacquire",
+          "ok": true,
+          "task_id": "lease-coordination-api"
+        },
+        {
+          "actual_failed_checks": [
+            "lease_state_and_failure_atomicity"
+          ],
+          "actual_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_release_reacquire"
+          ],
+          "duration_seconds": 35.390354,
+          "expected_failed_checks": [
+            "lease_state_and_failure_atomicity"
+          ],
+          "expected_passed_checks": [
+            "lease_acquire_fencing",
+            "lease_concurrent_contention",
+            "lease_renewal",
+            "lease_release_reacquire"
+          ],
+          "mutant": "lease_state_and_failure_atomicity",
+          "ok": true,
+          "task_id": "lease-coordination-api"
+        },
+        {
+          "actual_failed_checks": [
+            "ledger_account_identity"
+          ],
+          "actual_passed_checks": [
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "duration_seconds": 19.564383,
+          "expected_failed_checks": [
+            "ledger_account_identity"
+          ],
+          "expected_passed_checks": [
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "mutant": "ledger_account_identity",
+          "ok": true,
+          "task_id": "double-entry-ledger-api"
+        },
+        {
+          "actual_failed_checks": [
+            "ledger_balanced_posting"
+          ],
+          "actual_passed_checks": [
+            "ledger_account_identity",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "duration_seconds": 19.807364,
+          "expected_failed_checks": [
+            "ledger_balanced_posting"
+          ],
+          "expected_passed_checks": [
+            "ledger_account_identity",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "mutant": "ledger_balanced_posting",
+          "ok": true,
+          "task_id": "double-entry-ledger-api"
+        },
+        {
+          "actual_failed_checks": [
+            "ledger_idempotency_conflict"
+          ],
+          "actual_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "duration_seconds": 19.521113,
+          "expected_failed_checks": [
+            "ledger_idempotency_conflict"
+          ],
+          "expected_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_balances_and_journal",
+            "ledger_compensating_reversal"
+          ],
+          "mutant": "ledger_idempotency_conflict",
+          "ok": true,
+          "task_id": "double-entry-ledger-api"
+        },
+        {
+          "actual_failed_checks": [
+            "ledger_balances_and_journal"
+          ],
+          "actual_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_compensating_reversal"
+          ],
+          "duration_seconds": 22.4908,
+          "expected_failed_checks": [
+            "ledger_balances_and_journal"
+          ],
+          "expected_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_compensating_reversal"
+          ],
+          "mutant": "ledger_balances_and_journal",
+          "ok": true,
+          "task_id": "double-entry-ledger-api"
+        },
+        {
+          "actual_failed_checks": [
+            "ledger_compensating_reversal"
+          ],
+          "actual_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal"
+          ],
+          "duration_seconds": 18.753478,
+          "expected_failed_checks": [
+            "ledger_compensating_reversal"
+          ],
+          "expected_passed_checks": [
+            "ledger_account_identity",
+            "ledger_balanced_posting",
+            "ledger_idempotency_conflict",
+            "ledger_balances_and_journal"
+          ],
+          "mutant": "ledger_compensating_reversal",
+          "ok": true,
+          "task_id": "double-entry-ledger-api"
+        }
+      ]
+    },
+    "ok": true,
+    "reference_tasks": {
+      "double-entry-ledger-api": {
+        "checks": [
+          {
+            "check_id": "ledger_account_identity",
+            "detail": "restart=[(200, {'currency': 'USD', 'id': 'acct.Main-1'}), (200, {'account_id': 'acct.Main-1', 'balance': '0.00', 'currency': 'USD'}), (200, {'account_id': 'acct.Main-1', 'entries': []})]; child_exit=0 | POST /accounts=(409, {'detail': 'account exists'}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': '', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': ' bad', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'id'], 'msg': 'Value error, invalid id', 'input': '\u00e9', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'usd', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'us', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'US', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'USDX', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'currency'], 'msg': 'Value error, currency must be three uppercase ASCII letters', 'input': 'U1D', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'missing', 'loc': ['body', 'currency'], 'msg': 'Field required', 'input': {'id': 'new'}}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /accounts=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'id'], 'msg': 'Input should be a valid string', 'input': 7}]}); full_state_equal=True | PUT /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); full_state_equal=True | PATCH /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); full_state_equal=True | DELETE /accounts/acct.Main-1=(405, {'detail': 'Method Not Allowed'}); full_state_equal=True",
+            "status": "pass"
+          },
+          {
+            "check_id": "ledger_balanced_posting",
+            "detail": "valid=(201, {'id': '9b96444f-3705-4c35-bee5-980d6878cc3f', 'idempotency_key': 'bal-valid', 'currency': 'USD', 'entries': [{'account_id': 'bal.A', 'direction': 'debit', 'amount': '2.00'}, {'account_id': 'bal.B', 'direction': 'credit', 'amount': '0.50'}, {'account_id': 'bal.C', 'direction': 'credit', 'amount': '1.50'}], 'reverses': None}) | POST /transactions=(422, {'detail': 'unbalanced transaction'}); full_state_equal=True | POST /transactions=(422, {'detail': 'mixed currencies'}); full_state_equal=True | POST /transactions=(422, {'detail': 'unknown account'}); full_state_equal=True | POST /transactions=(422, {'detail': 'at least two entries required'}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0.0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '00.10', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '01', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '+1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '-1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '.1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.000', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1e2', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1,00', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'NaN', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'Infinity', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': None}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'direction'], 'msg': 'Value error, invalid direction', 'input': 'charge', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'account_id'], 'msg': 'Value error, invalid id', 'input': 'bad id', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'entries', 0, 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': 'Idempotency-Key required'}); full_state_equal=True | huge_status=201; huge_schema=True; huge_balances=((200, {'account_id': 'bal.largeA', 'currency': 'USD', 'balance': '-99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}), (200, {'account_id': 'bal.largeB', 'currency': 'USD', 'balance': '99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}))",
+            "status": "pass"
+          },
+          {
+            "check_id": "ledger_idempotency_conflict",
+            "detail": "first=(201, {'id': '30d3924a-fc38-4e74-8796-0f8b6aa30205', 'idempotency_key': 'idem-key', 'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'direction': 'debit', 'amount': '5.00'}, {'account_id': 'idem.B', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'idem.C', 'direction': 'credit', 'amount': '3.00'}], 'reverses': None}); restart_replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'amount': '5.00', 'direction': 'debit'}, {'account_id': 'idem.B', 'amount': '2.00', 'direction': 'credit'}, {'account_id': 'idem.C', 'amount': '3.00', 'direction': 'credit'}], 'id': '30d3924a-fc38-4e74-8796-0f8b6aa30205', 'idempotency_key': 'idem-key', 'reverses': None})]; child_exit=0 | POST /transactions=(409, {'detail': 'idempotency conflict'}); full_state_equal=True | race=[(201, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'idempotency_key': 'race-duplicate', 'reverses': None})]; journal={'account_id': 'race.A', 'entries': [{'transaction_id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'sequence': 4, 'account_id': 'race.A', 'direction': 'debit', 'amount': '7.00'}]}; durable=[(200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'account_id': 'race.A', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit', 'sequence': 4, 'transaction_id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806'}]})]; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "ledger_balances_and_journal",
+            "detail": "transactions=[{'id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'idempotency_key': 'journal-one', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}], 'reverses': None}, {'id': 'f0536259-65fc-4bb1-9e53-cf8e230abfc9', 'idempotency_key': 'journal-two', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}, {'account_id': 'journal.C', 'direction': 'debit', 'amount': '4.25'}], 'reverses': None}]; balance=(200, {'account_id': 'journal.A', 'currency': 'USD', 'balance': '3.20'}); journal_a=(200, {'account_id': 'journal.A', 'entries': [{'transaction_id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'transaction_id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'transaction_id': 'f0536259-65fc-4bb1-9e53-cf8e230abfc9', 'sequence': 6, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}]}); journal_b=(200, {'account_id': 'journal.B', 'entries': [{'transaction_id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'sequence': 5, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}, {'transaction_id': 'f0536259-65fc-4bb1-9e53-cf8e230abfc9', 'sequence': 6, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}]}); restart_equal=True; child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "ledger_compensating_reversal",
+            "detail": "POST /transactions/e58c9aa2-3297-4761-85a8-d76c60938dea/reverse=(409, {'detail': 'already reversed'}); full_state_equal=True | race=[(409, {'detail': 'already reversed'}), (201, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'idempotency_key': 'reverse-race-b', 'reverses': 'e58c9aa2-3297-4761-85a8-d76c60938dea'})]; replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'idempotency_key': 'reverse-race-b', 'reverses': 'e58c9aa2-3297-4761-85a8-d76c60938dea'})]; original_immutable=True; balances=((200, {'account_id': 'reverse.A', 'currency': 'USD', 'balance': '0.00'}), (200, {'account_id': 'reverse.B', 'currency': 'USD', 'balance': '0.00'})); journals=((200, {'account_id': 'reverse.A', 'entries': [{'transaction_id': 'e58c9aa2-3297-4761-85a8-d76c60938dea', 'sequence': 7, 'account_id': 'reverse.A', 'direction': 'debit', 'amount': '8.75'}, {'transaction_id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'sequence': 8, 'account_id': 'reverse.A', 'direction': 'credit', 'amount': '8.75'}]}), (200, {'account_id': 'reverse.B', 'entries': [{'transaction_id': 'e58c9aa2-3297-4761-85a8-d76c60938dea', 'sequence': 7, 'account_id': 'reverse.B', 'direction': 'credit', 'amount': '8.75'}, {'transaction_id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'sequence': 8, 'account_id': 'reverse.B', 'direction': 'debit', 'amount': '8.75'}]})); unknown=(404, {'detail': 'not found'}),atomic=True; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "evaluation_result_schema",
+            "detail": "keys=['classification_reason', 'critical_ok', 'evaluation_instance_id', 'execution_status', 'failed_checks', 'lifecycle_finished_at', 'lifecycle_started_at', 'observations', 'outcome_status', 'passed_checks', 'result_path', 'summary_path', 'task_id']",
+            "status": "pass"
+          }
+        ],
+        "duration_seconds": 19.274191,
+        "functional_denominator": 5,
+        "functional_passed": 5,
+        "ok": true,
+        "terminal_schema_passed": 1,
+        "total_denominator": 6,
+        "total_passed": 6
+      },
+      "lease-coordination-api": {
+        "checks": [
+          {
+            "check_id": "lease_acquire_fencing",
+            "detail": "first=(201, {'resource': 'generations', 'owner': 'owner-a', 'fencing_token': 1, 'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'status': 'active'}) | op=(409, {'detail': 'lease active'}); snapshot_before=(200, {'resource': 'generations', 'owner': 'owner-a', 'fencing_token': 1, 'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-01-01T00:00:00Z', 'expires_at': '2040-01-01T00:00:10Z', 'fencing_token': 1, 'owner': 'owner-a', 'resource': 'generations', 'status': 'active'}); child_exit=0 | second=(201, {'resource': 'generations', 'owner': 'owner-b', 'fencing_token': 2, 'acquired_at': '2040-01-01T00:00:10Z', 'expires_at': '2040-01-01T00:00:20Z', 'status': 'active'}); third=(201, {'resource': 'generations', 'owner': 'owner-c', 'fencing_token': 3, 'acquired_at': '2040-01-01T00:00:12Z', 'expires_at': '2040-01-01T00:00:22Z', 'status': 'active'}); fourth=(201, {'acquired_at': '2040-01-01T00:00:22Z', 'expires_at': '2040-01-01T00:00:32Z', 'fencing_token': 4, 'owner': 'owner-d', 'resource': 'generations', 'status': 'active'}); child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "lease_concurrent_contention",
+            "detail": "outcomes=[(201, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-a', 'resource': 'process-race', 'status': 'active'}, '/tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa'), (409, {'detail': 'lease active'}, '/tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa')]; durable=(200, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-a', 'resource': 'process-race', 'status': 'active'}); takeover=(201, {'acquired_at': '2040-02-01T00:00:10Z', 'expires_at': '2040-02-01T00:00:20Z', 'fencing_token': 2, 'owner': 'race-next', 'resource': 'process-race', 'status': 'active'}); /tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0; child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "lease_renewal",
+            "detail": "op=(412, {'detail': 'wrong owner'}); snapshot_before=(200, {'resource': 'renew-wrong', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-wrong', 'status': 'active'}); child_exit=0 | op=(412, {'detail': 'stale fencing token'}); snapshot_before=(200, {'resource': 'renew-stale', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-stale', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'renewal must extend expiry'}); snapshot_before=(200, {'resource': 'renew-short', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-short', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'operation time moved backwards'}); snapshot_before=(200, {'resource': 'renew-back', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-back', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'lease inactive'}); snapshot_before=(200, {'resource': 'renew-expired', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'status': 'expired'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:10Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-expired', 'status': 'expired'}); child_exit=0 | good=(200, {'resource': 'renew-good', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'status': 'active'}) | op=(409, {'detail': 'operation time moved backwards'}); snapshot_before=(200, {'resource': 'renew-good', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-03-01T00:00:00Z', 'expires_at': '2040-03-01T00:00:23Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'renew-good', 'status': 'active'}); child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "lease_release_reacquire",
+            "detail": "release=200; reacquire=(201, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}) | op=(412, {'detail': 'stale fencing token'}); snapshot_before=(200, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'fencing_token': 2, 'owner': 'same', 'resource': 'release-cycle', 'status': 'active'}); child_exit=0 | op=(412, {'detail': 'stale fencing token'}); snapshot_before=(200, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'fencing_token': 2, 'owner': 'same', 'resource': 'release-cycle', 'status': 'active'}); child_exit=0 | op=(412, {'detail': 'wrong owner'}); snapshot_before=(200, {'resource': 'release-cycle', 'owner': 'same', 'fencing_token': 2, 'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-04-01T00:00:02Z', 'expires_at': '2040-04-01T00:00:22Z', 'fencing_token': 2, 'owner': 'same', 'resource': 'release-cycle', 'status': 'active'}); child_exit=0 | op=(409, {'detail': 'already released'}); snapshot_before=(200, {'resource': 'double-release', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-04-02T00:00:00Z', 'expires_at': '2040-04-02T00:00:20Z', 'status': 'released'}); snapshot_after=(200, {'acquired_at': '2040-04-02T00:00:00Z', 'expires_at': '2040-04-02T00:00:20Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'double-release', 'status': 'released'}); child_exit=0 | op=(409, {'detail': 'lease expired'}); snapshot_before=(200, {'resource': 'release-expired', 'owner': 'holder', 'fencing_token': 1, 'acquired_at': '2040-04-03T00:00:00Z', 'expires_at': '2040-04-03T00:00:01Z', 'status': 'expired'}); snapshot_after=(200, {'acquired_at': '2040-04-03T00:00:00Z', 'expires_at': '2040-04-03T00:00:01Z', 'fencing_token': 1, 'owner': 'holder', 'resource': 'release-expired', 'status': 'expired'}); child_exit=0",
+            "status": "pass"
+          },
+          {
+            "check_id": "lease_state_and_failure_atomicity",
+            "detail": "active=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'active'}); expired=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'expired'}); release=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'released'}); historical=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'active'}); boundary=(200, {'resource': 'state', 'owner': 'state-owner', 'fencing_token': 1, 'acquired_at': '2040-05-01T00:00:00Z', 'expires_at': '2040-05-01T00:00:10Z', 'status': 'released'}) | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'duration_seconds'], 'msg': 'Value error, invalid duration', 'input': 0, 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'duration_seconds'], 'msg': 'Value error, invalid duration', 'input': 86401, 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'int_type', 'loc': ['body', 'duration_seconds'], 'msg': 'Input should be a valid integer', 'input': 1.5}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'int_type', 'loc': ['body', 'duration_seconds'], 'msg': 'Input should be a valid integer', 'input': '1'}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'owner'], 'msg': 'Value error, invalid owner', 'input': 'bad owner', 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'now'], 'msg': 'Value error, explicit offset required', 'input': 'not-a-time', 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'now'], 'msg': 'Value error, explicit offset required', 'input': '2040-06-01T00:00:01', 'ctx': {'error': {}}}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | op=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); snapshot_before=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); snapshot_after=(200, {'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'fencing_token': 1, 'owner': 'valid', 'resource': 'validation', 'status': 'active'}); child_exit=0 | predate=(409, {'detail': 'as_of predates generation'}); unknown=(404, {'detail': 'not found'}); absent=((404, {'detail': 'not found'}), (404, {'detail': 'not found'})); bad_resource=422; query_times=(422, 422); offset=(200, {'resource': 'validation', 'owner': 'valid', 'fencing_token': 1, 'acquired_at': '2040-06-01T00:00:00Z', 'expires_at': '2040-06-01T00:01:40Z', 'status': 'active'}); backward=(409, {'detail': 'operation time moved backwards'})",
+            "status": "pass"
+          },
+          {
+            "check_id": "evaluation_result_schema",
+            "detail": "keys=['classification_reason', 'critical_ok', 'evaluation_instance_id', 'execution_status', 'failed_checks', 'lifecycle_finished_at', 'lifecycle_started_at', 'observations', 'outcome_status', 'passed_checks', 'result_path', 'summary_path', 'task_id']",
+            "status": "pass"
+          }
+        ],
+        "duration_seconds": 37.484874,
+        "functional_denominator": 5,
+        "functional_passed": 5,
+        "ok": true,
+        "terminal_schema_passed": 1,
+        "total_denominator": 6,
+        "total_passed": 6
+      },
+      "pii-redaction-pipeline": {
+        "checks": [
+          {
+            "check_id": "pii_selector_resolution",
+            "detail": "exit=0; redacted=[{'a/b': {'~key': 'E'}, 'arr': [10, 'I'], 'star': {'*': 'W'}}, {'a/b': {'~key': 'M'}, 'other': {'plain': 1}}]; invalid=['root:exit=1,preserved=True,staging=[],controlled=True', 'relative:exit=1,preserved=True,staging=[],controlled=True', 'bad-escape:exit=1,preserved=True,staging=[],controlled=True', 'short-escape:exit=1,preserved=True,staging=[],controlled=True']",
+            "status": "pass"
+          },
+          {
+            "check_id": "pii_redaction_actions",
+            "detail": "redact={'audit': [{'action': 'redact', 'path': '/0', 'rule_id': 'r0', 'selector': '/0'}, {'action': 'redact', 'path': '/1', 'rule_id': 'r1', 'selector': '/1'}, {'action': 'redact', 'path': '/2', 'rule_id': 'r2', 'selector': '/2'}], 'redacted': ['R0', 'R1', 'R2']}; pseudo_a=['hmac-sha256:0f43e92736d3cd3c2d39797ab1afd0026fe599ef285429ed12df4966c495d48b', 'hmac-sha256:025ec087fa9fd2240493ac781b40891e358b550361019f077a4778ca46092b28', 'hmac-sha256:e2d158e037b13fa3b6e21d8a2a673798d12124cfe8d94437cca7efa6f8f41e26']; pseudo_b=['hmac-sha256:8f60e0f934b339a73a5bbbe56daa8c6c8a2294ee80a51b466cac7cfac621b079', 'hmac-sha256:042649f0096684fe53fd88d1708738a49a7ac34f4cf7760cfbb746a082c26d1a', 'hmac-sha256:b41ae29228eeb6932ed260c6ff2ed2fc96270c1bc15d7a942264120fc7b8f935']; remove={'audit': [{'action': 'remove', 'path': '/0/drop', 'rule_id': 'object', 'selector': '/0/drop'}, {'action': 'remove', 'path': '/1/1', 'rule_id': 'array-one', 'selector': '/1/1'}, {'action': 'remove', 'path': '/1/2', 'rule_id': 'array-two', 'selector': '/1/2'}], 'redacted': [{'keep': 7}, ['a', 'd']]}",
+            "status": "pass"
+          },
+          {
+            "check_id": "pii_structure_preservation",
+            "detail": "exit=0; redacted={'array': [{'secret': 'second'}], 'branch': {'keep': [1, None, False], 'secret': 'ancestor-redacted'}, 'untouched': {'number': 1.25, 'unicode': 'caf\u00e9'}}",
+            "status": "pass"
+          },
+          {
+            "check_id": "pii_rule_precedence",
+            "detail": "precedence={'audit': [{'action': 'redact', 'path': '/0/v', 'rule_id': 'exact', 'selector': '/0/v'}, {'action': 'redact', 'path': '/0/w', 'rule_id': 'wild', 'selector': '/0/*'}], 'redacted': [{'v': 'E', 'w': 'W'}]}; identical_exit=0; conflicts=['different-replacement:exit=1,preserved=True,staging=[],controlled=True', 'different-action:exit=1,preserved=True,staging=[],controlled=True', 'different-selector:exit=1,preserved=True,staging=[],controlled=True', 'duplicate-id:exit=1,preserved=True,staging=[],controlled=True']; permutation_bytes=True",
+            "status": "pass"
+          },
+          {
+            "check_id": "pii_atomic_audit",
+            "detail": "exit=0/0; schema=True; audit=[{'action': 'redact', 'path': '/0/a~1b', 'rule_id': 'slash', 'selector': '/0/a~1b'}, {'action': 'redact', 'path': '/0/z', 'rule_id': 'zulu', 'selector': '/0/z'}, {'action': 'remove', 'path': '/1/remove', 'rule_id': 'remove', 'selector': '/1/remove'}, {'action': 'redact', 'path': '/1/til~0de', 'rule_id': 'tilde', 'selector': '/1/til~0de'}]; deterministic=True; malformed=['malformed-input:exit=1,preserved=True,staging=[],controlled=True', 'scalar-input:exit=1,preserved=True,staging=[],controlled=True', 'malformed-rules:exit=1,preserved=True,staging=[],controlled=True', 'rules-extra:exit=1,preserved=True,staging=[],controlled=True', 'rule-extra:exit=1,preserved=True,staging=[],controlled=True', 'bad-action:exit=1,preserved=True,staging=[],controlled=True', 'missing-replacement:exit=1,preserved=True,staging=[],controlled=True', 'extra-replacement:exit=1,preserved=True,staging=[],controlled=True', 'malformed-key:exit=1,preserved=True,staging=[],controlled=True', 'key-extra:exit=1,preserved=True,staging=[],controlled=True', 'key-empty:exit=1,preserved=True,staging=[],controlled=True', 'key-odd:exit=1,preserved=True,staging=[],controlled=True', 'key-nonhex:exit=1,preserved=True,staging=[],controlled=True']",
+            "status": "pass"
+          },
+          {
+            "check_id": "evaluation_result_schema",
+            "detail": "keys=['classification_reason', 'critical_ok', 'evaluation_instance_id', 'execution_status', 'failed_checks', 'lifecycle_finished_at', 'lifecycle_started_at', 'observations', 'outcome_status', 'passed_checks', 'result_path', 'summary_path', 'task_id']",
+            "status": "pass"
+          }
+        ],
+        "duration_seconds": 10.435527,
+        "functional_denominator": 5,
+        "functional_passed": 5,
+        "ok": true,
+        "terminal_schema_passed": 1,
+        "total_denominator": 6,
+        "total_passed": 6
+      },
+      "signed-artifact-verifier": {
+        "checks": [
+          {
+            "check_id": "signed_manifest_authenticity",
+            "detail": "[('canonical_unicode_selected_key', True), ('altered_signature', True), ('altered_payload', True), ('unknown_key', True), ('duplicate_key', True), ('secret_too_short', True), ('secret_too_long', True), ('secret_odd', True)]",
+            "status": "pass"
+          },
+          {
+            "check_id": "signed_manifest_inventory",
+            "detail": "[('missing', True), ('extra', True), ('unsafe_0', True), ('unsafe_1', True), ('unsafe_2', True), ('unsafe_3', True), ('unsafe_4', True), ('unsafe_5', True), ('unsafe_6', True), ('unsafe_7', True), ('duplicate_path', True), ('symlink', True), ('fifo', True), ('output_inside_root', True)]",
+            "status": "pass"
+          },
+          {
+            "check_id": "signed_manifest_content_integrity",
+            "detail": "[('same_size_digest', True), ('declared_size', True), ('observed_size', True), ('nonregular_socket', True)]",
+            "status": "pass"
+          },
+          {
+            "check_id": "signed_manifest_trust_window",
+            "detail": "[('interval_0', True), ('interval_1', True), ('interval_2', True), ('interval_3', True), ('interval_4', True), ('interval_5', True), ('interval_6', True), ('interval_7', True), ('bad_as_of_2035-01-01T00:00:00', True), ('bad_as_of_2035-01-01 00:00:00Z', True), ('bad_as_of_2035-01-01T00:00Z', True), ('bad_as_of_not-a-time', True), ('bad_as_of_2035-13-01T00:00:00Z', True), ('bad_as_of_2035-01-01T00:00:00+24:00', True), ('naive_key_time', True), ('malformed_manifest_time', True)]",
+            "status": "pass"
+          },
+          {
+            "check_id": "signed_manifest_atomic_report",
+            "detail": "cases=45,failed=[]",
+            "status": "pass"
+          },
+          {
+            "check_id": "evaluation_result_schema",
+            "detail": "keys=['classification_reason', 'critical_ok', 'evaluation_instance_id', 'execution_status', 'failed_checks', 'lifecycle_finished_at', 'lifecycle_started_at', 'observations', 'outcome_status', 'passed_checks', 'result_path', 'summary_path', 'task_id']",
+            "status": "pass"
+          }
+        ],
+        "duration_seconds": 19.104,
+        "functional_denominator": 5,
+        "functional_passed": 5,
+        "ok": true,
+        "terminal_schema_passed": 1,
+        "total_denominator": 6,
+        "total_passed": 6
+      }
+    }
+  },
+  "efficacy_cells": 0,
+  "generated_at": "2026-07-17T08:12:27.971916Z",
+  "go": true,
+  "independent_review": {
+    "claimed": false,
+    "detail": "Independent review is outside this auditor and is not claimed by this report.",
+    "evaluated": false
+  },
+  "interpreter_fingerprint": {
+    "cache_tag": "cpython-312",
+    "executable": "/home/fabio/hermes-professore/.venv/bin/python3",
+    "implementation": "CPython",
+    "platform": "Linux-6.8.0-134-generic-x86_64-with-glibc2.39",
+    "version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]"
+  },
+  "legacy_compatibility": {
+    "commands": [
+      {
+        "command": [
+          "/home/fabio/hermes-professore/.venv/bin/python3",
+          "-m",
+          "pytest",
+          "-q",
+          "tests/test_task_expansion_batch1.py",
+          "tests/test_task_expansion_batch2.py"
+        ],
+        "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+        "duration_seconds": 761.674393,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": ".........                                                                [100%]\n9 passed in 761.19s (0:12:41)\n"
+      }
+    ],
+    "ok": true,
+    "source": "executed_configured_subset"
+  },
+  "mode": "full",
+  "operations": {
+    "cleanup_removed": [
+      "benchmarks/grading-env/__pycache__",
+      "benchmarks/grading-env/__pycache__/audit_task_expansion_batch3.cpython-312.pyc"
+    ],
+    "generator": {
+      "command": [
+        "/home/fabio/hermes-professore/.venv/bin/python3",
+        "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/build_task_expansion_batch3.py"
+      ],
+      "cwd": "/tmp",
+      "duration_seconds": 0.044024,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "",
+      "stdout": "{\n  \"ok\": true,\n  \"tasks\": [\n    \"signed-artifact-verifier\",\n    \"pii-redaction-pipeline\",\n    \"lease-coordination-api\",\n    \"double-entry-ledger-api\"\n  ],\n  \"files\": [\n    \"benchmarks/signed-artifact-verifier/SPEC.md\",\n    \"benchmarks/signed-artifact-verifier/CLAIMS_CONTRACT.template.json\",\n    \"benchmarks/signed-artifact-verifier/README.md\",\n    \"benchmarks/signed-artifact-verifier/pyproject.toml\",\n    \"benchmarks/signed-artifact-verifier/artifact_verifier/__init__.py\",\n    \"benchmarks/signed-artifact-verifier/artifact_verifier/verify.py\",\n    \"benchmarks/pii-redaction-pipeline/SPEC.md\",\n    \"benchmarks/pii-redaction-pipeline/CLAIMS_CONTRACT.template.json\",\n    \"benchmarks/pii-redaction-pipeline/README.md\",\n    \"benchmarks/pii-redaction-pipeline/pyproject.toml\",\n    \"benchmarks/pii-redaction-pipeline/pii_redactor/__init__.py\",\n    \"benchmarks/pii-redaction-pipeline/pii_redactor/redact.py\",\n    \"benchmarks/lease-coordination-api/SPEC.md\",\n    \"benchmarks/lease-coordination-api/CLAIMS_CONTRACT.template.json\",\n    \"benchmarks/lease-coordination-api/README.md\",\n    \"benchmarks/lease-coordination-api/pyproject.toml\",\n    \"benchmarks/lease-coordination-api/lease_api/__init__.py\",\n    \"benchmarks/lease-coordination-api/lease_api/main.py\",\n    \"benchmarks/double-entry-ledger-api/SPEC.md\",\n    \"benchmarks/double-entry-ledger-api/CLAIMS_CONTRACT.template.json\",\n    \"benchmarks/double-entry-ledger-api/README.md\",\n    \"benchmarks/double-entry-ledger-api/pyproject.toml\",\n    \"benchmarks/double-entry-ledger-api/ledger_api/__init__.py\",\n    \"benchmarks/double-entry-ledger-api/ledger_api/main.py\"\n  ]\n}\n"
+    }
+  },
+  "packaging": {
+    "ok": true,
+    "tasks": {
+      "double-entry-ledger-api": {
+        "install": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--target",
+            "/tmp/batch3-packaging-dgm88gl6/install-double-entry-ledger-api",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 0.435858,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: double-entry-ledger-api-reference\nSuccessfully installed double-entry-ledger-api-reference-0.1.0\n"
+        },
+        "ok": true,
+        "py_compile": {
+          "detail": "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/ledger_api/main.py",
+          "duration_seconds": 0.005902,
+          "ok": true
+        },
+        "wheel": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "wheel",
+            "--no-deps",
+            "--no-build-isolation",
+            "--wheel-dir",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
+            "/tmp/batch3-packaging-dgm88gl6/source-double-entry-ledger-api"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 1.159364,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-double-entry-ledger-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: double-entry-ledger-api-reference\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): started\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for double-entry-ledger-api-reference: filename=double_entry_ledger_api_reference-0.1.0-py3-none-any.whl size=4712 sha256=b0ad0bb65fd743033f0cbe688990339e6282118921623799717c78739a14ddba\n  Stored in directory: /home/fabio/.cache/pip/wheels/59/f9/2b/52b2c4e4d5097c6b62e7382feda52788f140c2966474c439d8\nSuccessfully built double-entry-ledger-api-reference\n"
+        }
+      },
+      "lease-coordination-api": {
+        "install": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--target",
+            "/tmp/batch3-packaging-dgm88gl6/install-lease-coordination-api",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 0.432332,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: lease-coordination-api-reference\nSuccessfully installed lease-coordination-api-reference-0.1.0\n"
+        },
+        "ok": true,
+        "py_compile": {
+          "detail": "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/lease_api/main.py",
+          "duration_seconds": 0.004266,
+          "ok": true
+        },
+        "wheel": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "wheel",
+            "--no-deps",
+            "--no-build-isolation",
+            "--wheel-dir",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
+            "/tmp/batch3-packaging-dgm88gl6/source-lease-coordination-api"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 1.060866,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-lease-coordination-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: lease-coordination-api-reference\n  Building wheel for lease-coordination-api-reference (pyproject.toml): started\n  Building wheel for lease-coordination-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for lease-coordination-api-reference: filename=lease_coordination_api_reference-0.1.0-py3-none-any.whl size=3954 sha256=2e4b8adcb95d6a4d6ff5bd11682829c6a78c6525e23f782e2b6b71d90da923c5\n  Stored in directory: /home/fabio/.cache/pip/wheels/26/f8/27/f48ef4d7cb59644a7cdf0d7786203356562176cf45959caaf5\nSuccessfully built lease-coordination-api-reference\n"
+        }
+      },
+      "pii-redaction-pipeline": {
+        "install": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--target",
+            "/tmp/batch3-packaging-dgm88gl6/install-pii-redaction-pipeline",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 0.453746,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: pii-redaction-pipeline-reference\nSuccessfully installed pii-redaction-pipeline-reference-0.1.0\n"
+        },
+        "ok": true,
+        "py_compile": {
+          "detail": "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/pii_redactor/redact.py",
+          "duration_seconds": 0.004703,
+          "ok": true
+        },
+        "wheel": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "wheel",
+            "--no-deps",
+            "--no-build-isolation",
+            "--wheel-dir",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
+            "/tmp/batch3-packaging-dgm88gl6/source-pii-redaction-pipeline"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 1.098523,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-pii-redaction-pipeline\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pii-redaction-pipeline-reference\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): started\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): finished with status 'done'\n  Created wheel for pii-redaction-pipeline-reference: filename=pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl size=4353 sha256=461d4aad762507215268001947da9880f42d3752388ef2e3888be9c2fcd7d291\n  Stored in directory: /home/fabio/.cache/pip/wheels/fb/10/f8/11524de43e0543bef1cb9dd980690ec8d027416b1f18912621\nSuccessfully built pii-redaction-pipeline-reference\n"
+        }
+      },
+      "signed-artifact-verifier": {
+        "install": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--target",
+            "/tmp/batch3-packaging-dgm88gl6/install-signed-artifact-verifier",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 0.445758,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: signed-artifact-verifier-reference\nSuccessfully installed signed-artifact-verifier-reference-0.1.0\n"
+        },
+        "ok": true,
+        "py_compile": {
+          "detail": "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/artifact_verifier/verify.py",
+          "duration_seconds": 0.004198,
+          "ok": true
+        },
+        "wheel": {
+          "command": [
+            "/home/fabio/hermes-professore/.venv/bin/python3",
+            "-m",
+            "pip",
+            "wheel",
+            "--no-deps",
+            "--no-build-isolation",
+            "--wheel-dir",
+            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
+            "/tmp/batch3-packaging-dgm88gl6/source-signed-artifact-verifier"
+          ],
+          "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
+          "duration_seconds": 1.443337,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-signed-artifact-verifier\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: signed-artifact-verifier-reference\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): started\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): finished with status 'done'\n  Created wheel for signed-artifact-verifier-reference: filename=signed_artifact_verifier_reference-0.1.0-py3-none-any.whl size=4419 sha256=4a826b18af27dfeaa15dfe3eace8d1ba2d9662c80861b0853c2ec452b4da8132\n  Stored in directory: /home/fabio/.cache/pip/wheels/09/e0/a6/d8465ccf0327a59e6a2861d1b97ee41cc2a2e4d9ce84a73087\nSuccessfully built signed-artifact-verifier-reference\n"
+        }
+      }
+    }
+  },
+  "report_kind": "batch3_non_efficacy_acceptance",
+  "schema_version": 1,
+  "static": {
+    "checks": {
+      "diversity": {
+        "all_prior_64_complete": {
+          "detail": "records=64 unique=64",
+          "ok": true
+        },
+        "nearest_20_complete": {
+          "detail": "records=20 unique=20",
+          "ok": true
+        },
+        "pairwise_6_complete": {
+          "detail": "records=6 unique=6",
+          "ok": true
+        }
+      },
+      "double-entry-ledger-api": {
+        "clean_visible_tree": {
+          "detail": "bad_nodes=[]",
+          "ok": true
+        },
+        "exact_visible_allowlist": {
+          "detail": "files=['CLAIMS_CONTRACT.template.json', 'README.md', 'SPEC.md', 'ledger_api/__init__.py', 'ledger_api/main.py', 'pyproject.toml']",
+          "expected": [
+            "CLAIMS_CONTRACT.template.json",
+            "README.md",
+            "SPEC.md",
+            "ledger_api/__init__.py",
+            "ledger_api/main.py",
+            "pyproject.toml"
+          ],
+          "ok": true
+        },
+        "five_frozen_functional_checks": {
+          "detail": "check_ids=['ledger_account_identity', 'ledger_balanced_posting', 'ledger_idempotency_conflict', 'ledger_balances_and_journal', 'ledger_compensating_reversal']",
+          "ok": true
+        },
+        "forbidden_identifiers_absent": {
+          "detail": "identifier_hits=[]; check_id_hits=[]",
+          "ok": true
+        },
+        "process_claims_only": {
+          "detail": "claim_types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+          "ok": true
+        }
+      },
+      "freeze": {
+        "frozen_zero_efficacy": {
+          "detail": "efficacy_cells_collected=0",
+          "ok": true
+        },
+        "normative_freeze_sha256": {
+          "detail": "63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713",
+          "expected": "63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713",
+          "ok": true
+        },
+        "prebuild_generator_sha256": {
+          "detail": "738108592c86892f7c0f6e8318fbe291e86773db2cf787078c1ed5e92800784d",
+          "expected": "738108592c86892f7c0f6e8318fbe291e86773db2cf787078c1ed5e92800784d",
+          "ok": true
+        }
+      },
+      "generator": {
+        "uses_current_interpreter": {
+          "detail": "['/home/fabio/hermes-professore/.venv/bin/python3', '/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/build_task_expansion_batch3.py']",
+          "ok": true
+        },
+        "visible_byte_identity": {
+          "detail": "exit_code=0; changed=[]",
+          "ok": true
+        }
+      },
+      "lease-coordination-api": {
+        "clean_visible_tree": {
+          "detail": "bad_nodes=[]",
+          "ok": true
+        },
+        "exact_visible_allowlist": {
+          "detail": "files=['CLAIMS_CONTRACT.template.json', 'README.md', 'SPEC.md', 'lease_api/__init__.py', 'lease_api/main.py', 'pyproject.toml']",
+          "expected": [
+            "CLAIMS_CONTRACT.template.json",
+            "README.md",
+            "SPEC.md",
+            "lease_api/__init__.py",
+            "lease_api/main.py",
+            "pyproject.toml"
+          ],
+          "ok": true
+        },
+        "five_frozen_functional_checks": {
+          "detail": "check_ids=['lease_acquire_fencing', 'lease_concurrent_contention', 'lease_renewal', 'lease_release_reacquire', 'lease_state_and_failure_atomicity']",
+          "ok": true
+        },
+        "forbidden_identifiers_absent": {
+          "detail": "identifier_hits=[]; check_id_hits=[]",
+          "ok": true
+        },
+        "process_claims_only": {
+          "detail": "claim_types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+          "ok": true
+        }
+      },
+      "mutation_contract": {
+        "exact_normative_20": {
+          "detail": "mutants=20",
+          "ok": true
+        }
+      },
+      "pii-redaction-pipeline": {
+        "clean_visible_tree": {
+          "detail": "bad_nodes=[]",
+          "ok": true
+        },
+        "exact_visible_allowlist": {
+          "detail": "files=['CLAIMS_CONTRACT.template.json', 'README.md', 'SPEC.md', 'pii_redactor/__init__.py', 'pii_redactor/redact.py', 'pyproject.toml']",
+          "expected": [
+            "CLAIMS_CONTRACT.template.json",
+            "README.md",
+            "SPEC.md",
+            "pii_redactor/__init__.py",
+            "pii_redactor/redact.py",
+            "pyproject.toml"
+          ],
+          "ok": true
+        },
+        "five_frozen_functional_checks": {
+          "detail": "check_ids=['pii_selector_resolution', 'pii_redaction_actions', 'pii_structure_preservation', 'pii_rule_precedence', 'pii_atomic_audit']",
+          "ok": true
+        },
+        "forbidden_identifiers_absent": {
+          "detail": "identifier_hits=[]; check_id_hits=[]",
+          "ok": true
+        },
+        "process_claims_only": {
+          "detail": "claim_types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+          "ok": true
+        }
+      },
+      "signed-artifact-verifier": {
+        "clean_visible_tree": {
+          "detail": "bad_nodes=[]",
+          "ok": true
+        },
+        "exact_visible_allowlist": {
+          "detail": "files=['CLAIMS_CONTRACT.template.json', 'README.md', 'SPEC.md', 'artifact_verifier/__init__.py', 'artifact_verifier/verify.py', 'pyproject.toml']",
+          "expected": [
+            "CLAIMS_CONTRACT.template.json",
+            "README.md",
+            "SPEC.md",
+            "artifact_verifier/__init__.py",
+            "artifact_verifier/verify.py",
+            "pyproject.toml"
+          ],
+          "ok": true
+        },
+        "five_frozen_functional_checks": {
+          "detail": "check_ids=['signed_manifest_authenticity', 'signed_manifest_inventory', 'signed_manifest_content_integrity', 'signed_manifest_trust_window', 'signed_manifest_atomic_report']",
+          "ok": true
+        },
+        "forbidden_identifiers_absent": {
+          "detail": "identifier_hits=[]; check_id_hits=[]",
+          "ok": true
+        },
+        "process_claims_only": {
+          "detail": "claim_types=['artifact_present', 'forbidden_paths', 'tests_executed']",
+          "ok": true
+        }
+      }
+    },
+    "ok": true
+  }
+}

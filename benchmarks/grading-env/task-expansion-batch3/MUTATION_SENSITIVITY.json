@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "tasks": {
+    "double-entry-ledger-api": {
+      "ledger_account_identity": {"expected_failed_checks": ["ledger_account_identity"], "expected_passed_checks": ["ledger_balanced_posting", "ledger_idempotency_conflict", "ledger_balances_and_journal", "ledger_compensating_reversal"]},
+      "ledger_balanced_posting": {"expected_failed_checks": ["ledger_balanced_posting"], "expected_passed_checks": ["ledger_account_identity", "ledger_idempotency_conflict", "ledger_balances_and_journal", "ledger_compensating_reversal"]},
+      "ledger_idempotency_conflict": {"expected_failed_checks": ["ledger_idempotency_conflict"], "expected_passed_checks": ["ledger_account_identity", "ledger_balanced_posting", "ledger_balances_and_journal", "ledger_compensating_reversal"]},
+      "ledger_balances_and_journal": {"expected_failed_checks": ["ledger_balances_and_journal"], "expected_passed_checks": ["ledger_account_identity", "ledger_balanced_posting", "ledger_idempotency_conflict", "ledger_compensating_reversal"]},
+      "ledger_compensating_reversal": {"expected_failed_checks": ["ledger_compensating_reversal"], "expected_passed_checks": ["ledger_account_identity", "ledger_balanced_posting", "ledger_idempotency_conflict", "ledger_balances_and_journal"]}
+    },
+    "lease-coordination-api": {
+      "lease_acquire_fencing": {"expected_failed_checks": ["lease_acquire_fencing"], "expected_passed_checks": ["lease_concurrent_contention", "lease_renewal", "lease_release_reacquire", "lease_state_and_failure_atomicity"]},
+      "lease_concurrent_contention": {"expected_failed_checks": ["lease_concurrent_contention"], "expected_passed_checks": ["lease_acquire_fencing", "lease_renewal", "lease_release_reacquire", "lease_state_and_failure_atomicity"]},
+      "lease_renewal": {"expected_failed_checks": ["lease_renewal"], "expected_passed_checks": ["lease_acquire_fencing", "lease_concurrent_contention", "lease_release_reacquire", "lease_state_and_failure_atomicity"]},
+      "lease_release_reacquire": {"expected_failed_checks": ["lease_release_reacquire"], "expected_passed_checks": ["lease_acquire_fencing", "lease_concurrent_contention", "lease_renewal", "lease_state_and_failure_atomicity"]},
+      "lease_state_and_failure_atomicity": {"expected_failed_checks": ["lease_state_and_failure_atomicity"], "expected_passed_checks": ["lease_acquire_fencing", "lease_concurrent_contention", "lease_renewal", "lease_release_reacquire"]}
+    },
+    "pii-redaction-pipeline": {
+      "pii_selector_resolution": {"expected_failed_checks": ["pii_selector_resolution"], "expected_passed_checks": ["pii_redaction_actions", "pii_structure_preservation", "pii_rule_precedence", "pii_atomic_audit"]},
+      "pii_redaction_actions": {"expected_failed_checks": ["pii_redaction_actions"], "expected_passed_checks": ["pii_selector_resolution", "pii_structure_preservation", "pii_rule_precedence", "pii_atomic_audit"]},
+      "pii_structure_preservation": {"expected_failed_checks": ["pii_structure_preservation"], "expected_passed_checks": ["pii_selector_resolution", "pii_redaction_actions", "pii_rule_precedence", "pii_atomic_audit"]},
+      "pii_rule_precedence": {"expected_failed_checks": ["pii_rule_precedence"], "expected_passed_checks": ["pii_selector_resolution", "pii_redaction_actions", "pii_structure_preservation", "pii_atomic_audit"]},
+      "pii_atomic_audit": {"expected_failed_checks": ["pii_atomic_audit"], "expected_passed_checks": ["pii_selector_resolution", "pii_redaction_actions", "pii_structure_preservation", "pii_rule_precedence"]}
+    },
+    "signed-artifact-verifier": {
+      "signed_manifest_authenticity": {"expected_failed_checks": ["signed_manifest_authenticity"], "expected_passed_checks": ["signed_manifest_inventory", "signed_manifest_content_integrity", "signed_manifest_trust_window", "signed_manifest_atomic_report"]},
+      "signed_manifest_inventory": {"expected_failed_checks": ["signed_manifest_inventory"], "expected_passed_checks": ["signed_manifest_authenticity", "signed_manifest_content_integrity", "signed_manifest_trust_window", "signed_manifest_atomic_report"]},
+      "signed_manifest_content_integrity": {"expected_failed_checks": ["signed_manifest_content_integrity"], "expected_passed_checks": ["signed_manifest_authenticity", "signed_manifest_inventory", "signed_manifest_trust_window", "signed_manifest_atomic_report"]},
+      "signed_manifest_trust_window": {"expected_failed_checks": ["signed_manifest_trust_window"], "expected_passed_checks": ["signed_manifest_authenticity", "signed_manifest_inventory", "signed_manifest_content_integrity", "signed_manifest_atomic_report"]},
+      "signed_manifest_atomic_report": {"expected_failed_checks": ["signed_manifest_atomic_report"], "expected_passed_checks": ["signed_manifest_authenticity", "signed_manifest_inventory", "signed_manifest_content_integrity", "signed_manifest_trust_window"]}
+    }
+  }
+}

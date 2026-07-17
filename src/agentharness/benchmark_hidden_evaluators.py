@@ -1115,6 +1115,15 @@ def _evaluate_benchmark_task_in_worker(workspace: Path, task_id: str, evaluation
         from .benchmark_hidden_evaluators_batch2 import evaluate_batch2_task
 
         result = evaluate_batch2_task(workspace, normalized_task_id)
+    elif normalized_task_id in {
+        "signed-artifact-verifier",
+        "pii-redaction-pipeline",
+        "lease-coordination-api",
+        "double-entry-ledger-api",
+    }:
+        from .benchmark_hidden_evaluators_batch3 import evaluate_batch3_task
+
+        result = evaluate_batch3_task(workspace, normalized_task_id)
     else:
         raise ValueError(f"Unsupported benchmark task evaluator: {task_id}")
     result.evaluation_instance_id = evaluation_instance_id
