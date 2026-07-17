@@ -6,7 +6,7 @@
     "benchmarks/double-entry-ledger-api/ledger_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "benchmarks/double-entry-ledger-api/ledger_api/main.py": "d8a6ab023aa34467b4deebd2c1b30047c079e9d7c4744a525343c6b411c45480",
     "benchmarks/double-entry-ledger-api/pyproject.toml": "5aaab86b7151450a9d6e29fc3cfadf8bef2cbaf8124f1725fad7612231c932a0",
-    "benchmarks/grading-env/audit_task_expansion_batch3.py": "d6c321a5df00ac9f4b44b06b817448c33344637edf574ef85332e3b1aeb1befa",
+    "benchmarks/grading-env/audit_task_expansion_batch3.py": "fdf167c639d47c15ca1517343ebb4727e160c6140059cb0361f3618d36dbdc5b",
     "benchmarks/grading-env/build_task_expansion_batch3.py": "8fe6d3ca34e232f7a1e8fc49dbcb3fa085f73f32cf7ec6d63e854d2662ae5bb6",
     "benchmarks/grading-env/task-expansion-batch3/BATCH3_PREBUILD_FREEZE.json": "63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713",
     "benchmarks/grading-env/task-expansion-batch3/MUTATION_SENSITIVITY.json": "a3ab9b6f240ca1c1a47fb473c2a70160f907e4c3526933473b832444efc30518",
@@ -52,7 +52,7 @@
     "src/agentharness/benchmark_hidden_evaluators_batch3_signed.py": "4f553282ae112554956155d32c3b81fac979529413ebba09ca5fb8d28a40719a",
     "tests/test_task_expansion_batch3.py": "c137057fdd7abba2aea66b4057c35b1a60a9fe5523b1ea1bd4c8ab46e1cbc266"
   },
-  "base_commit": "9b0e3ac3ab49e043bef860cbd13fe0bbf98b8efd",
+  "base_commit": "fd34b884e2c044a27728f098dfc5b76a5fa6e482",
   "campaign_boundary": "Task-pack acceptance only. No task-solving pilot, A/B cell, hidden efficacy score, contrast, confirmatory campaign, or efficacy claim is authorized or evaluated by this auditor.",
   "diversity_evidence": {
     "all_prior_overlap_matrix": [
@@ -1019,7 +1019,7 @@
       "double-entry-ledger-api": {
         "copies": [
           {
-            "duration_seconds": 18.356965,
+            "duration_seconds": 19.320801,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1059,7 +1059,7 @@
             }
           },
           {
-            "duration_seconds": 19.795508,
+            "duration_seconds": 19.449164,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1099,7 +1099,7 @@
             }
           },
           {
-            "duration_seconds": 19.297634,
+            "duration_seconds": 19.059014,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1145,7 +1145,7 @@
       "lease-coordination-api": {
         "copies": [
           {
-            "duration_seconds": 39.531512,
+            "duration_seconds": 35.627603,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1185,7 +1185,7 @@
             }
           },
           {
-            "duration_seconds": 39.623809,
+            "duration_seconds": 36.007238,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1225,7 +1225,7 @@
             }
           },
           {
-            "duration_seconds": 36.521744,
+            "duration_seconds": 37.53682,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1271,7 +1271,7 @@
       "pii-redaction-pipeline": {
         "copies": [
           {
-            "duration_seconds": 11.634849,
+            "duration_seconds": 9.886956,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1311,7 +1311,7 @@
             }
           },
           {
-            "duration_seconds": 10.894235,
+            "duration_seconds": 10.251094,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1351,7 +1351,7 @@
             }
           },
           {
-            "duration_seconds": 9.969784,
+            "duration_seconds": 9.874509,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1397,7 +1397,7 @@
       "signed-artifact-verifier": {
         "copies": [
           {
-            "duration_seconds": 16.357284,
+            "duration_seconds": 16.396534,
             "seed": "13",
             "signature": {
               "classification_reason": "",
@@ -1437,7 +1437,7 @@
             }
           },
           {
-            "duration_seconds": 16.278139,
+            "duration_seconds": 15.889856,
             "seed": "47",
             "signature": {
               "classification_reason": "",
@@ -1477,7 +1477,7 @@
             }
           },
           {
-            "duration_seconds": 16.835173,
+            "duration_seconds": 15.848342,
             "seed": "89",
             "signature": {
               "classification_reason": "",
@@ -1530,7 +1530,7 @@
       "detail": "recognized=['double-entry-ledger-api', 'lease-coordination-api', 'pii-redaction-pipeline', 'signed-artifact-verifier']",
       "ok": true
     },
-    "duration_seconds": 767.884045,
+    "duration_seconds": 738.604662,
     "exit_code": 0,
     "mutations": {
       "denominator": 20,
@@ -1547,7 +1547,7 @@
             "signed_manifest_trust_window",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 17.199686,
+          "duration_seconds": 16.682171,
           "expected_failed_checks": [
             "signed_manifest_authenticity"
           ],
@@ -1571,7 +1571,7 @@
             "signed_manifest_trust_window",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 17.048087,
+          "duration_seconds": 16.274351,
           "expected_failed_checks": [
             "signed_manifest_inventory"
           ],
@@ -1595,7 +1595,7 @@
             "signed_manifest_trust_window",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 17.590308,
+          "duration_seconds": 15.942488,
           "expected_failed_checks": [
             "signed_manifest_content_integrity"
           ],
@@ -1619,7 +1619,7 @@
             "signed_manifest_content_integrity",
             "signed_manifest_atomic_report"
           ],
-          "duration_seconds": 17.417833,
+          "duration_seconds": 16.697642,
           "expected_failed_checks": [
             "signed_manifest_trust_window"
           ],
@@ -1643,7 +1643,7 @@
             "signed_manifest_content_integrity",
             "signed_manifest_trust_window"
           ],
-          "duration_seconds": 16.98115,
+          "duration_seconds": 16.480317,
           "expected_failed_checks": [
             "signed_manifest_atomic_report"
           ],
@@ -1667,7 +1667,7 @@
             "pii_rule_precedence",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 10.289598,
+          "duration_seconds": 9.937088,
           "expected_failed_checks": [
             "pii_selector_resolution"
           ],
@@ -1691,7 +1691,7 @@
             "pii_rule_precedence",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 10.68,
+          "duration_seconds": 9.30039,
           "expected_failed_checks": [
             "pii_redaction_actions"
           ],
@@ -1715,7 +1715,7 @@
             "pii_rule_precedence",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 10.924135,
+          "duration_seconds": 9.758277,
           "expected_failed_checks": [
             "pii_structure_preservation"
           ],
@@ -1739,7 +1739,7 @@
             "pii_structure_preservation",
             "pii_atomic_audit"
           ],
-          "duration_seconds": 10.700736,
+          "duration_seconds": 9.22762,
           "expected_failed_checks": [
             "pii_rule_precedence"
           ],
@@ -1763,7 +1763,7 @@
             "pii_structure_preservation",
             "pii_rule_precedence"
           ],
-          "duration_seconds": 10.839798,
+          "duration_seconds": 9.994023,
           "expected_failed_checks": [
             "pii_atomic_audit"
           ],
@@ -1787,7 +1787,7 @@
             "lease_release_reacquire",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 36.768299,
+          "duration_seconds": 36.609364,
           "expected_failed_checks": [
             "lease_acquire_fencing"
           ],
@@ -1811,7 +1811,7 @@
             "lease_release_reacquire",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 34.761619,
+          "duration_seconds": 36.532528,
           "expected_failed_checks": [
             "lease_concurrent_contention"
           ],
@@ -1835,7 +1835,7 @@
             "lease_release_reacquire",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 36.973586,
+          "duration_seconds": 36.715041,
           "expected_failed_checks": [
             "lease_renewal"
           ],
@@ -1859,7 +1859,7 @@
             "lease_renewal",
             "lease_state_and_failure_atomicity"
           ],
-          "duration_seconds": 37.75181,
+          "duration_seconds": 37.547584,
           "expected_failed_checks": [
             "lease_release_reacquire"
           ],
@@ -1883,7 +1883,7 @@
             "lease_renewal",
             "lease_release_reacquire"
           ],
-          "duration_seconds": 35.390354,
+          "duration_seconds": 35.611505,
           "expected_failed_checks": [
             "lease_state_and_failure_atomicity"
           ],
@@ -1907,7 +1907,7 @@
             "ledger_balances_and_journal",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 19.564383,
+          "duration_seconds": 19.047755,
           "expected_failed_checks": [
             "ledger_account_identity"
           ],
@@ -1931,7 +1931,7 @@
             "ledger_balances_and_journal",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 19.807364,
+          "duration_seconds": 18.837603,
           "expected_failed_checks": [
             "ledger_balanced_posting"
           ],
@@ -1955,7 +1955,7 @@
             "ledger_balances_and_journal",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 19.521113,
+          "duration_seconds": 18.562082,
           "expected_failed_checks": [
             "ledger_idempotency_conflict"
           ],
@@ -1979,7 +1979,7 @@
             "ledger_idempotency_conflict",
             "ledger_compensating_reversal"
           ],
-          "duration_seconds": 22.4908,
+          "duration_seconds": 18.504249,
           "expected_failed_checks": [
             "ledger_balances_and_journal"
           ],
@@ -2003,7 +2003,7 @@
             "ledger_idempotency_conflict",
             "ledger_balances_and_journal"
           ],
-          "duration_seconds": 18.753478,
+          "duration_seconds": 19.894222,
           "expected_failed_checks": [
             "ledger_compensating_reversal"
           ],
@@ -2030,22 +2030,22 @@
           },
           {
             "check_id": "ledger_balanced_posting",
-            "detail": "valid=(201, {'id': '9b96444f-3705-4c35-bee5-980d6878cc3f', 'idempotency_key': 'bal-valid', 'currency': 'USD', 'entries': [{'account_id': 'bal.A', 'direction': 'debit', 'amount': '2.00'}, {'account_id': 'bal.B', 'direction': 'credit', 'amount': '0.50'}, {'account_id': 'bal.C', 'direction': 'credit', 'amount': '1.50'}], 'reverses': None}) | POST /transactions=(422, {'detail': 'unbalanced transaction'}); full_state_equal=True | POST /transactions=(422, {'detail': 'mixed currencies'}); full_state_equal=True | POST /transactions=(422, {'detail': 'unknown account'}); full_state_equal=True | POST /transactions=(422, {'detail': 'at least two entries required'}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0.0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '00.10', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '01', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '+1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '-1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '.1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.000', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1e2', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1,00', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'NaN', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'Infinity', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': None}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'direction'], 'msg': 'Value error, invalid direction', 'input': 'charge', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'account_id'], 'msg': 'Value error, invalid id', 'input': 'bad id', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'entries', 0, 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': 'Idempotency-Key required'}); full_state_equal=True | huge_status=201; huge_schema=True; huge_balances=((200, {'account_id': 'bal.largeA', 'currency': 'USD', 'balance': '-99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}), (200, {'account_id': 'bal.largeB', 'currency': 'USD', 'balance': '99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}))",
+            "detail": "valid=(201, {'id': '4e708751-c53e-4321-9990-3e718d24ffc0', 'idempotency_key': 'bal-valid', 'currency': 'USD', 'entries': [{'account_id': 'bal.A', 'direction': 'debit', 'amount': '2.00'}, {'account_id': 'bal.B', 'direction': 'credit', 'amount': '0.50'}, {'account_id': 'bal.C', 'direction': 'credit', 'amount': '1.50'}], 'reverses': None}) | POST /transactions=(422, {'detail': 'unbalanced transaction'}); full_state_equal=True | POST /transactions=(422, {'detail': 'mixed currencies'}); full_state_equal=True | POST /transactions=(422, {'detail': 'unknown account'}); full_state_equal=True | POST /transactions=(422, {'detail': 'at least two entries required'}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, amount must be positive', 'input': '0.0', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '00.10', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '01', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '+1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '-1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '.1', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1.000', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1e2', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': '1,00', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'NaN', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Value error, invalid amount', 'input': 'Infinity', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'string_type', 'loc': ['body', 'entries', 0, 'amount'], 'msg': 'Input should be a valid string', 'input': None}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'direction'], 'msg': 'Value error, invalid direction', 'input': 'charge', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'value_error', 'loc': ['body', 'entries', 0, 'account_id'], 'msg': 'Value error, invalid id', 'input': 'bad id', 'ctx': {'error': {}}}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'entries', 0, 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': [{'type': 'extra_forbidden', 'loc': ['body', 'extra'], 'msg': 'Extra inputs are not permitted', 'input': 1}]}); full_state_equal=True | POST /transactions=(422, {'detail': 'Idempotency-Key required'}); full_state_equal=True | huge_status=201; huge_schema=True; huge_balances=((200, {'account_id': 'bal.largeA', 'currency': 'USD', 'balance': '-99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}), (200, {'account_id': 'bal.largeB', 'currency': 'USD', 'balance': '99999999999999999999999999999999999999999999999999999999999999999999999999999999.00'}))",
             "status": "pass"
           },
           {
             "check_id": "ledger_idempotency_conflict",
-            "detail": "first=(201, {'id': '30d3924a-fc38-4e74-8796-0f8b6aa30205', 'idempotency_key': 'idem-key', 'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'direction': 'debit', 'amount': '5.00'}, {'account_id': 'idem.B', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'idem.C', 'direction': 'credit', 'amount': '3.00'}], 'reverses': None}); restart_replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'amount': '5.00', 'direction': 'debit'}, {'account_id': 'idem.B', 'amount': '2.00', 'direction': 'credit'}, {'account_id': 'idem.C', 'amount': '3.00', 'direction': 'credit'}], 'id': '30d3924a-fc38-4e74-8796-0f8b6aa30205', 'idempotency_key': 'idem-key', 'reverses': None})]; child_exit=0 | POST /transactions=(409, {'detail': 'idempotency conflict'}); full_state_equal=True | race=[(201, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'idempotency_key': 'race-duplicate', 'reverses': None})]; journal={'account_id': 'race.A', 'entries': [{'transaction_id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'sequence': 4, 'account_id': 'race.A', 'direction': 'debit', 'amount': '7.00'}]}; durable=[(200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'account_id': 'race.A', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit', 'sequence': 4, 'transaction_id': 'ff06fa97-ec43-42a1-92b9-07e4db37b806'}]})]; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
+            "detail": "first=(201, {'id': '368b3859-eab0-4391-b53f-44873279d177', 'idempotency_key': 'idem-key', 'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'direction': 'debit', 'amount': '5.00'}, {'account_id': 'idem.B', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'idem.C', 'direction': 'credit', 'amount': '3.00'}], 'reverses': None}); restart_replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'idem.A', 'amount': '5.00', 'direction': 'debit'}, {'account_id': 'idem.B', 'amount': '2.00', 'direction': 'credit'}, {'account_id': 'idem.C', 'amount': '3.00', 'direction': 'credit'}], 'id': '368b3859-eab0-4391-b53f-44873279d177', 'idempotency_key': 'idem-key', 'reverses': None})]; child_exit=0 | POST /transactions=(409, {'detail': 'idempotency conflict'}); full_state_equal=True | race=[(201, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'idempotency_key': 'race-duplicate', 'reverses': None})]; journal={'account_id': 'race.A', 'entries': [{'transaction_id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'sequence': 4, 'account_id': 'race.A', 'direction': 'debit', 'amount': '7.00'}]}; durable=[(200, {'currency': 'USD', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit'}, {'account_id': 'race.B', 'amount': '7.00', 'direction': 'credit'}], 'id': 'eba48640-8385-484c-aaad-5a22ba4fee57', 'idempotency_key': 'race-duplicate', 'reverses': None}), (200, {'account_id': 'race.A', 'entries': [{'account_id': 'race.A', 'amount': '7.00', 'direction': 'debit', 'sequence': 4, 'transaction_id': 'eba48640-8385-484c-aaad-5a22ba4fee57'}]})]; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "ledger_balances_and_journal",
-            "detail": "transactions=[{'id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'idempotency_key': 'journal-one', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}], 'reverses': None}, {'id': 'f0536259-65fc-4bb1-9e53-cf8e230abfc9', 'idempotency_key': 'journal-two', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}, {'account_id': 'journal.C', 'direction': 'debit', 'amount': '4.25'}], 'reverses': None}]; balance=(200, {'account_id': 'journal.A', 'currency': 'USD', 'balance': '3.20'}); journal_a=(200, {'account_id': 'journal.A', 'entries': [{'transaction_id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'transaction_id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'transaction_id': 'f0536259-65fc-4bb1-9e53-cf8e230abfc9', 'sequence': 6, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}]}); journal_b=(200, {'account_id': 'journal.B', 'entries': [{'transaction_id': '773630c4-3de9-4a2f-8d97-4449f4f13c1c', 'sequence': 5, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}, {'transaction_id': 'f0536259-65fc-4bb1-9e53-cf8e230abfc9', 'sequence': 6, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}]}); restart_equal=True; child_exit=0",
+            "detail": "transactions=[{'id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'idempotency_key': 'journal-one', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}], 'reverses': None}, {'id': 'd4b447e5-35f0-41e4-b7d8-96b5c020fb81', 'idempotency_key': 'journal-two', 'currency': 'USD', 'entries': [{'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}, {'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}, {'account_id': 'journal.C', 'direction': 'debit', 'amount': '4.25'}], 'reverses': None}]; balance=(200, {'account_id': 'journal.A', 'currency': 'USD', 'balance': '3.20'}); journal_a=(200, {'account_id': 'journal.A', 'entries': [{'transaction_id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '2.00'}, {'transaction_id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'sequence': 5, 'account_id': 'journal.A', 'direction': 'debit', 'amount': '3.00'}, {'transaction_id': 'd4b447e5-35f0-41e4-b7d8-96b5c020fb81', 'sequence': 6, 'account_id': 'journal.A', 'direction': 'credit', 'amount': '4.20'}]}); journal_b=(200, {'account_id': 'journal.B', 'entries': [{'transaction_id': 'ff6abb0c-debb-40b1-b08d-4d1efe406fa7', 'sequence': 5, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '1.00'}, {'transaction_id': 'd4b447e5-35f0-41e4-b7d8-96b5c020fb81', 'sequence': 6, 'account_id': 'journal.B', 'direction': 'credit', 'amount': '0.05'}]}); restart_equal=True; child_exit=0",
             "status": "pass"
           },
           {
             "check_id": "ledger_compensating_reversal",
-            "detail": "POST /transactions/e58c9aa2-3297-4761-85a8-d76c60938dea/reverse=(409, {'detail': 'already reversed'}); full_state_equal=True | race=[(409, {'detail': 'already reversed'}), (201, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'idempotency_key': 'reverse-race-b', 'reverses': 'e58c9aa2-3297-4761-85a8-d76c60938dea'})]; replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'idempotency_key': 'reverse-race-b', 'reverses': 'e58c9aa2-3297-4761-85a8-d76c60938dea'})]; original_immutable=True; balances=((200, {'account_id': 'reverse.A', 'currency': 'USD', 'balance': '0.00'}), (200, {'account_id': 'reverse.B', 'currency': 'USD', 'balance': '0.00'})); journals=((200, {'account_id': 'reverse.A', 'entries': [{'transaction_id': 'e58c9aa2-3297-4761-85a8-d76c60938dea', 'sequence': 7, 'account_id': 'reverse.A', 'direction': 'debit', 'amount': '8.75'}, {'transaction_id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'sequence': 8, 'account_id': 'reverse.A', 'direction': 'credit', 'amount': '8.75'}]}), (200, {'account_id': 'reverse.B', 'entries': [{'transaction_id': 'e58c9aa2-3297-4761-85a8-d76c60938dea', 'sequence': 7, 'account_id': 'reverse.B', 'direction': 'credit', 'amount': '8.75'}, {'transaction_id': '14f2fb36-ba2e-4142-88b3-42d9ae73156f', 'sequence': 8, 'account_id': 'reverse.B', 'direction': 'debit', 'amount': '8.75'}]})); unknown=(404, {'detail': 'not found'}),atomic=True; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-2ned0rfi/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
+            "detail": "POST /transactions/6da056d6-c556-4790-a5a3-0801688774ac/reverse=(409, {'detail': 'already reversed'}); full_state_equal=True | race=[(409, {'detail': 'already reversed'}), (201, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'idempotency_key': 'reverse-race-b', 'reverses': '6da056d6-c556-4790-a5a3-0801688774ac'})]; replay=[(200, {'currency': 'USD', 'entries': [{'account_id': 'reverse.A', 'amount': '8.75', 'direction': 'credit'}, {'account_id': 'reverse.B', 'amount': '8.75', 'direction': 'debit'}], 'id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'idempotency_key': 'reverse-race-b', 'reverses': '6da056d6-c556-4790-a5a3-0801688774ac'})]; original_immutable=True; balances=((200, {'account_id': 'reverse.A', 'currency': 'USD', 'balance': '0.00'}), (200, {'account_id': 'reverse.B', 'currency': 'USD', 'balance': '0.00'})); journals=((200, {'account_id': 'reverse.A', 'entries': [{'transaction_id': '6da056d6-c556-4790-a5a3-0801688774ac', 'sequence': 7, 'account_id': 'reverse.A', 'direction': 'debit', 'amount': '8.75'}, {'transaction_id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'sequence': 8, 'account_id': 'reverse.A', 'direction': 'credit', 'amount': '8.75'}]}), (200, {'account_id': 'reverse.B', 'entries': [{'transaction_id': '6da056d6-c556-4790-a5a3-0801688774ac', 'sequence': 7, 'account_id': 'reverse.B', 'direction': 'credit', 'amount': '8.75'}, {'transaction_id': 'fad4f774-2f94-47f7-b8a0-d64778ea2bbd', 'sequence': 8, 'account_id': 'reverse.B', 'direction': 'debit', 'amount': '8.75'}]})); unknown=(404, {'detail': 'not found'}),atomic=True; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-double-entry-ledger-api-afds_wxn/double-entry-ledger-api/.agentharness/eval_envs/6be16bf170bb8782/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0",
             "status": "pass"
           },
           {
@@ -2054,7 +2054,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 19.274191,
+        "duration_seconds": 18.769727,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2071,7 +2071,7 @@
           },
           {
             "check_id": "lease_concurrent_contention",
-            "detail": "outcomes=[(201, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-a', 'resource': 'process-race', 'status': 'active'}, '/tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa'), (409, {'detail': 'lease active'}, '/tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa')]; durable=(200, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-a', 'resource': 'process-race', 'status': 'active'}); takeover=(201, {'acquired_at': '2040-02-01T00:00:10Z', 'expires_at': '2040-02-01T00:00:20Z', 'fencing_token': 2, 'owner': 'race-next', 'resource': 'process-race', 'status': 'active'}); /tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-lease-coordination-api-bhu5qowk/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0; child_exit=0",
+            "detail": "outcomes=[(409, {'detail': 'lease active'}, '/tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa'), (201, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-b', 'resource': 'process-race', 'status': 'active'}, '/tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\\n  from starlette.testclient import TestClient as TestClient  # noqa')]; durable=(200, {'acquired_at': '2040-02-01T00:00:00Z', 'expires_at': '2040-02-01T00:00:10Z', 'fencing_token': 1, 'owner': 'race-b', 'resource': 'process-race', 'status': 'active'}); takeover=(201, {'acquired_at': '2040-02-01T00:00:10Z', 'expires_at': '2040-02-01T00:00:20Z', 'fencing_token': 2, 'owner': 'race-next', 'resource': 'process-race', 'status': 'active'}); /tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; /tmp/batch3-audit-lease-coordination-api-0ti2r53e/lease-coordination-api/.agentharness/eval_envs/7d9c14ae46add81c/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa; child_exit=0; child_exit=0",
             "status": "pass"
           },
           {
@@ -2095,7 +2095,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 37.484874,
+        "duration_seconds": 35.204428,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2136,7 +2136,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 10.435527,
+        "duration_seconds": 9.47634,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2177,7 +2177,7 @@
             "status": "pass"
           }
         ],
-        "duration_seconds": 19.104,
+        "duration_seconds": 17.161554,
         "functional_denominator": 5,
         "functional_passed": 5,
         "ok": true,
@@ -2188,7 +2188,7 @@
     }
   },
   "efficacy_cells": 0,
-  "generated_at": "2026-07-17T08:12:27.971916Z",
+  "generated_at": "2026-07-17T09:05:58.074209Z",
   "go": true,
   "independent_review": {
     "claimed": false,
@@ -2214,11 +2214,11 @@
           "tests/test_task_expansion_batch2.py"
         ],
         "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-        "duration_seconds": 761.674393,
+        "duration_seconds": 729.307994,
         "exit_code": 0,
         "ok": true,
         "stderr": "",
-        "stdout": ".........                                                                [100%]\n9 passed in 761.19s (0:12:41)\n"
+        "stdout": ".........                                                                [100%]\n9 passed in 728.88s (0:12:08)\n"
       }
     ],
     "ok": true,
@@ -2226,17 +2226,14 @@
   },
   "mode": "full",
   "operations": {
-    "cleanup_removed": [
-      "benchmarks/grading-env/__pycache__",
-      "benchmarks/grading-env/__pycache__/audit_task_expansion_batch3.cpython-312.pyc"
-    ],
+    "cleanup_removed": [],
     "generator": {
       "command": [
         "/home/fabio/hermes-professore/.venv/bin/python3",
         "/home/fabio/AgentHarness-repair-safety-20260715/benchmarks/grading-env/build_task_expansion_batch3.py"
       ],
       "cwd": "/tmp",
-      "duration_seconds": 0.044024,
+      "duration_seconds": 0.042406,
       "exit_code": 0,
       "ok": true,
       "stderr": "",
@@ -2255,20 +2252,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-dgm88gl6/install-double-entry-ledger-api",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-a5z2g9lv/install-double-entry-ledger-api",
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.435858,
+          "duration_seconds": 0.472271,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: double-entry-ledger-api-reference\nSuccessfully installed double-entry-ledger-api-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/double_entry_ledger_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: double-entry-ledger-api-reference\nSuccessfully installed double-entry-ledger-api-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/double-entry-ledger-api/ledger_api/main.py",
-          "duration_seconds": 0.005902,
+          "duration_seconds": 0.004488,
           "ok": true
         },
         "wheel": {
@@ -2280,15 +2277,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
-            "/tmp/batch3-packaging-dgm88gl6/source-double-entry-ledger-api"
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
+            "/tmp/batch3-packaging-a5z2g9lv/source-double-entry-ledger-api"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.159364,
+          "duration_seconds": 1.051542,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-double-entry-ledger-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: double-entry-ledger-api-reference\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): started\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for double-entry-ledger-api-reference: filename=double_entry_ledger_api_reference-0.1.0-py3-none-any.whl size=4712 sha256=b0ad0bb65fd743033f0cbe688990339e6282118921623799717c78739a14ddba\n  Stored in directory: /home/fabio/.cache/pip/wheels/59/f9/2b/52b2c4e4d5097c6b62e7382feda52788f140c2966474c439d8\nSuccessfully built double-entry-ledger-api-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-double-entry-ledger-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: double-entry-ledger-api-reference\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): started\n  Building wheel for double-entry-ledger-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for double-entry-ledger-api-reference: filename=double_entry_ledger_api_reference-0.1.0-py3-none-any.whl size=4712 sha256=1799b83ef72e88728bd918c641eb7aee420bd29f8a16685c50842f23ebc0a3ac\n  Stored in directory: /home/fabio/.cache/pip/wheels/7f/7f/84/a325b35daf7f1509601fb116a57a4cc003e2050ff045ae77d9\nSuccessfully built double-entry-ledger-api-reference\n"
         }
       },
       "lease-coordination-api": {
@@ -2300,20 +2297,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-dgm88gl6/install-lease-coordination-api",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-a5z2g9lv/install-lease-coordination-api",
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.432332,
+          "duration_seconds": 0.447419,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: lease-coordination-api-reference\nSuccessfully installed lease-coordination-api-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/lease_coordination_api_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: lease-coordination-api-reference\nSuccessfully installed lease-coordination-api-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/lease-coordination-api/lease_api/main.py",
-          "duration_seconds": 0.004266,
+          "duration_seconds": 0.007332,
           "ok": true
         },
         "wheel": {
@@ -2325,15 +2322,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
-            "/tmp/batch3-packaging-dgm88gl6/source-lease-coordination-api"
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
+            "/tmp/batch3-packaging-a5z2g9lv/source-lease-coordination-api"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.060866,
+          "duration_seconds": 1.08249,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-lease-coordination-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: lease-coordination-api-reference\n  Building wheel for lease-coordination-api-reference (pyproject.toml): started\n  Building wheel for lease-coordination-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for lease-coordination-api-reference: filename=lease_coordination_api_reference-0.1.0-py3-none-any.whl size=3954 sha256=2e4b8adcb95d6a4d6ff5bd11682829c6a78c6525e23f782e2b6b71d90da923c5\n  Stored in directory: /home/fabio/.cache/pip/wheels/26/f8/27/f48ef4d7cb59644a7cdf0d7786203356562176cf45959caaf5\nSuccessfully built lease-coordination-api-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-lease-coordination-api\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: lease-coordination-api-reference\n  Building wheel for lease-coordination-api-reference (pyproject.toml): started\n  Building wheel for lease-coordination-api-reference (pyproject.toml): finished with status 'done'\n  Created wheel for lease-coordination-api-reference: filename=lease_coordination_api_reference-0.1.0-py3-none-any.whl size=3954 sha256=9e5d920d9101507ec5440e904218b3a8562ae3a6437ec9a02389adf6830a1f28\n  Stored in directory: /home/fabio/.cache/pip/wheels/74/54/ad/1cfa695ee271aa1ba3afbe3b4e237bd8e3060f7099260ac052\nSuccessfully built lease-coordination-api-reference\n"
         }
       },
       "pii-redaction-pipeline": {
@@ -2345,20 +2342,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-dgm88gl6/install-pii-redaction-pipeline",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-a5z2g9lv/install-pii-redaction-pipeline",
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.453746,
+          "duration_seconds": 0.490277,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: pii-redaction-pipeline-reference\nSuccessfully installed pii-redaction-pipeline-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: pii-redaction-pipeline-reference\nSuccessfully installed pii-redaction-pipeline-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/pii-redaction-pipeline/pii_redactor/redact.py",
-          "duration_seconds": 0.004703,
+          "duration_seconds": 0.004158,
           "ok": true
         },
         "wheel": {
@@ -2370,15 +2367,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
-            "/tmp/batch3-packaging-dgm88gl6/source-pii-redaction-pipeline"
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
+            "/tmp/batch3-packaging-a5z2g9lv/source-pii-redaction-pipeline"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.098523,
+          "duration_seconds": 1.112189,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-pii-redaction-pipeline\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pii-redaction-pipeline-reference\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): started\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): finished with status 'done'\n  Created wheel for pii-redaction-pipeline-reference: filename=pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl size=4353 sha256=461d4aad762507215268001947da9880f42d3752388ef2e3888be9c2fcd7d291\n  Stored in directory: /home/fabio/.cache/pip/wheels/fb/10/f8/11524de43e0543bef1cb9dd980690ec8d027416b1f18912621\nSuccessfully built pii-redaction-pipeline-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-pii-redaction-pipeline\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pii-redaction-pipeline-reference\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): started\n  Building wheel for pii-redaction-pipeline-reference (pyproject.toml): finished with status 'done'\n  Created wheel for pii-redaction-pipeline-reference: filename=pii_redaction_pipeline_reference-0.1.0-py3-none-any.whl size=4353 sha256=a8b8f466c8cba9564e20b43f851de36b49264f4e630d312f71e5f135b6cfd5e0\n  Stored in directory: /home/fabio/.cache/pip/wheels/b4/cb/9b/7c65d7eacffaaa512a1c0a9c4eb4eaf9eb4cd962b4e8ea2f1a\nSuccessfully built pii-redaction-pipeline-reference\n"
         }
       },
       "signed-artifact-verifier": {
@@ -2390,20 +2387,20 @@
             "install",
             "--no-deps",
             "--target",
-            "/tmp/batch3-packaging-dgm88gl6/install-signed-artifact-verifier",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl"
+            "/tmp/batch3-packaging-a5z2g9lv/install-signed-artifact-verifier",
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 0.445758,
+          "duration_seconds": 0.471337,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: signed-artifact-verifier-reference\nSuccessfully installed signed-artifact-verifier-reference-0.1.0\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/wheelhouse/signed_artifact_verifier_reference-0.1.0-py3-none-any.whl\nInstalling collected packages: signed-artifact-verifier-reference\nSuccessfully installed signed-artifact-verifier-reference-0.1.0\n"
         },
         "ok": true,
         "py_compile": {
           "detail": "benchmarks/grading-env/task-expansion-batch3/references/signed-artifact-verifier/artifact_verifier/verify.py",
-          "duration_seconds": 0.004198,
+          "duration_seconds": 0.003762,
           "ok": true
         },
         "wheel": {
@@ -2415,15 +2412,15 @@
             "--no-deps",
             "--no-build-isolation",
             "--wheel-dir",
-            "/tmp/batch3-packaging-dgm88gl6/wheelhouse",
-            "/tmp/batch3-packaging-dgm88gl6/source-signed-artifact-verifier"
+            "/tmp/batch3-packaging-a5z2g9lv/wheelhouse",
+            "/tmp/batch3-packaging-a5z2g9lv/source-signed-artifact-verifier"
           ],
           "cwd": "/home/fabio/AgentHarness-repair-safety-20260715",
-          "duration_seconds": 1.443337,
+          "duration_seconds": 1.137082,
           "exit_code": 0,
           "ok": true,
           "stderr": "",
-          "stdout": "Processing /tmp/batch3-packaging-dgm88gl6/source-signed-artifact-verifier\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: signed-artifact-verifier-reference\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): started\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): finished with status 'done'\n  Created wheel for signed-artifact-verifier-reference: filename=signed_artifact_verifier_reference-0.1.0-py3-none-any.whl size=4419 sha256=4a826b18af27dfeaa15dfe3eace8d1ba2d9662c80861b0853c2ec452b4da8132\n  Stored in directory: /home/fabio/.cache/pip/wheels/09/e0/a6/d8465ccf0327a59e6a2861d1b97ee41cc2a2e4d9ce84a73087\nSuccessfully built signed-artifact-verifier-reference\n"
+          "stdout": "Processing /tmp/batch3-packaging-a5z2g9lv/source-signed-artifact-verifier\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: signed-artifact-verifier-reference\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): started\n  Building wheel for signed-artifact-verifier-reference (pyproject.toml): finished with status 'done'\n  Created wheel for signed-artifact-verifier-reference: filename=signed_artifact_verifier_reference-0.1.0-py3-none-any.whl size=4419 sha256=dc8f618f34426eb634ccc928c43d00a18bbac2615f8876861142c916b418c362\n  Stored in directory: /home/fabio/.cache/pip/wheels/0f/44/6b/e8afbe3a92097c48e9fdfe379e629058aecdf727870af2064f\nSuccessfully built signed-artifact-verifier-reference\n"
         }
       }
     }
@@ -2499,6 +2496,12 @@
         },
         "visible_byte_identity": {
           "detail": "exit_code=0; changed=[]",
+          "ok": true
+        }
+      },
+      "hidden_reference_hygiene": {
+        "no_runtime_or_packaging_residue": {
+          "detail": "bad_nodes=[]",
           "ok": true
         }
       },

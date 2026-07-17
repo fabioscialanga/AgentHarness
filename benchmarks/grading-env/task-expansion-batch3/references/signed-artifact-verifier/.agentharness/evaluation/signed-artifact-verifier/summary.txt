@@ -1,5 +1,0 @@
-signed_manifest_authenticity=pass
-signed_manifest_inventory=pass
-signed_manifest_content_integrity=pass
-signed_manifest_trust_window=pass
-signed_manifest_atomic_report=fail

@@ -103,12 +103,20 @@ def remove_caches() -> list[str]:
     for root in roots:
         if not root.exists():
             continue
+        is_reference_root = root == OUT / "references"
         for path in sorted(root.rglob("*"), key=lambda p: len(p.parts), reverse=True):
             if path.is_file() and path.suffix == ".pyc":
                 removed.append(str(path.relative_to(ROOT))); path.unlink()
             elif path.is_dir() and (
-                path.name in {"__pycache__", ".pytest_cache", "build", "dist"}
-                or path.name.endswith(".egg-info")
+                path.name in {"__pycache__", ".pytest_cache"}
+                or (
+                    is_reference_root
+                    and (
+                        path.name == ".agentharness"
+                        or path.name in {"build", "dist"}
+                        or path.name.endswith(".egg-info")
+                    )
+                )
             ):
                 removed.append(str(path.relative_to(ROOT))); shutil.rmtree(path)
     return sorted(set(removed))
@@ -146,6 +154,18 @@ def static_audit(freeze: dict[str, Any], sensitivity: dict[str, Any]) -> tuple[d
             "process_claims_only": gate(bool(claim_types) and claim_types <= PROCESS_CLAIMS, f"claim_types={sorted(str(x) for x in claim_types)}"),
             "five_frozen_functional_checks": gate(len(ids) == 5 and len(set(ids)) == 5, f"check_ids={ids}"),
         }
+    reference_bad = []
+    for path in (OUT / "references").rglob("*"):
+        if (
+            path.name in FORBIDDEN_PARTS
+            or path.name in {"build", "dist"}
+            or path.name.endswith(".egg-info")
+            or (path.is_file() and path.suffix == ".pyc")
+        ):
+            reference_bad.append(path.relative_to(ROOT).as_posix())
+    checks["hidden_reference_hygiene"] = {
+        "no_runtime_or_packaging_residue": gate(not reference_bad, f"bad_nodes={sorted(reference_bad)}")
+    }
     all_prior = freeze.get("all_prior_overlap_matrix", [])
     nearest = freeze.get("nearest_check_matrix", [])
     pairwise = freeze.get("new_task_pairwise_matrix", [])
