@@ -578,7 +578,7 @@
     "benchmarks/double-entry-ledger-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
     "benchmarks/double-entry-ledger-api/SPEC.md": "e1ca288f6e230bae0887a1b41dc136e31f2e30e74ffeffa3433422607b1556b0",
     "benchmarks/grading-env/finalize_stage2_efficacy.py": "9eee4c7491ab5439fbe159b293a1705b11e033c90b28e9b83a3d7046a8a59a5c",
-    "benchmarks/grading-env/run_stage2_efficacy_campaign.py": "965604a50b2ded5c7f607b2e0fe71f26af950256c5cc03cf6c904189a2f8d189",
+    "benchmarks/grading-env/run_stage2_efficacy_campaign.py": "c0d547e9a3deea76369850f05fd859222c4d66e718bc6e1ad533988e3847f6dc",
     "benchmarks/grading-env/stage2-analysis-requirements.txt": "2c3ce80ac774a63468873f121ef4a346a3582bfd0e0589ee8cb47c85c48b1ebb",
     "benchmarks/grading-env/stage2_run_analysis.py": "31b410844a4b0b433e8e1fddb1063122f9dc20b2c1b248ac1738a34d3079b5d3",
     "benchmarks/incident-escalation-api/CLAIMS_CONTRACT.template.json": "af4577b0fc631d6bc58e3351a4961df2374da2431e0e080a60ce5e075e999a45",
@@ -643,7 +643,7 @@
     "sensitivity": "count_provider_unavailable_and_harness_invalid_as_zero"
   },
   "invocation_max_retries": 1,
-  "manifest_payload_sha256": "0ebfa6c141750694ef318985ffbc6989100e0b33911c76962f98ee6fa8994e9d",
+  "manifest_payload_sha256": "c2dd73ecb1e262f391e6629c70843c6ccbc6f9293fce5eab6da2f164d3f2cc0f",
   "max_turns": 40,
   "mme": 0.1,
   "model": "gpt-5.6-sol",
@@ -664,10 +664,12 @@
   "provider": "openai-codex",
   "purpose": "smallest high-effect confirmatory test of AgentHarness utility on the frozen 20-task suite",
   "quota_policy": {
+    "allow_single_authoritative_window": true,
     "auth_reset_forbidden": true,
     "provider_fallback_forbidden": true,
     "purchased_credits_forbidden": true,
     "session_used_pause_percent": 80.0,
+    "single_window_pause_percent": 80.0,
     "usage_unavailable": "pause_fail_closed",
     "weekly_used_pause_percent": 85.0
   },

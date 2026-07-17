@@ -1588,7 +1588,7 @@ Authorization and timing:
 
 Normative executable freeze:
 - manifest: `benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json`
-- manifest payload SHA-256: `0ebfa6c141750694ef318985ffbc6989100e0b33911c76962f98ee6fa8994e9d`
+- manifest payload SHA-256: `c2dd73ecb1e262f391e6629c70843c6ccbc6f9293fce5eab6da2f164d3f2cc0f`
 - the manifest freezes 71 runner, finalizer, analysis, task-specification, claims-contract, held-out-suite and hidden-evaluator file hashes
 - campaign runner: `benchmarks/grading-env/run_stage2_efficacy_campaign.py`
 - finalizer: `benchmarks/grading-env/finalize_stage2_efficacy.py`
@@ -1664,6 +1664,21 @@ Interim blindness and analysis authorization:
 Launch authorization:
 - publication of this amendment and the matching freeze to clean synchronized `origin/main`, followed by a successful frozen preflight, authorizes this exact 120-cell campaign
 - no different task pool, model, condition, replicate count, threshold, retry rule or endpoint is authorized without a new dated pre-data amendment
+
+### 17.32 Pre-data quota-telemetry compatibility amendment (2026-07-17)
+
+Trigger and contamination boundary:
+- the first launch attempt under commit `b64e016421ba8656f3addd16c53b44b3acfdfd6c` stopped fail-closed at the first quota gate with exit code `11` because the authoritative `usage_api` snapshot exposed one `Session` window and no separately labelled `Weekly` window
+- the stopped run recorded `physical_cell_attempts = {}`, zero agent-invocation metadata files, zero cell result commits and zero efficacy rows; therefore no treatment was delivered and no outcome or A-vs-B contrast existed or was read
+- the original stopped run root is retained as audit evidence and must not be resumed under the amended manifest
+
+Amended quota rule:
+- the manifest payload SHA-256 is `c2dd73ecb1e262f391e6629c70843c6ccbc6f9293fce5eab6da2f164d3f2cc0f`
+- if authoritative Codex telemetry exposes both `Session` and `Weekly`, the frozen 80% and 85% pause thresholds remain unchanged
+- if it exposes exactly one authoritative window labelled `Session` or `Weekly`, launch and admission are permitted only while that window is below the more conservative frozen threshold of 80%
+- zero recognized windows, unavailable telemetry, missing percentage or reset time, purchased-credit risk, or a single window at or above 80% remains fail-closed
+- this amendment changes no task, condition, block order, replicate, endpoint, treatment, retry rule, analysis parameter or decision threshold
+- a second launch requires a new run root, clean synchronized `origin/main`, matching amended manifest hashes and a successful preflight
 
 ---
 

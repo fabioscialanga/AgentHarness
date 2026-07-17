@@ -177,10 +177,20 @@ def exclusive_lock(path: Path) -> Iterator[None]:
 
 
 class CodexQuotaGate:
-    def __init__(self, *, run_root: Path, weekly_limit: float, session_limit: float) -> None:
+    def __init__(
+        self,
+        *,
+        run_root: Path,
+        weekly_limit: float,
+        session_limit: float,
+        single_window_limit: float,
+        allow_single_authoritative_window: bool,
+    ) -> None:
         self.run_root = run_root
         self.weekly_limit = weekly_limit
         self.session_limit = session_limit
+        self.single_window_limit = single_window_limit
+        self.allow_single_authoritative_window = allow_single_authoritative_window
         self.last_snapshot: dict[str, object] | None = None
 
     def snapshot(self, *, phase: str) -> dict[str, object]:
@@ -201,8 +211,10 @@ class CodexQuotaGate:
                 "remaining_percent": max(0.0, 100.0 - float(window.used_percent)),
                 "reset_at": window.reset_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
             }
-        if "weekly" not in windows or "session" not in windows:
-            raise UsageUnavailable("Codex Session and Weekly windows are both required")
+        if "session" not in windows and "weekly" not in windows:
+            raise UsageUnavailable("At least one authoritative Codex usage window is required")
+        if len(windows) == 1 and not self.allow_single_authoritative_window:
+            raise UsageUnavailable("Both Codex Session and Weekly windows are required")
         credit_risk = any("credit" in detail.lower() for detail in usage.details)
         snapshot: dict[str, object] = {
             "observed_at": utc_now(),
@@ -217,12 +229,21 @@ class CodexQuotaGate:
         self.last_snapshot = snapshot
         if credit_risk:
             raise QuotaPause("Purchased-credit risk detected; campaign remains paused")
-        weekly = float(windows["weekly"]["used_percent"])
-        session = float(windows["session"]["used_percent"])
-        if weekly >= self.weekly_limit or session >= self.session_limit:
-            raise QuotaPause(
-                f"Quota reserve reached: weekly={weekly:.1f}% session={session:.1f}%"
-            )
+        if len(windows) == 1:
+            label, only_window = next(iter(windows.items()))
+            used = float(only_window["used_percent"])
+            conservative_limit = self.single_window_limit
+            if used >= conservative_limit:
+                raise QuotaPause(
+                    f"Quota reserve reached: {label}={used:.1f}% limit={conservative_limit:.1f}%"
+                )
+        else:
+            weekly = float(windows["weekly"]["used_percent"])
+            session = float(windows["session"]["used_percent"])
+            if weekly >= self.weekly_limit or session >= self.session_limit:
+                raise QuotaPause(
+                    f"Quota reserve reached: weekly={weekly:.1f}% session={session:.1f}%"
+                )
         return snapshot
 
     def admission_hook(self, attempt_name: str, retry_index: int) -> None:
@@ -239,6 +260,10 @@ class Stage2Campaign:
             run_root=self.run_root,
             weekly_limit=float(quota["weekly_used_pause_percent"]),
             session_limit=float(quota["session_used_pause_percent"]),
+            single_window_limit=float(quota["single_window_pause_percent"]),
+            allow_single_authoritative_window=bool(
+                quota.get("allow_single_authoritative_window", False)
+            ),
         )
         self.state_path = self.run_root / "campaign-state.private.json"
         self.progress_path = self.run_root / "progress.private.json"

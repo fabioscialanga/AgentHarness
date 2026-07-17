@@ -150,6 +150,8 @@ def build() -> dict[str, object]:
         "quota_policy": {
             "weekly_used_pause_percent": 85.0,
             "session_used_pause_percent": 80.0,
+            "allow_single_authoritative_window": True,
+            "single_window_pause_percent": 80.0,
             "usage_unavailable": "pause_fail_closed",
             "auth_reset_forbidden": True,
             "purchased_credits_forbidden": True,
