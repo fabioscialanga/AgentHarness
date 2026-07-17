@@ -1532,6 +1532,52 @@ Timing and boundary:
 - efficacy cells remain 0 and no A/B output or contrast was read
 - all subsequent evaluator, mutant, report, and amendment records must use the normative JSON labels exactly
 
+### 17.30 Stage 2 task-expansion batch 3 post-build acceptance and external review record (2026-07-17)
+
+This amendment is registered after completing the batch 3 structural build and non-efficacy acceptance gates. It does not authorize a task-solving pilot, an A/B run, a confirmatory launch, campaign-shape selection, or any efficacy claim.
+
+Immutable artifact under review:
+- artifact commit: `a6986df598c39fbaeb9e8b68e49cfa414629cd62`
+- local HEAD and `origin/main` matched that commit before the external review
+- the working tree was clean during the external review
+- the normative pre-build JSON freeze remained byte-identical with SHA-256 `63f7404b1e62967e42c7f258ef3031b18a1699276e440bcd0bf30431c18b4713`
+- the frozen mutation-sensitivity contract was not changed to accommodate implementation outcomes
+
+Canonical local acceptance evidence:
+- report: `benchmarks/grading-env/task-expansion-batch3/BATCH3_ACCEPTANCE_REPORT.json`
+- report SHA-256: `de65a2550017990a9f2d634570793e0ed7648a09566edbf9e4676a4cb55520e0`
+- report mode: `full`
+- overall decision: `GO`
+- static, packaging, dynamic and legacy-compatibility gates: all `true`
+- reference positives: 4/4 task references, each with five functional checks plus the terminal envelope check passing
+- mutation sensitivity: exact 20/20 singleton failure sets, with the complementary four checks passing for every mutant
+- clean-room agreement: three independent copies per task, all agreeing
+- diversity evidence: complete 64 prior-task comparisons, 20 nearest-check comparisons and 6 within-batch pairwise comparisons
+- hidden reference hygiene: no tracked runtime or packaging residue
+- efficacy cells collected or inspected: 0
+
+Review-driven hardening before final acceptance:
+- the PII action oracle was expanded so `redact`, `remove` and HMAC pseudonymization directly exercise strings, numbers, booleans, nulls, objects and arrays
+- lease and ledger controlled-failure checks were expanded from selected public-resource comparisons to stable logical snapshots of every user SQLite table, its columns and every row, while retaining public-state and restart checks
+- the affected reference positives passed 3/3 and the affected mutants retained exact 15/15 singleton isolation before the final full audit
+- these fixes changed evaluator coverage only; task identities, public interfaces, frozen check IDs, planned mutant defects and expected failure/pass sets remained unchanged
+
+External Claude Code review:
+- review artifact: `benchmarks/grading-env/task-expansion-batch3/BATCH3_CLAUDE_REVIEW.json`
+- review artifact SHA-256: `93d37bc58f8fc86d9d943cc446f7ba59743809194d2ebb561756f6ff74594695`
+- reviewer: Claude Code `2.1.199`, model `claude-sonnet-5`
+- mode: focused read-only review of immutable commit `a6986df598c39fbaeb9e8b68e49cfa414629cd62`
+- verdict: `ok`
+- blockers: 0
+- the reviewer independently confirmed that both previous blockers were substantively closed, the canonical report hash matched, the freeze and sensitivity matrix were unchanged, and no files were modified during review
+- limitation: Claude did not rerun the auditor, generators, tests or concurrent reference behavior; those execution claims remain grounded in the locally observed canonical full audit rather than in the external static review
+
+Acceptance boundary:
+- batch 3 adds four structurally accepted task identities, increasing the accepted identity pool from 16 to 20 for future preregistered design work
+- no campaign shape is selected by this amendment
+- no task-solving pilot, A/B contrast, efficacy result, sizing update or confirmatory run is authorized
+- any later measurement or campaign decision still requires its own explicit preregistered authorization and must preserve blindness to the treatment contrast until the corresponding gate permits interpretation
+
 ---
 
 ## Freeze
