@@ -68,6 +68,14 @@ class Stage2AnalysisTests(unittest.TestCase):
                             "category": "success",
                             "benchmark_execution_status": "valid",
                             "benchmark_outcome_status": "success",
+                            "treatment_delivered": True,
+                            "feedback_delivered": condition == "B-agentharness",
+                            "treatment_prompt_sha256_pre": "a" * 64,
+                            "treatment_prompt_sha256_post": "a" * 64,
+                            "treatment_prompt_immutable": True,
+                            "feedback_sha256_pre": "b" * 64 if condition == "B-agentharness" else None,
+                            "feedback_sha256_post": "b" * 64 if condition == "B-agentharness" else None,
+                            "feedback_immutable": condition == "B-agentharness",
                             "heldout_endpoint_denominator": 6,
                             "heldout_endpoint_valid": True,
                         }
@@ -251,6 +259,8 @@ class Stage2AnalysisTests(unittest.TestCase):
                     "benchmark_classification_reason": None,
                     "solution_hash_changed_between_attempt_and_repair": True,
                     "verify_run_ok": True,
+                    "treatment_delivered": True,
+                    "feedback_delivered": True,
                 },
             },
         ]

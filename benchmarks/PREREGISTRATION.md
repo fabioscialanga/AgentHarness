@@ -1578,6 +1578,93 @@ Acceptance boundary:
 - no task-solving pilot, A/B contrast, efficacy result, sizing update or confirmatory run is authorized
 - any later measurement or campaign decision still requires its own explicit preregistered authorization and must preserve blindness to the treatment contrast until the corresponding gate permits interpretation
 
+### 17.31 Substantive amendment: GPT-5.6 AgentHarness efficacy campaign authorization (2026-07-17, before any campaign cell)
+
+Authorization and timing:
+- the user explicitly authorized proceeding to an efficacy result on 2026-07-17 after restating that the project goal is to demonstrate with credible evidence that AgentHarness is useful and works
+- at the time of this amendment, the 20-task structural pool had passed its frozen non-efficacy acceptance gates, but no new Stage 2 efficacy cell under this design had been launched and no contrast from this design existed
+- this amendment is substantive: it selects and authorizes a campaign shape, changes the GPT-5.6 treatment implementation to a cleaner causal contrast, freezes a new quota-aware resumable launcher, and permits the contrast to be read only after complete paired data sealing
+- this amendment supersedes the non-authorization boundary in §17.30 and the provisional 24-task-by-14-replicate candidate in §17.23; it does not alter or pool any previous efficacy run
+
+Normative executable freeze:
+- manifest: `benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json`
+- manifest payload SHA-256: `0ebfa6c141750694ef318985ffbc6989100e0b33911c76962f98ee6fa8994e9d`
+- the manifest freezes 71 runner, finalizer, analysis, task-specification, claims-contract, held-out-suite and hidden-evaluator file hashes
+- campaign runner: `benchmarks/grading-env/run_stage2_efficacy_campaign.py`
+- finalizer: `benchmarks/grading-env/finalize_stage2_efficacy.py`
+- any frozen-file hash mismatch, dirty repository, or mismatch between local HEAD and `origin/main` blocks launch or resume
+
+Campaign shape and randomization:
+- all 20 structurally accepted task identities are included; no task is selected or excluded using an A-vs-B outcome
+- conditions: `A-baseline` and `B-agentharness`
+- three fresh replicates per task and condition
+- total: 60 task-replicate paired blocks, 120 cells, and 240 nominal agent invocations before infrastructure reruns
+- randomization seed: `20260717`
+- block order and within-block condition order are frozen byte-for-byte in the normative manifest
+- blocks are committed atomically only after both conditions complete; no partial block enters the analysis dataset
+
+Causal treatment definition:
+- the initial prompt is byte-identical across conditions and contains no condition label or arm-specific implementation guidance
+- both conditions receive the same task specification, claims-contract path, workspace rules, provider/model budget, canonical-pytest authority, cumulative-repair policy and deterministic repair-safety gate
+- condition A receives a framework-neutral repair prompt based on the task specification and canonical pytest result
+- condition B receives the AgentHarness intervention: a persisted pre-repair `verify-run` report with structured feedback, and a repair prompt that explicitly directs the agent to that report
+- a repair prompt being written is insufficient: the repair invocation must exit zero and produce captured invocation evidence before the cell may be scored
+- the repair prompt, and for B the structured feedback report, are SHA-256 bound before invocation, made read-only, rehashed after invocation, and the cell is invalid unless each pre/post hash is identical
+- every valid B cell must record `treatment_delivered = true` and `feedback_delivered = true`; every valid A cell must record `treatment_delivered = true` and `feedback_delivered = false`
+- `feedback_delivered` is derived only from the persisted pre-repair treatment artifact and successful repair invocation; the final verify-run result cannot be used as a fallback proxy
+
+Provider, runtime and quota freeze:
+- provider/model: `openai-codex/gpt-5.6-sol`
+- maximum turns: 40 per agent invocation
+- Hermes Codex SSE-idle watchdog: launcher-scoped 60 seconds, with no global configuration change
+- toolsets: `terminal,file`; provider fallback and credential rotation are forbidden
+- purchased-credit use and authentication reset are forbidden
+- quota telemetry is checked before every physical agent invocation and records only safe usage-window fields
+- execution pauses fail-closed if quota telemetry is unavailable, weekly usage reaches 85%, session usage reaches 80%, or purchased-credit risk is detected
+- pausing for quota is operational only and cannot reveal or alter efficacy outcomes; resume requires the same manifest and repository commit
+
+Infrastructure retry and crash policy:
+- a quota or provider-unavailable attempt is preserved in quarantine and does not become an efficacy row
+- no cell may exceed three frozen provider attempts without manual adjudication and a new dated amendment
+- every `harness_invalid` cell receives at most one symmetric fresh rerun; a second harness-invalid result remains an observed infrastructure-invalid row under the frozen invalid policy
+- interrupted cells with an atomic result commit are recovered without rerun; genuinely incomplete cells are quarantined before a fresh attempt
+- no workspace, score or repair artifact is reused across fresh attempts
+
+Primary estimand and decision rule:
+- endpoint: exact six-case terminal held-out score, passed cases divided by six
+- estimator: within each task and condition average valid replicates, then take the equal-weight mean of the 20 paired task differences `B - A`
+- primary interval: two-sided 95% Student-t interval with 19 degrees of freedom
+- MME remains `0.10`
+- `improvement_supported` only if the primary CI lower bound is strictly greater than `0.10`
+- `no_meaningful_effect` only if the primary CI upper bound is strictly less than `0.10`
+- every other result is `inconclusive`
+- infrastructure invalids are excluded from the primary analysis and counted as zero in the frozen sensitivity; every task-condition requires at least one valid replicate
+
+Robustness and secondary family:
+- a broad robust-improvement claim additionally requires both frozen cluster-bootstrap intervals above zero, every leave-one-task-out point estimate above zero, and the invalid-as-zero sensitivity estimate above zero
+- the two confirmatory secondary endpoints are complete six-of-six success and total agent wall-clock seconds, analyzed as equal-weight paired task differences with Holm familywise alpha 0.05
+- favorable directions are positive for complete success and negative for wall-clock cost
+- secondary results cannot rescue a failed or inconclusive primary result
+- treatment delivery, solution-hash change, invalid rates, rollback counts and invocation counts are descriptive mechanism evidence only
+
+Power and interpretation boundary:
+- planning assumptions are within-task SD `0.224` and treatment-effect heterogeneity SD `0.10`
+- frozen simulated power is `0.061` for effect `0.12`, `0.367` for effect `0.18`, and `0.863` for effect `0.25`
+- this is deliberately the smallest campaign with at least 0.80 frozen power for a strong `0.25` effect on the accepted 20-task pool; it is not adequately powered for `0.12` or `0.18`
+- therefore an `inconclusive` result must not be represented as evidence that AgentHarness has no useful effect
+- a supported result generalizes only to the frozen 20-task suite, GPT-5.6 Sol, the frozen tool/budget configuration and the tested AgentHarness treatment
+- the authorized product claim, if and only if the primary and robustness gates pass, is that under the frozen configuration AgentHarness materially improves held-out task quality relative to the same model receiving a framework-neutral repair pass
+
+Interim blindness and analysis authorization:
+- before all 60 blocks are committed, no task score, arm score, task mean, effect, confidence interval, rank, endpoint summary or A-vs-B contrast may be computed or displayed
+- progress is limited to completed block/cell counts, pause status, retry counts, elapsed time and safe quota state
+- only after the 120-row dataset passes the exact shape and treatment-delivery gates is it sealed by SHA-256 and analysis authorized
+- the finalizer has no CLI options for changing MME, seeds, resample counts, invalid handling or decision thresholds
+
+Launch authorization:
+- publication of this amendment and the matching freeze to clean synchronized `origin/main`, followed by a successful frozen preflight, authorizes this exact 120-cell campaign
+- no different task pool, model, condition, replicate count, threshold, retry rule or endpoint is authorized without a new dated pre-data amendment
+
 ---
 
 ## Freeze

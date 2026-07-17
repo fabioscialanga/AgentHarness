@@ -75,6 +75,8 @@ class ManipulationCheckResult:
     n_rows: int
     hash_changed_count: int
     hash_changed_rate: float
+    treatment_delivered_count: int
+    treatment_delivered_rate: float
     feedback_delivered_count: int | None = None
     feedback_delivered_rate: float | None = None
 
@@ -198,15 +200,20 @@ def _normalize_row(row: dict[str, Any]) -> dict[str, Any]:
             row.get("solution_hash_changed_between_attempt_and_repair")
         ),
         "verify_run_ok": _coerce_bool(row.get("verify_run_ok")),
+        "treatment_delivered": _coerce_bool(row.get("treatment_delivered")),
         "feedback_delivered": _coerce_bool(row.get("feedback_delivered")),
+        "treatment_prompt_sha256_pre": row.get("treatment_prompt_sha256_pre"),
+        "treatment_prompt_sha256_post": row.get("treatment_prompt_sha256_post"),
+        "treatment_prompt_immutable": _coerce_bool(row.get("treatment_prompt_immutable")),
+        "feedback_sha256_pre": row.get("feedback_sha256_pre"),
+        "feedback_sha256_post": row.get("feedback_sha256_post"),
+        "feedback_immutable": _coerce_bool(row.get("feedback_immutable")),
         "heldout_endpoint_denominator": int(
             row.get("heldout_endpoint_denominator", EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR)
         ),
         "heldout_endpoint_valid": _coerce_bool(row.get("heldout_endpoint_valid", True)),
         "heldout_endpoint_error": row.get("heldout_endpoint_error"),
     }
-    if condition == "B-agentharness" and not normalized["feedback_delivered"]:
-        normalized["feedback_delivered"] = row.get("verify_run_ok") is not None
     return normalized
 
 
@@ -231,6 +238,9 @@ def build_dataset_from_progress(progress_path: Path) -> list[dict[str, Any]]:
         final = record.get("final") or {}
         if not isinstance(final, dict):
             final = {}
+        delivery = final.get("treatment_delivery") or {}
+        if not isinstance(delivery, dict):
+            delivery = {}
         row = {
             "task_id": record.get("task_id"),
             "condition": record.get("condition"),
@@ -243,7 +253,14 @@ def build_dataset_from_progress(progress_path: Path) -> list[dict[str, Any]]:
                 "solution_hash_changed_between_attempt_and_repair", False
             ),
             "verify_run_ok": final.get("verify_run_ok", False),
-            "feedback_delivered": final.get("verify_run_ok", False),
+            "treatment_delivered": final.get("treatment_delivered", False),
+            "feedback_delivered": final.get("feedback_delivered", False),
+            "treatment_prompt_sha256_pre": delivery.get("treatment_prompt_sha256_pre", final.get("treatment_prompt_sha256_pre")),
+            "treatment_prompt_sha256_post": delivery.get("treatment_prompt_sha256_post", final.get("treatment_prompt_sha256_post")),
+            "treatment_prompt_immutable": delivery.get("treatment_prompt_immutable", final.get("treatment_prompt_immutable", False)),
+            "feedback_sha256_pre": delivery.get("feedback_sha256_pre", final.get("feedback_sha256_pre")),
+            "feedback_sha256_post": delivery.get("feedback_sha256_post", final.get("feedback_sha256_post")),
+            "feedback_immutable": delivery.get("feedback_immutable", final.get("feedback_immutable", False)),
             "heldout_endpoint_denominator": final.get(
                 "heldout_endpoint_denominator", EXPECTED_HELDOUT_ENDPOINT_DENOMINATOR
             ),
@@ -303,6 +320,28 @@ def validate_campaign_dataset(
         if not 0.0 <= score <= 1.0:
             raise Stage2AnalysisError(f"Score outside [0, 1] for {key}: {score}")
         if not _is_invalid_category(str(row["category"])):
+            if not _coerce_bool(row.get("treatment_delivered")):
+                raise Stage2AnalysisError(f"Valid cell lacks delivered repair treatment: {key}")
+            prompt_pre = str(row.get("treatment_prompt_sha256_pre") or "")
+            prompt_post = str(row.get("treatment_prompt_sha256_post") or "")
+            if (
+                len(prompt_pre) != 64
+                or prompt_pre != prompt_post
+                or not _coerce_bool(row.get("treatment_prompt_immutable"))
+            ):
+                raise Stage2AnalysisError(f"Valid cell lacks immutable pre/post treatment prompt binding: {key}")
+            if str(row["condition"]) == "B-agentharness":
+                feedback_pre = str(row.get("feedback_sha256_pre") or "")
+                feedback_post = str(row.get("feedback_sha256_post") or "")
+                if (
+                    not _coerce_bool(row.get("feedback_delivered"))
+                    or len(feedback_pre) != 64
+                    or feedback_pre != feedback_post
+                    or not _coerce_bool(row.get("feedback_immutable"))
+                ):
+                    raise Stage2AnalysisError(f"Valid AgentHarness cell lacks immutable pre-repair feedback binding: {key}")
+            if str(row["condition"]) == "A-baseline" and _coerce_bool(row.get("feedback_delivered")):
+                raise Stage2AnalysisError(f"Baseline cell unexpectedly received AgentHarness feedback: {key}")
             if not _coerce_bool(row.get("heldout_endpoint_valid")):
                 raise Stage2AnalysisError(f"Valid cell lacks a valid held-out endpoint: {key}")
             denominator = int(row.get("heldout_endpoint_denominator", 0))
@@ -541,6 +580,7 @@ def manipulation_checks(rows: list[dict[str, Any]]) -> list[ManipulationCheckRes
         subset = [row for row in rows if str(row["condition"]) == condition]
         n = len(subset)
         changed = sum(1 for row in subset if _coerce_bool(row.get("solution_hash_changed_between_attempt_and_repair")))
+        treatment_delivered = sum(1 for row in subset if _coerce_bool(row.get("treatment_delivered")))
         if condition == "B-agentharness":
             delivered = sum(1 for row in subset if _coerce_bool(row.get("feedback_delivered")))
             out.append(
@@ -549,6 +589,8 @@ def manipulation_checks(rows: list[dict[str, Any]]) -> list[ManipulationCheckRes
                     n_rows=n,
                     hash_changed_count=changed,
                     hash_changed_rate=changed / n if n else 0.0,
+                    treatment_delivered_count=treatment_delivered,
+                    treatment_delivered_rate=treatment_delivered / n if n else 0.0,
                     feedback_delivered_count=delivered,
                     feedback_delivered_rate=delivered / n if n else 0.0,
                 )
@@ -560,6 +602,8 @@ def manipulation_checks(rows: list[dict[str, Any]]) -> list[ManipulationCheckRes
                     n_rows=n,
                     hash_changed_count=changed,
                     hash_changed_rate=changed / n if n else 0.0,
+                    treatment_delivered_count=treatment_delivered,
+                    treatment_delivered_rate=treatment_delivered / n if n else 0.0,
                 )
             )
     return out
@@ -609,7 +653,14 @@ def synthetic_dataset(
                     "benchmark_classification_reason": None,
                     "solution_hash_changed_between_attempt_and_repair": condition == "B-agentharness",
                     "verify_run_ok": condition == "B-agentharness",
+                    "treatment_delivered": True,
                     "feedback_delivered": condition == "B-agentharness",
+                    "treatment_prompt_sha256_pre": "a" * 64,
+                    "treatment_prompt_sha256_post": "a" * 64,
+                    "treatment_prompt_immutable": True,
+                    "feedback_sha256_pre": "b" * 64 if condition == "B-agentharness" else None,
+                    "feedback_sha256_post": "b" * 64 if condition == "B-agentharness" else None,
+                    "feedback_immutable": condition == "B-agentharness",
                 }
                 rows.append(_normalize_row(row))
     if include_invalids:

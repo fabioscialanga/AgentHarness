@@ -1,0 +1,725 @@
+{
+  "analysis_parameters": {
+    "cluster_resamples": 10000,
+    "cluster_seed": 20260703,
+    "mixedlm": "concordance_only",
+    "wild_resamples": 10000,
+    "wild_seed": 20260704
+  },
+  "blocks": [
+    {
+      "block_id": "b001",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "pii-redaction-pipeline"
+    },
+    {
+      "block_id": "b002",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "pii-redaction-pipeline"
+    },
+    {
+      "block_id": "b003",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "incident-escalation-api"
+    },
+    {
+      "block_id": "b004",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "block_id": "b005",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "refund-approval-api"
+    },
+    {
+      "block_id": "b006",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "block_id": "b007",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "invoice-payment-reconciliation"
+    },
+    {
+      "block_id": "b008",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "incident-escalation-api"
+    },
+    {
+      "block_id": "b009",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "inventory-adjustment-api"
+    },
+    {
+      "block_id": "b010",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "block_id": "b011",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "block_id": "b012",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "support-ticket-api"
+    },
+    {
+      "block_id": "b013",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "report-export-job"
+    },
+    {
+      "block_id": "b014",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "block_id": "b015",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "support-ticket-api"
+    },
+    {
+      "block_id": "b016",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "block_id": "b017",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "lease-coordination-api"
+    },
+    {
+      "block_id": "b018",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "signed-artifact-verifier"
+    },
+    {
+      "block_id": "b019",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "block_id": "b020",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "webhook-ingestion-service"
+    },
+    {
+      "block_id": "b021",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "signed-artifact-verifier"
+    },
+    {
+      "block_id": "b022",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "report-export-job"
+    },
+    {
+      "block_id": "b023",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "support-ticket-api"
+    },
+    {
+      "block_id": "b024",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "block_id": "b025",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "leave-request-api"
+    },
+    {
+      "block_id": "b026",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "webhook-ingestion-service"
+    },
+    {
+      "block_id": "b027",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "double-entry-ledger-api"
+    },
+    {
+      "block_id": "b028",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "block_id": "b029",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "block_id": "b030",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "block_id": "b031",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "incident-escalation-api"
+    },
+    {
+      "block_id": "b032",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "refund-approval-api"
+    },
+    {
+      "block_id": "b033",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "block_id": "b034",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "invoice-payment-reconciliation"
+    },
+    {
+      "block_id": "b035",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "leave-request-api"
+    },
+    {
+      "block_id": "b036",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "appointment-booking-api"
+    },
+    {
+      "block_id": "b037",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "versioned-document-api"
+    },
+    {
+      "block_id": "b038",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "lease-coordination-api"
+    },
+    {
+      "block_id": "b039",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "csv-member-import"
+    },
+    {
+      "block_id": "b040",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "pii-redaction-pipeline"
+    },
+    {
+      "block_id": "b041",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "signed-artifact-verifier"
+    },
+    {
+      "block_id": "b042",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "webhook-ingestion-service"
+    },
+    {
+      "block_id": "b043",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "inventory-adjustment-api"
+    },
+    {
+      "block_id": "b044",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "block_id": "b045",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "block_id": "b046",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "access-policy-evaluator"
+    },
+    {
+      "block_id": "b047",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r1",
+      "task_id": "csv-member-import"
+    },
+    {
+      "block_id": "b048",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "report-export-job"
+    },
+    {
+      "block_id": "b049",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "lease-coordination-api"
+    },
+    {
+      "block_id": "b050",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "jsonl-event-aggregation"
+    },
+    {
+      "block_id": "b051",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "shipment-event-api"
+    },
+    {
+      "block_id": "b052",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "safe-archive-extraction"
+    },
+    {
+      "block_id": "b053",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "refund-approval-api"
+    },
+    {
+      "block_id": "b054",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "csv-member-import"
+    },
+    {
+      "block_id": "b055",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "double-entry-ledger-api"
+    },
+    {
+      "block_id": "b056",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r2",
+      "task_id": "double-entry-ledger-api"
+    },
+    {
+      "block_id": "b057",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r3",
+      "task_id": "leave-request-api"
+    },
+    {
+      "block_id": "b058",
+      "condition_order": [
+        "A-baseline",
+        "B-agentharness"
+      ],
+      "replicate_id": "r3",
+      "task_id": "dependency-impact-planner"
+    },
+    {
+      "block_id": "b059",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r1",
+      "task_id": "inventory-adjustment-api"
+    },
+    {
+      "block_id": "b060",
+      "condition_order": [
+        "B-agentharness",
+        "A-baseline"
+      ],
+      "replicate_id": "r2",
+      "task_id": "invoice-payment-reconciliation"
+    }
+  ],
+  "campaign_id": "stage2-efficacy-20x3-20260717",
+  "codex_sse_idle_seconds": 60,
+  "conditions": [
+    "A-baseline",
+    "B-agentharness"
+  ],
+  "decision_rule": {
+    "improvement_supported": "primary_ci_lower_strictly_greater_than_0.10",
+    "no_meaningful_effect": "primary_ci_upper_strictly_less_than_0.10",
+    "otherwise": "inconclusive"
+  },
+  "estimand": "equal-weight task mean of B-agentharness minus A-baseline held-out score",
+  "expected_blocks": 60,
+  "expected_cells": 120,
+  "frozen_file_sha256": {
+    "benchmarks/access-policy-evaluator/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/access-policy-evaluator/HELDOUT_EVALUATION_SUITE.template.json": "851b7185adf54d144c33907a7254c31446d55ddf7ea201509b820352a3bc1b5d",
+    "benchmarks/access-policy-evaluator/SPEC.md": "84c31f1f87126f05cdc2173234e168ce1f8575d43efe8adcea4065f42944be1b",
+    "benchmarks/appointment-booking-api/CLAIMS_CONTRACT.template.json": "d5229f4cf4465bce5f2fde768289110e33705f9fb6071b5de5de20bbf70362c4",
+    "benchmarks/appointment-booking-api/HELDOUT_EVALUATION_SUITE.template.json": "04b002dbe96e13fc49c981beef14328d2929cf6aa1104f05c072650a971128dc",
+    "benchmarks/appointment-booking-api/SPEC.md": "9347512549d22cef4c31521d98beb92f4d6ab886b68cef1dd3dedabdbcf4ca9e",
+    "benchmarks/csv-member-import/CLAIMS_CONTRACT.template.json": "ea61be6b96c7fbb29f00f321daf3db6415173dc63456b785fefa358520f421f5",
+    "benchmarks/csv-member-import/HELDOUT_EVALUATION_SUITE.template.json": "04e047fb1322188a1271e9398e18a57b3cfef5a715928d218fd858173a1fb469",
+    "benchmarks/csv-member-import/SPEC.md": "5facea1d76b19b9f87136e828d6c76ad230798552644bc10cf6c0cf45b6f116a",
+    "benchmarks/dependency-impact-planner/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/dependency-impact-planner/HELDOUT_EVALUATION_SUITE.template.json": "96b2be86d6579a544969637a9979bc424c91e65dd038ac2083e706e4906fbbe5",
+    "benchmarks/dependency-impact-planner/SPEC.md": "d7f0e8017a6e8bc7a79d35ae3ad24628ce111ef549331669956b86f67467a7fb",
+    "benchmarks/double-entry-ledger-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/double-entry-ledger-api/SPEC.md": "e1ca288f6e230bae0887a1b41dc136e31f2e30e74ffeffa3433422607b1556b0",
+    "benchmarks/grading-env/finalize_stage2_efficacy.py": "9eee4c7491ab5439fbe159b293a1705b11e033c90b28e9b83a3d7046a8a59a5c",
+    "benchmarks/grading-env/run_stage2_efficacy_campaign.py": "965604a50b2ded5c7f607b2e0fe71f26af950256c5cc03cf6c904189a2f8d189",
+    "benchmarks/grading-env/stage2-analysis-requirements.txt": "2c3ce80ac774a63468873f121ef4a346a3582bfd0e0589ee8cb47c85c48b1ebb",
+    "benchmarks/grading-env/stage2_run_analysis.py": "31b410844a4b0b433e8e1fddb1063122f9dc20b2c1b248ac1738a34d3079b5d3",
+    "benchmarks/incident-escalation-api/CLAIMS_CONTRACT.template.json": "af4577b0fc631d6bc58e3351a4961df2374da2431e0e080a60ce5e075e999a45",
+    "benchmarks/incident-escalation-api/HELDOUT_EVALUATION_SUITE.template.json": "3f1d7c38d72cc58758f5a8a1c873eb012bb3537109777482abd30b472f30c9b9",
+    "benchmarks/incident-escalation-api/SPEC.md": "cc5bcf9e515c10c95d28cacfebf6ddb8a132811c71a272ea4fca1469db1b0da7",
+    "benchmarks/inventory-adjustment-api/CLAIMS_CONTRACT.template.json": "49076d27091f8a2cad66928cb47610175ac162d116d8af2703f10e1784693c7a",
+    "benchmarks/inventory-adjustment-api/HELDOUT_EVALUATION_SUITE.template.json": "4afcc8dfdf110e8c15441eb3f25e319861d1872ff1222b8b0d5267a50f4a0614",
+    "benchmarks/inventory-adjustment-api/SPEC.md": "a2fba08bcff89aacf92d7d6b4ef7cbb18b16292898347ebab80c5ea1a87db948",
+    "benchmarks/invoice-payment-reconciliation/CLAIMS_CONTRACT.template.json": "3023f064d87925d2494671cb4b761300acac6b32531405325ce67352b07c6a21",
+    "benchmarks/invoice-payment-reconciliation/HELDOUT_EVALUATION_SUITE.template.json": "52d0659e85724e50c15dcdb4b255a64a1a94e7dcc8ae9721362056fbb946c223",
+    "benchmarks/invoice-payment-reconciliation/SPEC.md": "426e45ed774bb546650cc57bd04a35d8ee10ccf2f25d90d83c58f0087050727f",
+    "benchmarks/jsonl-event-aggregation/CLAIMS_CONTRACT.template.json": "84ec22707b32e0e51d19814fca697e5a63b20261f3b5d893751bc76f6b521ff8",
+    "benchmarks/jsonl-event-aggregation/HELDOUT_EVALUATION_SUITE.template.json": "1909a052755ff21673e833f3ed508c5a13ea0a3640bb795f506ed12d6d11c4c9",
+    "benchmarks/jsonl-event-aggregation/SPEC.md": "1beedbb84bc37b9e6016a91c712f034240db3afc37a4ad7a4b480c8345f97046",
+    "benchmarks/lease-coordination-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/lease-coordination-api/SPEC.md": "388e83656382401e6d95d7d31df334f4a40884ab4a783219b118e1e89a63b15e",
+    "benchmarks/leave-request-api/CLAIMS_CONTRACT.template.json": "39a0d67cfc67ae3586dcdbf0af1c193549260837299c79d7dd6296f9db0b1760",
+    "benchmarks/leave-request-api/HELDOUT_EVALUATION_SUITE.template.json": "2e11405dfdc460bff406b25bd58af93669527dd90dd4935b402ce918630999f8",
+    "benchmarks/leave-request-api/SPEC.md": "f452ea817a452bf1bc8d58978ba7d9b6816ff69ba9f73c9e7fe5608840bcfd9f",
+    "benchmarks/pii-redaction-pipeline/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/pii-redaction-pipeline/SPEC.md": "dad2adc0ec8f71c691f4f86cd2d6a201f3aa9d6acb39d5a89ede26ad514e246d",
+    "benchmarks/refund-approval-api/CLAIMS_CONTRACT.template.json": "49076d27091f8a2cad66928cb47610175ac162d116d8af2703f10e1784693c7a",
+    "benchmarks/refund-approval-api/HELDOUT_EVALUATION_SUITE.template.json": "55ad5f99a10b8240ea2c35343976405b4b071a4b693b5cd3b12332543e1370fb",
+    "benchmarks/refund-approval-api/SPEC.md": "66d6c17d165203bdba99fd16df16188303f8b14b5fd8c1cd5a0372148dd0c5fd",
+    "benchmarks/report-export-job/CLAIMS_CONTRACT.template.json": "ea61be6b96c7fbb29f00f321daf3db6415173dc63456b785fefa358520f421f5",
+    "benchmarks/report-export-job/HELDOUT_EVALUATION_SUITE.template.json": "15835fecd883af54b6fc17f21e26e76c445feae606757da0bf1aee245843a246",
+    "benchmarks/report-export-job/SPEC.md": "ecb94160cdeaa62a86317e6e42982d2d7737d5d5f1fd8a572ec76812638d4d96",
+    "benchmarks/safe-archive-extraction/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/safe-archive-extraction/HELDOUT_EVALUATION_SUITE.template.json": "e93072eb80329fe3b0d4384a6792f10103ad8704144a49c41b812af6de3a63c3",
+    "benchmarks/safe-archive-extraction/SPEC.md": "a4281f93bb9cc6dcc873c3362b4eaf463f606e7e78872ba123078c647f42e3da",
+    "benchmarks/shipment-event-api/CLAIMS_CONTRACT.template.json": "742daec7bffdeb4bae5f00bea06c55d22c0e09d924af54c50e9e72f50a5c758d",
+    "benchmarks/shipment-event-api/HELDOUT_EVALUATION_SUITE.template.json": "8317481eacae69906375de03f4bb8b5272f3b6e3da3cd0e2ce318736ead766cf",
+    "benchmarks/shipment-event-api/SPEC.md": "626ca6ff1f3fb36ecda4a18edd9de6b15f89acfcf48e19f5769cdec6bd8774af",
+    "benchmarks/signed-artifact-verifier/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/signed-artifact-verifier/SPEC.md": "7ad4fae62798c2cab63324ea53541bcb3d74c1d8bdd0578ac50225c382e50855",
+    "benchmarks/support-ticket-api/CLAIMS_CONTRACT.template.json": "e8421d9726cd74437005dd7b48b389fa2381a29282d603c174ee03a2a6d3adb0",
+    "benchmarks/support-ticket-api/HELDOUT_EVALUATION_SUITE.template.json": "0c904b5cc26b673bf9a383dcbb4b7269d43e2ab468fe8ba7cd55f674b3313746",
+    "benchmarks/support-ticket-api/SPEC.md": "0438650d6bb0f097be87e4b1b75b7212c2ff96f77c7e3b914c55f3ec1baff1a9",
+    "benchmarks/versioned-document-api/CLAIMS_CONTRACT.template.json": "88749af29765f9faa7af6ea4d5e04d0aa2d1e93a6f809a36ed3df915a4eb2cf6",
+    "benchmarks/versioned-document-api/HELDOUT_EVALUATION_SUITE.template.json": "50820b14c6c8036aba44c8f75cab028589507000a850f3fb2f1c3d295105384c",
+    "benchmarks/versioned-document-api/SPEC.md": "85494830a13b8f9fcb3396dc935b022f40b142d96621f55607c0767a6a66425b",
+    "benchmarks/webhook-ingestion-service/CLAIMS_CONTRACT.template.json": "2087aead2ee6b40ef18d2e572295b0e9d2c68abc3e0036c074ee0212c4824f0d",
+    "benchmarks/webhook-ingestion-service/HELDOUT_EVALUATION_SUITE.template.json": "970c60cf9480177b93f7a2670e88af626da214f7bf5f81e559d7bcd1b6ee0e48",
+    "benchmarks/webhook-ingestion-service/SPEC.md": "4e7d4052698655cc5539896f80db5186113df43b479cf8ee5366235cea162b46",
+    "src/agentharness/benchmark_cells.py": "269c3b7f349ceb9e6c0dc0657acb44d263291a2ed9c1b096a32fc1d97789460e",
+    "src/agentharness/benchmark_hidden_evaluators.py": "5ae11dfbebe3220a6b8e719a162ffd551c2b275ab52568cef55c2858203fcbd1",
+    "src/agentharness/benchmark_hidden_evaluators_batch1.py": "c4f81c7b59a624147ac43a6de773cd8c6aae8a19cc0cb5cbee7d036f63c088a4",
+    "src/agentharness/benchmark_hidden_evaluators_batch2.py": "8a4b16f239140fcac1df1e15bcf72cccc2f5c6038588841767513ce2bceec4ab",
+    "src/agentharness/benchmark_hidden_evaluators_batch3.py": "d1f23cad4cdd1f40e72d9d1c95323039c9c2b7ebbaf81e5df50bd7c393075def",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_lease.py": "859f192fec7e9df5bc3154133bad976537d96fa8313eb6bcf68d766c5389ae46",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_ledger.py": "0d92e27a591bdf3bcc0e423b086eb382630cffdeb1efd7c9cb52fc91ce39b1f8",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_pii.py": "58ada5ad942df2ad75ecd3f2413f9db83f45775668f24ea3bac81e4dab096fd5",
+    "src/agentharness/benchmark_hidden_evaluators_batch3_signed.py": "4f553282ae112554956155d32c3b81fac979529413ebba09ca5fb8d28a40719a",
+    "src/agentharness/evaluation.py": "47a7d0cae410435d00b4531034b95f0cab73bf20591e9a31f4b569b886feea54",
+    "src/agentharness/stage2_analysis.py": "b058af4cad8b19bf70c65adc79106ca67a96a5f47cae2f602b73beec56f0870b"
+  },
+  "heldout_denominator": 6,
+  "interim_policy": "no efficacy contrasts, scores, task outcomes, or arm summaries before all 60 blocks are committed",
+  "invalid_policy": {
+    "primary": "exclude_provider_unavailable_and_harness_invalid_only",
+    "require_at_least_one_valid_replicate_per_task_condition": true,
+    "sensitivity": "count_provider_unavailable_and_harness_invalid_as_zero"
+  },
+  "invocation_max_retries": 1,
+  "manifest_payload_sha256": "0ebfa6c141750694ef318985ffbc6989100e0b33911c76962f98ee6fa8994e9d",
+  "max_turns": 40,
+  "mme": 0.1,
+  "model": "gpt-5.6-sol",
+  "power": {
+    "assumptions": {
+      "heterogeneity_sd": 0.1,
+      "seed_rule": "20260710 + int(effect*1000) + replicates",
+      "simulations_per_point": 2000,
+      "within_task_sd": 0.224
+    },
+    "effect_0.12": 0.061,
+    "effect_0.18": 0.367,
+    "effect_0.25": 0.863
+  },
+  "preregistration_section": "17.31",
+  "primary_ci": "two_sided_95_percent_student_t_df_19",
+  "primary_endpoint": "six_case_heldout_score",
+  "provider": "openai-codex",
+  "purpose": "smallest high-effect confirmatory test of AgentHarness utility on the frozen 20-task suite",
+  "quota_policy": {
+    "auth_reset_forbidden": true,
+    "provider_fallback_forbidden": true,
+    "purchased_credits_forbidden": true,
+    "session_used_pause_percent": 80.0,
+    "usage_unavailable": "pause_fail_closed",
+    "weekly_used_pause_percent": 85.0
+  },
+  "randomization_seed": 20260717,
+  "replicates": [
+    "r1",
+    "r2",
+    "r3"
+  ],
+  "rerun_policy": {
+    "harness_invalid_fresh_reruns": 1,
+    "max_provider_attempts": 3,
+    "provider_attempts_do_not_become_efficacy_rows": true
+  },
+  "retry_backoff_seconds": 30.0,
+  "robustness_gate": [
+    "cluster_bootstrap_ci_above_zero",
+    "wild_cluster_bootstrap_ci_above_zero",
+    "all_leave_one_task_out_point_estimates_above_zero",
+    "invalid_as_zero_point_estimate_above_zero"
+  ],
+  "schema_version": 1,
+  "secondary_confirmatory_family": {
+    "cannot_rescue_primary": true,
+    "endpoints": [
+      "complete_six_of_six_success",
+      "total_agent_wall_clock_seconds"
+    ],
+    "holm_familywise_alpha": 0.05
+  },
+  "task_weighting": "equal_weight_per_task_unweighted_by_valid_cell_count",
+  "tasks": [
+    "access-policy-evaluator",
+    "appointment-booking-api",
+    "csv-member-import",
+    "dependency-impact-planner",
+    "double-entry-ledger-api",
+    "incident-escalation-api",
+    "inventory-adjustment-api",
+    "invoice-payment-reconciliation",
+    "jsonl-event-aggregation",
+    "lease-coordination-api",
+    "leave-request-api",
+    "pii-redaction-pipeline",
+    "refund-approval-api",
+    "report-export-job",
+    "safe-archive-extraction",
+    "shipment-event-api",
+    "signed-artifact-verifier",
+    "support-ticket-api",
+    "versioned-document-api",
+    "webhook-ingestion-service"
+  ],
+  "toolsets": "terminal,file"
+}

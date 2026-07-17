@@ -83,6 +83,12 @@ class _FakeInvoker:
                 "attempt_1_initial": f"initial_{condition}_{replicate_id}",
                 "attempt_2_repair": f"repair_{condition}_{replicate_id}",
             },
+            treatment_delivery={
+                "repair_invocation_succeeded": True,
+                "treatment_prompt_immutable": True,
+                "feedback_delivered": condition == "B-agentharness",
+                "feedback_immutable": condition == "B-agentharness",
+            },
         )
 
 
@@ -251,6 +257,14 @@ class BenchmarkCellsTests(unittest.TestCase):
                 spec_path=spec_path,
                 claims_template_path=claims_template_path,
             )
+            baseline_cell_dir = Path(tmp_dir) / "cell-a-distinct"
+            baseline_initial_prompt = _build_initial_prompt(
+                task_id="support-ticket-api",
+                condition="A-baseline",
+                workspace=baseline_cell_dir / "workspace",
+                spec_path=baseline_cell_dir / "inputs" / "SPEC.md",
+                claims_template_path=baseline_cell_dir / "inputs" / "CLAIMS_CONTRACT.template.json",
+            )
             baseline_repair_prompt = _build_baseline_repair_prompt(
                 task_id="support-ticket-api",
                 workspace=workspace,
@@ -268,18 +282,26 @@ class BenchmarkCellsTests(unittest.TestCase):
             )
 
             task_dir = str((Path(__file__).resolve().parents[1] / "benchmarks" / "support-ticket-api").resolve())
-            self.assertIn(str(workspace.resolve()), initial_prompt)
-            self.assertIn(str(spec_path.resolve()), initial_prompt)
-            self.assertIn(str(claims_template_path.resolve()), initial_prompt)
-            self.assertIn(str(workspace.resolve()), baseline_repair_prompt)
-            self.assertIn(str(spec_path.resolve()), baseline_repair_prompt)
-            self.assertIn(str(pytest_stdout_path.resolve()), baseline_repair_prompt)
-            self.assertIn(str(pytest_stderr_path.resolve()), baseline_repair_prompt)
-            self.assertIn(str(workspace.resolve()), agentharness_repair_prompt)
-            self.assertIn(str(spec_path.resolve()), agentharness_repair_prompt)
-            self.assertIn(str(pytest_stdout_path.resolve()), agentharness_repair_prompt)
-            self.assertIn(str(pytest_stderr_path.resolve()), agentharness_repair_prompt)
-            self.assertIn(str(verify_feedback_path.resolve()), agentharness_repair_prompt)
+            self.assertNotIn(str(workspace.resolve()), initial_prompt)
+            self.assertIn("../inputs/SPEC.md", initial_prompt)
+            self.assertIn("../inputs/CLAIMS_CONTRACT.template.json", initial_prompt)
+            self.assertEqual(initial_prompt, baseline_initial_prompt)
+            self.assertNotIn("Condition A", initial_prompt)
+            self.assertNotIn("Condition B", initial_prompt)
+            self.assertNotIn(str(workspace.resolve()), baseline_repair_prompt)
+            self.assertIn("../inputs/SPEC.md", baseline_repair_prompt)
+            self.assertIn("../outputs/pre-repair-pytest.stdout", baseline_repair_prompt)
+            self.assertIn("../outputs/pre-repair-pytest.stderr", baseline_repair_prompt)
+            self.assertNotIn(str(workspace.resolve()), agentharness_repair_prompt)
+            self.assertIn("../inputs/SPEC.md", agentharness_repair_prompt)
+            self.assertIn("../outputs/pre-repair-pytest.stdout", agentharness_repair_prompt)
+            self.assertIn("../outputs/pre-repair-pytest.stderr", agentharness_repair_prompt)
+            self.assertIn("../outputs/pre-repair-verify-run-report.json", agentharness_repair_prompt)
+            b_only = set(agentharness_repair_prompt.splitlines()) - set(baseline_repair_prompt.splitlines())
+            self.assertEqual(
+                b_only,
+                {"Consult the structured AgentHarness verify-run feedback: ../outputs/pre-repair-verify-run-report.json"},
+            )
             for prompt in (initial_prompt, baseline_repair_prompt, agentharness_repair_prompt):
                 self.assertNotIn(task_dir, prompt)
                 self.assertNotIn(str((Path(__file__).resolve().parents[1] / "benchmarks").resolve()), prompt)
@@ -820,7 +842,63 @@ class BenchmarkCellsTests(unittest.TestCase):
                 self.assertEqual(len(hermes_calls), 2)
                 self.assertTrue(all(call.kwargs["cwd"] == str(workspace) for call in hermes_calls))
                 prompt_snapshot = (outputs_dir / "pre-repair-treatment-prompt.txt").read_text(encoding="utf-8")
-                self.assertIn(str(stdout_path.resolve()), prompt_snapshot)
+                self.assertIn("../pytest.stdout", prompt_snapshot)
+
+    def test_run_cell_does_not_score_failed_repair_invocation(self) -> None:
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            spec_path = root / "SPEC.md"
+            claims_template_path = root / "CLAIMS_CONTRACT.template.json"
+            spec_path.write_text("spec\n", encoding="utf-8")
+            claims_template_path.write_text("{}\n", encoding="utf-8")
+            outputs_dir = root / "outputs"
+            manifest: dict[str, object] = {
+                "task_id": "support-ticket-api",
+                "condition": "A-baseline",
+                "run_id": "stage2_support_ticket_api_a_r1",
+                "spec_path": str(spec_path),
+                "claims_template_path": str(claims_template_path),
+            }
+            stdout_path = root / "pytest.stdout"
+            stderr_path = root / "pytest.stderr"
+            stdout_path.write_text("1 passed\n", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+            pytest_payload = {
+                "command": ["python", "-m", "pytest", "-q"],
+                "exit_code": 0,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "started_at": "2026-01-01T00:00:00Z",
+                "finished_at": "2026-01-01T00:00:01Z",
+                "duration_seconds": 1.0,
+            }
+            initial = subprocess.CompletedProcess(
+                args=["hermes"], returncode=0, stdout="session_id: initial_ok\n", stderr=""
+            )
+            failed_repair = subprocess.CompletedProcess(
+                args=["hermes"], returncode=1, stdout="", stderr="HTTP 429 usage limit has been reached"
+            )
+            with (
+                mock.patch(
+                    "agentharness.benchmark_cells.subprocess.run",
+                    side_effect=[initial, failed_repair],
+                ),
+                mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
+            ):
+                with self.assertRaises(ClassifiedCellFailure) as captured:
+                    invoker.run_cell(manifest, outputs_dir, workspace)
+            self.assertEqual(captured.exception.execution_status, "harness_invalid")
+            self.assertIn("provider_unavailable", captured.exception.classification_reason)
+            invocation_result = captured.exception.invocation_result
+            self.assertIsNotNone(invocation_result)
+            assert invocation_result is not None
+            delivery = invocation_result.treatment_delivery
+            self.assertIsInstance(delivery, dict)
+            assert isinstance(delivery, dict)
+            self.assertFalse(delivery["repair_invocation_succeeded"])
 
     def test_execute_cell_marks_missing_verify_feedback_as_treatment_not_delivered(self) -> None:
         invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
@@ -935,7 +1013,7 @@ class BenchmarkCellsTests(unittest.TestCase):
                 result = invoker.run_cell(manifest, outputs_dir, workspace)
                 self.assertEqual(len(result.attempts), 2)
                 prompt_snapshot = (outputs_dir / "pre-repair-treatment-prompt.txt").read_text(encoding="utf-8")
-                self.assertIn(str(verify_report_path.resolve()), prompt_snapshot)
+                self.assertIn("../outputs/pre-repair-verify-run-report.json", prompt_snapshot)
                 self.assertTrue(verify_report_path.is_file())
                 self.assertEqual(run_mock.call_count, 2)
 

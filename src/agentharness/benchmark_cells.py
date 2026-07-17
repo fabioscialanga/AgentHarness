@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -12,7 +13,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Protocol
+from typing import Callable, Protocol
 
 from .benchmarking import render_json_template, write_rendered_json_template
 from .repair_safety import (
@@ -89,6 +90,7 @@ class AgentInvocationResult:
     attempts: list[AgentAttempt]
     attempt_solution_hashes: dict[str, str | None] | None = None
     repair_safety: dict[str, object] | None = None
+    treatment_delivery: dict[str, object] | None = None
 
     def to_dict(self) -> list[dict[str, object]]:
         return [attempt.to_dict() for attempt in self.attempts]
@@ -111,6 +113,33 @@ def _has_invocation_evidence(attempt: AgentAttempt) -> bool:
     return False
 
 
+def _successful_agent_attempt(attempt: AgentAttempt) -> bool:
+    return attempt.exit_code == 0 and bool(attempt.session_id) and _has_invocation_evidence(attempt)
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _classify_failed_agent_attempt(attempt: AgentAttempt, *, phase: str) -> tuple[str, str]:
+    text = _attempt_output_text(attempt)
+    completed = subprocess.CompletedProcess(
+        args=attempt.command,
+        returncode=attempt.exit_code,
+        stdout=text,
+        stderr="",
+    )
+    if _is_retryable_invocation_failure(completed):
+        return (
+            "harness_invalid",
+            f"provider_unavailable: {phase} invocation did not complete successfully",
+        )
+    return (
+        "harness_invalid",
+        f"treatment_not_delivered: {phase} invocation did not complete successfully",
+    )
+
+
 class AgentInvoker(Protocol):
     def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
         ...
@@ -126,6 +155,7 @@ class HermesCliInvoker:
         provider: str | None = None,
         model: str | None = None,
         max_turns: int | str | None = None,
+        admission_hook: Callable[[str, int], None] | None = None,
     ) -> None:
         self._hermes_command = hermes_command or "hermes"
         self._toolsets = toolsets
@@ -134,6 +164,7 @@ class HermesCliInvoker:
         self._provider = provider
         self._model = model
         self._max_turns = str(max_turns) if max_turns is not None else None
+        self._admission_hook = admission_hook
 
     def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
         task_id = str(manifest["task_id"])
@@ -184,6 +215,8 @@ class HermesCliInvoker:
         pre_test_env_fingerprint = tree_fingerprint(protected_test_env)
 
         repair_prompt_path = outputs_dir / "pre-repair-treatment-prompt.txt"
+        verify_feedback_path: Path | None = None
+        feedback_sha256_pre: str | None = None
         try:
             if condition == "A-baseline":
                 repair_prompt = _build_baseline_repair_prompt(
@@ -214,6 +247,8 @@ class HermesCliInvoker:
                     report_path=verify_feedback_path,
                 )
                 _require_verify_feedback_delivery(verify_payload)
+                feedback_sha256_pre = _sha256_file(verify_feedback_path)
+                verify_feedback_path.chmod(0o444)
                 repair_prompt = _build_agentharness_repair_prompt(
                     task_id=task_id,
                     workspace=workspace,
@@ -235,15 +270,65 @@ class HermesCliInvoker:
                 ),
             ) from exc
 
-        attempts.append(
-            self._invoke(
-                prompt=repair_prompt,
-                attempt_name="attempt-2-repair",
-                prompt_kind="repair",
-                outputs_dir=attempts_dir,
-                workspace=workspace,
-            )
+        treatment_prompt_sha256_pre = _sha256_file(repair_prompt_path)
+        repair_prompt_path.chmod(0o444)
+        repair_attempt = self._invoke(
+            prompt=repair_prompt,
+            attempt_name="attempt-2-repair",
+            prompt_kind="repair",
+            outputs_dir=attempts_dir,
+            workspace=workspace,
         )
+        attempts.append(repair_attempt)
+        treatment_prompt_sha256_post = _sha256_file(repair_prompt_path)
+        treatment_prompt_immutable = treatment_prompt_sha256_post == treatment_prompt_sha256_pre
+        treatment_delivery: dict[str, object] = {
+            "treatment_prompt_path": str(repair_prompt_path),
+            "treatment_prompt_sha256_pre": treatment_prompt_sha256_pre,
+            "treatment_prompt_sha256_post": treatment_prompt_sha256_post,
+            "treatment_prompt_immutable": treatment_prompt_immutable,
+            "repair_invocation_exit_code": repair_attempt.exit_code,
+            "repair_invocation_session_id_present": bool(repair_attempt.session_id),
+            "repair_invocation_evidence_present": _has_invocation_evidence(repair_attempt),
+            "repair_invocation_succeeded": _successful_agent_attempt(repair_attempt),
+            "feedback_delivered": False,
+        }
+        if condition == "B-agentharness":
+            assert verify_feedback_path is not None and feedback_sha256_pre is not None
+            feedback_sha256_post = _sha256_file(verify_feedback_path)
+            feedback_immutable = feedback_sha256_post == feedback_sha256_pre
+            treatment_delivery["feedback_path"] = str(verify_feedback_path)
+            treatment_delivery["feedback_sha256_pre"] = feedback_sha256_pre
+            treatment_delivery["feedback_sha256_post"] = feedback_sha256_post
+            treatment_delivery["feedback_immutable"] = feedback_immutable
+            treatment_delivery["feedback_delivered"] = feedback_immutable
+        treatment_integrity = treatment_prompt_immutable and (
+            condition == "A-baseline" or bool(treatment_delivery.get("feedback_immutable"))
+        )
+        if not treatment_integrity:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                "treatment_not_delivered: pre-repair treatment artifact changed during repair invocation",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                    treatment_delivery=treatment_delivery,
+                ),
+            )
+        if not _successful_agent_attempt(repair_attempt):
+            execution_status, reason = _classify_failed_agent_attempt(
+                repair_attempt,
+                phase="repair_treatment",
+            )
+            raise ClassifiedCellFailure(
+                execution_status,
+                reason,
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                    treatment_delivery=treatment_delivery,
+                ),
+            )
         try:
             raw_repair_hash = compute_solution_hash(workspace) if rel_solution_files(workspace) else None
             attempt_solution_hashes["attempt_2_repair_raw"] = raw_repair_hash
@@ -367,6 +452,7 @@ class HermesCliInvoker:
             attempts=attempts,
             attempt_solution_hashes=attempt_solution_hashes,
             repair_safety=repair_safety,
+            treatment_delivery=treatment_delivery,
         )
 
     def _rollback_repair_workspace(
@@ -413,6 +499,8 @@ class HermesCliInvoker:
         command.extend(["-q", prompt])
         last_attempt: AgentAttempt | None = None
         for retry_index in range(1, self._max_retries + 1):
+            if self._admission_hook is not None:
+                self._admission_hook(attempt_name, retry_index)
             suffix = "" if self._max_retries == 1 else f".try{retry_index}"
             stdout_path = outputs_dir / f"{attempt_name}{suffix}.stdout"
             stderr_path = outputs_dir / f"{attempt_name}{suffix}.stderr"
@@ -455,6 +543,11 @@ class HermesCliInvoker:
                 started_at=started,
                 finished_at=finished,
                 duration_seconds=duration,
+            )
+            meta_path = outputs_dir / f"{attempt_name}{suffix}.meta.json"
+            meta_path.write_text(
+                json.dumps(last_attempt.to_dict(), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
             )
             if completed.returncode == 0 and session_id:
                 return last_attempt
@@ -571,6 +664,7 @@ def _write_invalid_cell_artifacts(
         "attempt_count": len(invocation_result.attempts),
         "attempts": invocation_result.to_dict(),
         "repair_safety": invocation_result.repair_safety,
+        "treatment_delivery": invocation_result.treatment_delivery,
         "pytest": None,
     }
     (cell_dir / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
@@ -583,6 +677,15 @@ def _write_invalid_cell_artifacts(
         "final_pytest_exit_code": None,
         "scorable_score": 0.0,
         "verify_run_ok": False,
+        "treatment_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
+        "feedback_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("feedback_delivered")
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
         "benchmark_execution_status": execution_status,
         "benchmark_outcome_status": outcome_status,
         "benchmark_classification_reason": classification_reason,
@@ -608,6 +711,15 @@ def _write_invalid_cell_artifacts(
         "replicate_id": replicate_id,
         "pytest_exit_code": None,
         "verify_run_ok": False,
+        "treatment_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
+        "feedback_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("feedback_delivered")
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
         "benchmark_execution_status": execution_status,
         "benchmark_outcome_status": outcome_status,
         "benchmark_classification_reason": classification_reason,
@@ -920,6 +1032,7 @@ def _write_repair_treatment_prompt(*, prompt: str, prompt_path: Path) -> None:
     if not prompt.strip():
         raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
     prompt_path.parent.mkdir(parents=True, exist_ok=True)
+    prompt_path.unlink(missing_ok=True)
     prompt_path.write_text(prompt, encoding="utf-8")
     if prompt_path.stat().st_size <= 0:
         raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
@@ -1123,6 +1236,7 @@ def write_provenance(
         "attempt_count": len(invocation_result.attempts),
         "attempts": invocation_result.to_dict(),
         "repair_safety": invocation_result.repair_safety,
+        "treatment_delivery": invocation_result.treatment_delivery,
         "pytest": pytest_result,
     }
     provenance_path.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
@@ -1153,6 +1267,36 @@ def _clear_cell_runtime_artifacts(cell_dir: Path, workspace: Path, task_id: str,
             shutil.rmtree(path)
 
 
+def _require_scoring_treatment_delivery(
+    manifest: dict[str, object], invocation_result: AgentInvocationResult
+) -> None:
+    delivery = invocation_result.treatment_delivery
+    condition = str(manifest["condition"])
+    repair_attempts = [attempt for attempt in invocation_result.attempts if attempt.prompt_kind == "repair"]
+    if not isinstance(delivery, dict):
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            "treatment_not_delivered: missing repair provenance",
+            invocation_result=invocation_result,
+        )
+    ok = (
+        len(repair_attempts) == 1
+        and _successful_agent_attempt(repair_attempts[0])
+        and delivery.get("repair_invocation_succeeded") is True
+        and delivery.get("treatment_prompt_immutable") is True
+    )
+    if condition == "B-agentharness":
+        ok = ok and delivery.get("feedback_delivered") is True and delivery.get("feedback_immutable") is True
+    else:
+        ok = ok and delivery.get("feedback_delivered") is False
+    if not ok:
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            "treatment_not_delivered: scoring boundary rejected repair provenance",
+            invocation_result=invocation_result,
+        )
+
+
 def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
     manifest = json.loads((cell_dir / "cell_manifest.json").read_text(encoding="utf-8"))
     workspace = Path(str(manifest["workspace"]))
@@ -1180,6 +1324,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
                 classification_reason=classification_reason,
             )
 
+        _require_scoring_treatment_delivery(manifest, invocation_result)
         pytest_result = run_workspace_pytest(workspace, outputs_dir / "final-pytest.json")
     except ClassifiedCellFailure as exc:
         return _write_invalid_cell_artifacts(
@@ -1247,6 +1392,15 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "heldout_endpoint_valid": endpoint_error is None,
         "heldout_endpoint_error": endpoint_error,
         "verify_run_ok": verify_payload.get("ok"),
+        "treatment_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
+        "feedback_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("feedback_delivered")
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
         "benchmark_execution_status": benchmark_execution_status,
         "benchmark_outcome_status": benchmark_outcome_status,
         "benchmark_classification_reason": benchmark_classification_reason,
@@ -1272,6 +1426,15 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "replicate_id": manifest["replicate_id"],
         "pytest_exit_code": pytest_result["exit_code"],
         "verify_run_ok": verify_payload.get("ok"),
+        "treatment_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
+        "feedback_delivered": bool(
+            isinstance(provenance["treatment_delivery"], dict)
+            and provenance["treatment_delivery"].get("feedback_delivered")
+            and provenance["treatment_delivery"].get("repair_invocation_succeeded")
+        ),
         "benchmark_execution_status": benchmark_execution_status,
         "benchmark_outcome_status": benchmark_outcome_status,
         "benchmark_classification_reason": benchmark_classification_reason,
@@ -1312,61 +1475,41 @@ def _prompt_absolute_path(target: Path) -> str:
 
 
 def _build_initial_prompt(*, task_id: str, condition: str, workspace: Path, spec_path: Path, claims_template_path: Path) -> str:
-    workspace_ref = _prompt_absolute_path(workspace)
-    spec_ref = _prompt_absolute_path(spec_path)
-    claims_ref = _prompt_absolute_path(claims_template_path)
-    common = f"""
+    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
+    claims_ref = _prompt_relative_path(workspace=workspace, target=claims_template_path)
+    return f"""
 You are executing one benchmark cell for task {task_id}.
-The only project workspace for this cell is: {workspace_ref}
-Use that exact absolute workspace path for every file read/write/create/modify operation.
-Do not rely on your default current working directory.
+The current working directory is the only project workspace for this cell.
 Read this spec first: {spec_ref}
-Do not write anywhere outside {workspace_ref}.
-Create a runnable solution from scratch inside {workspace_ref}.
+Do not write outside the current working directory.
+Create a runnable solution from scratch in the current working directory.
 Create a README.md with run instructions.
 Create a pyproject.toml.
 Create automated tests and make a best effort to get pytest -q green.
 Do not inspect any held-out evaluation suite.
 The claims template exists at {claims_ref}, but do not use held-out evaluator material.
 """.strip()
-    if condition == "A-baseline":
-        extra = """
-Condition A, baseline:
-- do not use AgentHarness project files, framework metadata, or verify-run feedback
-- implement directly from the benchmark spec with reasonable engineering judgment
-- keep the solution concise and practical
-""".strip()
-    else:
-        extra = """
-Condition B, AgentHarness package:
-- follow a verification oriented implementation style
-- keep README, tests, and dependency manifest explicit and reviewable
-- you will later receive structured verify-run feedback for one bounded repair pass
-""".strip()
-    return common + "\n\n" + extra
 
 
 def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path) -> str:
-    workspace_ref = _prompt_absolute_path(workspace)
-    spec_ref = _prompt_absolute_path(spec_path)
-    pytest_stdout_ref = _prompt_absolute_path(Path(str(pytest_stdout_path)))
-    pytest_stderr_ref = _prompt_absolute_path(Path(str(pytest_stderr_path)))
+    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
+    pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
+    pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
     return f"""
-This is the one bounded repair pass for baseline condition A on task {task_id}.
-Workspace absolute path: {workspace_ref}
-Use that exact absolute workspace path for every file operation and do not rely on your default current working directory.
+This is the one bounded repair pass for task {task_id}.
+The current working directory is the only project workspace.
 Spec: {spec_ref}
-Review the implementation against the task spec, not against any framework guidance.
-Use these raw local test outputs only as ordinary development feedback:
+Consult the raw local test outputs:
 - pytest stdout: {pytest_stdout_ref}
 - pytest stderr: {pytest_stderr_ref}
 Safety constraints for this bounded repair:
 - treat the canonical pytest result above as authoritative
+- treat environment_mismatch feedback as inconclusive; do not modify the solution to satisfy a different execution environment
 - if canonical pytest is already green, do not change dependency versions, replace the persistence layer, or rewrite working architecture
 - never create local packages that shadow declared third-party dependencies
 - prefer a no-op over a speculative infrastructure workaround
 - all changes across retries are cumulative and will be checked as one repair diff
-Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
+Make targeted fixes inside the current working directory, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
 
@@ -1380,18 +1523,16 @@ def _build_agentharness_repair_prompt(
     pytest_stderr_path: str | Path,
     verify_feedback_path: Path,
 ) -> str:
-    workspace_ref = _prompt_absolute_path(workspace)
-    spec_ref = _prompt_absolute_path(spec_path)
-    pytest_stdout_ref = _prompt_absolute_path(Path(str(pytest_stdout_path)))
-    pytest_stderr_ref = _prompt_absolute_path(Path(str(pytest_stderr_path)))
-    verify_feedback_ref = _prompt_absolute_path(verify_feedback_path)
+    spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
+    pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
+    pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
+    verify_feedback_ref = _prompt_relative_path(workspace=workspace, target=verify_feedback_path)
     return f"""
-This is the one bounded repair pass for AgentHarness condition B on task {task_id}.
-Workspace absolute path: {workspace_ref}
-Use that exact absolute workspace path for every file operation and do not rely on your default current working directory.
+This is the one bounded repair pass for task {task_id}.
+The current working directory is the only project workspace.
 Spec: {spec_ref}
-Use the structured verify-run feedback here: {verify_feedback_ref}
-You may also consult the raw local test outputs:
+Consult the structured AgentHarness verify-run feedback: {verify_feedback_ref}
+Consult the raw local test outputs:
 - pytest stdout: {pytest_stdout_ref}
 - pytest stderr: {pytest_stderr_ref}
 Safety constraints for this bounded repair:
@@ -1401,6 +1542,6 @@ Safety constraints for this bounded repair:
 - never create local packages that shadow declared third-party dependencies
 - prefer a no-op over a speculative infrastructure workaround
 - all changes across retries are cumulative and will be checked as one repair diff
-Make targeted fixes inside the workspace, rerun local tests if helpful, and stop.
+Make targeted fixes inside the current working directory, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
