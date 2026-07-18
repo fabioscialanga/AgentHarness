@@ -529,7 +529,7 @@ class HermesCliInvoker:
             finished = _utc_now()
             stdout_path.write_text(stdout_text, encoding="utf-8")
             stderr_path.write_text(stderr_text, encoding="utf-8")
-            session_match = SESSION_ID_RE.search(stdout_text)
+            session_match = SESSION_ID_RE.search(stdout_text) or SESSION_ID_RE.search(stderr_text)
             session_id = session_match.group("session_id") if session_match else None
             last_attempt = AgentAttempt(
                 attempt_name=attempt_name,
@@ -611,7 +611,7 @@ def _write_invalid_cell_artifacts(
     workspace = Path(str(manifest["workspace"]))
     suite_path = outputs_dir / "suite.json"
     write_rendered_json_template(
-        BENCHMARKS_DIR / task_id / "HELDOUT_EVALUATION_SUITE.template.json",
+        heldout_suite_template_path(task_id),
         run_id=run_id,
         output_path=suite_path,
     )
@@ -1151,6 +1151,114 @@ def heldout_suite_template_path(task_id: str) -> Path:
     if hidden.is_file():
         return hidden
     raise FileNotFoundError(f"No frozen held-out suite envelope for task {task_id}")
+
+
+def replay_uncommitted_successful_invocations(cell_dir: Path) -> dict[str, object]:
+    """Replay persisted invocation evidence through scoring without invoking an agent."""
+    manifest = json.loads((cell_dir / "cell_manifest.json").read_text(encoding="utf-8"))
+    if str(manifest.get("condition")) != "A-baseline":
+        raise ValueError("Persisted-invocation replay is restricted to A-baseline")
+    workspace = Path(str(manifest["workspace"]))
+    outputs_dir = cell_dir / "outputs"
+    attempts_dir = outputs_dir / "agent-invocations"
+    meta_payloads = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted(attempts_dir.glob("attempt-*.meta.json"))
+    ]
+    if len(meta_payloads) != 2:
+        raise ValueError("Persisted-invocation replay requires exactly two attempts")
+
+    persisted_streams: dict[str, tuple[str, str]] = {}
+    recovered_sessions: list[str] = []
+    for payload in meta_payloads:
+        stdout_text = Path(str(payload["stdout_path"])).read_text(encoding="utf-8")
+        stderr_text = Path(str(payload["stderr_path"])).read_text(encoding="utf-8")
+        match = SESSION_ID_RE.search(stdout_text) or SESSION_ID_RE.search(stderr_text)
+        if int(payload["exit_code"]) != 0 or match is None:
+            raise ValueError("Persisted-invocation replay requires two successful evidenced attempts")
+        persisted_streams[str(payload["attempt_name"])] = (stdout_text, stderr_text)
+        recovered_sessions.append(match.group("session_id"))
+
+    prompt_path = outputs_dir / "pre-repair-treatment-prompt.txt"
+    prompt_text = prompt_path.read_text(encoding="utf-8")
+    if not prompt_text:
+        raise ValueError("Persisted-invocation replay requires a non-empty treatment prompt")
+    prompt_hash = hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()
+    snapshot = outputs_dir / "pre-repair-workspace"
+    initial_hash = compute_solution_hash(snapshot)
+    repair_hash = compute_solution_hash(workspace)
+    if initial_hash != repair_hash:
+        raise ValueError("Persisted-invocation replay is restricted to no-change repair attempts")
+
+    class _ReplayInvoker:
+        def run_cell(
+            self, manifest: dict[str, object], outputs_dir: Path, workspace: Path
+        ) -> AgentInvocationResult:
+            replay_attempts_dir = outputs_dir / "agent-invocations"
+            replay_attempts_dir.mkdir(parents=True, exist_ok=True)
+            attempts: list[AgentAttempt] = []
+            for payload, session_id in zip(meta_payloads, recovered_sessions, strict=True):
+                attempt_name = str(payload["attempt_name"])
+                stdout_text, stderr_text = persisted_streams[attempt_name]
+                stdout_path = replay_attempts_dir / f"{attempt_name}.stdout"
+                stderr_path = replay_attempts_dir / f"{attempt_name}.stderr"
+                stdout_path.write_text(stdout_text, encoding="utf-8")
+                stderr_path.write_text(stderr_text, encoding="utf-8")
+                corrected = dict(payload)
+                corrected["stdout_path"] = str(stdout_path)
+                corrected["stderr_path"] = str(stderr_path)
+                corrected["session_id"] = session_id
+                (replay_attempts_dir / f"{attempt_name}.meta.json").write_text(
+                    json.dumps(corrected, indent=2) + "\n", encoding="utf-8"
+                )
+                attempts.append(
+                    AgentAttempt(
+                        attempt_name=attempt_name,
+                        prompt_kind=str(payload["prompt_kind"]),
+                        command=[str(item) for item in payload["command"]],
+                        exit_code=int(payload["exit_code"]),
+                        stdout_path=stdout_path,
+                        stderr_path=stderr_path,
+                        working_directory=workspace,
+                        session_id=session_id,
+                        started_at=str(payload["started_at"]),
+                        finished_at=str(payload["finished_at"]),
+                        duration_seconds=float(payload["duration_seconds"]),
+                    )
+                )
+            replay_prompt = outputs_dir / "pre-repair-treatment-prompt.txt"
+            replay_prompt.write_text(prompt_text, encoding="utf-8")
+            replay_prompt.chmod(0o444)
+            treatment_delivery: dict[str, object] = {
+                "treatment_prompt_path": str(replay_prompt),
+                "treatment_prompt_sha256_pre": prompt_hash,
+                "treatment_prompt_sha256_post": prompt_hash,
+                "treatment_prompt_immutable": True,
+                "repair_invocation_exit_code": attempts[1].exit_code,
+                "repair_invocation_session_id_present": True,
+                "repair_invocation_evidence_present": True,
+                "repair_invocation_succeeded": True,
+                "feedback_delivered": False,
+                "recovered_from_persisted_invocation_evidence": True,
+            }
+            return AgentInvocationResult(
+                attempts=attempts,
+                attempt_solution_hashes={
+                    "attempt_1_initial": initial_hash,
+                    "attempt_2_repair_raw": repair_hash,
+                    "attempt_2_repair": repair_hash,
+                },
+                repair_safety={
+                    "safe": True,
+                    "rollback_required": False,
+                    "reasons": ["persisted_no_change_replay"],
+                    "rollback_performed": False,
+                    "rollback_validation": None,
+                },
+                treatment_delivery=treatment_delivery,
+            )
+
+    return execute_cell(cell_dir, _ReplayInvoker())
 
 
 def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs_dir: Path) -> dict[str, object]:

@@ -1588,7 +1588,7 @@ Authorization and timing:
 
 Normative executable freeze:
 - manifest: `benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json`
-- manifest payload SHA-256: `f66b363c8ab2ec22e61eab128b8961468d30daf91830278e99fc6656f8cf94b9`
+- manifest payload SHA-256: `cd2e4fcb5c10bbe280dd2b0b98620eeb750361613eee59e26c8ff99793797d8a`
 - the manifest freezes 75 runner, finalizer, analysis, task-specification, claims-contract, held-out-suite and hidden-evaluator file hashes
 - campaign runner: `benchmarks/grading-env/run_stage2_efficacy_campaign.py`
 - finalizer: `benchmarks/grading-env/finalize_stage2_efficacy.py`
@@ -1709,6 +1709,43 @@ Validation before resume:
 - the frozen manifest payload after this amendment is `f66b363c8ab2ec22e61eab128b8961468d30daf91830278e99fc6656f8cf94b9` and contains 75 frozen file hashes.
 
 This amendment is recorded before resume and before any private outcome content is opened.
+
+### 17.34 Corrective runtime amendment after failed resume, before hidden evaluation (2026-07-18)
+
+Correction of the record:
+- the statement in §17.33 that the hidden evaluator had already written a private functional result was an inference from the apparent call order, not a verified fact;
+- inspection of the operational traceback and file boundary established that both failed executions stopped before `run_hidden_benchmark` and before any held-out endpoint evaluation;
+- no hidden functional outcome was generated for either failed execution, and therefore no such outcome was read;
+- these statements supersede the contrary hidden-result bullets in §17.33 while preserving its envelope-repair rationale.
+
+Verified root cause:
+- Hermes completed both physical invocations in the fresh attempt with exit code 0 and wrote a valid `session_id` line to stderr;
+- `HermesCliInvoker` searched stdout only, recorded `session_id = null`, and therefore misclassified completed invocations as lacking evidence;
+- the invalid-cell artifact writer then attempted the old task-local held-out suite path and raised `FileNotFoundError`, masking the session-parser defect;
+- the workspace and persisted initial snapshot contain a non-empty candidate solution; the repair invocation made no workspace change.
+
+Neutral runtime correction:
+- `HermesCliInvoker` now extracts the session ID from stdout or stderr, without changing prompts, task logic, evaluator logic, randomization, treatment, scoring, or provider settings;
+- both ordinary scoring and invalid-cell artifact writing resolve the same frozen legacy-or-hidden held-out envelope;
+- a narrowly guarded replay path accepts only the current `A-baseline` cell with exactly two persisted, exit-0 invocations, session evidence recoverable from their streams, and identical pre-repair/current solution hashes;
+- replay restores the persisted invocation evidence and treatment prompt, performs no agent invocation, and runs only the normal post-invocation pytest, verify, hidden evaluator, endpoint evaluation, provenance, and cell commit path;
+- any condition mismatch, missing evidence, nonzero exit, missing treatment prompt, or repair hash change fails closed;
+- direct non-mocked guard tests cover wrong condition, wrong attempt count, nonzero exit, missing session evidence, empty prompt, and pre/post hash mismatch;
+- any replay guard rejection is surfaced as structured `AdjudicationRequired` before cell commit.
+
+Rerun and analysis treatment:
+- the already consumed `harness_reruns = 1` remains part of the audit trail;
+- no third agent invocation is permitted for `b001-s1`;
+- the second physical attempt is the only candidate execution eligible for scoring, via evidence replay and normal hidden evaluation;
+- the first physical attempt remains quarantined and excluded;
+- no A-versus-B contrast or hidden score was inspected while diagnosing or implementing this correction;
+- the campaign block order, paired assignments, frozen estimand, invalidity gates, MME, quota policy, and analysis remain unchanged.
+
+Corrected executable freeze:
+- manifest: `benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json`;
+- manifest payload SHA-256: `cd2e4fcb5c10bbe280dd2b0b98620eeb750361613eee59e26c8ff99793797d8a`;
+- frozen files: 75;
+- this amendment is recorded before replay, hidden evaluation, or commit of the second physical attempt.
 
 ---
 

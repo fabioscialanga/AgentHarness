@@ -14,7 +14,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
-from agentharness.benchmark_cells import HermesCliInvoker, execute_cell, prepare_fresh_cell
+from agentharness.benchmark_cells import (
+    HermesCliInvoker,
+    execute_cell,
+    prepare_fresh_cell,
+    replay_uncommitted_successful_invocations,
+)
 from agentharness.stage2_analysis import build_dataset_from_progress, validate_campaign_dataset
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -547,13 +552,33 @@ class Stage2Campaign:
                         used = int(harness_reruns.get(cell_id, 0))
                         allowed = int(self.manifest["rerun_policy"]["harness_invalid_fresh_reruns"])
                         if used >= allowed:
-                            raise AdjudicationRequired(
-                                f"Completed-invocation recovery exhausted harness rerun allowance for {cell_id}"
+                            condition = str(block["condition_order"][slot - 1])
+                            if condition != "A-baseline":
+                                raise AdjudicationRequired(
+                                    f"Completed-invocation recovery exhausted harness rerun allowance for {cell_id}"
+                                )
+                            try:
+                                recovered = replay_uncommitted_successful_invocations(cell_dir)
+                            except ValueError as exc:
+                                raise AdjudicationRequired(
+                                    f"Persisted-invocation replay rejected {cell_id}: {exc}"
+                                ) from exc
+                            enriched = self._finalize_cell_result(recovered, cell_dir, cell_id)
+                            enriched.update(
+                                {
+                                    "campaign_cell_id": cell_id,
+                                    "block_id": str(block["block_id"]),
+                                    "slot": slot,
+                                    "execution_attempt_no": attempt_no,
+                                    "recovered_without_agent_reinvocation": True,
+                                }
                             )
-                        self._archive_attempt(
-                            cell_id, cell_dir, attempt_no, reason="harness_invalid_recovery"
-                        )
-                        harness_reruns[cell_id] = used + 1
+                            atomic_write(cell_dir / "cell-result.commit.json", enriched, mode=0o600)
+                        else:
+                            self._archive_attempt(
+                                cell_id, cell_dir, attempt_no, reason="harness_invalid_recovery"
+                            )
+                            harness_reruns[cell_id] = used + 1
                     else:
                         self._archive_attempt(cell_id, cell_dir, attempt_no, reason="crash_recovery")
                         crash_recoveries[cell_id] = int(crash_recoveries.get(cell_id, 0)) + 1

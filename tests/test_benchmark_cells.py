@@ -25,6 +25,7 @@ from agentharness.benchmark_cells import (
     heldout_endpoint_error,
     heldout_suite_template_path,
     prepare_fresh_cell,
+    replay_uncommitted_successful_invocations,
     score_from_evaluation,
     write_run_json,
 )
@@ -214,6 +215,76 @@ class BenchmarkCellsTests(unittest.TestCase):
             payload = json.loads(heldout_suite_template_path(task_id).read_text(encoding="utf-8"))
             observed = tuple(case["id"] for case in payload["cases"])
             self.assertEqual(observed, tuple(check_ids) + ("evaluation_result_schema",))
+
+    def _build_replay_guard_fixture(
+        self,
+        root: Path,
+        *,
+        condition: str = "A-baseline",
+        attempt_count: int = 2,
+        failing_attempt: int | None = None,
+        missing_session_attempt: int | None = None,
+        prompt_text: str = "Repair without feedback.\n",
+        hash_mismatch: bool = False,
+    ) -> Path:
+        cell_dir = root / "cell"
+        workspace = cell_dir / "workspace"
+        outputs = cell_dir / "outputs"
+        snapshot = outputs / "pre-repair-workspace"
+        attempts_dir = outputs / "agent-invocations"
+        workspace.mkdir(parents=True)
+        snapshot.mkdir(parents=True)
+        attempts_dir.mkdir(parents=True)
+        (workspace / "solution.py").write_text("VALUE = 2\n" if hash_mismatch else "VALUE = 1\n", encoding="utf-8")
+        (snapshot / "solution.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (cell_dir / "cell_manifest.json").write_text(
+            json.dumps({"condition": condition, "workspace": str(workspace)}) + "\n",
+            encoding="utf-8",
+        )
+        (outputs / "pre-repair-treatment-prompt.txt").write_text(prompt_text, encoding="utf-8")
+        for index in range(1, attempt_count + 1):
+            attempt_name = "attempt-1-initial" if index == 1 else "attempt-2-repair"
+            stdout_path = attempts_dir / f"{attempt_name}.stdout"
+            stderr_path = attempts_dir / f"{attempt_name}.stderr"
+            stdout_path.write_text("agent completed\n", encoding="utf-8")
+            stderr_path.write_text(
+                "" if missing_session_attempt == index else f"session_id: replay_{index}\n",
+                encoding="utf-8",
+            )
+            payload = {
+                "attempt_name": attempt_name,
+                "prompt_kind": "initial" if index == 1 else "repair",
+                "command": ["hermes", "chat"],
+                "exit_code": 1 if failing_attempt == index else 0,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "working_directory": str(workspace),
+                "session_id": None,
+                "started_at": "2026-07-18T00:00:00Z",
+                "finished_at": "2026-07-18T00:00:01Z",
+                "duration_seconds": 1.0,
+            }
+            (attempts_dir / f"{attempt_name}.meta.json").write_text(
+                json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+            )
+        return cell_dir
+
+    def test_replay_guards_fail_closed_before_scoring(self) -> None:
+        cases = {
+            "wrong_condition": {"condition": "B-agentharness"},
+            "wrong_attempt_count": {"attempt_count": 1},
+            "nonzero_exit": {"failing_attempt": 2},
+            "missing_session": {"missing_session_attempt": 2},
+            "empty_prompt": {"prompt_text": ""},
+            "hash_mismatch": {"hash_mismatch": True},
+        }
+        for label, kwargs in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tmp_dir:
+                cell_dir = self._build_replay_guard_fixture(Path(tmp_dir), **kwargs)
+                with self.assertRaises(ValueError):
+                    replay_uncommitted_successful_invocations(cell_dir)
+                self.assertFalse((cell_dir / "run.json").exists())
+                self.assertFalse((cell_dir / "cell-result.json").exists())
 
     def test_heldout_endpoint_requires_exactly_six_terminal_cases(self) -> None:
         valid = {
@@ -660,6 +731,27 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertEqual(command[command.index("-m") + 1], "gpt-5.6-sol")
         self.assertEqual(command[command.index("--max-turns") + 1], "40")
         self.assertEqual(attempt.command, command)
+
+    def test_invoke_extracts_session_id_from_stderr(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=0,
+            stdout="work completed\n",
+            stderr="session_id: stderr_session_123\n",
+        )
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            outputs_dir = Path(tmp_dir)
+            with mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed):
+                attempt = invoker._invoke(
+                    prompt="hello",
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    outputs_dir=outputs_dir,
+                    workspace=outputs_dir,
+                )
+        self.assertEqual(attempt.session_id, "stderr_session_123")
+        self.assertEqual(attempt.exit_code, 0)
 
     def test_retryable_invocation_failure_detects_sse_stall_marker_in_stderr(self) -> None:
         completed = subprocess.CompletedProcess(
