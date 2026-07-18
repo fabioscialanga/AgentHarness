@@ -521,8 +521,9 @@ class Stage2Campaign:
         counters = state["counters"]
         assert isinstance(counters, dict)
         crash_recoveries = counters.setdefault("crash_recoveries", {})
+        harness_reruns = counters.setdefault("harness_reruns", {})
         physical_attempts = counters.setdefault("physical_cell_attempts", {})
-        assert isinstance(crash_recoveries, dict) and isinstance(physical_attempts, dict)
+        assert isinstance(crash_recoveries, dict) and isinstance(harness_reruns, dict) and isinstance(physical_attempts, dict)
         reconciled = False
         if private_cells_dir.is_dir():
             os.chmod(private_cells_dir, 0o700)
@@ -539,8 +540,23 @@ class Stage2Campaign:
                         attempt_no = int(current.get("attempt_no", 1))
                     else:
                         attempt_no = int(physical_attempts.get(cell_id, 0)) or 1
-                    self._archive_attempt(cell_id, cell_dir, attempt_no, reason="crash_recovery")
-                    crash_recoveries[cell_id] = int(crash_recoveries.get(cell_id, 0)) + 1
+                    invocation_meta = list(
+                        (cell_dir / "outputs" / "agent-invocations").glob("attempt-*.meta.json")
+                    )
+                    if len(invocation_meta) >= 2:
+                        used = int(harness_reruns.get(cell_id, 0))
+                        allowed = int(self.manifest["rerun_policy"]["harness_invalid_fresh_reruns"])
+                        if used >= allowed:
+                            raise AdjudicationRequired(
+                                f"Completed-invocation recovery exhausted harness rerun allowance for {cell_id}"
+                            )
+                        self._archive_attempt(
+                            cell_id, cell_dir, attempt_no, reason="harness_invalid_recovery"
+                        )
+                        harness_reruns[cell_id] = used + 1
+                    else:
+                        self._archive_attempt(cell_id, cell_dir, attempt_no, reason="crash_recovery")
+                        crash_recoveries[cell_id] = int(crash_recoveries.get(cell_id, 0)) + 1
                     reconciled = True
         if current is not None:
             state["current_cell"] = None

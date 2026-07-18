@@ -23,6 +23,7 @@ from agentharness.benchmark_cells import (
     compute_solution_hash,
     execute_cell,
     heldout_endpoint_error,
+    heldout_suite_template_path,
     prepare_fresh_cell,
     score_from_evaluation,
     write_run_json,
@@ -188,6 +189,32 @@ class _PreRepairFailureInvoker:
 
 
 class BenchmarkCellsTests(unittest.TestCase):
+    def test_heldout_suite_resolver_supports_legacy_and_hidden_batch3_envelopes(self) -> None:
+        legacy = heldout_suite_template_path("refund-approval-api")
+        hidden = heldout_suite_template_path("pii-redaction-pipeline")
+        self.assertEqual(legacy.name, "HELDOUT_EVALUATION_SUITE.template.json")
+        self.assertEqual(hidden.name, "pii-redaction-pipeline.json")
+        self.assertIn("stage2-heldout-suites", hidden.parts)
+        self.assertTrue(legacy.is_file())
+        self.assertTrue(hidden.is_file())
+
+    def test_hidden_batch3_suite_envelopes_match_frozen_evaluator_check_ids(self) -> None:
+        from agentharness.benchmark_hidden_evaluators_batch3_lease import CHECKS as lease_checks
+        from agentharness.benchmark_hidden_evaluators_batch3_ledger import CHECKS as ledger_checks
+        from agentharness.benchmark_hidden_evaluators_batch3_pii import _CHECKS as pii_checks
+        from agentharness.benchmark_hidden_evaluators_batch3_signed import CHECKS as signed_checks
+
+        expected = {
+            "pii-redaction-pipeline": pii_checks,
+            "signed-artifact-verifier": signed_checks,
+            "lease-coordination-api": lease_checks,
+            "double-entry-ledger-api": ledger_checks,
+        }
+        for task_id, check_ids in expected.items():
+            payload = json.loads(heldout_suite_template_path(task_id).read_text(encoding="utf-8"))
+            observed = tuple(case["id"] for case in payload["cases"])
+            self.assertEqual(observed, tuple(check_ids) + ("evaluation_result_schema",))
+
     def test_heldout_endpoint_requires_exactly_six_terminal_cases(self) -> None:
         valid = {
             "ok": True,

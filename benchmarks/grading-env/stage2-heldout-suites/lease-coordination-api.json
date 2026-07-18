@@ -1,0 +1,155 @@
+{
+  "suite_id": "lease-coordination-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "lease_acquire_fencing",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/lease-coordination-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "lease_acquire_fencing=pass"
+        ],
+        "forbidden": [
+          "lease_acquire_fencing=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "lease_concurrent_contention",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/lease-coordination-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "lease_concurrent_contention=pass"
+        ],
+        "forbidden": [
+          "lease_concurrent_contention=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "lease_renewal",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/lease-coordination-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "lease_renewal=pass"
+        ],
+        "forbidden": [
+          "lease_renewal=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "lease_release_reacquire",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/lease-coordination-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "lease_release_reacquire=pass"
+        ],
+        "forbidden": [
+          "lease_release_reacquire=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "lease_state_and_failure_atomicity",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/lease-coordination-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "lease_state_and_failure_atomicity=pass"
+        ],
+        "forbidden": [
+          "lease_state_and_failure_atomicity=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/lease-coordination-api/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

@@ -1588,8 +1588,8 @@ Authorization and timing:
 
 Normative executable freeze:
 - manifest: `benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json`
-- manifest payload SHA-256: `c2dd73ecb1e262f391e6629c70843c6ccbc6f9293fce5eab6da2f164d3f2cc0f`
-- the manifest freezes 71 runner, finalizer, analysis, task-specification, claims-contract, held-out-suite and hidden-evaluator file hashes
+- manifest payload SHA-256: `f66b363c8ab2ec22e61eab128b8961468d30daf91830278e99fc6656f8cf94b9`
+- the manifest freezes 75 runner, finalizer, analysis, task-specification, claims-contract, held-out-suite and hidden-evaluator file hashes
 - campaign runner: `benchmarks/grading-env/run_stage2_efficacy_campaign.py`
 - finalizer: `benchmarks/grading-env/finalize_stage2_efficacy.py`
 - any frozen-file hash mismatch, dirty repository, or mismatch between local HEAD and `origin/main` blocks launch or resume
@@ -1679,6 +1679,36 @@ Amended quota rule:
 - zero recognized windows, unavailable telemetry, missing percentage or reset time, purchased-credit risk, or a single window at or above 80% remains fail-closed
 - this amendment changes no task, condition, block order, replicate, endpoint, treatment, retry rule, analysis parameter or decision threshold
 - a second launch requires a new run root, clean synchronized `origin/main`, matching amended manifest hashes and a successful preflight
+
+### 17.33 Post-start, pre-reading held-out envelope repair (2026-07-17)
+
+Observed failure boundary:
+- campaign root: `/home/fabio/agentharness-stage2-efficacy-20260717-6e42176`;
+- the first physical attempt, cell `b001-s1` (`pii-redaction-pipeline`, `A-baseline`), completed its two planned agent invocations;
+- the hidden evaluator then wrote its private result, but the controller failed before endpoint construction and before `cell-result.commit.json`, because batch-3 task packs intentionally do not contain a visible `HELDOUT_EVALUATION_SUITE.template.json`;
+- no block or cell was committed, no score or hidden-result content was read, no A/B contrast was calculated or inspected, and the failure output disclosed only the missing path;
+- the private uncommitted attempt is therefore inadmissible for efficacy analysis and must be quarantined unread on resume.
+
+Substantive amendment:
+- add four hidden suite envelopes under `benchmarks/grading-env/stage2-heldout-suites/`, outside all task packs and outside agent workspaces;
+- each envelope contains exactly the five check IDs already frozen in its corresponding batch-3 hidden evaluator plus the same sixth result-schema check used by the sixteen legacy tasks;
+- add a deterministic resolver that prefers each legacy task-local held-out envelope and otherwise selects the frozen grading-environment envelope by exact task ID;
+- freeze all four hidden-envelope hashes in the campaign manifest;
+- do not modify any task `SPEC.md`, claims contract, task source, hidden evaluator behavior, scoring formula, randomization, treatment, task list, replication count, or analysis rule.
+
+Recovery and rerun accounting:
+- when an interrupted cell has two completed invocation metadata files but no committed cell result, recovery must quarantine the entire physical attempt as `harness_invalid_recovery`;
+- that recovery consumes the cell's sole preregistered `harness_invalid_fresh_reruns` allowance;
+- the next physical attempt preserves the original block, task, replicate, condition and slot assignment;
+- if the fresh attempt is again harness-invalid, no second automatic rerun is allowed and adjudication is required.
+
+Validation before resume:
+- batch-3 canonical full audit: GO, with `static_ok=true`, `dynamic_ok=true`, `packaging_ok=true`, and `legacy_ok=true` under the repository runtime containing the declared build backend;
+- unit tests bind each hidden envelope's check IDs to the corresponding frozen evaluator constants and verify legacy/hidden path resolution;
+- a recovery test verifies quarantine plus consumption of the one harness-invalid rerun;
+- the frozen manifest payload after this amendment is `f66b363c8ab2ec22e61eab128b8961468d30daf91830278e99fc6656f8cf94b9` and contains 75 frozen file hashes.
+
+This amendment is recorded before resume and before any private outcome content is opened.
 
 ---
 

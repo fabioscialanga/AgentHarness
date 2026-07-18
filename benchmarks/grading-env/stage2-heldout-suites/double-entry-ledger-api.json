@@ -1,0 +1,155 @@
+{
+  "suite_id": "double-entry-ledger-api_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "ledger_account_identity",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/double-entry-ledger-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "ledger_account_identity=pass"
+        ],
+        "forbidden": [
+          "ledger_account_identity=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "ledger_balanced_posting",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/double-entry-ledger-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "ledger_balanced_posting=pass"
+        ],
+        "forbidden": [
+          "ledger_balanced_posting=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "ledger_idempotency_conflict",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/double-entry-ledger-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "ledger_idempotency_conflict=pass"
+        ],
+        "forbidden": [
+          "ledger_idempotency_conflict=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "ledger_balances_and_journal",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/double-entry-ledger-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "ledger_balances_and_journal=pass"
+        ],
+        "forbidden": [
+          "ledger_balances_and_journal=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "ledger_compensating_reversal",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/double-entry-ledger-api/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "ledger_compensating_reversal=pass"
+        ],
+        "forbidden": [
+          "ledger_compensating_reversal=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/double-entry-ledger-api/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "suite_id": "pii-redaction-pipeline_heldout_eval",
+  "run_id": "__RUN_ID__",
+  "cases": [
+    {
+      "id": "pii_selector_resolution",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/pii-redaction-pipeline/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "pii_selector_resolution=pass"
+        ],
+        "forbidden": [
+          "pii_selector_resolution=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "pii_redaction_actions",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/pii-redaction-pipeline/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "pii_redaction_actions=pass"
+        ],
+        "forbidden": [
+          "pii_redaction_actions=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "pii_structure_preservation",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/pii-redaction-pipeline/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "pii_structure_preservation=pass"
+        ],
+        "forbidden": [
+          "pii_structure_preservation=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "pii_rule_precedence",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/pii-redaction-pipeline/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "pii_rule_precedence=pass"
+        ],
+        "forbidden": [
+          "pii_rule_precedence=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "pii_atomic_audit",
+      "type": "text_contains",
+      "path": ".agentharness/evaluation/pii-redaction-pipeline/summary.txt",
+      "description": "Frozen hidden functional check.",
+      "expected": {
+        "contains": [
+          "pii_atomic_audit=pass"
+        ],
+        "forbidden": [
+          "pii_atomic_audit=fail",
+          "Traceback"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_result_schema",
+      "type": "json_schema",
+      "path": ".agentharness/evaluation/pii-redaction-pipeline/result.json",
+      "description": "The hidden evaluator emits a stable result envelope.",
+      "expected": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "task_id",
+            "critical_ok",
+            "execution_status",
+            "outcome_status",
+            "classification_reason",
+            "passed_checks",
+            "failed_checks",
+            "observations"
+          ],
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "critical_ok": {
+              "type": "boolean"
+            },
+            "execution_status": {
+              "type": "string"
+            },
+            "outcome_status": {
+              "type": "string"
+            },
+            "classification_reason": {
+              "type": "string"
+            },
+            "passed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed_checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

@@ -233,6 +233,42 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
             self.assertTrue(archived[0].name.endswith("crash_recovery"))
             self.assertEqual(stat.S_IMODE(quarantine_root.stat().st_mode), 0o700)
 
+    def test_reconcile_completed_invocations_without_commit_consumes_harness_rerun(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            run_root = Path(tmp_dir) / "run"
+            campaign = runner.Stage2Campaign(manifest_path=FREEZE, run_root=run_root)
+            block = campaign.manifest["blocks"][0]
+            cell_id = f"{block['block_id']}-s1"
+            cell_dir = campaign._cell_dir(cell_id)
+            meta_dir = cell_dir / "outputs" / "agent-invocations"
+            meta_dir.mkdir(parents=True)
+            write_json(meta_dir / "attempt-1-initial.meta.json", {"duration_seconds": 1.0})
+            write_json(meta_dir / "attempt-2-repair.meta.json", {"duration_seconds": 1.0})
+            state = campaign._initial_state(
+                {
+                    "manifest_sha256": campaign.manifest["manifest_payload_sha256"],
+                    "manifest_file_sha256": "irrelevant",
+                    "repository_commit": "irrelevant",
+                }
+            )
+            state["current_cell"] = {
+                "cell_id": cell_id,
+                "block_id": str(block["block_id"]),
+                "task_id": str(block["task_id"]),
+                "replicate_id": str(block["replicate_id"]),
+                "condition": str(block["condition_order"][0]),
+                "slot": 1,
+                "attempt_no": 1,
+            }
+            state["counters"]["physical_cell_attempts"][cell_id] = 1
+            campaign._reconcile_crashed_attempts(state)
+            self.assertEqual(state["counters"]["harness_reruns"].get(cell_id), 1)
+            self.assertIsNone(state["counters"]["crash_recoveries"].get(cell_id))
+            archived = list((run_root / "quarantine" / cell_id).iterdir())
+            self.assertEqual(len(archived), 1)
+            self.assertTrue(archived[0].name.endswith("harness_invalid_recovery"))
+            self.assertIsNone(state["current_cell"])
+
     def test_validate_current_cell_rejects_tampered_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             campaign = runner.Stage2Campaign(manifest_path=FREEZE, run_root=Path(tmp_dir) / "run")

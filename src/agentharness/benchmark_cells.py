@@ -1143,10 +1143,20 @@ def run_hidden_benchmark(*, run_path: Path, task_id: str, output_path: Path) -> 
     return payload
 
 
+def heldout_suite_template_path(task_id: str) -> Path:
+    legacy = BENCHMARKS_DIR / task_id / "HELDOUT_EVALUATION_SUITE.template.json"
+    if legacy.is_file():
+        return legacy
+    hidden = REPO_ROOT / "benchmarks" / "grading-env" / "stage2-heldout-suites" / f"{task_id}.json"
+    if hidden.is_file():
+        return hidden
+    raise FileNotFoundError(f"No frozen held-out suite envelope for task {task_id}")
+
+
 def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs_dir: Path) -> dict[str, object]:
     suite_path = outputs_dir / "suite.json"
     write_rendered_json_template(
-        BENCHMARKS_DIR / task_id / "HELDOUT_EVALUATION_SUITE.template.json",
+        heldout_suite_template_path(task_id),
         run_id=run_id,
         output_path=suite_path,
     )

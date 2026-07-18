@@ -56,8 +56,9 @@ def frozen_paths() -> list[Path]:
         for name in ("SPEC.md", "CLAIMS_CONTRACT.template.json"):
             paths.append(task_dir / name)
         heldout = task_dir / "HELDOUT_EVALUATION_SUITE.template.json"
-        if heldout.is_file():
-            paths.append(heldout)
+        if not heldout.is_file():
+            heldout = REPO_ROOT / "benchmarks" / "grading-env" / "stage2-heldout-suites" / f"{task}.json"
+        paths.append(heldout)
     unique = sorted(set(paths))
     missing = [path for path in unique if not path.is_file()]
     if missing:
