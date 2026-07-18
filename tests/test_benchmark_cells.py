@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -17,6 +18,7 @@ from agentharness.benchmark_cells import (
     _build_agentharness_repair_prompt,
     _build_baseline_repair_prompt,
     _build_initial_prompt,
+    _classify_empty_workspace_failure,
     _inspect_verify_feedback_report,
     _is_retryable_invocation_failure,
     assert_nonshared_solution_hashes,
@@ -732,6 +734,40 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertEqual(command[command.index("--max-turns") + 1], "40")
         self.assertEqual(attempt.command, command)
 
+    def test_invoke_isolates_nested_hermes_cwd_from_gateway_environment(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=0,
+            stdout="session_id: isolated_123\n",
+            stderr="",
+        )
+        invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir) / "workspace"
+            outputs_dir = Path(tmp_dir) / "outputs"
+            workspace.mkdir()
+            outputs_dir.mkdir()
+            with (
+                mock.patch.dict(
+                    os.environ,
+                    {"_HERMES_GATEWAY": "1", "TERMINAL_CWD": "/home/shared-gateway"},
+                    clear=False,
+                ),
+                mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock,
+            ):
+                invoker._invoke(
+                    prompt="hello",
+                    attempt_name="attempt-1",
+                    prompt_kind="initial",
+                    outputs_dir=outputs_dir,
+                    workspace=workspace,
+                )
+
+        invocation_env = run_mock.call_args.kwargs["env"]
+        self.assertNotIn("_HERMES_GATEWAY", invocation_env)
+        self.assertEqual(invocation_env["TERMINAL_CWD"], str(workspace))
+        self.assertEqual(run_mock.call_args.kwargs["cwd"], str(workspace))
+
     def test_invoke_extracts_session_id_from_stderr(self) -> None:
         completed = subprocess.CompletedProcess(
             args=["hermes"],
@@ -752,6 +788,75 @@ class BenchmarkCellsTests(unittest.TestCase):
                 )
         self.assertEqual(attempt.session_id, "stderr_session_123")
         self.assertEqual(attempt.exit_code, 0)
+
+    def test_empty_workspace_with_successful_invocation_is_not_provider_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            stdout_path = root / "attempt.stdout"
+            stderr_path = root / "attempt.stderr"
+            stdout_path.write_text("Implemented a temporarily unavailable application response\n", encoding="utf-8")
+            stderr_path.write_text("session_id: successful_123\n", encoding="utf-8")
+            attempt = AgentAttempt(
+                attempt_name="attempt-1",
+                prompt_kind="initial",
+                command=["hermes"],
+                exit_code=0,
+                stdout_path=stdout_path,
+                stderr_path=stderr_path,
+                working_directory=root,
+                session_id="successful_123",
+                started_at="2026-01-01T00:00:00Z",
+                finished_at="2026-01-01T00:00:01Z",
+                duration_seconds=1.0,
+            )
+            status, reason = _classify_empty_workspace_failure(AgentInvocationResult(attempts=[attempt]))
+
+        self.assertEqual(status, "harness_invalid")
+        self.assertNotIn("provider_unavailable", reason)
+
+    def test_empty_workspace_mixed_attempts_are_not_provider_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            attempts: list[AgentAttempt] = []
+            for name, exit_code, stdout, session_id in (
+                ("failed", 1, "HTTP 429: usage limit has been reached\n", None),
+                ("successful", 0, "completed\n", "successful_456"),
+            ):
+                stdout_path = root / f"{name}.stdout"
+                stderr_path = root / f"{name}.stderr"
+                stdout_path.write_text(stdout, encoding="utf-8")
+                stderr_path.write_text(
+                    f"session_id: {session_id}\n" if session_id else "",
+                    encoding="utf-8",
+                )
+                attempts.append(
+                    AgentAttempt(
+                        attempt_name=name,
+                        prompt_kind="initial",
+                        command=["hermes"],
+                        exit_code=exit_code,
+                        stdout_path=stdout_path,
+                        stderr_path=stderr_path,
+                        working_directory=root,
+                        session_id=session_id,
+                        started_at="2026-01-01T00:00:00Z",
+                        finished_at="2026-01-01T00:00:01Z",
+                        duration_seconds=1.0,
+                    )
+                )
+            status, reason = _classify_empty_workspace_failure(AgentInvocationResult(attempts=attempts))
+
+        self.assertEqual(status, "harness_invalid")
+        self.assertNotIn("provider_unavailable", reason)
+
+    def test_retryable_invocation_failure_ignores_provider_words_in_successful_output(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=0,
+            stdout="Implemented a temporarily unavailable application response\n",
+            stderr="session_id: successful_123\n",
+        )
+        self.assertFalse(_is_retryable_invocation_failure(completed))
 
     def test_retryable_invocation_failure_detects_sse_stall_marker_in_stderr(self) -> None:
         completed = subprocess.CompletedProcess(

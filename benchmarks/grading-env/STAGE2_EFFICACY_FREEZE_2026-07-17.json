@@ -627,7 +627,7 @@
     "benchmarks/webhook-ingestion-service/CLAIMS_CONTRACT.template.json": "2087aead2ee6b40ef18d2e572295b0e9d2c68abc3e0036c074ee0212c4824f0d",
     "benchmarks/webhook-ingestion-service/HELDOUT_EVALUATION_SUITE.template.json": "970c60cf9480177b93f7a2670e88af626da214f7bf5f81e559d7bcd1b6ee0e48",
     "benchmarks/webhook-ingestion-service/SPEC.md": "4e7d4052698655cc5539896f80db5186113df43b479cf8ee5366235cea162b46",
-    "src/agentharness/benchmark_cells.py": "7ea8b3af50a58d103a501f9d78d4a77af0b70fb68c512e88f8ef1ecc63751aab",
+    "src/agentharness/benchmark_cells.py": "3f8fabf1c503416b1043c604f31b3991f560330083d457ad4ac3d12831b0c525",
     "src/agentharness/benchmark_hidden_evaluators.py": "5ae11dfbebe3220a6b8e719a162ffd551c2b275ab52568cef55c2858203fcbd1",
     "src/agentharness/benchmark_hidden_evaluators_batch1.py": "c4f81c7b59a624147ac43a6de773cd8c6aae8a19cc0cb5cbee7d036f63c088a4",
     "src/agentharness/benchmark_hidden_evaluators_batch2.py": "8a4b16f239140fcac1df1e15bcf72cccc2f5c6038588841767513ce2bceec4ab",
@@ -647,7 +647,7 @@
     "sensitivity": "count_provider_unavailable_and_harness_invalid_as_zero"
   },
   "invocation_max_retries": 1,
-  "manifest_payload_sha256": "cd2e4fcb5c10bbe280dd2b0b98620eeb750361613eee59e26c8ff99793797d8a",
+  "manifest_payload_sha256": "1e2c313573aede67848aeaba07917a914e6393ad4283e0ae0f99607db8c26159",
   "max_turns": 40,
   "mme": 0.1,
   "model": "gpt-5.6-sol",

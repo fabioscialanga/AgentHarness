@@ -1747,6 +1747,39 @@ Corrected executable freeze:
 - frozen files: 75;
 - this amendment is recorded before replay, hidden evaluation, or commit of the second physical attempt.
 
+### 17.35 Post-start campaign invalidation for nested-Hermes workspace escape (2026-07-18)
+
+Discovery and blindness boundary:
+- the campaign paused at `b017-s2` after 34 cells had started; no task score, arm score, task mean, endpoint summary, confidence interval, rank, or A-versus-B contrast was computed or inspected;
+- operational inspection was limited to campaign state, invocation metadata, invocation stdout/stderr, workspace-file presence, repair-safety metadata, and path strings needed to diagnose the pause;
+- the current run root `/home/fabio/agentharness-stage2-efficacy-20260717-6e42176` is invalidated in full and must never be resumed, finalized, adapted, or used for efficacy inference.
+
+Verified root cause and contamination scope:
+- the Stage 2 controller was itself launched from a Hermes gateway session and inherited `_HERMES_GATEWAY=1` plus `TERMINAL_CWD=/home/fabio`;
+- `HermesCliInvoker` passed `cwd=<cell workspace>` to the nested `hermes chat` subprocess but inherited both gateway environment variables unchanged;
+- nested Hermes therefore preserved the gateway `TERMINAL_CWD` and its terminal/file tools operated in `/home/fabio`, outside the isolated cell workspace;
+- a path-only audit found explicit `/home/fabio` write evidence in invocation logs for 31 of the 34 cells that had started; the remaining three cells are not treated as clean because they ran under the same defective launcher environment;
+- shared-home writes permit cross-cell state contamination and violate the frozen cell-isolation contract, so no completed block from this run is admissible even if its cell workspace later appeared scorable.
+
+Secondary classification defect:
+- `provider_unavailable` marker matching previously examined successful exit-0 output and included the generic phrase `temporarily unavailable`;
+- `b017-s2` contained that phrase as application behavior in a successful agent response, so an empty escaped workspace was falsely labelled provider unavailable;
+- provider-unavailable classification now requires nonzero invocation exit and, for an empty workspace, requires every recorded invocation to have failed with retryable provider evidence.
+
+Neutral runtime correction:
+- each nested Hermes subprocess receives an explicit `TERMINAL_CWD` equal to the isolated cell workspace;
+- `_HERMES_GATEWAY` is removed only from the nested subprocess environment so the child behaves as a local CLI and cannot preserve the parent gateway cwd;
+- the ordinary subprocess `cwd` remains bound to the same cell workspace, providing two consistent isolation bindings;
+- no prompt, task, condition, randomization, evaluator, endpoint, treatment, provider/model, budget, retry allowance, MME, or analysis rule is changed.
+
+Validation and relaunch boundary:
+- regression tests must prove that a gateway-marked parent produces a nested environment with no `_HERMES_GATEWAY`, exact `TERMINAL_CWD=<workspace>`, and exact subprocess `cwd=<workspace>`;
+- regression tests must prove that provider words in successful output cannot trigger retry or provider-unavailable classification;
+- before any new efficacy cell, the corrected freeze must pass the targeted Stage 2 gate, the full repository suite, an independent review, clean synchronized publication to `origin/main`, and a local no-provider subprocess smoke proving cwd/environment isolation;
+- corrected manifest: `benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json`, payload SHA-256 `1e2c313573aede67848aeaba07917a914e6393ad4283e0ae0f99607db8c26159`;
+- the replacement campaign must use a completely new run root and fresh workspaces for all 120 cells; no invocation, workspace, score, retry counter, block, or result artifact from the invalidated run may be reused;
+- the old run and escaped-home artifacts remain preserved as unread audit evidence until a separate cleanup decision.
+
 ---
 
 ## Freeze

@@ -497,6 +497,16 @@ class HermesCliInvoker:
         if self._max_turns:
             command.extend(["--max-turns", self._max_turns])
         command.extend(["-q", prompt])
+        invocation_env = os.environ.copy()
+        # A campaign launched from a Hermes gateway inherits both
+        # _HERMES_GATEWAY=1 and the gateway's TERMINAL_CWD. The nested CLI
+        # intentionally preserves that cwd marker, which would make its file
+        # and terminal tools operate in the gateway workspace instead of this
+        # benchmark cell. A nested benchmark invocation is a local CLI, not a
+        # gateway request: remove the marker and bind its logical cwd to the
+        # isolated cell explicitly.
+        invocation_env.pop("_HERMES_GATEWAY", None)
+        invocation_env["TERMINAL_CWD"] = str(workspace)
         last_attempt: AgentAttempt | None = None
         for retry_index in range(1, self._max_retries + 1):
             if self._admission_hook is not None:
@@ -510,6 +520,7 @@ class HermesCliInvoker:
                 completed = subprocess.run(
                     command,
                     cwd=str(workspace),
+                    env=invocation_env,
                     capture_output=True,
                     text=True,
                     check=False,
@@ -558,6 +569,8 @@ class HermesCliInvoker:
 
 
 def _is_retryable_invocation_failure(completed: subprocess.CompletedProcess[str]) -> bool:
+    if completed.returncode == 0:
+        return False
     retry_markers = PROVIDER_UNAVAILABLE_MARKERS + ("timed out after",)
     haystacks = (completed.stdout.lower(), completed.stderr.lower())
     return any(marker.lower() in haystack for marker in retry_markers for haystack in haystacks)
@@ -580,18 +593,27 @@ def _attempt_output_text(attempt: AgentAttempt) -> str:
 
 
 def _classify_empty_workspace_failure(invocation_result: AgentInvocationResult) -> tuple[str, str]:
-    for attempt in invocation_result.attempts:
-        text = _attempt_output_text(attempt)
-        if _is_retryable_invocation_failure(
-            subprocess.CompletedProcess(args=attempt.command, returncode=attempt.exit_code, stdout=text, stderr="")
-        ):
-            return (
-                "harness_invalid",
-                "provider_unavailable: agent produced no solution files because every invocation attempt failed with retryable provider-side errors",
+    attempts = invocation_result.attempts
+    all_failed_with_provider_markers = bool(attempts) and all(
+        not _successful_agent_attempt(attempt)
+        and _is_retryable_invocation_failure(
+            subprocess.CompletedProcess(
+                args=attempt.command,
+                returncode=attempt.exit_code,
+                stdout=_attempt_output_text(attempt),
+                stderr="",
             )
+        )
+        for attempt in attempts
+    )
+    if all_failed_with_provider_markers:
+        return (
+            "harness_invalid",
+            "provider_unavailable: agent produced no solution files because every invocation attempt failed with retryable provider-side errors",
+        )
     return (
         "harness_invalid",
-        "Agent produced no solution files and no retryable provider-side failure markers were detected in invocation logs",
+        "Agent produced no solution files; at least one invocation completed or lacked a retryable provider-side failure marker",
     )
 
 
