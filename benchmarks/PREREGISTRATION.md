@@ -1780,6 +1780,26 @@ Validation and relaunch boundary:
 - the replacement campaign must use a completely new run root and fresh workspaces for all 120 cells; no invocation, workspace, score, retry counter, block, or result artifact from the invalidated run may be reused;
 - the old run and escaped-home artifacts remain preserved as unread audit evidence until a separate cleanup decision.
 
+### 17.36 Substantive amendment: credential-tranche continuation after quota pause (2026-07-18)
+
+Discovery and blindness boundary:
+- this amendment is recorded before authenticating or invoking a second Codex account and before inspecting any Stage 2 efficacy score, arm aggregate, task mean, or A-versus-B contrast;
+- the replacement campaign `stage2-efficacy-20x3-20260717` paused at the frozen 80% Codex quota reserve after 18 pair-complete blocks;
+- block `b019` was not pair-complete: one cell had a private cell commit and the other had an uncommitted physical attempt; neither cell belongs to a committed block journal or confirmatory progress.
+
+Credential-tranche continuation:
+1. Blocks `b001` through `b018` remain frozen and admissible exactly as committed under credential tranche `codex-account-tranche-1`.
+2. Both physical cell directories for `b019`, including any private commit or uncommitted attempt, are quarantined without reading or summarizing outcome fields. They remain cost and provenance evidence but are excluded from confirmatory progress.
+3. Both conditions of `b019` are rerun from fresh task fixtures under credential tranche `codex-account-tranche-2`. Blocks `b020` through `b060` use that same tranche.
+4. The second credential is isolated in Hermes profile `stage2codex2`. The runner pins both the profile wrapper and its `HERMES_HOME`; automatic credential rotation, provider fallback, purchased credits, and cross-profile fallback remain forbidden.
+5. Provider, model, prompts, task specifications, hidden evaluators, block order, within-block condition order, quota thresholds, rerun policy, analysis parameters, MME, bootstrap seeds, and the primary decision rule remain unchanged.
+6. Credential tranche is an operational blocking variable, never a treatment assignment. Every admissible block remains pair-complete within one credential tranche. A continuation audit records only one-way account fingerprints and tranche boundaries, never tokens or personal account identifiers.
+7. The primary frozen paired analysis is unchanged. A mandatory sensitivity audit reruns the frozen `run_full_analysis` with the identical MME, bootstrap seeds, resampling counts, and equal-weight task estimand after excluding every row from boundary block `b019`. It also reports descriptive equal-weight task summaries separately within tranche 1 (`b001`-`b018`) and tranche 2 (`b019`-`b060`). The boundary-excluded primary headline is compared with the frozen primary; no sensitivity result may replace, rescue, or selectively override it.
+8. A one-time migration must be fail-closed and allowlisted to the exact old state, old manifest hash, old repository commit, run root, completed-block frontier `b018`, and new freeze hash/commit. Generic manifest or commit drift remains prohibited.
+9. No analysis is authorized until all 60 block journals and 120 admissible cell rows are sealed under the amended freeze.
+
+This is a substantive, outcome-blind operational amendment. It does not assert that account identity is behaviorally irrelevant; instead it prevents account identity from differing between conditions inside an admissible pair and makes the tranche change explicit for audit and sensitivity analysis.
+
 ---
 
 ## Freeze

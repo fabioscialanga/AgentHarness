@@ -5,11 +5,19 @@ import hashlib
 import json
 import math
 import os
+import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = (REPO_ROOT / "src").resolve()
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+import agentharness
 from scipy.stats import t as student_t
 
 from agentharness.stage2_analysis import (
@@ -20,9 +28,12 @@ from agentharness.stage2_analysis import (
     validate_campaign_dataset,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+if not Path(agentharness.__file__).resolve().is_relative_to(SRC_ROOT):
+    raise ImportError("agentharness runtime is not loaded from the frozen repository tree")
 
-NORMATIVE_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json"
+NORMATIVE_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-18_ACCOUNT2.json"
+AMENDED_FREEZE_TAG = "stage2-account2-freeze-20260718-v1"
+AMENDMENT_AUDIT_NAME = "credential-tranche-amendment.json"
 
 REQUIRED_MANIFEST_KEYS = frozenset(
     {
@@ -30,6 +41,10 @@ REQUIRED_MANIFEST_KEYS = frozenset(
         "campaign_id",
         "provider",
         "model",
+        "hermes_command",
+        "hermes_command_sha256",
+        "hermes_home",
+        "credential_tranche",
         "toolsets",
         "max_turns",
         "codex_sse_idle_seconds",
@@ -73,6 +88,13 @@ def canonical(payload: object) -> bytes:
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def git(*args: str) -> str:
+    result = subprocess.run(
+        ["git", *args], cwd=REPO_ROOT, check=True, text=True, capture_output=True
+    )
+    return result.stdout.strip()
 
 
 def atomic_write(path: Path, payload: object, *, mode: int | None = None) -> None:
@@ -269,6 +291,148 @@ def require_valid_coverage(rows: list[dict[str, Any]], tasks: list[str]) -> None
         raise ValueError(f"Primary analysis invalid: no valid replicate for task-condition pairs {missing}")
 
 
+def _validate_credential_amendment(
+    *,
+    run_root: Path,
+    state: dict[str, Any],
+    seal: dict[str, Any],
+    manifest_payload_sha256: str,
+    manifest_file_sha256: str,
+    repository_commit: str,
+) -> dict[str, Any]:
+    audit_path = run_root / AMENDMENT_AUDIT_NAME
+    if not audit_path.is_file():
+        raise ValueError("Credential-tranche amendment audit is missing")
+    audit_sha = sha256(audit_path)
+    if state.get("credential_tranche_amendment_sha256") != audit_sha:
+        raise ValueError("State credential-tranche amendment hash mismatch")
+    if seal.get("credential_tranche_amendment_sha256") != audit_sha:
+        raise ValueError("Dataset seal credential-tranche amendment hash mismatch")
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    if audit.get("migration_complete") is not True or audit.get("analysis_authorized") is not False:
+        raise ValueError("Credential-tranche migration is not complete and sealed")
+    if audit.get("new_manifest_payload_sha256") != manifest_payload_sha256:
+        raise ValueError("Credential-tranche audit manifest payload mismatch")
+    if audit.get("new_manifest_file_sha256") != manifest_file_sha256:
+        raise ValueError("Credential-tranche audit manifest file mismatch")
+    if audit.get("new_repository_commit") != repository_commit:
+        raise ValueError("Credential-tranche audit repository commit mismatch")
+    if audit.get("preserved_pair_complete_blocks") != [f"b{i:03d}" for i in range(1, 19)]:
+        raise ValueError("Credential-tranche audit preserved-block frontier mismatch")
+    if audit.get("boundary_block_restarted") != "b019":
+        raise ValueError("Credential-tranche audit boundary mismatch")
+    fingerprints = audit.get("account_fingerprints_sha256")
+    if not isinstance(fingerprints, dict) or set(fingerprints) != {
+        "codex-account-tranche-1",
+        "codex-account-tranche-2",
+    }:
+        raise ValueError("Credential-tranche fingerprints are incomplete")
+    if fingerprints["codex-account-tranche-1"] == fingerprints["codex-account-tranche-2"]:
+        raise ValueError("Credential tranches resolve to the same account")
+    tagged_commit = git("rev-parse", f"refs/tags/{AMENDED_FREEZE_TAG}^{{commit}}")
+    if tagged_commit != repository_commit:
+        raise ValueError("Finalization repository commit is not the amended freeze tag")
+    return audit
+
+
+def _rows_with_block_ids(
+    rows: list[dict[str, Any]], progress: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    row_map = {
+        (str(row["task_id"]), str(row["condition"]), str(row["replicate_id"])): row
+        for row in rows
+    }
+    joined: list[dict[str, Any]] = []
+    for progress_row in progress:
+        key = (
+            str(progress_row["task_id"]),
+            str(progress_row["condition"]),
+            str(progress_row["replicate_id"]),
+        )
+        sealed_row = row_map.get(key)
+        if sealed_row is None:
+            raise ValueError("Credential-tranche sensitivity identity join failed")
+        joined.append({**sealed_row, "block_id": str(progress_row["block_id"])})
+    if len(joined) != len(rows):
+        raise ValueError("Credential-tranche sensitivity identity join is not one-to-one")
+    return joined
+
+
+def _task_weighted_tranche_summary(
+    joined_rows: list[dict[str, Any]], block_ids: set[str], *, mme: float
+) -> dict[str, Any]:
+    valid = apply_invalid_policy(
+        [row for row in joined_rows if str(row["block_id"]) in block_ids],
+        "exclude_infrastructure_invalids",
+    )
+    by_task: dict[str, dict[str, list[float]]] = {}
+    for row in valid:
+        task = str(row["task_id"])
+        condition = str(row["condition"])
+        by_task.setdefault(
+            task, {"A-baseline": [], "B-agentharness": []}
+        )[condition].append(float(row["score"]))
+    differences = [
+        mean(arms["B-agentharness"]) - mean(arms["A-baseline"])
+        for _, arms in sorted(by_task.items())
+        if arms["A-baseline"] and arms["B-agentharness"]
+    ]
+    if len(differences) < 2:
+        raise ValueError("Credential-tranche sensitivity has fewer than two represented tasks")
+    result = paired_task_result(differences, favorable="positive")
+    result["method"] = "descriptive_equal_weight_task_mean_within_credential_tranche"
+    lower = float(str(result["ci_lower"]))
+    upper = float(str(result["ci_upper"]))
+    if lower > mme:
+        headline = "improvement_supported"
+    elif upper < mme:
+        headline = "no_meaningful_effect"
+    else:
+        headline = "inconclusive"
+    result["mme"] = mme
+    result["descriptive_headline"] = headline
+    result["confirmatory_status"] = "sensitivity_only_cannot_override_primary"
+    return result
+
+
+def credential_tranche_sensitivity(
+    rows: list[dict[str, Any]],
+    progress: list[dict[str, Any]],
+    *,
+    mme: float,
+    primary_headline: str,
+    analysis_parameters: dict[str, Any],
+) -> dict[str, Any]:
+    joined = _rows_with_block_ids(rows, progress)
+    without_boundary = [row for row in joined if row["block_id"] != "b019"]
+    primary_without_b019 = run_full_analysis(
+        without_boundary,
+        mme=mme,
+        cluster_seed=int(analysis_parameters["cluster_seed"]),
+        cluster_resamples=int(analysis_parameters["cluster_resamples"]),
+        wild_seed=int(analysis_parameters["wild_seed"]),
+        wild_resamples=int(analysis_parameters["wild_resamples"]),
+        include_mixedlm=True,
+    )
+    tranche_1 = _task_weighted_tranche_summary(
+        joined, {f"b{i:03d}" for i in range(1, 19)}, mme=mme
+    )
+    tranche_2 = _task_weighted_tranche_summary(
+        joined, {f"b{i:03d}" for i in range(19, 61)}, mme=mme
+    )
+    boundary_headline = str(primary_without_b019["decision"]["headline"])
+    return {
+        "primary_estimand_without_boundary_block_b019": primary_without_b019,
+        "boundary_exclusion_headline_matches_primary": boundary_headline == primary_headline,
+        "credential_tranche_conditioned_equal_weight_task_summaries": {
+            "codex-account-tranche-1_b001_b018": tranche_1,
+            "codex-account-tranche-2_b019_b060": tranche_2,
+        },
+        "primary_headline": primary_headline,
+        "cannot_rescue_or_override_primary": True,
+    }
+
+
 def finalize(*, manifest_path: Path, run_root: Path) -> dict[str, object]:
     manifest_path = manifest_path.resolve()
     run_root = run_root.resolve()
@@ -290,6 +454,14 @@ def finalize(*, manifest_path: Path, run_root: Path) -> dict[str, object]:
     repository_commit = state.get("repository_commit")
     if not repository_commit or seal.get("repository_commit") != repository_commit:
         raise ValueError("Seal repository commit does not match campaign state")
+    amendment_audit = _validate_credential_amendment(
+        run_root=run_root,
+        state=state,
+        seal=seal,
+        manifest_payload_sha256=expected_manifest_hash,
+        manifest_file_sha256=manifest_file_hash,
+        repository_commit=str(repository_commit),
+    )
     if sha256(dataset_path) != seal["dataset_sha256"] or sha256(progress_path) != seal["progress_sha256"]:
         raise ValueError("Dataset seal hash mismatch")
 
@@ -317,6 +489,13 @@ def finalize(*, manifest_path: Path, run_root: Path) -> dict[str, object]:
         wild_seed=int(params["wild_seed"]),
         wild_resamples=int(params["wild_resamples"]),
         include_mixedlm=True,
+    )
+    sensitivity = credential_tranche_sensitivity(
+        rows,
+        progress,
+        mme=float(manifest["mme"]),
+        primary_headline=str(primary["decision"]["headline"]),
+        analysis_parameters=params,
     )
     success = paired_task_result(
         task_differences(progress, lambda final: float(final.get("score", 0.0)) == 1.0),
@@ -351,6 +530,12 @@ def finalize(*, manifest_path: Path, run_root: Path) -> dict[str, object]:
             "generalization": "frozen_suite_model_tools_and_budget_only",
         },
         "primary": primary,
+        "credential_tranche_amendment": {
+            "audit_sha256": state["credential_tranche_amendment_sha256"],
+            "amendment": amendment_audit["amendment"],
+            "outcome_blind_when_applied": amendment_audit["outcome_blind"],
+        },
+        "credential_tranche_sensitivity": sensitivity,
         "secondary_confirmatory_holm_family": {
             "familywise_alpha": 0.05,
             "complete_six_of_six_success": success,
@@ -375,6 +560,9 @@ def finalize(*, manifest_path: Path, run_root: Path) -> dict[str, object]:
         "manifest_payload_sha256": expected_manifest_hash,
         "manifest_file_sha256": manifest_file_hash,
         "repository_commit": repository_commit,
+        "credential_tranche_amendment_sha256": state[
+            "credential_tranche_amendment_sha256"
+        ],
         "rows": len(rows),
         "blocks": seal.get("blocks"),
         "output_sha256": result["output_sha256"],

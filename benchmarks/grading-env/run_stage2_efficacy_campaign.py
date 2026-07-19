@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import fcntl
 import hashlib
 import json
@@ -14,6 +15,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = (REPO_ROOT / "src").resolve()
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+import agentharness
 from agentharness.benchmark_cells import (
     HermesCliInvoker,
     execute_cell,
@@ -22,9 +29,12 @@ from agentharness.benchmark_cells import (
 )
 from agentharness.stage2_analysis import build_dataset_from_progress, validate_campaign_dataset
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+if not Path(agentharness.__file__).resolve().is_relative_to(SRC_ROOT):
+    raise ImportError("agentharness runtime is not loaded from the frozen repository tree")
 
-NORMATIVE_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-17.json"
+NORMATIVE_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-18_ACCOUNT2.json"
+AMENDED_FREEZE_TAG = "stage2-account2-freeze-20260718-v1"
+AMENDMENT_AUDIT_NAME = "credential-tranche-amendment.json"
 
 REQUIRED_MANIFEST_KEYS = frozenset(
     {
@@ -32,6 +42,10 @@ REQUIRED_MANIFEST_KEYS = frozenset(
         "campaign_id",
         "provider",
         "model",
+        "hermes_command",
+        "hermes_command_sha256",
+        "hermes_home",
+        "credential_tranche",
         "toolsets",
         "max_turns",
         "codex_sse_idle_seconds",
@@ -120,6 +134,26 @@ def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
 
+def codex_account_fingerprint(auth_path: Path) -> str:
+    data = json.loads(auth_path.read_text(encoding="utf-8"))
+    state = data.get("providers", {}).get("openai-codex", {})
+    tokens = state.get("tokens", {})
+    account_id = str(tokens.get("account_id") or "").strip()
+    if not account_id:
+        token = str(tokens.get("access_token") or "")
+        parts = token.split(".")
+        if len(parts) >= 2:
+            raw = parts[1] + "=" * (-len(parts[1]) % 4)
+            claims = json.loads(base64.urlsafe_b64decode(raw))
+            auth_claim = claims.get("https://api.openai.com/auth", {})
+            account_id = str(
+                auth_claim.get("chatgpt_account_id") or claims.get("account_id") or ""
+            ).strip()
+    if not account_id:
+        raise ProvenanceMismatch("Codex account identity is unavailable")
+    return sha256_bytes(f"stage2-credential-tranche-v1:{account_id}".encode("utf-8"))
+
+
 def canonical_json(payload: object) -> bytes:
     return (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
@@ -197,8 +231,15 @@ class CodexQuotaGate:
         self.single_window_limit = single_window_limit
         self.allow_single_authoritative_window = allow_single_authoritative_window
         self.last_snapshot: dict[str, object] | None = None
+        self.expected_account_fingerprint: str | None = None
 
     def snapshot(self, *, phase: str) -> dict[str, object]:
+        if self.expected_account_fingerprint is not None:
+            current_fingerprint = codex_account_fingerprint(
+                Path(os.environ["HERMES_HOME"]) / "auth.json"
+            )
+            if current_fingerprint != self.expected_account_fingerprint:
+                raise ProvenanceMismatch("Codex credential identity changed during amended tranche")
         try:
             from agent.account_usage import fetch_account_usage
 
@@ -313,6 +354,23 @@ class Stage2Campaign:
         if self.manifest["provider"] != "openai-codex" or self.manifest["model"] != "gpt-5.6-sol":
             raise ProvenanceMismatch("Frozen provider/model mismatch")
 
+        expected_hermes_command = "/home/fabio/.local/bin/stage2codex2"
+        expected_hermes_home = "/home/fabio/.hermes/profiles/stage2codex2"
+        if str(self.manifest["hermes_command"]) != expected_hermes_command:
+            raise ProvenanceMismatch("Frozen Hermes profile wrapper mismatch")
+        if str(self.manifest["hermes_home"]) != expected_hermes_home:
+            raise ProvenanceMismatch("Frozen Hermes home mismatch")
+        if str(self.manifest["credential_tranche"]) != "codex-account-tranche-2":
+            raise ProvenanceMismatch("Frozen credential tranche mismatch")
+        configured_hermes_home = os.environ.get("HERMES_HOME", "").strip()
+        if configured_hermes_home != expected_hermes_home:
+            raise ProvenanceMismatch("HERMES_HOME must be pinned to the amended credential tranche")
+        command_path = Path(expected_hermes_command)
+        if not command_path.is_file() or not os.access(command_path, os.X_OK):
+            raise ProvenanceMismatch("Frozen Hermes profile wrapper is missing or not executable")
+        if sha256_file(command_path) != str(self.manifest["hermes_command_sha256"]):
+            raise ProvenanceMismatch("Frozen Hermes profile wrapper hash mismatch")
+
         tasks = list(self.manifest["tasks"])
         blocks = list(self.manifest["blocks"])
         replicates = list(self.manifest["replicates"])
@@ -360,6 +418,12 @@ class Stage2Campaign:
         origin = git("rev-parse", "origin/main")
         if head != origin:
             raise ProvenanceMismatch("HEAD must equal origin/main")
+        try:
+            tagged_commit = git("rev-parse", f"refs/tags/{AMENDED_FREEZE_TAG}^{{commit}}")
+        except subprocess.CalledProcessError as exc:
+            raise ProvenanceMismatch("Amended freeze tag is missing") from exc
+        if tagged_commit != head:
+            raise ProvenanceMismatch("HEAD is not the exact amended freeze tag commit")
 
         return {
             "ok": True,
@@ -441,31 +505,53 @@ class Stage2Campaign:
             state["resume_count"] = int(state.get("resume_count", 0)) + 1
             self._save_state(state)
             return state
-        state = self._initial_state(preflight)
-        atomic_write(self.state_path, state, mode=0o600)
-        provenance = {
-            **preflight,
-            "created_at": utc_now(),
-            "python": sys.version,
-            "platform": platform.platform(),
-            "hermes_version": subprocess.run(
-                ["hermes", "--version"], text=True, capture_output=True, check=True
-            ).stdout.strip(),
-            "manifest_path": str(self.manifest_path),
-            "manifest_file_sha256": preflight["manifest_file_sha256"],
-            "fallback_disabled": True,
-            "credential_rotation_disabled": True,
-            "auth_reset_forbidden": True,
-            "purchased_credits_forbidden": True,
-            "codex_sse_idle_seconds": self.manifest["codex_sse_idle_seconds"],
-        }
-        atomic_write(self.run_root / "run-provenance.json", provenance, mode=0o600)
-        atomic_write(self.progress_path, [], mode=0o600)
-        return state
+        raise ProvenanceMismatch("Amended credential freeze may only resume the allowlisted existing run")
 
     def _save_state(self, state: dict[str, object]) -> None:
         state["updated_at"] = utc_now()
         atomic_write(self.state_path, state, mode=0o600)
+
+    def _validate_credential_amendment(
+        self, state: dict[str, object], preflight: dict[str, object]
+    ) -> None:
+        audit_path = self.run_root / AMENDMENT_AUDIT_NAME
+        if not audit_path.is_file():
+            raise ProvenanceMismatch("Credential-tranche amendment audit is missing")
+        audit_sha = sha256_file(audit_path)
+        if state.get("credential_tranche_amendment_sha256") != audit_sha:
+            raise ProvenanceMismatch("Credential-tranche amendment audit hash mismatch")
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+        expected_blocks = [f"b{i:03d}" for i in range(1, 19)]
+        if audit.get("migration_complete") is not True or audit.get("analysis_authorized") is not False:
+            raise ProvenanceMismatch("Credential-tranche amendment is not durably complete")
+        if audit.get("new_manifest_payload_sha256") != preflight["manifest_sha256"]:
+            raise ProvenanceMismatch("Amendment audit manifest payload mismatch")
+        if audit.get("new_manifest_file_sha256") != preflight["manifest_file_sha256"]:
+            raise ProvenanceMismatch("Amendment audit manifest file mismatch")
+        if audit.get("new_repository_commit") != preflight["repository_commit"]:
+            raise ProvenanceMismatch("Amendment audit repository commit mismatch")
+        if audit.get("preserved_pair_complete_blocks") != expected_blocks:
+            raise ProvenanceMismatch("Amendment audit preserved-block frontier mismatch")
+        if audit.get("boundary_block_restarted") != "b019":
+            raise ProvenanceMismatch("Amendment audit boundary block mismatch")
+        fingerprints = audit.get("account_fingerprints_sha256")
+        if not isinstance(fingerprints, dict):
+            raise ProvenanceMismatch("Amendment audit account fingerprints are missing")
+        expected_fingerprint = str(fingerprints.get("codex-account-tranche-2") or "")
+        current_fingerprint = codex_account_fingerprint(
+            Path(str(self.manifest["hermes_home"])) / "auth.json"
+        )
+        if not expected_fingerprint or current_fingerprint != expected_fingerprint:
+            raise ProvenanceMismatch("Amended Codex account fingerprint mismatch")
+        self.quota.expected_account_fingerprint = expected_fingerprint
+
+    def _assert_amended_account_identity(self) -> None:
+        expected = self.quota.expected_account_fingerprint
+        if not expected:
+            raise ProvenanceMismatch("Expected amended Codex account fingerprint is unset")
+        current = codex_account_fingerprint(Path(str(self.manifest["hermes_home"])) / "auth.json")
+        if current != expected:
+            raise ProvenanceMismatch("Codex credential identity changed during cell execution")
 
     def _note_quota_pause(self, state: dict[str, object]) -> None:
         counters = state["counters"]
@@ -573,6 +659,7 @@ class Stage2Campaign:
                                     "recovered_without_agent_reinvocation": True,
                                 }
                             )
+                            self._assert_amended_account_identity()
                             atomic_write(cell_dir / "cell-result.commit.json", enriched, mode=0o600)
                         else:
                             self._archive_attempt(
@@ -760,6 +847,7 @@ class Stage2Campaign:
             atomic_write(cell_dir / "cell_manifest.json", manifest, mode=0o600)
 
             invoker = HermesCliInvoker(
+                hermes_command=str(self.manifest["hermes_command"]),
                 toolsets=str(self.manifest["toolsets"]),
                 max_retries=int(self.manifest["invocation_max_retries"]),
                 retry_backoff_seconds=float(self.manifest["retry_backoff_seconds"]),
@@ -770,6 +858,7 @@ class Stage2Campaign:
             )
             try:
                 result = execute_cell(cell_dir, invoker)
+                self._assert_amended_account_identity()
             except QuotaPause:
                 self._note_quota_pause(state)
                 raise
@@ -806,6 +895,7 @@ class Stage2Campaign:
                     "execution_attempt_no": attempt_no,
                 }
             )
+            self._assert_amended_account_identity()
             atomic_write(cell_dir / "cell-result.commit.json", enriched, mode=0o600)
             state["current_cell"] = None
             self._save_state(state)
@@ -845,6 +935,7 @@ class Stage2Campaign:
         preflight = self.preflight()
         with exclusive_lock(self.run_root / "campaign.lock"):
             state = self._load_or_initialize(preflight)
+            self._validate_credential_amendment(state, preflight)
             if state["status"] == "complete":
                 return 0
             self._reconcile_crashed_attempts(state)
@@ -898,6 +989,9 @@ class Stage2Campaign:
                 "campaign_id": self.manifest["campaign_id"],
                 "manifest_file_sha256": preflight["manifest_file_sha256"],
                 "repository_commit": preflight["repository_commit"],
+                "credential_tranche_amendment_sha256": state[
+                    "credential_tranche_amendment_sha256"
+                ],
                 "sealed_at": utc_now(),
                 "progress_sha256": sha256_file(self.progress_path),
                 "dataset_sha256": sha256_file(dataset_path),

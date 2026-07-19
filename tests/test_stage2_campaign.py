@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import random
 import stat
 import tempfile
@@ -15,7 +16,7 @@ from agentharness.stage2_analysis import write_json
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "benchmarks" / "grading-env" / "run_stage2_efficacy_campaign.py"
-FREEZE = REPO_ROOT / "benchmarks" / "grading-env" / "STAGE2_EFFICACY_FREEZE_2026-07-17.json"
+FREEZE = REPO_ROOT / "benchmarks" / "grading-env" / "STAGE2_EFFICACY_FREEZE_2026-07-18_ACCOUNT2.json"
 SPEC = importlib.util.spec_from_file_location("stage2_campaign_runner", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 runner = importlib.util.module_from_spec(SPEC)
@@ -32,7 +33,11 @@ def fake_git(*args: str) -> str:
         return ""
     if args == ("status", "--porcelain"):
         return ""
-    if args in (("rev-parse", "HEAD"), ("rev-parse", "origin/main")):
+    if args in (
+        ("rev-parse", "HEAD"),
+        ("rev-parse", "origin/main"),
+        ("rev-parse", f"refs/tags/{runner.AMENDED_FREEZE_TAG}^{{commit}}"),
+    ):
         return "frozen-commit"
     raise AssertionError(args)
 
@@ -104,6 +109,39 @@ def manifest_synthetic_progress(manifest: dict[str, Any], *, true_effect: float,
     return rows
 
 
+def bind_synthetic_credential_amendment(
+    *,
+    run_root: Path,
+    state: dict[str, Any],
+    seal: dict[str, Any],
+    manifest: dict[str, Any],
+    repository_commit: str,
+) -> None:
+    audit = {
+        "schema_version": 1,
+        "amendment": "17.36-credential-tranche-continuation",
+        "outcome_blind": True,
+        "migration_complete": True,
+        "analysis_authorized": False,
+        "new_manifest_payload_sha256": manifest["manifest_payload_sha256"],
+        "new_manifest_file_sha256": finalizer.sha256(FREEZE),
+        "new_repository_commit": repository_commit,
+        "preserved_pair_complete_blocks": [f"b{i:03d}" for i in range(1, 19)],
+        "boundary_block_restarted": "b019",
+        "account_fingerprints_sha256": {
+            "codex-account-tranche-1": "1" * 64,
+            "codex-account-tranche-2": "2" * 64,
+        },
+    }
+    audit_path = run_root / finalizer.AMENDMENT_AUDIT_NAME
+    write_json(audit_path, audit)
+    audit_sha = finalizer.sha256(audit_path)
+    state["credential_tranche_amendment_sha256"] = audit_sha
+    seal["credential_tranche_amendment_sha256"] = audit_sha
+    write_json(run_root / "campaign-state.private.json", state)
+    write_json(run_root / "dataset-seal.json", seal)
+
+
 class Stage2CampaignRunnerTests(unittest.TestCase):
     def test_frozen_manifest_has_exact_20_by_3_by_2_shape(self) -> None:
         manifest = json.loads(FREEZE.read_text(encoding="utf-8"))
@@ -132,13 +170,29 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
                 manifest_path=FREEZE,
                 run_root=Path(tmp_dir) / "run",
             )
-            with mock.patch.object(runner, "git", side_effect=fake_git):
+            with mock.patch.object(runner, "git", side_effect=fake_git), mock.patch.dict(
+                os.environ,
+                {"HERMES_HOME": "/home/fabio/.hermes/profiles/stage2codex2"},
+            ):
                 result = campaign.preflight()
         self.assertTrue(result["ok"])
         self.assertEqual(result["task_count"], 20)
         self.assertEqual(result["block_count"], 60)
         self.assertEqual(result["cell_count"], 120)
         self.assertEqual(len(result["manifest_file_sha256"]), 64)
+
+    def test_preflight_rejects_unpinned_hermes_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            campaign = runner.Stage2Campaign(
+                manifest_path=FREEZE,
+                run_root=Path(tmp_dir) / "run",
+            )
+            with mock.patch.object(runner, "git", side_effect=fake_git), mock.patch.dict(
+                os.environ,
+                {"HERMES_HOME": "/home/fabio/.hermes"},
+            ):
+                with self.assertRaises(runner.ProvenanceMismatch):
+                    campaign.preflight()
 
     def test_preflight_rejects_non_normative_manifest_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -308,8 +362,11 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
             )
             with mock.patch.object(
                 runner, "replay_uncommitted_successful_invocations", return_value=replay_result
-            ) as replay_mock:
+            ) as replay_mock, mock.patch.object(
+                campaign, "_assert_amended_account_identity"
+            ) as account_guard:
                 campaign._reconcile_crashed_attempts(state)
+            account_guard.assert_called_once_with()
             replay_mock.assert_called_once_with(cell_dir)
             committed = json.loads((cell_dir / "cell-result.commit.json").read_text(encoding="utf-8"))
             self.assertTrue(committed["recovered_without_agent_reinvocation"])
@@ -370,6 +427,36 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
             self.assertAlmostEqual(cost["agent_duration_seconds"], 25.0)
             self.assertEqual(len(set(cost["agent_invocation_attempt_ids"])), 3)
 
+    def test_account_identity_guard_rejects_mid_cell_credential_change(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            home = Path(tmp_dir) / "profile"
+            home.mkdir()
+            auth_path = home / "auth.json"
+            write_json(
+                auth_path,
+                {
+                    "providers": {
+                        "openai-codex": {"tokens": {"account_id": "account-before"}}
+                    }
+                },
+            )
+            campaign = runner.Stage2Campaign(
+                manifest_path=FREEZE, run_root=Path(tmp_dir) / "run"
+            )
+            campaign.manifest["hermes_home"] = str(home)
+            campaign.quota.expected_account_fingerprint = runner.codex_account_fingerprint(auth_path)
+            campaign._assert_amended_account_identity()
+            write_json(
+                auth_path,
+                {
+                    "providers": {
+                        "openai-codex": {"tokens": {"account_id": "account-after"}}
+                    }
+                },
+            )
+            with self.assertRaises(runner.ProvenanceMismatch):
+                campaign._assert_amended_account_identity()
+
     def test_finalizer_rejects_when_sealed_dataset_diverges_from_progress(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             run_root = Path(tmp_dir) / "run"
@@ -402,8 +489,16 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
                     "blocks": 60,
                 },
             )
-            with self.assertRaises(ValueError):
-                finalizer.finalize(manifest_path=FREEZE, run_root=run_root)
+            bind_synthetic_credential_amendment(
+                run_root=run_root,
+                state=json.loads((run_root / "campaign-state.private.json").read_text()),
+                seal=json.loads((run_root / "dataset-seal.json").read_text()),
+                manifest=manifest,
+                repository_commit="frozen-commit",
+            )
+            with mock.patch.object(finalizer, "git", return_value="frozen-commit"):
+                with self.assertRaises(ValueError):
+                    finalizer.finalize(manifest_path=FREEZE, run_root=run_root)
 
     def test_finalizer_runs_end_to_end_only_on_sealed_complete_shape(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -434,7 +529,15 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
                     "blocks": 60,
                 },
             )
-            result = finalizer.finalize(manifest_path=FREEZE, run_root=run_root)
+            bind_synthetic_credential_amendment(
+                run_root=run_root,
+                state=json.loads((run_root / "campaign-state.private.json").read_text()),
+                seal=json.loads((run_root / "dataset-seal.json").read_text()),
+                manifest=manifest,
+                repository_commit="frozen-commit",
+            )
+            with mock.patch.object(finalizer, "git", return_value="frozen-commit"):
+                result = finalizer.finalize(manifest_path=FREEZE, run_root=run_root)
             self.assertTrue((run_root / "STAGE2_EFFICACY_RESULT.json").is_file())
             seal_path = run_root / "STAGE2_EFFICACY_FINALIZATION_SEAL.json"
             self.assertTrue(seal_path.is_file())
