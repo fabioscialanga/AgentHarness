@@ -88,8 +88,16 @@ def git(*args: str) -> str:
 
 def account_fingerprint(auth_path: Path) -> str:
     data = json.loads(auth_path.read_text(encoding="utf-8"))
-    state = data.get("providers", {}).get("openai-codex", {})
-    tokens = state.get("tokens", {})
+    pool = data.get("credential_pool", {}).get("openai-codex")
+    if pool is not None:
+        if not isinstance(pool, list) or len(pool) != 1 or not isinstance(pool[0], dict):
+            raise MigrationError(
+                f"Codex credential pool must contain exactly one credential in {auth_path}"
+            )
+        tokens = pool[0]
+    else:
+        state = data.get("providers", {}).get("openai-codex", {})
+        tokens = state.get("tokens", {})
     account_id = str(tokens.get("account_id") or "").strip()
     if not account_id:
         token = str(tokens.get("access_token") or "")
@@ -121,16 +129,41 @@ def tree_hash(root: Path) -> str:
     return sha256_bytes(canonical_json(entries))
 
 
-def validate_manifest(path: Path) -> dict[str, Any]:
+def _load_and_validate_manifest_payload(path: Path) -> dict[str, Any]:
     manifest = json.loads(path.read_text(encoding="utf-8"))
     copy = dict(manifest)
     expected = str(copy.pop("manifest_payload_sha256"))
     if sha256_bytes(canonical_json(copy)) != expected:
         raise MigrationError(f"Manifest payload hash mismatch: {path.name}")
+    return manifest
+
+
+def git_file_bytes(commit: str, relative: str) -> bytes:
+    result = subprocess.run(
+        ["git", "show", f"{commit}:{relative}"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        raise MigrationError(f"Missing frozen Git object: {commit}:{relative}")
+    return result.stdout
+
+
+def validate_manifest(path: Path) -> dict[str, Any]:
+    manifest = _load_and_validate_manifest_payload(path)
     for relative, frozen_sha in manifest["frozen_file_sha256"].items():
         frozen_path = REPO_ROOT / relative
         if not frozen_path.is_file() or sha256_file(frozen_path) != frozen_sha:
             raise MigrationError(f"Frozen file mismatch: {relative}")
+    return manifest
+
+
+def validate_manifest_at_commit(path: Path, commit: str) -> dict[str, Any]:
+    manifest = _load_and_validate_manifest_payload(path)
+    for relative, frozen_sha in manifest["frozen_file_sha256"].items():
+        if sha256_bytes(git_file_bytes(commit, relative)) != frozen_sha:
+            raise MigrationError(f"Frozen Git object mismatch: {commit}:{relative}")
     return manifest
 
 
@@ -149,7 +182,7 @@ def validate_repository_and_authorization() -> tuple[dict[str, Any], dict[str, A
     new_path = REPO_ROOT / NEW_MANIFEST_RELATIVE
     if sha256_file(old_path) != OLD_MANIFEST_FILE_SHA256:
         raise MigrationError("Old manifest file hash mismatch")
-    old_manifest = validate_manifest(old_path)
+    old_manifest = validate_manifest_at_commit(old_path, OLD_REPOSITORY_COMMIT)
     new_manifest = validate_manifest(new_path)
     if old_manifest["manifest_payload_sha256"] != OLD_MANIFEST_PAYLOAD_SHA256:
         raise MigrationError("Old manifest payload hash mismatch")

@@ -136,8 +136,16 @@ def sha256_file(path: Path) -> str:
 
 def codex_account_fingerprint(auth_path: Path) -> str:
     data = json.loads(auth_path.read_text(encoding="utf-8"))
-    state = data.get("providers", {}).get("openai-codex", {})
-    tokens = state.get("tokens", {})
+    pool = data.get("credential_pool", {}).get("openai-codex")
+    if pool is not None:
+        if not isinstance(pool, list) or len(pool) != 1 or not isinstance(pool[0], dict):
+            raise ProvenanceMismatch(
+                "Codex credential pool must contain exactly one credential"
+            )
+        tokens = pool[0]
+    else:
+        state = data.get("providers", {}).get("openai-codex", {})
+        tokens = state.get("tokens", {})
     account_id = str(tokens.get("account_id") or "").strip()
     if not account_id:
         token = str(tokens.get("access_token") or "")

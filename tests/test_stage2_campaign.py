@@ -435,8 +435,8 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
             write_json(
                 auth_path,
                 {
-                    "providers": {
-                        "openai-codex": {"tokens": {"account_id": "account-before"}}
+                    "credential_pool": {
+                        "openai-codex": [{"account_id": "account-before"}]
                     }
                 },
             )
@@ -449,8 +449,8 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
             write_json(
                 auth_path,
                 {
-                    "providers": {
-                        "openai-codex": {"tokens": {"account_id": "account-after"}}
+                    "credential_pool": {
+                        "openai-codex": [{"account_id": "account-after"}]
                     }
                 },
             )

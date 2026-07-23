@@ -285,5 +285,72 @@ class Stage2CredentialMigrationTests(unittest.TestCase):
                     migration.validate_old_frontier(old_manifest, state)
 
 
+    def test_account_fingerprint_accepts_single_pool_and_rejects_rotation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            auth_path = Path(tmp) / "auth.json"
+            auth_path.write_text(
+                json.dumps(
+                    {
+                        "credential_pool": {
+                            "openai-codex": [{"account_id": "account-two"}]
+                        }
+                    }
+                )
+                + "\n"
+            )
+            self.assertEqual(
+                migration.account_fingerprint(auth_path),
+                migration.sha256_bytes(
+                    b"stage2-credential-tranche-v1:account-two"
+                ),
+            )
+            auth_path.write_text(
+                json.dumps(
+                    {
+                        "credential_pool": {
+                            "openai-codex": [
+                                {"account_id": "account-one"},
+                                {"account_id": "account-two"},
+                            ]
+                        }
+                    }
+                )
+                + "\n"
+            )
+            with self.assertRaisesRegex(
+                migration.MigrationError, "exactly one credential"
+            ):
+                migration.account_fingerprint(auth_path)
+
+    def test_old_manifest_validation_reads_frozen_git_commit_not_current_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "old-freeze.json"
+            frozen_bytes = b"old-frozen-content\n"
+            payload = {
+                "frozen_file_sha256": {
+                    "benchmarks/example.txt": migration.sha256_bytes(frozen_bytes)
+                }
+            }
+            payload["manifest_payload_sha256"] = migration.sha256_bytes(
+                migration.canonical_json(payload)
+            )
+            path.write_text(json.dumps(payload) + "\n")
+
+            with mock.patch.object(
+                migration, "git_file_bytes", return_value=frozen_bytes
+            ) as git_bytes:
+                observed = migration.validate_manifest_at_commit(path, "old-commit")
+            self.assertEqual(observed, payload)
+            git_bytes.assert_called_once_with("old-commit", "benchmarks/example.txt")
+
+            with mock.patch.object(
+                migration, "git_file_bytes", return_value=b"current-tree-content\n"
+            ):
+                with self.assertRaisesRegex(
+                    migration.MigrationError, "Frozen Git object mismatch"
+                ):
+                    migration.validate_manifest_at_commit(path, "old-commit")
+
+
 if __name__ == "__main__":
     unittest.main()
