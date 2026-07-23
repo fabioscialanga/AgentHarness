@@ -19,7 +19,7 @@ OLD_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-1
 NEW_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-18_ACCOUNT2.json"
 AUTHORIZATION_RELATIVE = "benchmarks/grading-env/STAGE2_CREDENTIAL_TRANCHE_AUTHORIZATION_2026-07-18.json"
 AMENDMENT_RELATIVE = "benchmarks/PREREGISTRATION.md"
-AMENDED_FREEZE_TAG = "stage2-account2-freeze-20260718-v1"
+AMENDED_FREEZE_TAG = "stage2-account2-freeze-20260718-v2"
 OLD_MANIFEST_PAYLOAD_SHA256 = "1e2c313573aede67848aeaba07917a914e6393ad4283e0ae0f99607db8c26159"
 OLD_MANIFEST_FILE_SHA256 = "4979150ebd6762fe39410a027007bd0cc052b0c7a659c23beb4fb475a8372b38"
 OLD_REPOSITORY_COMMIT = "85b0447ddceab856ff8e92631b8fbe09d7456073"
@@ -318,8 +318,21 @@ def validate_old_frontier(
     physical = counters.get("physical_cell_attempts")
     if not isinstance(physical, dict):
         raise MigrationError("Physical-attempt counters missing")
-    if physical.get("b019-s1") != 1 or physical.get("b019-s2") != 1:
+    boundary_physical = {
+        key: value for key, value in physical.items() if str(key).startswith("b019-")
+    }
+    if boundary_physical != {"b019-s1": 2, "b019-s2": 1}:
         raise MigrationError("Boundary physical-attempt counters mismatch")
+    harness_reruns = counters.get("harness_reruns")
+    if not isinstance(harness_reruns, dict):
+        raise MigrationError("Harness-rerun counters missing")
+    boundary_harness_reruns = {
+        key: value
+        for key, value in harness_reruns.items()
+        if str(key).startswith("b019-")
+    }
+    if boundary_harness_reruns != {"b019-s1": 1}:
+        raise MigrationError("Boundary harness-rerun counters mismatch")
     if require_boundary_sources:
         s1 = RUN_ROOT / "private-cells" / "b019-s1"
         s2 = RUN_ROOT / "private-cells" / "b019-s2"
@@ -403,7 +416,7 @@ def _archive_boundary(transaction: dict[str, Any]) -> list[dict[str, Any]]:
     archives: list[dict[str, Any]] = []
     for cell_id in ("b019-s1", "b019-s2"):
         source = RUN_ROOT / "private-cells" / cell_id
-        destination = RUN_ROOT / "quarantine" / cell_id / "attempt-01-account_tranche_boundary"
+        destination = RUN_ROOT / "quarantine" / cell_id / "account-tranche-boundary"
         expected_hash = str(transaction["source_tree_sha256"][cell_id])
         if source.exists() and destination.exists():
             raise MigrationError(f"Both source and archive exist for {cell_id}")

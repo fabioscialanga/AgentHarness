@@ -1800,6 +1800,17 @@ Credential-tranche continuation:
 
 This is a substantive, outcome-blind operational amendment. It does not assert that account identity is behaviorally irrelevant; instead it prevents account identity from differing between conditions inside an admissible pair and makes the tranche change explicit for audit and sensitivity analysis.
 
+### 17.37 Pre-invocation correction: exact `b019` attempt frontier and freeze tag v2 (2026-07-23)
+
+The first execution of the tagged credential-tranche migrator rejected before creating a transaction, audit, archive, state change, or new model invocation because its exact physical-attempt allowlist expected one attempt in each `b019` slot. A blind metadata-only inspection established the actual persisted frontier: `b019-s1` has two physical attempts and one harness rerun, while `b019-s2` has one physical attempt and no harness rerun. This is consistent with the already-declared incomplete boundary: slot 1 has a private cell commit, slot 2 is uncommitted, and no `b019` pair journal or confirmatory progress row exists.
+
+Before any second-account model invocation:
+- the migrator is narrowed to that exact `2 + 1` physical-attempt frontier and exact boundary harness-rerun map;
+- both complete `b019` cell trees remain quarantined unread as one account-tranche-boundary archive per slot, preserving all attempts, cost, and provenance evidence;
+- the v1 tag remains immutable audit history, while the corrected continuation is bound to `stage2-account2-freeze-20260718-v2`;
+- blocks `b001`-`b018`, the `b019` full-pair restart, blocks `b020`-`b060`, provider/model, treatment, evaluators, analysis, MME, seeds, invalid policy, and decision rule remain exactly as declared in 17.36;
+- no score, outcome field, arm summary, task mean, or A-versus-B contrast was read to make this correction.
+
 ---
 
 ## Freeze

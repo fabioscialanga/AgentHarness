@@ -32,7 +32,7 @@ if not Path(agentharness.__file__).resolve().is_relative_to(SRC_ROOT):
     raise ImportError("agentharness runtime is not loaded from the frozen repository tree")
 
 NORMATIVE_MANIFEST_RELATIVE = "benchmarks/grading-env/STAGE2_EFFICACY_FREEZE_2026-07-18_ACCOUNT2.json"
-AMENDED_FREEZE_TAG = "stage2-account2-freeze-20260718-v1"
+AMENDED_FREEZE_TAG = "stage2-account2-freeze-20260718-v2"
 AMENDMENT_AUDIT_NAME = "credential-tranche-amendment.json"
 
 REQUIRED_MANIFEST_KEYS = frozenset(

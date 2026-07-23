@@ -89,7 +89,8 @@ class Stage2CredentialMigrationTests(unittest.TestCase):
                 "attempt_no": 1,
             },
             "counters": {
-                "physical_cell_attempts": {"b019-s1": 1, "b019-s2": 1},
+                "physical_cell_attempts": {"b019-s1": 2, "b019-s2": 1},
+                "harness_reruns": {"b019-s1": 1},
             },
             "amendments": [],
         }
@@ -144,7 +145,7 @@ class Stage2CredentialMigrationTests(unittest.TestCase):
             for cell_id in ("b019-s1", "b019-s2"):
                 self.assertFalse((run_root / "private-cells" / cell_id).exists())
                 self.assertTrue(
-                    (run_root / "quarantine" / cell_id / "attempt-01-account_tranche_boundary").is_dir()
+                    (run_root / "quarantine" / cell_id / "account-tranche-boundary").is_dir()
                 )
             audit = json.loads((run_root / migration.AUDIT_NAME).read_text())
             self.assertTrue(audit["migration_complete"])
@@ -284,6 +285,30 @@ class Stage2CredentialMigrationTests(unittest.TestCase):
                 with self.assertRaises(migration.MigrationError):
                     migration.validate_old_frontier(old_manifest, state)
 
+
+    def test_frontier_rejects_boundary_attempt_or_rerun_counter_drift(self) -> None:
+        for counter_name, replacement, message in (
+            (
+                "physical_cell_attempts",
+                {"b019-s1": 1, "b019-s2": 1},
+                "Boundary physical-attempt counters mismatch",
+            ),
+            (
+                "harness_reruns",
+                {},
+                "Boundary harness-rerun counters mismatch",
+            ),
+        ):
+            with self.subTest(counter=counter_name), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                run_root, _, old_manifest, _ = self._fixture(root)
+                state = json.loads(
+                    (run_root / "campaign-state.private.json").read_text()
+                )
+                state["counters"][counter_name] = replacement
+                with mock.patch.object(migration, "RUN_ROOT", run_root):
+                    with self.assertRaisesRegex(migration.MigrationError, message):
+                        migration.validate_old_frontier(old_manifest, state)
 
     def test_account_fingerprint_accepts_single_pool_and_rejects_rotation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
