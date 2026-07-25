@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "amendment_id": "stage2-recovery-2026-07-25-outcome-blind-16-task",
+  "date": "2026-07-25",
+  "scope": "exploratory_amended_16_tasks",
+  "qualification": "non_confirmatory_recovered_exploratory",
+  "outcome_blind": true,
+  "analysis_authorized": false,
+  "no_outcome_declaration": "The amendment and deterministic selection/validity rules were fixed without inspecting or selecting on real task outcomes. Recovery construction is separate from analysis authorization.",
+  "incidents": [
+    "The historical endpoint incorrectly treated evaluation payload ok as a validity gate even when all six terminal case results were present.",
+    "Three prior diagnostic replays wrote trace JSONL only in workspaces b019-s1, b020-s1, and b020-s2; progress, dataset, run, suite, and solution artifacts were unchanged.",
+    "Four legacy suite envelopes contain no executable oracle fields and cannot be recovered under the standard evaluator contract."
+  ],
+  "excluded_tasks": [
+    "access-policy-evaluator",
+    "dependency-impact-planner",
+    "safe-archive-extraction",
+    "versioned-document-api"
+  ],
+  "rules": {
+    "roster": "Exclude the four legacy tasks completely; retain exactly 16 tasks, 48 blocks, and 96 cells.",
+    "attempt_selection": "For every retained cell choose the minimum physical attempt number from exact quarantine attempt-NN-harness_invalid_rerun directories and the final private-cell directory. Ignore account-tranche-boundary archives. Validate the _aN run_id suffix. Never inspect outcome fields to select an attempt.",
+    "replay": "Call agentharness.evaluation.evaluate_run without report writes and with trace_path under the derived recovery output root, never under a workspace or original run root.",
+    "endpoint_validity": "Valid iff gating_errors is empty, there are exactly six results, result IDs are unique and equal the six expected suite IDs, and every status is passed or failed. The payload ok value is not a validity gate.",
+    "separation": "Builder seals recovered progress/dataset with analysis_authorized=false. A separate finalizer requires an exact-hash external authorization before analysis.",
+    "claims": "Any authorized analysis is exploratory and non-confirmatory and cannot emit a confirmatory public claim."
+  },
+  "hash_bindings": {
+    "status": "builder_compiled",
+    "description": "Run-dependent manifest, original seal, amendment, recovered progress, dataset, lineage, and audit SHA-256 values are compiled into blind-recovery-audit.json and recovery-seal.json by the builder; no ambiguous wildcard or inferred hash is permitted."
+  }
+}
