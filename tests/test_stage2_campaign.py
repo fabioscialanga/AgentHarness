@@ -42,6 +42,18 @@ def fake_git(*args: str) -> str:
     raise AssertionError(args)
 
 
+def frozen_checkout_sha256(path: Path) -> str:
+    manifest = json.loads(FREEZE.read_text(encoding="utf-8"))
+    try:
+        relative = path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        relative = ""
+    frozen = manifest["frozen_file_sha256"].get(relative)
+    if isinstance(frozen, str):
+        return frozen
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _base_final_row(*, task_id: str, condition: str, replicate_id: str, block_id: str, slot: int, score: float) -> dict[str, Any]:
     cell_id = f"{block_id}-s{slot}"
     return {
@@ -170,9 +182,13 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
                 manifest_path=FREEZE,
                 run_root=Path(tmp_dir) / "run",
             )
-            with mock.patch.object(runner, "git", side_effect=fake_git), mock.patch.dict(
-                os.environ,
-                {"HERMES_HOME": "/home/fabio/.hermes/profiles/stage2codex2"},
+            with (
+                mock.patch.object(runner, "git", side_effect=fake_git),
+                mock.patch.object(runner, "sha256_file", side_effect=frozen_checkout_sha256),
+                mock.patch.dict(
+                    os.environ,
+                    {"HERMES_HOME": "/home/fabio/.hermes/profiles/stage2codex2"},
+                ),
             ):
                 result = campaign.preflight()
         self.assertTrue(result["ok"])
@@ -536,7 +552,10 @@ class Stage2CampaignRunnerTests(unittest.TestCase):
                 manifest=manifest,
                 repository_commit="frozen-commit",
             )
-            with mock.patch.object(finalizer, "git", return_value="frozen-commit"):
+            with (
+                mock.patch.object(finalizer, "git", return_value="frozen-commit"),
+                mock.patch.object(finalizer, "sha256", side_effect=frozen_checkout_sha256),
+            ):
                 result = finalizer.finalize(manifest_path=FREEZE, run_root=run_root)
             self.assertTrue((run_root / "STAGE2_EFFICACY_RESULT.json").is_file())
             seal_path = run_root / "STAGE2_EFFICACY_FINALIZATION_SEAL.json"
