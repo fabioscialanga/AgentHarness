@@ -22,12 +22,15 @@ class EvaluationCase:
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "EvaluationCase":
+        expected = payload.get("expected", {})
+        if not isinstance(expected, dict):
+            expected = {}
         return cls(
             id=str(payload.get("id", "")).strip(),
             type=str(payload.get("type", "")).strip(),
             path=str(payload.get("path", "")).strip(),
             description=str(payload.get("description", "")).strip(),
-            expected=dict(payload.get("expected", {})),
+            expected=dict(expected),
         )
 
 
@@ -157,6 +160,33 @@ def _validate_suite(run_id: str, suite: EvaluationSuite) -> list[str]:
         seen.add(case.id)
     if duplicates:
         errors.append("Evaluation suite contains duplicate case ids: " + ", ".join(sorted(duplicates)))
+    return errors
+
+
+def validate_evaluation_suite_payload(
+    payload: dict[str, Any],
+    *,
+    run_id: str,
+    expected_case_count: int | None = None,
+) -> list[str]:
+    """Validate a rendered suite before it is materialized or evaluated."""
+    suite = EvaluationSuite.from_dict(payload)
+    errors = _validate_suite(run_id, suite)
+    raw_cases = payload.get("cases")
+    if not isinstance(raw_cases, list):
+        errors.append("Evaluation suite cases must be a list")
+        return errors
+    if expected_case_count is not None and len(raw_cases) != expected_case_count:
+        errors.append(
+            f"Evaluation suite must contain exactly {expected_case_count} cases; found {len(raw_cases)}"
+        )
+    for index, raw_case in enumerate(raw_cases):
+        if not isinstance(raw_case, dict):
+            errors.append(f"Evaluation suite case at index {index} must be an object")
+            continue
+        shape_error = _validate_case_shape(EvaluationCase.from_dict(raw_case))
+        if shape_error:
+            errors.append(shape_error)
     return errors
 
 

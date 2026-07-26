@@ -13,9 +13,10 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Callable, Protocol, cast
 
 from .benchmarking import render_json_template, write_rendered_json_template
+from .evaluation import validate_evaluation_suite_payload
 from .repair_safety import (
     assess_repair_safety,
     manifest_install_state,
@@ -41,6 +42,7 @@ VERIFY_RUN_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_VERIFY_TIMEOUT_SEC
 BENCHMARK_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_BENCHMARK_TIMEOUT_SECONDS", "300"))
 HELDOUT_EVAL_TIMEOUT_SECONDS = int(os.environ.get("AGENTHARNESS_EVALUATION_TIMEOUT_SECONDS", "300"))
 EXPECTED_HELDOUT_CASES = 6
+REPAIR_RESPONSE_RELATIVE_PATH = Path(".agentharness/repair-response.json")
 
 PROVIDER_UNAVAILABLE_MARKERS = (
     "HTTP 429",
@@ -121,6 +123,140 @@ def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _capture_directory_identity(path: Path) -> tuple[str, int, int]:
+    if path.is_symlink() or not path.is_dir():
+        raise ValueError(f"unsafe_directory:{path}")
+    stat_result = path.stat(follow_symlinks=False)
+    return (str(path.resolve()), stat_result.st_dev, stat_result.st_ino)
+
+
+def _directory_identity_matches(path: Path, identity: tuple[str, int, int]) -> bool:
+    try:
+        return _capture_directory_identity(path) == identity
+    except (OSError, ValueError):
+        return False
+
+
+def _write_bytes_no_follow(
+    directory: Path,
+    filename: str,
+    content: bytes,
+    *,
+    expected_identity: tuple[str, int, int],
+) -> Path:
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    directory_fd = os.open(directory, flags)
+    try:
+        opened = os.fstat(directory_fd)
+        if (str(directory.resolve()), opened.st_dev, opened.st_ino) != expected_identity:
+            raise OSError("output_directory_identity_changed")
+        try:
+            os.unlink(filename, dir_fd=directory_fd)
+        except FileNotFoundError:
+            pass
+        file_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+        file_fd = os.open(filename, file_flags, 0o600, dir_fd=directory_fd)
+        try:
+            with os.fdopen(file_fd, "wb", closefd=False) as stream:
+                stream.write(content)
+                stream.flush()
+                os.fsync(stream.fileno())
+        finally:
+            os.close(file_fd)
+    finally:
+        os.close(directory_fd)
+    return directory / filename
+
+
+def _write_json_no_follow(
+    directory: Path,
+    filename: str,
+    payload: dict[str, object],
+    *,
+    expected_identity: tuple[str, int, int],
+) -> Path:
+    content = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    return _write_bytes_no_follow(
+        directory,
+        filename,
+        content,
+        expected_identity=expected_identity,
+    )
+
+
+def _open_verified_directory(path: Path, expected_identity: tuple[str, int, int]) -> int:
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    directory_fd = os.open(path, flags)
+    opened = os.fstat(directory_fd)
+    if (str(path.resolve()), opened.st_dev, opened.st_ino) != expected_identity:
+        os.close(directory_fd)
+        raise OSError("directory_identity_changed")
+    return directory_fd
+
+
+def _ensure_child_directory_no_follow(
+    parent: Path,
+    child_name: str,
+    *,
+    expected_parent_identity: tuple[str, int, int],
+) -> tuple[Path, tuple[str, int, int]]:
+    parent_fd = _open_verified_directory(parent, expected_parent_identity)
+    try:
+        try:
+            os.mkdir(child_name, 0o700, dir_fd=parent_fd)
+        except FileExistsError:
+            pass
+        child_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+        child_fd = os.open(child_name, child_flags, dir_fd=parent_fd)
+        try:
+            child_stat = os.fstat(child_fd)
+        finally:
+            os.close(child_fd)
+    finally:
+        os.close(parent_fd)
+    child = parent / child_name
+    return child, (str(child.resolve()), child_stat.st_dev, child_stat.st_ino)
+
+
+def _unlink_no_follow(
+    directory: Path,
+    filename: str,
+    *,
+    expected_identity: tuple[str, int, int],
+) -> None:
+    directory_fd = _open_verified_directory(directory, expected_identity)
+    try:
+        try:
+            os.unlink(filename, dir_fd=directory_fd)
+        except FileNotFoundError:
+            pass
+    finally:
+        os.close(directory_fd)
+
+
+def _read_json_no_follow(
+    directory: Path,
+    filename: str,
+    *,
+    expected_identity: tuple[str, int, int],
+) -> dict[str, object]:
+    directory_fd = _open_verified_directory(directory, expected_identity)
+    try:
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        file_fd = os.open(filename, flags, dir_fd=directory_fd)
+        try:
+            with os.fdopen(file_fd, "rb", closefd=False) as stream:
+                raw = stream.read()
+        finally:
+            os.close(file_fd)
+    finally:
+        os.close(directory_fd)
+    payload = json.loads(raw.decode("utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("repair_response_root_invalid")
+    return payload
+
+
 def _classify_failed_agent_attempt(attempt: AgentAttempt, *, phase: str) -> tuple[str, str]:
     text = _attempt_output_text(attempt)
     completed = subprocess.CompletedProcess(
@@ -173,10 +309,32 @@ class HermesCliInvoker:
         spec_path = Path(str(manifest["spec_path"]))
         claims_template_path = Path(str(manifest["claims_template_path"]))
 
-        attempts_dir = outputs_dir / "agent-invocations"
-        attempts_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            if not outputs_dir.exists():
+                outputs_dir.mkdir(parents=True, exist_ok=False)
+            workspace_identity = _capture_directory_identity(workspace)
+            outputs_identity = _capture_directory_identity(outputs_dir)
+        except (OSError, ValueError) as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:directory_identity_invalid:{exc}",
+                invocation_result=AgentInvocationResult(attempts=[]),
+            ) from exc
 
+        try:
+            attempts_dir, _ = _ensure_child_directory_no_follow(
+                outputs_dir,
+                "agent-invocations",
+                expected_parent_identity=outputs_identity,
+            )
+        except OSError as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:invocation_directory_create_failed:{type(exc).__name__}",
+                invocation_result=AgentInvocationResult(attempts=[]),
+            ) from exc
         attempts: list[AgentAttempt] = []
+
         attempt_solution_hashes: dict[str, str | None] = {}
         initial_prompt = _build_initial_prompt(
             task_id=task_id,
@@ -185,15 +343,22 @@ class HermesCliInvoker:
             spec_path=spec_path,
             claims_template_path=claims_template_path,
         )
-        attempts.append(
-            self._invoke(
-                prompt=initial_prompt,
-                attempt_name="attempt-1-initial",
-                prompt_kind="initial",
-                outputs_dir=attempts_dir,
-                workspace=workspace,
-            )
+        initial_attempt = self._invoke(
+            prompt=initial_prompt,
+            attempt_name="attempt-1-initial",
+            prompt_kind="initial",
+            outputs_dir=attempts_dir,
+            workspace=workspace,
         )
+        attempts.append(initial_attempt)
+        if not _directory_identity_matches(workspace, workspace_identity) or not _directory_identity_matches(
+            outputs_dir, outputs_identity
+        ):
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                "treatment_not_delivered:directory_identity_changed_after_initial",
+                invocation_result=AgentInvocationResult(attempts=attempts),
+            )
         attempt_solution_hashes["attempt_1_initial"] = (
             compute_solution_hash(workspace) if rel_solution_files(workspace) else None
         )
@@ -226,7 +391,11 @@ class HermesCliInvoker:
                     pytest_stdout_path=str(pytest_result["stdout_path"]),
                     pytest_stderr_path=str(pytest_result["stderr_path"]),
                 )
-                _write_repair_treatment_prompt(prompt=repair_prompt, prompt_path=repair_prompt_path)
+                _write_repair_treatment_prompt(
+                    prompt=repair_prompt,
+                    prompt_path=repair_prompt_path,
+                    expected_directory_identity=outputs_identity,
+                )
             else:
                 verify_feedback_path = outputs_dir / "pre-repair-verify-run-report.json"
                 provisional_run_path = outputs_dir / "pre-repair-run.json"
@@ -257,7 +426,11 @@ class HermesCliInvoker:
                     pytest_stderr_path=str(pytest_result["stderr_path"]),
                     verify_feedback_path=verify_feedback_path,
                 )
-                _write_repair_treatment_prompt(prompt=repair_prompt, prompt_path=repair_prompt_path)
+                _write_repair_treatment_prompt(
+                    prompt=repair_prompt,
+                    prompt_path=repair_prompt_path,
+                    expected_directory_identity=outputs_identity,
+                )
         except ClassifiedCellFailure as exc:
             if exc.invocation_result is not None:
                 raise
@@ -272,6 +445,36 @@ class HermesCliInvoker:
 
         treatment_prompt_sha256_pre = _sha256_file(repair_prompt_path)
         repair_prompt_path.chmod(0o444)
+        if not _directory_identity_matches(workspace, workspace_identity):
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                "treatment_not_delivered:workspace_identity_changed_before_repair",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                ),
+            )
+        try:
+            repair_response_parent, repair_response_parent_identity = _ensure_child_directory_no_follow(
+                workspace,
+                ".agentharness",
+                expected_parent_identity=workspace_identity,
+            )
+            _unlink_no_follow(
+                repair_response_parent,
+                "repair-response.json",
+                expected_identity=repair_response_parent_identity,
+            )
+        except OSError as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:repair_response_prepare_failed:{type(exc).__name__}",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                ),
+            ) from exc
+        repair_response_source = repair_response_parent / "repair-response.json"
         repair_attempt = self._invoke(
             prompt=repair_prompt,
             attempt_name="attempt-2-repair",
@@ -280,6 +483,17 @@ class HermesCliInvoker:
             workspace=workspace,
         )
         attempts.append(repair_attempt)
+        if not _directory_identity_matches(workspace, workspace_identity) or not _directory_identity_matches(
+            outputs_dir, outputs_identity
+        ):
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                "treatment_not_delivered:directory_identity_changed_after_repair",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                ),
+            )
         treatment_prompt_sha256_post = _sha256_file(repair_prompt_path)
         treatment_prompt_immutable = treatment_prompt_sha256_post == treatment_prompt_sha256_pre
         treatment_delivery: dict[str, object] = {
@@ -292,6 +506,14 @@ class HermesCliInvoker:
             "repair_invocation_evidence_present": _has_invocation_evidence(repair_attempt),
             "repair_invocation_succeeded": _successful_agent_attempt(repair_attempt),
             "feedback_delivered": False,
+            "repair_response_valid": False,
+            "repair_response_path": str(repair_response_source),
+            "repair_response_sha256": None,
+            "repair_decision": None,
+            "repair_final_outcome": None,
+            "repair_change_retained": None,
+            "repair_findings_count": 0,
+            "feedback_items_accounted": condition != "B-agentharness",
         }
         if condition == "B-agentharness":
             assert verify_feedback_path is not None and feedback_sha256_pre is not None
@@ -330,8 +552,78 @@ class HermesCliInvoker:
                 ),
             )
         try:
-            raw_repair_hash = compute_solution_hash(workspace) if rel_solution_files(workspace) else None
-            attempt_solution_hashes["attempt_2_repair_raw"] = raw_repair_hash
+            raw_repair_response = _read_json_no_follow(
+                repair_response_parent,
+                "repair-response.json",
+                expected_identity=repair_response_parent_identity,
+            )
+        except (OSError, UnicodeError, ValueError) as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:repair_response_read_failed:{type(exc).__name__}",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                    treatment_delivery=treatment_delivery,
+                ),
+            ) from exc
+        raw_repair_hash = compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+        attempt_solution_hashes["attempt_2_repair_raw"] = raw_repair_hash
+        solution_changed = attempt_solution_hashes.get("attempt_1_initial") != raw_repair_hash
+        try:
+            feedback_claim_ids = (
+                _feedback_claim_ids(verify_feedback_path)
+                if condition == "B-agentharness" and verify_feedback_path is not None
+                else []
+            )
+            repair_response = validate_repair_response_payload(
+                raw_repair_response,
+                condition=condition,
+                solution_changed=solution_changed,
+                feedback_claim_ids=feedback_claim_ids,
+            )
+        except ValueError as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:{exc}",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                    treatment_delivery=treatment_delivery,
+                ),
+            ) from exc
+        try:
+            persisted_response = _write_json_no_follow(
+                outputs_dir,
+                "repair-response.json",
+                repair_response,
+                expected_identity=outputs_identity,
+            )
+        except OSError as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:repair_response_persist_failed:{type(exc).__name__}",
+                invocation_result=AgentInvocationResult(
+                    attempts=attempts,
+                    attempt_solution_hashes=attempt_solution_hashes.copy(),
+                    treatment_delivery=treatment_delivery,
+                ),
+            ) from exc
+        treatment_delivery.update(
+            {
+                "repair_response_valid": True,
+                "repair_response_path": str(persisted_response),
+                "repair_response_sha256": _sha256_file(persisted_response),
+                "repair_decision": repair_response["decision"],
+                "repair_findings_count": len(cast(list[object], repair_response["findings"])),
+                "feedback_items_accounted": True,
+                "feedback_claim_ids": feedback_claim_ids,
+                "feedback_postverify_total": None,
+                "feedback_postverify_supported": None,
+                "feedback_postverify_unresolved": None,
+            }
+        )
+        try:
             cumulative_diff = write_cumulative_diff(
                 snapshot_dir,
                 workspace,
@@ -375,9 +667,12 @@ class HermesCliInvoker:
                     outputs_dir=outputs_dir,
                     pre_pytest=pytest_result,
                     repair_safety=repair_safety,
+                    treatment_delivery=treatment_delivery,
                 )
             except Exception as rollback_exc:
                 repair_safety["rollback_error"] = f"{type(rollback_exc).__name__}: {rollback_exc}"
+                treatment_delivery["repair_final_outcome"] = "rollback_failed"
+                treatment_delivery["repair_change_retained"] = None
             write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
             try:
                 attempt_solution_hashes["attempt_2_repair"] = (
@@ -394,6 +689,7 @@ class HermesCliInvoker:
                     attempts=attempts,
                     attempt_solution_hashes=attempt_solution_hashes,
                     repair_safety=repair_safety,
+                    treatment_delivery=treatment_delivery,
                 ),
             ) from exc
 
@@ -405,9 +701,12 @@ class HermesCliInvoker:
                     outputs_dir=outputs_dir,
                     pre_pytest=pytest_result,
                     repair_safety=repair_safety,
+                    treatment_delivery=treatment_delivery,
                 )
             except Exception as exc:
                 repair_safety["rollback_error"] = f"{type(exc).__name__}: {exc}"
+                treatment_delivery["repair_final_outcome"] = "rollback_failed"
+                treatment_delivery["repair_change_retained"] = None
                 write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
                 raise ClassifiedCellFailure(
                     "harness_invalid",
@@ -416,6 +715,7 @@ class HermesCliInvoker:
                         attempts=attempts,
                         attempt_solution_hashes=attempt_solution_hashes,
                         repair_safety=repair_safety,
+                        treatment_delivery=treatment_delivery,
                     ),
                 ) from exc
             validation = repair_safety.get("rollback_validation")
@@ -428,6 +728,7 @@ class HermesCliInvoker:
                         attempts=attempts,
                         attempt_solution_hashes=attempt_solution_hashes,
                         repair_safety=repair_safety,
+                        treatment_delivery=treatment_delivery,
                     ),
                 )
         if bool(repair_safety.get("harness_invalid_required")):
@@ -442,12 +743,18 @@ class HermesCliInvoker:
                     attempts=attempts,
                     attempt_solution_hashes=attempt_solution_hashes,
                     repair_safety=repair_safety,
+                    treatment_delivery=treatment_delivery,
                 ),
             )
         write_safety_report(repair_safety, outputs_dir / "repair-safety-gate.json")
         attempt_solution_hashes["attempt_2_repair"] = (
             compute_solution_hash(workspace) if rel_solution_files(workspace) else None
         )
+        if not bool(repair_safety["rollback_required"]):
+            treatment_delivery["repair_final_outcome"] = treatment_delivery.get("repair_decision")
+            treatment_delivery["repair_change_retained"] = (
+                treatment_delivery.get("repair_decision") == "applied"
+            )
         return AgentInvocationResult(
             attempts=attempts,
             attempt_solution_hashes=attempt_solution_hashes,
@@ -463,8 +770,11 @@ class HermesCliInvoker:
         outputs_dir: Path,
         pre_pytest: dict[str, object],
         repair_safety: dict[str, object],
+        treatment_delivery: dict[str, object],
     ) -> None:
         restore_workspace(workspace, snapshot_dir)
+        treatment_delivery["repair_final_outcome"] = "rolled_back"
+        treatment_delivery["repair_change_retained"] = False
         rollback_pytest = run_workspace_pytest(
             workspace,
             outputs_dir / "post-rollback-validation-pytest.json",
@@ -479,6 +789,14 @@ class HermesCliInvoker:
         }
 
     def _invoke(self, *, prompt: str, attempt_name: str, prompt_kind: str, outputs_dir: Path, workspace: Path) -> AgentAttempt:
+        try:
+            invocation_outputs_identity = _capture_directory_identity(outputs_dir)
+            invocation_workspace_identity = _capture_directory_identity(workspace)
+        except (OSError, ValueError) as exc:
+            raise ClassifiedCellFailure(
+                "harness_invalid",
+                f"treatment_not_delivered:invocation_output_directory_invalid:{exc}",
+            ) from exc
         command = [
             self._hermes_command,
             "chat",
@@ -509,6 +827,11 @@ class HermesCliInvoker:
         invocation_env["TERMINAL_CWD"] = str(workspace)
         last_attempt: AgentAttempt | None = None
         for retry_index in range(1, self._max_retries + 1):
+            if not _directory_identity_matches(workspace, invocation_workspace_identity):
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    "treatment_not_delivered:workspace_identity_changed_before_invocation",
+                )
             if self._admission_hook is not None:
                 self._admission_hook(attempt_name, retry_index)
             suffix = "" if self._max_retries == 1 else f".try{retry_index}"
@@ -538,8 +861,29 @@ class HermesCliInvoker:
                 exit_code = 124
             duration = time.time() - t0
             finished = _utc_now()
-            stdout_path.write_text(stdout_text, encoding="utf-8")
-            stderr_path.write_text(stderr_text, encoding="utf-8")
+            if not _directory_identity_matches(workspace, invocation_workspace_identity):
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    "treatment_not_delivered:workspace_identity_changed_during_invocation",
+                )
+            try:
+                stdout_path = _write_bytes_no_follow(
+                    outputs_dir,
+                    stdout_path.name,
+                    stdout_text.encode("utf-8"),
+                    expected_identity=invocation_outputs_identity,
+                )
+                stderr_path = _write_bytes_no_follow(
+                    outputs_dir,
+                    stderr_path.name,
+                    stderr_text.encode("utf-8"),
+                    expected_identity=invocation_outputs_identity,
+                )
+            except OSError as exc:
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    f"treatment_not_delivered:invocation_artifact_persist_failed:{type(exc).__name__}",
+                ) from exc
             session_match = SESSION_ID_RE.search(stdout_text) or SESSION_ID_RE.search(stderr_text)
             session_id = session_match.group("session_id") if session_match else None
             last_attempt = AgentAttempt(
@@ -555,11 +899,18 @@ class HermesCliInvoker:
                 finished_at=finished,
                 duration_seconds=duration,
             )
-            meta_path = outputs_dir / f"{attempt_name}{suffix}.meta.json"
-            meta_path.write_text(
-                json.dumps(last_attempt.to_dict(), indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
+            try:
+                _write_json_no_follow(
+                    outputs_dir,
+                    f"{attempt_name}{suffix}.meta.json",
+                    last_attempt.to_dict(),
+                    expected_identity=invocation_outputs_identity,
+                )
+            except OSError as exc:
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    f"treatment_not_delivered:invocation_metadata_persist_failed:{type(exc).__name__}",
+                ) from exc
             if completed.returncode == 0 and session_id:
                 return last_attempt
             if retry_index < self._max_retries and _is_retryable_invocation_failure(completed):
@@ -690,6 +1041,7 @@ def _write_invalid_cell_artifacts(
         "pytest": None,
     }
     (cell_dir / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
+    delivery = provenance["treatment_delivery"] if isinstance(provenance["treatment_delivery"], dict) else {}
     metadata = {
         "task_id": task_id,
         "condition": condition,
@@ -708,6 +1060,15 @@ def _write_invalid_cell_artifacts(
             and provenance["treatment_delivery"].get("feedback_delivered")
             and provenance["treatment_delivery"].get("repair_invocation_succeeded")
         ),
+        "repair_response_valid": delivery.get("repair_response_valid") is True,
+        "repair_decision": delivery.get("repair_decision"),
+        "repair_final_outcome": delivery.get("repair_final_outcome"),
+        "repair_change_retained": delivery.get("repair_change_retained"),
+        "repair_findings_count": delivery.get("repair_findings_count", 0),
+        "feedback_items_accounted": delivery.get("feedback_items_accounted"),
+        "feedback_postverify_total": delivery.get("feedback_postverify_total"),
+        "feedback_postverify_supported": delivery.get("feedback_postverify_supported"),
+        "feedback_postverify_unresolved": delivery.get("feedback_postverify_unresolved"),
         "benchmark_execution_status": execution_status,
         "benchmark_outcome_status": outcome_status,
         "benchmark_classification_reason": classification_reason,
@@ -742,6 +1103,15 @@ def _write_invalid_cell_artifacts(
             and provenance["treatment_delivery"].get("feedback_delivered")
             and provenance["treatment_delivery"].get("repair_invocation_succeeded")
         ),
+        "repair_response_valid": delivery.get("repair_response_valid") is True,
+        "repair_decision": delivery.get("repair_decision"),
+        "repair_final_outcome": delivery.get("repair_final_outcome"),
+        "repair_change_retained": delivery.get("repair_change_retained"),
+        "repair_findings_count": delivery.get("repair_findings_count", 0),
+        "feedback_items_accounted": delivery.get("feedback_items_accounted"),
+        "feedback_postverify_total": delivery.get("feedback_postverify_total"),
+        "feedback_postverify_supported": delivery.get("feedback_postverify_supported"),
+        "feedback_postverify_unresolved": delivery.get("feedback_postverify_unresolved"),
         "benchmark_execution_status": execution_status,
         "benchmark_outcome_status": outcome_status,
         "benchmark_classification_reason": classification_reason,
@@ -785,6 +1155,22 @@ def build_cell_manifest(*, task_id: str, condition: str, replicate_id: str, cell
 
 
 def prepare_fresh_cell(*, task_id: str, condition: str, replicate_id: str, cell_dir: Path) -> dict[str, object]:
+    manifest = build_cell_manifest(
+        task_id=task_id,
+        condition=condition,
+        replicate_id=replicate_id,
+        cell_dir=cell_dir,
+    )
+    run_id = str(manifest["run_id"])
+    rendered_suite = render_json_template(heldout_suite_template_path(task_id), run_id=run_id)
+    suite_errors = validate_evaluation_suite_payload(
+        rendered_suite,
+        run_id=run_id,
+        expected_case_count=EXPECTED_HELDOUT_CASES,
+    )
+    if suite_errors:
+        raise ValueError("heldout_suite_preflight_failed:" + "|".join(suite_errors))
+
     if cell_dir.exists():
         shutil.rmtree(cell_dir)
     workspace = cell_dir / "workspace"
@@ -798,7 +1184,6 @@ def prepare_fresh_cell(*, task_id: str, condition: str, replicate_id: str, cell_
     shutil.copy2(task_dir / "SPEC.md", inputs_dir / "SPEC.md")
     shutil.copy2(task_dir / "CLAIMS_CONTRACT.template.json", inputs_dir / "CLAIMS_CONTRACT.template.json")
 
-    manifest = build_cell_manifest(task_id=task_id, condition=condition, replicate_id=replicate_id, cell_dir=cell_dir)
     (cell_dir / "cell_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest
 
@@ -1050,14 +1435,206 @@ def _inspect_verify_feedback_report(report_path: Path) -> dict[str, object]:
     }
 
 
-def _write_repair_treatment_prompt(*, prompt: str, prompt_path: Path) -> None:
+def _write_repair_treatment_prompt(
+    *,
+    prompt: str,
+    prompt_path: Path,
+    expected_directory_identity: tuple[str, int, int] | None = None,
+) -> None:
     if not prompt.strip():
         raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
-    prompt_path.parent.mkdir(parents=True, exist_ok=True)
-    prompt_path.unlink(missing_ok=True)
-    prompt_path.write_text(prompt, encoding="utf-8")
+    try:
+        if expected_directory_identity is None:
+            prompt_path.parent.mkdir(parents=True, exist_ok=True)
+            prompt_path.unlink(missing_ok=True)
+            prompt_path.write_text(prompt, encoding="utf-8")
+        else:
+            _write_bytes_no_follow(
+                prompt_path.parent,
+                prompt_path.name,
+                prompt.encode("utf-8"),
+                expected_identity=expected_directory_identity,
+            )
+    except OSError as exc:
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"treatment_not_delivered:repair_prompt_persist_failed:{type(exc).__name__}",
+        ) from exc
     if prompt_path.stat().st_size <= 0:
         raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered")
+
+
+def _repair_response_path_is_safe(
+    workspace: Path,
+    response_path: Path,
+    *,
+    allow_missing: bool,
+) -> bool:
+    if response_path.is_symlink() or response_path.parent.is_symlink():
+        return False
+    if response_path.parent.exists() and not response_path.parent.is_dir():
+        return False
+    try:
+        response_path.resolve(strict=False).relative_to(workspace.resolve())
+    except (OSError, ValueError):
+        return False
+    return allow_missing or response_path.is_file()
+
+
+def _safe_workspace_relative_path(value: str) -> bool:
+    if not value or "\\" in value:
+        return False
+    candidate = Path(value)
+    return not candidate.is_absolute() and ".." not in candidate.parts
+
+
+def validate_repair_response_payload(
+    payload: object,
+    *,
+    condition: str,
+    solution_changed: bool,
+    feedback_claim_ids: list[str] | None = None,
+) -> dict[str, object]:
+    """Validate and normalize the actionable repair-response v1 contract."""
+    if not isinstance(payload, dict):
+        raise ValueError("repair_response_not_object")
+    if payload.get("schema_version") != 1:
+        raise ValueError("repair_response_schema_version_invalid")
+    decision = payload.get("decision")
+    if decision not in {"applied", "no_change", "rejected"}:
+        raise ValueError("repair_response_decision_invalid")
+    summary = payload.get("summary")
+    if not isinstance(summary, str) or not summary.strip():
+        raise ValueError("repair_response_summary_invalid")
+    raw_findings = payload.get("findings")
+    if not isinstance(raw_findings, list):
+        raise ValueError("repair_response_findings_invalid")
+
+    findings: list[dict[str, object]] = []
+    applied_count = 0
+    for raw in raw_findings:
+        if not isinstance(raw, dict):
+            raise ValueError("repair_response_finding_not_object")
+        finding_id = raw.get("finding_id")
+        source = raw.get("source")
+        disposition = raw.get("disposition")
+        reason = raw.get("reason")
+        changed_files = raw.get("changed_files")
+        if not isinstance(finding_id, str) or not finding_id.strip():
+            raise ValueError("repair_response_finding_id_invalid")
+        if source not in {"pytest", "agentharness"}:
+            raise ValueError("repair_response_finding_source_invalid")
+        if disposition not in {"applied", "rejected", "not_applicable"}:
+            raise ValueError("repair_response_finding_disposition_invalid")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("repair_response_finding_reason_invalid")
+        if not isinstance(changed_files, list) or any(
+            not isinstance(item, str) or not _safe_workspace_relative_path(item)
+            for item in changed_files
+        ):
+            raise ValueError("repair_response_changed_files_invalid")
+        if disposition == "applied":
+            applied_count += 1
+        findings.append(
+            {
+                "finding_id": finding_id.strip(),
+                "source": source,
+                "disposition": disposition,
+                "reason": reason.strip(),
+                "changed_files": changed_files,
+            }
+        )
+
+    if decision == "applied":
+        if not solution_changed or applied_count == 0:
+            raise ValueError("repair_response_decision_change_mismatch")
+    elif solution_changed or applied_count:
+        raise ValueError("repair_response_decision_change_mismatch")
+
+    if condition == "B-agentharness":
+        expected = sorted(feedback_claim_ids or [])
+        observed = sorted(
+            str(item["finding_id"])
+            for item in findings
+            if item["source"] == "agentharness"
+        )
+        if observed != expected:
+            raise ValueError("repair_response_feedback_items_unaccounted")
+
+    return {
+        "schema_version": 1,
+        "decision": decision,
+        "summary": summary.strip(),
+        "findings": findings,
+    }
+
+
+def load_repair_response(
+    response_path: Path,
+    *,
+    condition: str,
+    solution_changed: bool,
+    feedback_claim_ids: list[str] | None = None,
+) -> dict[str, object]:
+    if not response_path.is_file():
+        raise ValueError("repair_response_missing")
+    try:
+        payload = json.loads(response_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("repair_response_invalid_json") from exc
+    return validate_repair_response_payload(
+        payload,
+        condition=condition,
+        solution_changed=solution_changed,
+        feedback_claim_ids=feedback_claim_ids,
+    )
+
+
+def _feedback_claim_ids(report_path: Path) -> list[str]:
+    payload = json.loads(report_path.read_text(encoding="utf-8"))
+    feedback = payload.get("feedback") if isinstance(payload, dict) else None
+    items = feedback.get("items") if isinstance(feedback, dict) else None
+    if not isinstance(items, list) or not items:
+        raise ValueError("repair_response_feedback_items_missing")
+    claim_ids: list[str] = []
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("claim_id"), str):
+            raise ValueError("repair_response_feedback_claim_id_invalid")
+        claim_id = str(item["claim_id"]).strip()
+        if not claim_id:
+            raise ValueError("repair_response_feedback_claim_id_invalid")
+        claim_ids.append(claim_id)
+    if len(set(claim_ids)) != len(claim_ids):
+        raise ValueError("repair_response_feedback_claim_id_duplicate")
+    return sorted(claim_ids)
+
+
+def _record_feedback_postverify(
+    invocation_result: AgentInvocationResult,
+    verify_payload: dict[str, object],
+) -> None:
+    delivery = invocation_result.treatment_delivery
+    if not isinstance(delivery, dict):
+        return
+    raw_expected = delivery.get("feedback_claim_ids")
+    if not isinstance(raw_expected, list) or not raw_expected:
+        return
+    expected = {str(item) for item in raw_expected}
+    feedback = verify_payload.get("feedback")
+    items = feedback.get("items") if isinstance(feedback, dict) else None
+    final_status: dict[str, str] = {}
+    if isinstance(items, list):
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            claim_id = item.get("claim_id")
+            status = item.get("status")
+            if isinstance(claim_id, str) and claim_id in expected and isinstance(status, str):
+                final_status[claim_id] = status
+    supported = sum(1 for claim_id in expected if final_status.get(claim_id) == "supported")
+    delivery["feedback_postverify_total"] = len(expected)
+    delivery["feedback_postverify_supported"] = supported
+    delivery["feedback_postverify_unresolved"] = len(expected) - supported
 
 
 def _require_verify_feedback_delivery(verify_payload: dict[str, object]) -> None:
@@ -1261,6 +1838,15 @@ def replay_uncommitted_successful_invocations(cell_dir: Path) -> dict[str, objec
                 "repair_invocation_evidence_present": True,
                 "repair_invocation_succeeded": True,
                 "feedback_delivered": False,
+                "repair_response_valid": False,
+                "repair_response_legacy_exemption": True,
+                "repair_response_path": None,
+                "repair_response_sha256": None,
+                "repair_decision": "no_change",
+                "repair_final_outcome": "no_change",
+                "repair_change_retained": False,
+                "repair_findings_count": 0,
+                "feedback_items_accounted": True,
                 "recovered_from_persisted_invocation_evidence": True,
             }
             return AgentInvocationResult(
@@ -1334,8 +1920,11 @@ def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs
 
 
 def heldout_endpoint_error(payload: dict[str, object]) -> str | None:
-    if payload.get("ok") is not True:
-        return "heldout_evaluation_not_ok"
+    if "gating_errors" not in payload:
+        return "heldout_gating_errors_missing"
+    gating_errors = payload["gating_errors"]
+    if not isinstance(gating_errors, list) or gating_errors:
+        return "heldout_gating_errors"
     results = payload.get("results", [])
     if not isinstance(results, list):
         return "heldout_results_not_a_list"
@@ -1419,14 +2008,25 @@ def _require_scoring_treatment_delivery(
             "treatment_not_delivered: missing repair provenance",
             invocation_result=invocation_result,
         )
+    repair_response_accepted = delivery.get("repair_response_valid") is True or (
+        condition == "A-baseline"
+        and delivery.get("recovered_from_persisted_invocation_evidence") is True
+        and delivery.get("repair_response_legacy_exemption") is True
+    )
     ok = (
         len(repair_attempts) == 1
         and _successful_agent_attempt(repair_attempts[0])
         and delivery.get("repair_invocation_succeeded") is True
         and delivery.get("treatment_prompt_immutable") is True
+        and repair_response_accepted
     )
     if condition == "B-agentharness":
-        ok = ok and delivery.get("feedback_delivered") is True and delivery.get("feedback_immutable") is True
+        ok = (
+            ok
+            and delivery.get("feedback_delivered") is True
+            and delivery.get("feedback_immutable") is True
+            and delivery.get("feedback_items_accounted") is True
+        )
     else:
         ok = ok and delivery.get("feedback_delivered") is False
     if not ok:
@@ -1493,6 +2093,9 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         claims_path=claims_path,
     )
     verify_payload = run_verify_run(run_path=run_path, claims_path=claims_path, report_path=outputs_dir / "verify-run-report.json")
+    active_invocation_result = invocation_result or AgentInvocationResult(attempts=[])
+    if str(manifest["condition"]) == "B-agentharness":
+        _record_feedback_postverify(active_invocation_result, verify_payload)
     benchmark_payload = run_hidden_benchmark(
         run_path=run_path,
         task_id=str(manifest["task_id"]),
@@ -1517,9 +2120,10 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         provenance_path=cell_dir / "provenance.json",
         manifest=manifest,
         workspace=workspace,
-        invocation_result=invocation_result or AgentInvocationResult(attempts=[]),
+        invocation_result=active_invocation_result,
         pytest_result=pytest_result,
     )
+    delivery = provenance["treatment_delivery"] if isinstance(provenance["treatment_delivery"], dict) else {}
     metadata = {
         "task_id": manifest["task_id"],
         "condition": manifest["condition"],
@@ -1541,6 +2145,15 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
             and provenance["treatment_delivery"].get("feedback_delivered")
             and provenance["treatment_delivery"].get("repair_invocation_succeeded")
         ),
+        "repair_response_valid": delivery.get("repair_response_valid") is True,
+        "repair_decision": delivery.get("repair_decision"),
+        "repair_final_outcome": delivery.get("repair_final_outcome"),
+        "repair_change_retained": delivery.get("repair_change_retained"),
+        "repair_findings_count": delivery.get("repair_findings_count", 0),
+        "feedback_items_accounted": delivery.get("feedback_items_accounted"),
+        "feedback_postverify_total": delivery.get("feedback_postverify_total"),
+        "feedback_postverify_supported": delivery.get("feedback_postverify_supported"),
+        "feedback_postverify_unresolved": delivery.get("feedback_postverify_unresolved"),
         "benchmark_execution_status": benchmark_execution_status,
         "benchmark_outcome_status": benchmark_outcome_status,
         "benchmark_classification_reason": benchmark_classification_reason,
@@ -1575,6 +2188,15 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
             and provenance["treatment_delivery"].get("feedback_delivered")
             and provenance["treatment_delivery"].get("repair_invocation_succeeded")
         ),
+        "repair_response_valid": delivery.get("repair_response_valid") is True,
+        "repair_decision": delivery.get("repair_decision"),
+        "repair_final_outcome": delivery.get("repair_final_outcome"),
+        "repair_change_retained": delivery.get("repair_change_retained"),
+        "repair_findings_count": delivery.get("repair_findings_count", 0),
+        "feedback_items_accounted": delivery.get("feedback_items_accounted"),
+        "feedback_postverify_total": delivery.get("feedback_postverify_total"),
+        "feedback_postverify_supported": delivery.get("feedback_postverify_supported"),
+        "feedback_postverify_unresolved": delivery.get("feedback_postverify_unresolved"),
         "benchmark_execution_status": benchmark_execution_status,
         "benchmark_outcome_status": benchmark_outcome_status,
         "benchmark_classification_reason": benchmark_classification_reason,
@@ -1631,6 +2253,18 @@ The claims template exists at {claims_ref}, but do not use held-out evaluator ma
 """.strip()
 
 
+def _repair_response_contract_instructions() -> str:
+    return """Before stopping, write .agentharness/repair-response.json as JSON with this exact contract:
+- schema_version: 1
+- decision: applied, no_change, or rejected
+- summary: a non-empty string
+- findings: a list of objects with non-empty finding_id, source (pytest or agentharness), disposition (applied, rejected, or not_applicable), non-empty reason, and changed_files
+- changed_files must contain only safe workspace-relative paths (never absolute paths or ..)
+- use decision applied exactly when solution files changed and at least one finding is applied
+- use decision no_change or rejected only when solution files did not change and no finding is applied
+- for every AgentHarness feedback item consulted, include exactly one source=agentharness finding whose finding_id is that item's claim_id"""
+
+
 def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path) -> str:
     spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
     pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
@@ -1649,6 +2283,7 @@ Safety constraints for this bounded repair:
 - never create local packages that shadow declared third-party dependencies
 - prefer a no-op over a speculative infrastructure workaround
 - all changes across retries are cumulative and will be checked as one repair diff
+{_repair_response_contract_instructions()}
 Make targeted fixes inside the current working directory, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
@@ -1682,6 +2317,7 @@ Safety constraints for this bounded repair:
 - never create local packages that shadow declared third-party dependencies
 - prefer a no-op over a speculative infrastructure workaround
 - all changes across retries are cumulative and will be checked as one repair diff
+{_repair_response_contract_instructions()}
 Make targeted fixes inside the current working directory, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()

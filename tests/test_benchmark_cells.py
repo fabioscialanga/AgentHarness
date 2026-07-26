@@ -19,16 +19,24 @@ from agentharness.benchmark_cells import (
     _build_baseline_repair_prompt,
     _build_initial_prompt,
     _classify_empty_workspace_failure,
+    _capture_directory_identity,
+    _directory_identity_matches,
     _inspect_verify_feedback_report,
     _is_retryable_invocation_failure,
+    _record_feedback_postverify,
+    _repair_response_path_is_safe,
+    _require_scoring_treatment_delivery,
+    _write_json_no_follow,
     assert_nonshared_solution_hashes,
     compute_solution_hash,
     execute_cell,
     heldout_endpoint_error,
     heldout_suite_template_path,
+    load_repair_response,
     prepare_fresh_cell,
     replay_uncommitted_successful_invocations,
     score_from_evaluation,
+    validate_repair_response_payload,
     write_run_json,
 )
 
@@ -92,6 +100,10 @@ class _FakeInvoker:
                 "treatment_prompt_immutable": True,
                 "feedback_delivered": condition == "B-agentharness",
                 "feedback_immutable": condition == "B-agentharness",
+                "repair_response_valid": True,
+                "repair_decision": "applied",
+                "repair_findings_count": 1,
+                "feedback_items_accounted": True,
             },
         )
 
@@ -291,6 +303,7 @@ class BenchmarkCellsTests(unittest.TestCase):
     def test_heldout_endpoint_requires_exactly_six_terminal_cases(self) -> None:
         valid = {
             "ok": True,
+            "gating_errors": [],
             "results": [
                 {"status": "passed"},
                 {"status": "passed"},
@@ -303,17 +316,37 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertIsNone(heldout_endpoint_error(valid))
         self.assertEqual(score_from_evaluation(valid), 0.5)
 
-        wrong_count = {"ok": True, "results": [{"status": "passed"}] * 5}
+        wrong_count = {"ok": True, "gating_errors": [], "results": [{"status": "passed"}] * 5}
         self.assertEqual(heldout_endpoint_error(wrong_count), "heldout_case_count_mismatch:5!=6")
         self.assertEqual(score_from_evaluation(wrong_count), 0.0)
 
-        invalid_status = {"ok": True, "results": [{"status": "passed"}] * 5 + [{"status": "invalid"}]}
+        invalid_status = {
+            "ok": True,
+            "gating_errors": [],
+            "results": [{"status": "passed"}] * 5 + [{"status": "invalid"}],
+        }
         self.assertEqual(heldout_endpoint_error(invalid_status), "heldout_case_status_invalid")
         self.assertEqual(score_from_evaluation(invalid_status), 0.0)
 
-    def test_heldout_endpoint_requires_successful_evaluator(self) -> None:
-        payload = {"ok": False, "results": [{"status": "passed"}] * 6}
-        self.assertEqual(heldout_endpoint_error(payload), "heldout_evaluation_not_ok")
+    def test_heldout_endpoint_accepts_terminal_failures_without_ok_true(self) -> None:
+        payload = {
+            "ok": False,
+            "gating_errors": [],
+            "results": [{"status": "passed"}] * 3 + [{"status": "failed"}] * 3,
+        }
+        self.assertIsNone(heldout_endpoint_error(payload))
+        self.assertEqual(score_from_evaluation(payload), 0.5)
+
+        missing_gating_errors = dict(payload)
+        missing_gating_errors.pop("gating_errors")
+        self.assertEqual(
+            heldout_endpoint_error(missing_gating_errors),
+            "heldout_gating_errors_missing",
+        )
+        self.assertEqual(score_from_evaluation(missing_gating_errors), 0.0)
+
+        payload["gating_errors"] = ["suite invalid"]
+        self.assertEqual(heldout_endpoint_error(payload), "heldout_gating_errors")
         self.assertEqual(score_from_evaluation(payload), 0.0)
 
     def test_prepare_fresh_cell_copies_only_allowed_inputs(self) -> None:
@@ -334,6 +367,220 @@ class BenchmarkCellsTests(unittest.TestCase):
             self.assertFalse((inputs_dir / "QUALITY_GATE.md").exists())
             self.assertTrue((cell_dir / "cell_manifest.json").is_file())
             self.assertTrue((cell_dir / "workspace").is_dir())
+
+    def test_prepare_fresh_cell_preflights_real_and_legacy_suites_before_touching_cell(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            valid_cell = root / "valid"
+            prepare_fresh_cell(
+                task_id="support-ticket-api",
+                condition="A-baseline",
+                replicate_id="r1",
+                cell_dir=valid_cell,
+            )
+            self.assertTrue(valid_cell.is_dir())
+
+            legacy_cell = root / "legacy"
+            legacy_cell.mkdir()
+            marker = legacy_cell / "must-survive.txt"
+            marker.write_text("preserved\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "heldout_suite_preflight_failed"):
+                prepare_fresh_cell(
+                    task_id="versioned-document-api",
+                    condition="A-baseline",
+                    replicate_id="r1",
+                    cell_dir=legacy_cell,
+                )
+            self.assertEqual(marker.read_text(encoding="utf-8"), "preserved\n")
+
+    def test_repair_response_path_rejects_parent_and_file_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            outside = root / "outside"
+            workspace.mkdir()
+            outside.mkdir()
+            response_path = workspace / ".agentharness" / "repair-response.json"
+
+            (workspace / ".agentharness").symlink_to(outside, target_is_directory=True)
+            self.assertFalse(
+                _repair_response_path_is_safe(workspace, response_path, allow_missing=True)
+            )
+            (workspace / ".agentharness").unlink()
+
+            response_path.parent.mkdir()
+            outside_response = outside / "repair-response.json"
+            outside_response.write_text("{}\n", encoding="utf-8")
+            response_path.symlink_to(outside_response)
+            self.assertFalse(
+                _repair_response_path_is_safe(workspace, response_path, allow_missing=False)
+            )
+
+            workspace_identity = _capture_directory_identity(workspace)
+            moved_workspace = root / "workspace-moved"
+            workspace.rename(moved_workspace)
+            workspace.symlink_to(outside, target_is_directory=True)
+            self.assertFalse(_directory_identity_matches(workspace, workspace_identity))
+
+    def test_repair_response_persistence_does_not_follow_existing_symlink(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            outputs = root / "outputs"
+            outputs.mkdir()
+            outside = root / "outside.json"
+            outside.write_text("do not overwrite\n", encoding="utf-8")
+            response = outputs / "repair-response.json"
+            response.symlink_to(outside)
+
+            written = _write_json_no_follow(
+                outputs,
+                response.name,
+                {"schema_version": 1},
+                expected_identity=_capture_directory_identity(outputs),
+            )
+
+            self.assertFalse(written.is_symlink())
+            self.assertEqual(outside.read_text(encoding="utf-8"), "do not overwrite\n")
+            self.assertEqual(json.loads(written.read_text(encoding="utf-8")), {"schema_version": 1})
+
+    def test_repair_response_contract_validation(self) -> None:
+        applied = {
+            "schema_version": 1,
+            "decision": "applied",
+            "summary": "Fixed the failing assertion",
+            "findings": [
+                {
+                    "finding_id": "claim_tests",
+                    "source": "agentharness",
+                    "disposition": "applied",
+                    "reason": "Implemented the required behavior",
+                    "changed_files": ["src/service.py", "tests/test_service.py"],
+                }
+            ],
+        }
+        normalized = validate_repair_response_payload(
+            applied,
+            condition="B-agentharness",
+            solution_changed=True,
+            feedback_claim_ids=["claim_tests"],
+        )
+        self.assertEqual(normalized["decision"], "applied")
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with self.assertRaisesRegex(ValueError, "repair_response_missing"):
+                load_repair_response(
+                    Path(tmp_dir) / "missing.json",
+                    condition="A-baseline",
+                    solution_changed=False,
+                )
+
+        failures = [
+            ({}, "A-baseline", False, [], "schema_version"),
+            ({**applied, "findings": [{**applied["findings"][0], "changed_files": ["../secret"]}]}, "B-agentharness", True, ["claim_tests"], "changed_files"),
+            (applied, "B-agentharness", True, ["claim_tests", "claim_api"], "feedback_items_unaccounted"),
+            (
+                {
+                    **applied,
+                    "findings": [
+                        *applied["findings"],
+                        {
+                            "finding_id": "claim_extra",
+                            "source": "agentharness",
+                            "disposition": "not_applicable",
+                            "reason": "Unexpected claim",
+                            "changed_files": [],
+                        },
+                    ],
+                },
+                "B-agentharness",
+                True,
+                ["claim_tests"],
+                "feedback_items_unaccounted",
+            ),
+            (applied, "A-baseline", False, [], "decision_change_mismatch"),
+            ({"schema_version": 1, "decision": "no_change", "summary": "No safe fix", "findings": []}, "A-baseline", True, [], "decision_change_mismatch"),
+        ]
+        for payload, condition, changed, claims, reason in failures:
+            with self.subTest(reason=reason), self.assertRaisesRegex(ValueError, reason):
+                validate_repair_response_payload(
+                    payload,
+                    condition=condition,
+                    solution_changed=changed,
+                    feedback_claim_ids=claims,
+                )
+
+    def test_scoring_boundary_requires_contract_and_b_feedback_accounting(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            stdout = root / "repair.stdout"
+            stderr = root / "repair.stderr"
+            stdout.write_text("session_id: repair_1\n", encoding="utf-8")
+            stderr.write_text("", encoding="utf-8")
+            attempt = AgentAttempt(
+                attempt_name="repair",
+                prompt_kind="repair",
+                command=["fake"],
+                exit_code=0,
+                stdout_path=stdout,
+                stderr_path=stderr,
+                working_directory=root,
+                session_id="repair_1",
+                started_at="2026-01-01T00:00:00Z",
+                finished_at="2026-01-01T00:00:01Z",
+                duration_seconds=1.0,
+            )
+            delivery: dict[str, object] = {
+                "repair_invocation_succeeded": True,
+                "treatment_prompt_immutable": True,
+                "feedback_delivered": True,
+                "feedback_immutable": True,
+                "repair_response_valid": False,
+                "feedback_items_accounted": False,
+            }
+            invocation = AgentInvocationResult(attempts=[attempt], treatment_delivery=delivery)
+            with self.assertRaisesRegex(ClassifiedCellFailure, "scoring boundary"):
+                _require_scoring_treatment_delivery({"condition": "B-agentharness"}, invocation)
+            delivery["repair_response_valid"] = True
+            with self.assertRaisesRegex(ClassifiedCellFailure, "scoring boundary"):
+                _require_scoring_treatment_delivery({"condition": "B-agentharness"}, invocation)
+            delivery["feedback_items_accounted"] = True
+            _require_scoring_treatment_delivery({"condition": "B-agentharness"}, invocation)
+
+            legacy_delivery = {
+                **delivery,
+                "feedback_delivered": False,
+                "repair_response_valid": False,
+                "recovered_from_persisted_invocation_evidence": True,
+                "repair_response_legacy_exemption": True,
+            }
+            legacy_invocation = AgentInvocationResult(
+                attempts=[attempt],
+                treatment_delivery=legacy_delivery,
+            )
+            _require_scoring_treatment_delivery(
+                {"condition": "A-baseline"},
+                legacy_invocation,
+            )
+            self.assertFalse(legacy_delivery["repair_response_valid"])
+
+    def test_postverify_records_feedback_resolution_counts(self) -> None:
+        delivery: dict[str, object] = {
+            "feedback_claim_ids": ["claim_api", "claim_tests", "claim_docs"],
+        }
+        invocation = AgentInvocationResult(attempts=[], treatment_delivery=delivery)
+        _record_feedback_postverify(
+            invocation,
+            {
+                "feedback": {
+                    "items": [
+                        {"claim_id": "claim_api", "status": "supported"},
+                        {"claim_id": "claim_tests", "status": "unsupported"},
+                    ]
+                }
+            },
+        )
+        self.assertEqual(delivery["feedback_postverify_total"], 3)
+        self.assertEqual(delivery["feedback_postverify_supported"], 1)
+        self.assertEqual(delivery["feedback_postverify_unresolved"], 2)
 
     def test_prompts_use_cell_local_absolute_paths_and_do_not_expose_task_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -469,6 +716,7 @@ class BenchmarkCellsTests(unittest.TestCase):
                     "agentharness.benchmark_cells.run_heldout_evaluation",
                     return_value={
                         "ok": True,
+                        "gating_errors": [],
                         "summary": {"passed": 6, "failed": 0, "invalid": 0},
                         "results": [{"status": "passed"} for _ in range(6)],
                     },
@@ -558,7 +806,7 @@ class BenchmarkCellsTests(unittest.TestCase):
                 mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
                 mock.patch("agentharness.benchmark_cells.run_verify_run", return_value={"ok": True}),
                 mock.patch("agentharness.benchmark_cells.run_hidden_benchmark", return_value={"execution_status": "valid", "outcome_status": "success"}),
-                mock.patch("agentharness.benchmark_cells.run_heldout_evaluation", return_value={"ok": True, "summary": {"passed": 6, "failed": 0, "invalid": 0}, "results": [{"status": "passed"} for _ in range(6)]}),
+                mock.patch("agentharness.benchmark_cells.run_heldout_evaluation", return_value={"ok": True, "gating_errors": [], "summary": {"passed": 6, "failed": 0, "invalid": 0}, "results": [{"status": "passed"} for _ in range(6)]}),
             ):
                 execute_cell(cell_dir, _FakeInvoker())
             self.assertFalse((workspace / ".agentharness" / "traces" / "evaluation" / "old.jsonl").exists())
@@ -943,6 +1191,28 @@ class BenchmarkCellsTests(unittest.TestCase):
                         "[project]\nname='demo'\nversion='0.1.0'\ndependencies=['sqlalchemy>=2','pytest>=9']\n",
                         encoding="utf-8",
                     )
+                    response_path = workspace / ".agentharness" / "repair-response.json"
+                    response_path.parent.mkdir(parents=True, exist_ok=True)
+                    response_path.write_text(
+                        json.dumps(
+                            {
+                                "schema_version": 1,
+                                "decision": "applied",
+                                "summary": "Applied the repair",
+                                "findings": [
+                                    {
+                                        "finding_id": "pytest_manifest",
+                                        "source": "pytest",
+                                        "disposition": "applied",
+                                        "reason": "Updated the manifest",
+                                        "changed_files": ["pyproject.toml"],
+                                    }
+                                ],
+                            }
+                        )
+                        + "\n",
+                        encoding="utf-8",
+                    )
                 stdout_path = outputs_dir / f"{attempt_name}.stdout"
                 stderr_path = outputs_dir / f"{attempt_name}.stderr"
                 stdout_path.parent.mkdir(parents=True, exist_ok=True)
@@ -996,6 +1266,10 @@ class BenchmarkCellsTests(unittest.TestCase):
             hashes = cast(dict[str, str | None], result.attempt_solution_hashes)
             self.assertNotEqual(hashes["attempt_2_repair_raw"], hashes["attempt_2_repair"])
             self.assertEqual(hashes["attempt_1_initial"], hashes["attempt_2_repair"])
+            delivery = cast(dict[str, object], result.treatment_delivery)
+            self.assertEqual(delivery["repair_decision"], "applied")
+            self.assertEqual(delivery["repair_final_outcome"], "rolled_back")
+            self.assertFalse(delivery["repair_change_retained"])
             self.assertTrue((outputs_dir / "repair-cumulative.diff").is_file())
             self.assertIn("pytest>=9", (outputs_dir / "repair-cumulative.diff").read_text(encoding="utf-8"))
             self.assertTrue((outputs_dir / "repair-safety-gate.json").is_file())
@@ -1022,6 +1296,51 @@ class BenchmarkCellsTests(unittest.TestCase):
             crash_report = json.loads((outputs_dir / "repair-safety-gate.json").read_text(encoding="utf-8"))
             self.assertTrue(crash_report["rollback_performed"])
             self.assertIn("repair_safety_gate_error", crash_report["reasons"])
+
+    def test_invoke_does_not_retry_after_workspace_identity_replacement(self) -> None:
+        invoker = HermesCliInvoker(
+            hermes_command="hermes",
+            max_retries=2,
+            retry_backoff_seconds=0,
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            outside = root / "outside"
+            outside.mkdir()
+            outputs = root / "outputs"
+            outputs.mkdir()
+            calls = 0
+
+            def replace_workspace(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+                nonlocal calls
+                calls += 1
+                workspace.rename(root / "workspace-moved")
+                workspace.symlink_to(outside, target_is_directory=True)
+                return subprocess.CompletedProcess(
+                    args=["hermes"],
+                    returncode=1,
+                    stdout="",
+                    stderr="HTTP 429 usage limit has been reached",
+                )
+
+            with mock.patch(
+                "agentharness.benchmark_cells.subprocess.run",
+                side_effect=replace_workspace,
+            ):
+                with self.assertRaisesRegex(
+                    ClassifiedCellFailure,
+                    "workspace_identity_changed_during_invocation",
+                ):
+                    invoker._invoke(
+                        prompt="repair",
+                        attempt_name="attempt",
+                        prompt_kind="repair",
+                        outputs_dir=outputs,
+                        workspace=workspace,
+                    )
+            self.assertEqual(calls, 1)
 
     def test_run_cell_invokes_agent_in_workspace(self) -> None:
         invoker = HermesCliInvoker(hermes_command="hermes", max_retries=1)
@@ -1055,8 +1374,30 @@ class BenchmarkCellsTests(unittest.TestCase):
                 "duration_seconds": 1.0,
             }
             completed = subprocess.CompletedProcess(args=["hermes"], returncode=0, stdout="session_id: ok_123\n", stderr="")
+            call_count = 0
+
+            def fake_subprocess(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+                nonlocal call_count
+                call_count += 1
+                if call_count == 2:
+                    response = workspace / ".agentharness" / "repair-response.json"
+                    response.parent.mkdir(parents=True, exist_ok=True)
+                    response.write_text(
+                        json.dumps(
+                            {
+                                "schema_version": 1,
+                                "decision": "no_change",
+                                "summary": "No changes were necessary",
+                                "findings": [],
+                            }
+                        )
+                        + "\n",
+                        encoding="utf-8",
+                    )
+                return completed
+
             with (
-                mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock,
+                mock.patch("agentharness.benchmark_cells.subprocess.run", side_effect=fake_subprocess) as run_mock,
                 mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
             ):
                 result = invoker.run_cell(manifest, outputs_dir, workspace)
@@ -1229,8 +1570,38 @@ class BenchmarkCellsTests(unittest.TestCase):
                 }
 
             completed = subprocess.CompletedProcess(args=["hermes"], returncode=0, stdout="session_id: ok_123\n", stderr="")
+            call_count = 0
+
+            def fake_subprocess(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+                nonlocal call_count
+                call_count += 1
+                if call_count == 2:
+                    response = workspace / ".agentharness" / "repair-response.json"
+                    response.parent.mkdir(parents=True, exist_ok=True)
+                    response.write_text(
+                        json.dumps(
+                            {
+                                "schema_version": 1,
+                                "decision": "no_change",
+                                "summary": "Feedback required no changes",
+                                "findings": [
+                                    {
+                                        "finding_id": "claim_tests",
+                                        "source": "agentharness",
+                                        "disposition": "not_applicable",
+                                        "reason": "Already satisfied",
+                                        "changed_files": [],
+                                    }
+                                ],
+                            }
+                        )
+                        + "\n",
+                        encoding="utf-8",
+                    )
+                return completed
+
             with (
-                mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed) as run_mock,
+                mock.patch("agentharness.benchmark_cells.subprocess.run", side_effect=fake_subprocess) as run_mock,
                 mock.patch("agentharness.benchmark_cells.run_workspace_pytest", return_value=pytest_payload),
                 mock.patch("agentharness.benchmark_cells.run_verify_run", side_effect=_fake_verify_run),
             ):
@@ -1240,6 +1611,15 @@ class BenchmarkCellsTests(unittest.TestCase):
                 self.assertIn("../outputs/pre-repair-verify-run-report.json", prompt_snapshot)
                 self.assertTrue(verify_report_path.is_file())
                 self.assertEqual(run_mock.call_count, 2)
+                delivery = cast(dict[str, object], result.treatment_delivery)
+                self.assertTrue(delivery["repair_response_valid"])
+                self.assertTrue(delivery["feedback_items_accounted"])
+                self.assertEqual(delivery["repair_decision"], "no_change")
+                self.assertEqual(delivery["repair_findings_count"], 1)
+                persisted = Path(str(delivery["repair_response_path"]))
+                self.assertEqual(persisted, outputs_dir / "repair-response.json")
+                self.assertTrue(persisted.is_file())
+                self.assertTrue(delivery["repair_response_sha256"])
 
     def test_inspect_verify_feedback_report_rejects_empty_malformed_or_missing_feedback(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
