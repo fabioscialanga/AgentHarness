@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "pilot_id": "exploratory_actionable_repair_v1",
+  "frozen_at": "2026-07-27",
+  "study_class": "exploratory",
+  "confirmatory": false,
+  "provider": "openai-codex",
+  "model": "gpt-5.6-sol",
+  "hermes_command": "/home/fabio/.local/bin/stage2codex2",
+  "hermes_command_sha256": "e4ca456fc087c64d4ee8d74e8a90abb65ca3937856f4e9d09c43268be11e3067",
+  "hermes_home": "/home/fabio/.hermes/profiles/stage2codex2",
+  "toolsets": "terminal,file",
+  "max_turns": 40,
+  "invocation_max_retries": 1,
+  "quota_policy": {
+    "single_window_pause_percent": 80.0,
+    "usage_unavailable": "pause_fail_closed",
+    "provider_fallback_forbidden": true,
+    "purchased_credits_forbidden": true
+  },
+  "published_ref": "origin/improve/actionable-repair-loop-20260725",
+  "conditions": ["A-baseline", "B-agentharness"],
+  "tasks": [
+    "pii-redaction-pipeline",
+    "lease-coordination-api",
+    "double-entry-ledger-api",
+    "signed-artifact-verifier"
+  ],
+  "expected_blocks": 4,
+  "expected_cells": 8,
+  "blocks": [
+    {"block_id": "p001", "task_id": "pii-redaction-pipeline", "replicate_id": "pilot-r1", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "p002", "task_id": "lease-coordination-api", "replicate_id": "pilot-r1", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "p003", "task_id": "double-entry-ledger-api", "replicate_id": "pilot-r1", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "p004", "task_id": "signed-artifact-verifier", "replicate_id": "pilot-r1", "condition_order": ["B-agentharness", "A-baseline"]}
+  ],
+  "metrics": {
+    "primary": "paired heldout score B-agentharness minus A-baseline for each task",
+    "secondary": [
+      "B repair-response adoption and feedback accounting",
+      "B post-repair supported and unresolved feedback",
+      "repair change retention and rollback",
+      "agent invocation duration seconds and invocation-count cost proxy"
+    ]
+  },
+  "directional_verdict_rule": {
+    "directional_signal_positive": "at least 3 of 4 paired score differences are strictly positive and their arithmetic mean is strictly positive",
+    "no_directional_signal": "at least 3 of 4 paired score differences are non-positive and their arithmetic mean is non-positive",
+    "mixed_or_inconclusive": "all other complete valid patterns"
+  },
+  "stopping_policy": ["quota_pause", "provider_unavailable", "treatment_not_delivered"],
+  "frozen_file_sha256": {
+    "benchmarks/grading-env/run_exploratory_actionable_repair_v1.py": "47c7656b74b29daf5718aba95bd1aa8429e6f072d1702da188a20fdf37417912",
+    "benchmarks/grading-env/EXPLORATORY_ACTIONABLE_REPAIR_V1_2026-07-27.md": "7e1367dc3b373ea34b1477fe4ead053ffba74925516af9bdac40c5de3aab6c0b",
+    "src/agentharness/benchmark_cells.py": "0b8f51a8aadbd342d269434c3249e9f70a6e89306a9df4288c99e8b21781b39d",
+    "benchmarks/grading-env/stage2-heldout-suites/pii-redaction-pipeline.json": "f78ddd8be1364f95134664d3d097cf79cc065c09904afcc7e26dc468fdb14875",
+    "benchmarks/grading-env/stage2-heldout-suites/lease-coordination-api.json": "843fb6b9e0f4113e1192411ab27e3b85ebad17493d16141d261817e5ad07a073",
+    "benchmarks/grading-env/stage2-heldout-suites/double-entry-ledger-api.json": "0b0e5ae06da177ea4dddc2e155d39b5e35c1579656d9e11c6bdcad5bdc544583",
+    "benchmarks/grading-env/stage2-heldout-suites/signed-artifact-verifier.json": "48f7b26a2642039f3eee3882c732e16b5b6daa4b513fccaf2678461b1591d037",
+    "benchmarks/pii-redaction-pipeline/SPEC.md": "dad2adc0ec8f71c691f4f86cd2d6a201f3aa9d6acb39d5a89ede26ad514e246d",
+    "benchmarks/pii-redaction-pipeline/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/lease-coordination-api/SPEC.md": "388e83656382401e6d95d7d31df334f4a40884ab4a783219b118e1e89a63b15e",
+    "benchmarks/lease-coordination-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/double-entry-ledger-api/SPEC.md": "e1ca288f6e230bae0887a1b41dc136e31f2e30e74ffeffa3433422607b1556b0",
+    "benchmarks/double-entry-ledger-api/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d",
+    "benchmarks/signed-artifact-verifier/SPEC.md": "7ad4fae62798c2cab63324ea53541bcb3d74c1d8bdd0578ac50225c382e50855",
+    "benchmarks/signed-artifact-verifier/CLAIMS_CONTRACT.template.json": "5e4b5a6ef5b94a89592fed3954e220e5f2b30c5c50bb81fcc124a5137f129b4d"
+  },
+  "manifest_payload_sha256": "312c941430748a5bf47235d72c680a5a3323ad917e8b40a61e7f1281554bf10f"
+}
