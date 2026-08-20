@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "calculator-heldout-v1",
+  "test_root": "heldout-tests",
+  "checks": [
+    {
+      "id": "adds_mixed_sign_numbers",
+      "behavior": "Mixed-sign integers are added correctly",
+      "nodeid": "test_mixed_sign.py::test_adds_mixed_sign_numbers",
+      "remediation": "Implement general signed addition."
+    }
+  ]
+}

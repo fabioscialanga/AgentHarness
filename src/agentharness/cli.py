@@ -5,8 +5,10 @@ import json
 import sys
 from pathlib import Path
 
+from . import __version__
 from .benchmark_hidden_evaluators import evaluate_benchmark_task
 from .benchmarking import render_json_template, write_rendered_json_template
+from .behavioral_review import review_workspace
 from .bootstrap import BootstrapOptions, bootstrap_project
 from .direct_check import check_workspace
 from .evaluation import evaluate_run
@@ -22,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="agentharness",
         description="Work with AgentHarness-style project definitions",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     check_parser = subparsers.add_parser(
@@ -52,6 +55,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional changed-file glob forbidden by the scope claim; repeat for multiple patterns",
     )
     check_parser.add_argument("--json", action="store_true", help="Print the check result as JSON")
+
+    review_parser = subparsers.add_parser(
+        "review",
+        help="Run independent behavioral checks from an external trusted review plan",
+    )
+    review_parser.add_argument("--workspace", type=Path, default=Path("."), help="Workspace to snapshot and review")
+    review_parser.add_argument(
+        "--plan",
+        type=Path,
+        required=True,
+        help="External JSON review plan whose pytest bundle is trusted independently of the agent workspace",
+    )
+    review_parser.add_argument("--run-id", help="Optional path-safe run id; generated automatically when omitted")
+    review_parser.add_argument("--output-dir", type=Path, help="Artifact directory; defaults to .agentharness/runs/<run-id>")
+    review_parser.add_argument("--timeout", type=int, default=60, help="Per-check reexecution timeout in seconds")
+    review_parser.add_argument("--json", action="store_true", help="Print the behavioral review result as JSON")
 
     validate_parser = subparsers.add_parser(
         "validate",
@@ -271,6 +290,32 @@ def _print_check_result(result, as_json: bool) -> None:
         f"{summary.get('inconclusive', 0)} inconclusive, "
         f"{summary.get('invalid', 0)} invalid"
     )
+
+
+def _print_behavioral_review_result(result, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), indent=2))
+        return
+
+    status = "PASS" if result.ok else "FAIL"
+    print(f"[{status}] behavioral review {result.run_id}")
+    print(f"Plan: {result.plan_id} ({result.plan_path})")
+    print(f"Isolation: {result.isolation['mode']} (not a security sandbox)")
+    print(f"Snapshot: {result.snapshot_workspace}")
+    for item in result.findings:
+        print(f"- {item.check_id}: {item.status.upper()} — {item.behavior}")
+        if item.status != "passed":
+            print(f"  Reason: {item.reason}")
+            print(f"  Remediation: {item.remediation}")
+    summary = result.summary
+    print(
+        "Summary: "
+        f"{summary.get('passed', 0)} passed, "
+        f"{summary.get('failed', 0)} failed, "
+        f"{summary.get('diagnostic', 0)} diagnostic, "
+        f"{summary.get('actionable', 0)} actionable"
+    )
+    print(f"Report: {result.review_report_path}")
 
 
 def _print_validation_result(result, as_json: bool) -> None:
@@ -509,6 +554,24 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"[INVALID] check: {exc}", file=sys.stderr)
             return 2
         _print_check_result(result, args.json)
+        return 0 if result.ok else 1
+
+    if args.command == "review":
+        try:
+            result = review_workspace(
+                args.workspace,
+                args.plan,
+                run_id=args.run_id,
+                output_dir=args.output_dir,
+                timeout_seconds=args.timeout,
+            )
+        except (ValueError, FileExistsError, OSError) as exc:
+            if args.json:
+                print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
+            else:
+                print(f"[INVALID] review: {exc}", file=sys.stderr)
+            return 2
+        _print_behavioral_review_result(result, args.json)
         return 0 if result.ok else 1
 
     if args.command == "validate":

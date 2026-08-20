@@ -13,6 +13,7 @@ Invece di partire da un prompt vago, fornisce all'agente un contratto di progett
 
 Oggi il repository fornisce già un nucleo operativo funzionante:
 - `agentharness check` crea automaticamente envelope run/claims, snapshot persistente ed evidenza rieseguita a partire da un workspace e un comando pytest
+- `agentharness review` esegue controlli comportamentali trusted esterni al workspace dell'agente e restituisce finding azionabili con hash di provenienza
 - `agentharness validate` controlla se un progetto nello stile AgentHarness è coerente
 - `agentharness generate` rigenera i metadata principali in `.framework` a partire da `project.yaml`
 - `agentharness verify` controlla validità del contratto, coerenza semantica tra AGENTS.md e project.yaml, e drift negli artefatti `.framework` generati
@@ -60,14 +61,26 @@ agentharness check \
 
 Il comando crea snapshot persistente, envelope run e claims automatici, evidenza rieseguita e report sotto `.agentharness/runs/<run-id>/`. Le normali scritture relative restano nello snapshot, ma l'executor attuale non è un security sandbox di rete o filesystem host.
 
-### 2. Valida l'esempio incluso
+### 2. Verifica il comportamento con controlli di accettazione esterni
+```bash
+agentharness review \
+  --workspace examples/cookbooks/behavioral-review-demo/workspace \
+  --plan examples/cookbooks/behavioral-review-demo/review-plan.json \
+  --json
+```
+
+Il fixture versionato è intenzionalmente difettoso: il comando termina con exit `1` e rende `adds_negative_numbers` un finding azionabile. Piano e test restano fuori dal workspace esaminato; il report lega piano, bundle e workspace con hash SHA-256. Consulta il [cookbook FAIL-to-PASS ripetibile](../../examples/cookbooks/behavioral-review-demo/README.md).
+
+`review` è verifica controllata, non un sandbox per codice ostile. Usa un container o un worker dedicato a privilegi ridotti quando il codice esaminato non è fidato.
+
+### 3. Valida l'esempio incluso
 ```bash
 agentharness validate examples/civictrack --json
 ```
 
 Questo controlla che il contratto del progetto di esempio sia internamente coerente e che AGENTS.md rifletta ancora le regole chiave dichiarate in project.yaml.
 
-### 3. Rigenera i metadata del framework
+### 4. Rigenera i metadata del framework
 ```bash
 agentharness generate examples/civictrack --json
 ```
@@ -77,14 +90,14 @@ Questo ricostruisce:
 - `.framework/risk-matrix.yaml`
 - `.framework/generation-report.json`
 
-### 4. Verifica l'esempio end-to-end
+### 5. Verifica l'esempio end-to-end
 ```bash
 agentharness verify examples/civictrack --json
 ```
 
 Questo conferma che i file `.framework` versionati corrispondano ancora agli output derivati da `project.yaml`.
 
-### 5. Verifica evidenza claim-based di un run
+### 6. Verifica evidenza claim-based di un run
 ```bash
 agentharness verify-run \
   --run tests/fixtures/run_invite_schema_success.json \
@@ -94,7 +107,7 @@ agentharness verify-run \
 
 Questo usa prova severa di default. Quando possibile, AgentHarness riesegue i comandi di test ammessi. Se non riesce a difendere la verità di un claim, restituisce `inconclusive` invece di un successo falso.
 
-### 6. Smaschera un finto test verde dichiarato dall'agente
+### 7. Smaschera un finto test verde dichiarato dall'agente
 ```bash
 agentharness verify-run \
   --run tests/fixtures/run_invite_lie.json \
@@ -104,7 +117,7 @@ agentharness verify-run \
 
 Questo esempio deve fallire. Il fixture dichiara un comando pytest verde, ma AgentHarness lo riesegue e cattura il vero exit code non zero in `.agentharness/evidence/<run_id>/reexecuted/`.
 
-### 7. Crea un nuovo progetto
+### 8. Crea un nuovo progetto
 ```bash
 agentharness bootstrap ./my-project \
   --project-name "My Project" \

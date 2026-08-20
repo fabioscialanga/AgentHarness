@@ -14,7 +14,7 @@ uvicorn
 pytest>=8.0,<9.0
 
 [grader]
-agentharness
+agentharness-verifier
 email-validator
 PyYAML
 fastapi

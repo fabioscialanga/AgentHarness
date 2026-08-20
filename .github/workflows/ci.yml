@@ -34,7 +34,12 @@ jobs:
           python -m pip install -e .
 
       - name: Run version-independent core tests
-        run: python -m pytest -q --ignore-glob='tests/test_*benchmark_hidden_evaluator.py'
+        run: >-
+          python -m pytest -q
+          --ignore-glob='tests/test_*benchmark_hidden_evaluator.py'
+          --ignore-glob='tests/test_task_expansion_batch*.py'
+          --ignore=tests/test_stage2_analysis.py
+          --ignore=tests/test_stage2_campaign.py
 
   full-suite:
     name: Full suite and frozen grading environment
@@ -53,7 +58,14 @@ jobs:
       - name: Install package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -e . -r benchmarks/grading-env/stage2-analysis-requirements.txt
+
+      - name: Validate frozen offline wheelhouse
+        run: |
+          python benchmarks/grading-env/wheelhouse_gate.py \
+            --wheelhouse benchmarks/grading-env/wheelhouse \
+            --constraints benchmarks/grading-env/constraints-py312.txt \
+            --manifest benchmarks/grading-env/wheelhouse-manifest.json
 
       - name: Run full suite
         run: python -m pytest -q
@@ -93,6 +105,7 @@ jobs:
           mkdir -p .agentharness
           RUN_ID="ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           /tmp/agentharness-smoke-venv/bin/agentharness --help
+          test "$(/tmp/agentharness-smoke-venv/bin/agentharness --version)" = "agentharness 0.2.0"
           /tmp/agentharness-smoke-venv/bin/agentharness check \
             --workspace . \
             --command "python -m pytest -q" \

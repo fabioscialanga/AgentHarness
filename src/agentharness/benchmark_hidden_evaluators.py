@@ -476,6 +476,7 @@ DEFAULT_GRADING_ENV_ROOT = AGENTHARNESS_REPO_ROOT / "benchmarks" / "grading-env"
 
 WORKER_SENTINEL = "agentharness-benchmark-hidden-worker"
 WORKER_PROTOCOL_VERSION = "2"
+AGENTHARNESS_DISTRIBUTION_NAME = "agentharness-verifier"
 
 
 @dataclass
@@ -895,7 +896,7 @@ def _prepare_isolated_environment(workspace: Path, task_id: str) -> _IsolationPr
         str(grading_env.constraints_path),
     ]
     install_commands: list[list[str]] = [
-        [*pip_base, f"agentharness=={grading_env.agentharness_version}"],
+        [*pip_base, f"{AGENTHARNESS_DISTRIBUTION_NAME}=={grading_env.agentharness_version}"],
     ]
     if manifest is not None:
         if manifest.kind == "pyproject" and manifest.dependencies:

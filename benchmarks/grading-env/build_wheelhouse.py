@@ -43,13 +43,16 @@ def parse_seed_specs(path: Path) -> dict[str, list[str]]:
     return sections
 
 
-def repo_project_version() -> str:
+def repo_project_metadata() -> tuple[str, str]:
     payload = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = payload.get("project", {})
+    name = project.get("name")
     version = project.get("version")
+    if not isinstance(name, str) or not name.strip():
+        raise RuntimeError("project name missing from pyproject.toml")
     if not isinstance(version, str) or not version.strip():
         raise RuntimeError("project version missing from pyproject.toml")
-    return version.strip()
+    return canonical_dependency_name(name), version.strip()
 
 
 def repo_project_dependencies() -> list[str]:
@@ -102,14 +105,15 @@ def unique_specs_by_name(specs: list[str]) -> list[str]:
 def main() -> int:
     seed_specs = parse_seed_specs(ALLOWLIST_PATH)
     top_level_solution = sorted(seed_specs.get("api-solution", []) + seed_specs.get("cli-solution", []), key=str.lower)
+    distribution_name, agentharness_version = repo_project_metadata()
     grader_packages = sorted(
-        [spec for spec in seed_specs.get("grader", []) if canonical_dependency_name(spec) != "agentharness"],
+        [spec for spec in seed_specs.get("grader", []) if canonical_dependency_name(spec) != distribution_name],
         key=str.lower,
     )
     top_level_specs = unique_specs_by_name(repo_project_dependencies() + top_level_solution + grader_packages + ["wheel"])
 
-    agentharness_version = repo_project_version()
-    pinned_root_requirements = sorted(set(top_level_specs) | {f"agentharness=={agentharness_version}"}, key=str.lower)
+    distribution_pin = f"{distribution_name}=={agentharness_version}"
+    pinned_root_requirements = sorted(set(top_level_specs) | {distribution_pin}, key=str.lower)
 
     WHEELHOUSE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -122,8 +126,7 @@ def main() -> int:
         run([str(python_bin), "-m", "pip", "install", *top_level_specs])
 
         frozen = pip_freeze(python_bin)
-        agentharness_pin = f"agentharness=={agentharness_version}"
-        constraints_lines = sorted(set(frozen + [agentharness_pin]), key=str.lower)
+        constraints_lines = sorted(set(frozen + [distribution_pin]), key=str.lower)
         CONSTRAINTS_PATH.write_text("\n".join(constraints_lines) + "\n", encoding="utf-8")
 
         shutil.rmtree(WHEELHOUSE_DIR)
@@ -131,7 +134,11 @@ def main() -> int:
 
         third_party_constraints = temp_root / "third-party-constraints.txt"
         third_party_constraints.write_text(
-            "\n".join(line for line in constraints_lines if not line.lower().startswith("agentharness==")) + "\n",
+            "\n".join(
+                line
+                for line in constraints_lines
+                if canonical_dependency_name(line) != distribution_name
+            ) + "\n",
             encoding="utf-8",
         )
         run([str(python_bin), "-m", "pip", "download", "-d", str(WHEELHOUSE_DIR), "-r", str(third_party_constraints)])

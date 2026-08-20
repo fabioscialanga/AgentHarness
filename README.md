@@ -35,8 +35,8 @@
 <tr>
 <td width="25%" align="center" valign="top">
 
-<strong>2 core commands</strong><br />
-check for the simple path, verify-run for explicit envelopes
+<strong>3 core commands</strong><br />
+review for independent behavior, check for the simple claim path, verify-run for explicit envelopes
 
 </td>
 <td width="25%" align="center" valign="top">
@@ -136,12 +136,15 @@ A raw model is not enough. Reliable agentic engineering needs a harness around i
 ## What it is, and what it is not
 
 What it is:
+- an independent behavioral reviewer when you provide trusted external checks
 - a verifier for agent run claims
 - a deterministic evaluator for held-out task suites
 - an evidence trail for acceptance or rejection
 - a boundary between solution failure and harness failure
 
 What it is not:
+- not a general semantic reviewer that invents reliable acceptance tests from any prompt
+- not a hostile-code sandbox
 - not an agent runner
 - not a prompt framework
 - not a replacement for upstream spec and workflow tooling
@@ -173,7 +176,7 @@ Install the current alpha from PyPI in the target project's virtual environment:
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install agentharness-verifier==0.1.0
+python -m pip install agentharness-verifier==0.2.0
 agentharness --help
 ```
 
@@ -191,6 +194,25 @@ python -m pytest -q
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SECURITY.md](SECURITY.md) before running untrusted code.
 
 ## The product front door
+
+### `agentharness review`
+
+Use `review` when acceptance must come from requirements and tests controlled outside the agent workspace, rather than from claims written by the agent:
+
+```bash
+agentharness review \
+  --workspace path/to/agent-workspace \
+  --plan path/to/trusted/review-plan.json \
+  --json
+```
+
+A review plan maps each behavior to one explicit pytest node and an actionable remediation. The plan and its test bundle must be outside the reviewed workspace. AgentHarness creates a fresh workspace copy per check, ignores workspace pytest configuration and third-party plugin autoloading, requires one structured result for the exact selected test, and records hashes for the plan, staged test bundle, and reviewed workspace.
+
+Exit codes are stable: `0` means all independent checks passed, `1` means at least one check failed or remained diagnostic, and `2` means the plan or execution envelope was invalid. Failed checks become `actionable_findings`; skipped, xfailed, missing, or abruptly terminated checks fail closed as diagnostic rather than becoming false passes.
+
+Try the runnable [behavioral review cookbook](examples/cookbooks/behavioral-review-demo/README.md). It starts with an implementation whose own positive behavior looks correct while an external negative-number check exposes the defect.
+
+`review` is controlled verification, not arbitrary-code containment. Trusted tests still execute reviewed code without network or host-filesystem isolation. Use a container or dedicated low-privilege worker when that code is untrusted.
 
 ### `agentharness check`
 
@@ -266,6 +288,18 @@ Spec-driven frameworks help an agent start well. They turn intent into structure
 AgentHarness sits later in the chain, where somebody has to decide whether the result is trustworthy. It reruns claims, judges behavior with held-out checks kept separate from what the agent sees, distinguishes a real solution failure from a harness fault, and leaves an auditable evidence trail.
 
 The two layers are complementary. One helps generate the work. This one helps decide whether to trust the outcome.
+
+Runtime-governance systems are complementary too. A policy engine can decide
+whether an agent is allowed to call a tool and record that decision. That does
+not, by itself, prove that the resulting code satisfies its acceptance criteria.
+AgentHarness deliberately stays on the outcome-assurance side of that boundary:
+
+`govern allowed actions -> observe execution -> independently verify outcomes`
+
+It does not compete on agent identity, authorization, trust meshes, kill
+switches, or runtime policy enforcement. Those controls can govern an agent run;
+AgentHarness can consume the resulting workspace and independently verify what
+the run actually achieved.
 
 ## Project building blocks
 
@@ -399,7 +433,7 @@ Installa l'alpha corrente da PyPI nell'ambiente virtuale del progetto da verific
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install agentharness-verifier==0.1.0
+python -m pip install agentharness-verifier==0.2.0
 agentharness --help
 ```
 
@@ -417,6 +451,23 @@ python -m pytest -q
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) per il workflow di contribuzione e [SECURITY.md](SECURITY.md) prima di eseguire codice non fidato.
 
 ## La porta di ingresso del prodotto
+
+### `agentharness review`
+
+Usa `review` quando l'accettazione deve derivare da requisiti e test controllati fuori dal workspace dell'agente, non dai claim scritti dall'agente:
+
+```bash
+agentharness review \
+  --workspace percorso/al/workspace-agente \
+  --plan percorso/al/review-plan-trusted.json \
+  --json
+```
+
+Il piano associa ogni comportamento a un nodo pytest esplicito e a una remediation azionabile. Piano e bundle dei test devono essere esterni al workspace esaminato. AgentHarness materializza una copia just-in-time per ogni check, ignora configurazione pytest e plugin del workspace, richiede un risultato strutturato per il test selezionato e registra gli hash di piano, bundle e workspace.
+
+Gli exit code sono stabili: `0` se tutti i check passano, `1` in presenza di failure o diagnostica, `2` se piano o envelope sono invalidi. Skip, xfail, test mancanti e terminazioni anomale falliscono in modo chiuso invece di produrre falsi successi.
+
+Prova il [cookbook di review comportamentale](examples/cookbooks/behavioral-review-demo/README.md). `review` è verifica controllata, non contenimento di codice arbitrario: per codice non fidato usa un container o un worker dedicato a privilegi ridotti.
 
 ### `agentharness check`
 
@@ -488,6 +539,18 @@ I framework spec-driven aiutano l'agente a partire bene. Trasformano l'intento i
 AgentHarness sta piu avanti nella catena, nel punto in cui qualcuno deve decidere se il risultato e affidabile. Riesegue i claim, giudica il comportamento con controlli held-out separati da cio che l'agente vede, distingue tra fallimento reale della soluzione e guasto dell'harness, e lascia una traccia di evidenza auditabile.
 
 I due layer sono complementari. Uno aiuta a generare il lavoro. Questo aiuta a decidere se fidarsi del risultato.
+
+Anche i sistemi di governance runtime sono complementari. Un policy engine puo
+decidere se un agente e autorizzato a chiamare un tool e registrare la decisione,
+ma questo non dimostra da solo che il codice prodotto soddisfi i criteri di
+accettazione. AgentHarness resta intenzionalmente sul lato outcome assurance:
+
+`governare le azioni consentite -> osservare l'esecuzione -> verificare indipendentemente gli outcome`
+
+Non compete su identita degli agenti, autorizzazione, trust mesh, kill switch o
+policy runtime. Questi controlli possono governare una run; AgentHarness puo
+riceverne il workspace e verificare in modo indipendente cosa abbia realmente
+ottenuto.
 
 ## Blocchi del progetto
 

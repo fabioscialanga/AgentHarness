@@ -1,6 +1,6 @@
 """AgentHarness core package."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .bootstrap import BootstrapOptions, bootstrap_project
 from .direct_check import DirectCheckResult, check_workspace

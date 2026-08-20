@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "verifier_version": "0.2.0",
+  "checks": {
+    "control_visible_fails": true,
+    "treatment_visible_passes": true,
+    "control_heldout_fails": true,
+    "treatment_heldout_passes": true,
+    "actual_diff_matches_contract": true,
+    "finding_accounted_applied": true
+  },
+  "actual_changed_files": [
+    "calculator.py"
+  ],
+  "visible": {
+    "A_ok": false,
+    "B_ok": true
+  },
+  "heldout": {
+    "A_ok": false,
+    "B_ok": true
+  },
+  "repair_response_sha256": "33d501384abfe0cb2e211568b07f10e5746b0a4fe6a81f8a7714382d9062eacc"
+}

@@ -1,0 +1,90 @@
+{
+  "actual_changed_files": [
+    "calculator.py"
+  ],
+  "checks": {
+    "cloned_start": true,
+    "control_finding_persists": true,
+    "control_heldout_fails": true,
+    "control_unchanged": true,
+    "declared_matches_actual": true,
+    "feedback_immutable": true,
+    "pre_finding_A": true,
+    "pre_finding_B": true,
+    "repair_response_valid": true,
+    "treated_finding_resolved": true,
+    "treated_heldout_passes": true,
+    "trusted_inputs_stable": true
+  },
+  "claim_limit": "Demonstrates one complete cloned-start mechanism chain, not average efficacy.",
+  "declared_changed_files": [
+    "calculator.py"
+  ],
+  "feedback_sha256": "c72232bb5539c3cb5f3e143890c57eb312456674dedfcfa315258f8b40ed5cde",
+  "initial_hash": "7af02451f4647a203f48aad8d6cbd9086749173b76eb27449b1cf64f47b7b53a",
+  "mechanism_chain_complete": true,
+  "post": {
+    "A-control": {
+      "heldout_actionable": [
+        "adds_mixed_sign_numbers"
+      ],
+      "heldout_summary": {
+        "actionable": 1,
+        "diagnostic": 0,
+        "failed": 1,
+        "passed": 0
+      },
+      "plan_sha256": "bbea54026af3f9c1204bbb18fb5d59d51f9fcf9a47610a5b576724f59b0cdd6c",
+      "review_actionable": [
+        "adds_negative_numbers"
+      ],
+      "review_summary": {
+        "actionable": 1,
+        "diagnostic": 0,
+        "failed": 1,
+        "passed": 1
+      },
+      "test_bundle_sha256": "3944a864e8988ecb8eec6e37c17079c11d725d07a68e7c23e2449bb3487f4fbf",
+      "workspace_sha256": "7af02451f4647a203f48aad8d6cbd9086749173b76eb27449b1cf64f47b7b53a"
+    },
+    "B-agentharness": {
+      "heldout_actionable": [],
+      "heldout_summary": {
+        "actionable": 0,
+        "diagnostic": 0,
+        "failed": 0,
+        "passed": 1
+      },
+      "plan_sha256": "bbea54026af3f9c1204bbb18fb5d59d51f9fcf9a47610a5b576724f59b0cdd6c",
+      "review_actionable": [],
+      "review_summary": {
+        "actionable": 0,
+        "diagnostic": 0,
+        "failed": 0,
+        "passed": 2
+      },
+      "test_bundle_sha256": "3944a864e8988ecb8eec6e37c17079c11d725d07a68e7c23e2449bb3487f4fbf",
+      "workspace_sha256": "0b51699a705aa88d892a8b0420f72c11c952bfc76fea46491a31340c974d2600"
+    }
+  },
+  "repair_response": {
+    "changed_files": [
+      "calculator.py"
+    ],
+    "decision": "applied",
+    "findings": [
+      {
+        "changed_files": [
+          "calculator.py"
+        ],
+        "disposition": "applied",
+        "finding_id": "adds_negative_numbers",
+        "reason": "Replaced absolute-value addition with direct addition so operand signs are preserved.",
+        "source": "agentharness"
+      }
+    ],
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0",
+  "study_class": "deterministic_mechanism_check"
+}

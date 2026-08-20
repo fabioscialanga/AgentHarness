@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "calculator-behavior-v1",
+  "test_root": "review-tests",
+  "checks": [
+    {
+      "id": "adds_positive_numbers",
+      "behavior": "Positive integers are added correctly",
+      "nodeid": "test_calculator_behavior.py::test_adds_positive_numbers",
+      "remediation": "Implement arithmetic addition for positive integers."
+    },
+    {
+      "id": "adds_negative_numbers",
+      "behavior": "Negative integers are added correctly",
+      "nodeid": "test_calculator_behavior.py::test_adds_negative_numbers",
+      "remediation": "Preserve the sign of both operands instead of using absolute values."
+    }
+  ]
+}

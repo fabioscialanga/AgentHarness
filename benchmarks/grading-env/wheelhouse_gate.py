@@ -312,7 +312,7 @@ def gate_solution(
         if not passed or not grader_cmd:
             return
 
-        cp = offline_install(py, wheelhouse, constraints, ["agentharness"])
+        cp = offline_install(py, wheelhouse, constraints, ["agentharness-verifier"])
         passed = cp.returncode == 0
         detail = "" if passed else (cp.stderr.strip().splitlines() or [""])[-1]
         result.add(f"soluzione {name}: install offline del grader", passed, detail)
@@ -341,7 +341,7 @@ def main() -> int:
     ap.add_argument(
         "--grader-cmd",
         default=None,
-        help="comando grader opzionale, con segnaposto {python} e {solution}; quando presente il gate installa anche agentharness offline nel venv della soluzione",
+        help="comando grader opzionale, con segnaposto {python} e {solution}; quando presente il gate installa anche agentharness-verifier offline nel venv della soluzione",
     )
     ap.add_argument("--json-out", type=Path, default=None)
     args = ap.parse_args()

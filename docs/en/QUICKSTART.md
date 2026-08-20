@@ -13,6 +13,7 @@ Instead of starting from a vague prompt, it gives the agent a project contract:
 
 Today, the repository already provides a working operational core:
 - `agentharness check` creates automatic run/claims envelopes, a persistent snapshot, and reexecuted evidence from a workspace and pytest command
+- `agentharness review` executes trusted behavioral acceptance checks kept outside the agent workspace and returns actionable findings with provenance hashes
 - `agentharness validate` checks whether an AgentHarness-style project is internally consistent
 - `agentharness generate` regenerates core `.framework` metadata from `project.yaml`
 - `agentharness verify` checks contract validity, semantic AGENTS/project consistency, and drift in generated `.framework` artifacts
@@ -60,14 +61,26 @@ agentharness check \
 
 This creates a persistent workspace snapshot, automatic run and claims envelopes, reexecuted evidence, and a verification report under `.agentharness/runs/<run-id>/`. Ordinary relative command writes stay in the snapshot, but the current executor is not a network or host-filesystem security sandbox.
 
-### 2. Validate the worked example
+### 2. Review behavior against external acceptance checks
+```bash
+agentharness review \
+  --workspace examples/cookbooks/behavioral-review-demo/workspace \
+  --plan examples/cookbooks/behavioral-review-demo/review-plan.json \
+  --json
+```
+
+The tracked fixture is intentionally defective, so this command exits `1` and reports `adds_negative_numbers` as actionable. The plan and tests remain outside the reviewed workspace; the report binds them and the workspace with SHA-256 provenance. See the [repeatable FAIL-to-PASS cookbook](../../examples/cookbooks/behavioral-review-demo/README.md).
+
+`review` is controlled verification, not a hostile-code sandbox. Use a container or dedicated low-privilege worker when reviewed code is untrusted.
+
+### 3. Validate the worked example
 ```bash
 agentharness validate examples/civictrack --json
 ```
 
 This checks that the example project contract is internally consistent and that AGENTS.md still reflects the key rules declared in project.yaml.
 
-### 3. Regenerate framework metadata
+### 4. Regenerate framework metadata
 ```bash
 agentharness generate examples/civictrack --json
 ```
@@ -77,14 +90,14 @@ This rebuilds:
 - `.framework/risk-matrix.yaml`
 - `.framework/generation-report.json`
 
-### 4. Verify the example end to end
+### 5. Verify the example end to end
 ```bash
 agentharness verify examples/civictrack --json
 ```
 
 This confirms that the checked-in `.framework` files still match the outputs derived from `project.yaml`.
 
-### 5. Verify claim-based run evidence
+### 6. Verify claim-based run evidence
 ```bash
 agentharness verify-run \
   --run tests/fixtures/run_invite_schema_success.json \
@@ -94,7 +107,7 @@ agentharness verify-run \
 
 This uses strict proof by default. Allowed test commands are reexecuted when possible. If AgentHarness cannot defend the truth of a claim, it returns `inconclusive` instead of a false success.
 
-### 6. Catch a fabricated green test run
+### 7. Catch a fabricated green test run
 ```bash
 agentharness verify-run \
   --run tests/fixtures/run_invite_lie.json \
@@ -104,7 +117,7 @@ agentharness verify-run \
 
 This example is expected to fail. The fixture declares a passing pytest command, but AgentHarness reexecutes it and captures the real failing exit code in `.agentharness/evidence/<run_id>/reexecuted/`.
 
-### 7. Bootstrap a new project
+### 8. Bootstrap a new project
 ```bash
 agentharness bootstrap ./my-project \
   --project-name "My Project" \
