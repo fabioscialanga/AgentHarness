@@ -292,6 +292,7 @@ class HermesCliInvoker:
         model: str | None = None,
         max_turns: int | str | None = None,
         admission_hook: Callable[[str, int], None] | None = None,
+        sandbox_cleanup_arg: str | None = None,
     ) -> None:
         self._hermes_command = hermes_command or "hermes"
         self._toolsets = toolsets
@@ -301,6 +302,51 @@ class HermesCliInvoker:
         self._model = model
         self._max_turns = str(max_turns) if max_turns is not None else None
         self._admission_hook = admission_hook
+        self._sandbox_cleanup_arg = sandbox_cleanup_arg
+
+    def run_initial_generation(
+        self, manifest: dict[str, object], outputs_dir: Path, workspace: Path
+    ) -> AgentInvocationResult:
+        """Run the real task-level initial generation used by cloned-start v2."""
+        outputs_dir.mkdir(parents=True, exist_ok=False)
+        attempts_dir = outputs_dir / "agent-invocations"
+        attempts_dir.mkdir()
+        workspace_identity = _capture_directory_identity(workspace)
+        attempt = self._invoke(
+            prompt=_build_initial_prompt(
+                task_id=str(manifest["task_id"]),
+                condition="cloned-start",
+                workspace=workspace,
+                spec_path=Path(str(manifest["spec_path"])),
+                claims_template_path=Path(str(manifest["claims_template_path"])),
+            ),
+            attempt_name="attempt-1-initial",
+            prompt_kind="initial",
+            outputs_dir=attempts_dir,
+            workspace=workspace,
+        )
+        result = AgentInvocationResult(
+            attempts=[attempt],
+            attempt_solution_hashes={
+                "attempt_1_initial": compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+            },
+        )
+        if not _directory_identity_matches(workspace, workspace_identity):
+            raise ClassifiedCellFailure(
+                "harness_invalid", "initial_generation:workspace_identity_changed", invocation_result=result
+            )
+        if not _successful_agent_attempt(attempt) or not rel_solution_files(workspace):
+            status, reason = _classify_failed_agent_attempt(attempt, phase="initial_generation")
+            raise ClassifiedCellFailure(status, reason, invocation_result=result)
+        return result
+
+    def run_cloned_repair(
+        self, manifest: dict[str, object], outputs_dir: Path, workspace: Path
+    ) -> AgentInvocationResult:
+        """Run only the local repair invocation on a frozen initial clone."""
+        if not isinstance(manifest.get("initial_origin"), dict):
+            raise ClassifiedCellFailure("harness_invalid", "cloned_start:initial_origin_missing")
+        return self.run_cell(manifest, outputs_dir, workspace)
 
     def run_cell(self, manifest: dict[str, object], outputs_dir: Path, workspace: Path) -> AgentInvocationResult:
         task_id = str(manifest["task_id"])
@@ -336,32 +382,46 @@ class HermesCliInvoker:
         attempts: list[AgentAttempt] = []
 
         attempt_solution_hashes: dict[str, str | None] = {}
-        initial_prompt = _build_initial_prompt(
-            task_id=task_id,
-            condition=condition,
-            workspace=workspace,
-            spec_path=spec_path,
-            claims_template_path=claims_template_path,
-        )
-        initial_attempt = self._invoke(
-            prompt=initial_prompt,
-            attempt_name="attempt-1-initial",
-            prompt_kind="initial",
-            outputs_dir=attempts_dir,
-            workspace=workspace,
-        )
-        attempts.append(initial_attempt)
-        if not _directory_identity_matches(workspace, workspace_identity) or not _directory_identity_matches(
-            outputs_dir, outputs_identity
-        ):
-            raise ClassifiedCellFailure(
-                "harness_invalid",
-                "treatment_not_delivered:directory_identity_changed_after_initial",
-                invocation_result=AgentInvocationResult(attempts=attempts),
+        initial_origin = manifest.get("initial_origin")
+        if isinstance(initial_origin, dict):
+            expected_initial_hash = initial_origin.get("solution_hash")
+            observed_initial_hash = compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+            if not isinstance(expected_initial_hash, str) or expected_initial_hash != observed_initial_hash:
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    "cloned_start:initial_origin_hash_mismatch",
+                    invocation_result=AgentInvocationResult(attempts=[]),
+                )
+            # V2 cells contain only the local repair attempt.  The real initial
+            # invocation is retained once at the task-level origin.
+            attempt_solution_hashes["attempt_1_initial"] = observed_initial_hash
+        else:
+            initial_prompt = _build_initial_prompt(
+                task_id=task_id,
+                condition=condition,
+                workspace=workspace,
+                spec_path=spec_path,
+                claims_template_path=claims_template_path,
             )
-        attempt_solution_hashes["attempt_1_initial"] = (
-            compute_solution_hash(workspace) if rel_solution_files(workspace) else None
-        )
+            initial_attempt = self._invoke(
+                prompt=initial_prompt,
+                attempt_name="attempt-1-initial",
+                prompt_kind="initial",
+                outputs_dir=attempts_dir,
+                workspace=workspace,
+            )
+            attempts.append(initial_attempt)
+            if not _directory_identity_matches(workspace, workspace_identity) or not _directory_identity_matches(
+                outputs_dir, outputs_identity
+            ):
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    "treatment_not_delivered:directory_identity_changed_after_initial",
+                    invocation_result=AgentInvocationResult(attempts=attempts),
+                )
+            attempt_solution_hashes["attempt_1_initial"] = (
+                compute_solution_hash(workspace) if rel_solution_files(workspace) else None
+            )
 
         pytest_report = outputs_dir / "pre-repair-pytest.json"
         try:
@@ -398,23 +458,31 @@ class HermesCliInvoker:
                 )
             else:
                 verify_feedback_path = outputs_dir / "pre-repair-verify-run-report.json"
-                provisional_run_path = outputs_dir / "pre-repair-run.json"
-                provisional_claims_path = outputs_dir / "pre-repair-claims.json"
-                write_run_json(
-                    run_path=provisional_run_path,
-                    manifest=manifest,
-                    workspace=workspace,
-                    pytest_command=_pytest_command_from_result(pytest_result),
-                    pytest_exit=int(str(pytest_result["exit_code"])),
-                    pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
-                    pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
-                )
-                render_claims_json(run_id=run_id, claims_template_path=claims_template_path, claims_path=provisional_claims_path)
-                verify_payload = run_verify_run(
-                    run_path=provisional_run_path,
-                    claims_path=provisional_claims_path,
-                    report_path=verify_feedback_path,
-                )
+                supplied_review_feedback = manifest.get("review_feedback_path")
+                if supplied_review_feedback is not None:
+                    source = Path(str(supplied_review_feedback))
+                    if not source.is_file():
+                        raise ClassifiedCellFailure("harness_invalid", "treatment_not_delivered:review_feedback_missing")
+                    shutil.copy2(source, verify_feedback_path)
+                    verify_payload = _inspect_verify_feedback_report(verify_feedback_path)
+                else:
+                    provisional_run_path = outputs_dir / "pre-repair-run.json"
+                    provisional_claims_path = outputs_dir / "pre-repair-claims.json"
+                    write_run_json(
+                        run_path=provisional_run_path,
+                        manifest=manifest,
+                        workspace=workspace,
+                        pytest_command=_pytest_command_from_result(pytest_result),
+                        pytest_exit=int(str(pytest_result["exit_code"])),
+                        pytest_stdout_path=Path(str(pytest_result["stdout_path"])),
+                        pytest_stderr_path=Path(str(pytest_result["stderr_path"])),
+                    )
+                    render_claims_json(run_id=run_id, claims_template_path=claims_template_path, claims_path=provisional_claims_path)
+                    verify_payload = run_verify_run(
+                        run_path=provisional_run_path,
+                        claims_path=provisional_claims_path,
+                        report_path=verify_feedback_path,
+                    )
                 _require_verify_feedback_delivery(verify_payload)
                 feedback_sha256_pre = _sha256_file(verify_feedback_path)
                 verify_feedback_path.chmod(0o444)
@@ -855,6 +923,24 @@ class HermesCliInvoker:
             except subprocess.TimeoutExpired as exc:
                 stdout_text = _decode_timeout_output(exc.stdout)
                 stderr_text = _decode_timeout_output(exc.stderr)
+                if self._sandbox_cleanup_arg is not None:
+                    try:
+                        cleanup = subprocess.run(
+                            [self._hermes_command, self._sandbox_cleanup_arg],
+                            cwd=str(workspace),
+                            env=invocation_env,
+                            capture_output=True,
+                            text=True,
+                            check=False,
+                            timeout=60,
+                        )
+                        if cleanup.returncode != 0:
+                            stderr_text += (
+                                f"\nSandbox cleanup failed with exit {cleanup.returncode}: "
+                                f"{cleanup.stderr.strip()}"
+                            )
+                    except (OSError, subprocess.TimeoutExpired) as cleanup_exc:
+                        stderr_text += f"\nSandbox cleanup failed: {type(cleanup_exc).__name__}: {cleanup_exc}"
                 timeout_msg = f"\nAgent invocation timed out after {AGENT_INVOCATION_TIMEOUT_SECONDS} seconds."
                 stderr_text = (stderr_text + timeout_msg).strip() + "\n"
                 completed = subprocess.CompletedProcess(args=command, returncode=124, stdout=stdout_text, stderr=stderr_text)
@@ -1031,6 +1117,7 @@ def _write_invalid_cell_artifacts(
         "replicate_id": replicate_id,
         "run_id": run_id,
         "workspace": str(workspace),
+        "initial_origin": manifest.get("initial_origin"),
         "solution_hash": f"{execution_status}:{task_id}:{condition}:{replicate_id}",
         "attempt_solution_hashes": invocation_result.attempt_solution_hashes or {},
         "solution_hash_changed_between_attempt_and_repair": False,
@@ -1047,7 +1134,7 @@ def _write_invalid_cell_artifacts(
         "condition": condition,
         "replicate_id": replicate_id,
         "run_id": run_id,
-        "repair_passes_used": max(0, len(invocation_result.attempts) - 1),
+        "repair_passes_used": repair_passes_used(invocation_result),
         "final_pytest_exit_code": None,
         "scorable_score": 0.0,
         "verify_run_ok": False,
@@ -1129,6 +1216,11 @@ def _write_invalid_cell_artifacts(
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def repair_passes_used(invocation_result: AgentInvocationResult) -> int:
+    """Count semantic repairs; cloned-start cells have no local initial attempt."""
+    return sum(attempt.prompt_kind == "repair" for attempt in invocation_result.attempts)
 
 
 def benchmark_task_dir(task_id: str) -> Path:
@@ -1416,7 +1508,12 @@ def _inspect_verify_feedback_report(report_path: Path) -> dict[str, object]:
             "report_payload": payload,
         }
     feedback_items = feedback.get("items")
-    if not isinstance(feedback_items, list) or not feedback_items:
+    zero_findings_v2 = (
+        isinstance(payload, dict)
+        and payload.get("feedback_contract_version") == 2
+        and payload.get("zero_findings_valid") is True
+    )
+    if not isinstance(feedback_items, list) or (not feedback_items and not zero_findings_v2):
         return {
             "report_path": str(report_path),
             "report_exists": True,
@@ -1594,7 +1691,12 @@ def _feedback_claim_ids(report_path: Path) -> list[str]:
     payload = json.loads(report_path.read_text(encoding="utf-8"))
     feedback = payload.get("feedback") if isinstance(payload, dict) else None
     items = feedback.get("items") if isinstance(feedback, dict) else None
-    if not isinstance(items, list) or not items:
+    zero_findings_v2 = (
+        isinstance(payload, dict)
+        and payload.get("feedback_contract_version") == 2
+        and payload.get("zero_findings_valid") is True
+    )
+    if not isinstance(items, list) or (not items and not zero_findings_v2):
         raise ValueError("repair_response_feedback_items_missing")
     claim_ids: list[str] = []
     for item in items:
@@ -1959,6 +2061,7 @@ def write_provenance(
         "replicate_id": manifest["replicate_id"],
         "run_id": manifest["run_id"],
         "workspace": str(workspace),
+        "initial_origin": manifest.get("initial_origin"),
         "solution_hash": compute_solution_hash(workspace),
         "attempt_solution_hashes": invocation_result.attempt_solution_hashes or {},
         "solution_hash_changed_between_attempt_and_repair": _solution_hash_changed_between_attempt_and_repair(invocation_result),
@@ -2129,7 +2232,7 @@ def execute_cell(cell_dir: Path, invoker: AgentInvoker) -> dict[str, object]:
         "condition": manifest["condition"],
         "replicate_id": manifest["replicate_id"],
         "run_id": manifest["run_id"],
-        "repair_passes_used": max(0, len((invocation_result or AgentInvocationResult(attempts=[])).attempts) - 1),
+        "repair_passes_used": repair_passes_used(invocation_result or AgentInvocationResult(attempts=[])),
         "final_pytest_exit_code": pytest_result["exit_code"],
         "scorable_score": endpoint_score,
         "heldout_endpoint_denominator": EXPECTED_HELDOUT_CASES,
@@ -2306,7 +2409,7 @@ def _build_agentharness_repair_prompt(
 This is the one bounded repair pass for task {task_id}.
 The current working directory is the only project workspace.
 Spec: {spec_ref}
-Consult the structured AgentHarness verify-run feedback: {verify_feedback_ref}
+Consult the structured AgentHarness behavioral review feedback: {verify_feedback_ref}
 Consult the raw local test outputs:
 - pytest stdout: {pytest_stdout_ref}
 - pytest stderr: {pytest_stderr_ref}

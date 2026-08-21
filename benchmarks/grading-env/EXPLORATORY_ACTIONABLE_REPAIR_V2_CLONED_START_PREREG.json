@@ -1,0 +1,130 @@
+{
+  "schema_version": 2,
+  "pilot_id": "exploratory_actionable_repair_v2_cloned_start",
+  "preregistration_status": "pending_freeze",
+  "frozen_at": "FREEZE_REQUIRED:UTC_DATE",
+  "study_class": "exploratory",
+  "confirmatory": false,
+  "repository_commit": "FREEZE_REQUIRED:GIT_COMMIT",
+  "manifest_payload_sha256": "FREEZE_REQUIRED:CANONICAL_MANIFEST_PAYLOAD_SHA256",
+  "provider": "openai-codex",
+  "model": "gpt-5.6-sol",
+  "hermes_command": "/home/fabio/AgentHarness-actionable-repair-20260725/benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
+  "hermes_command_sha256": "FREEZE_REQUIRED:HERMES_COMMAND_SHA256",
+  "sandbox_image_id": "sha256:da0d12083015723edf16afe7c74f10138d056ee6948aaf02eca18af4b5bc29e0",
+  "sandbox_policy": "one ephemeral Docker container per provider invocation; only current block/cell root and deterministic invocation-private auth profile are mounted; agent network is Docker-internal with no direct Internet route and HTTPS egress only through a fail-closed CONNECT proxy allowing chatgpt.com, auth.openai.com, and api.openai.com; deterministic agent/proxy/network/profile resources are removed by normal trap, explicit timeout cleanup, and startup reconciliation",
+  "hermes_home": "/home/fabio/.hermes/profiles/stage2codex2",
+  "hermes_config_path": "/home/fabio/.hermes/profiles/stage2codex2/config.yaml",
+  "hermes_config_sha256": "FREEZE_REQUIRED:HERMES_CONFIG_SHA256",
+  "toolsets": "terminal,file",
+  "max_turns": 40,
+  "invocation_max_retries": 1,
+  "quota_policy": {
+    "single_window_pause_percent": 80.0,
+    "usage_unavailable": "pause_fail_closed",
+    "provider_fallback_forbidden": true,
+    "purchased_credits_forbidden": true
+  },
+  "conditions": [
+    "A-baseline",
+    "B-agentharness"
+  ],
+  "tasks": [
+    "appointment-booking-api",
+    "shipment-event-api",
+    "jsonl-event-aggregation",
+    "invoice-payment-reconciliation"
+  ],
+  "partitions": {
+    "appointment-booking-api": {
+      "review": ["appointment_interval_validation", "appointment_reschedule_atomic"],
+      "heldout": ["appointment_create_and_filters", "appointment_provider_conflicts", "appointment_cancel_releases_slot"]
+    },
+    "shipment-event-api": {
+      "review": ["shipment_skipped_transition_atomic", "shipment_event_idempotency"],
+      "heldout": ["shipment_create_and_filters", "shipment_valid_transition_path", "shipment_time_and_terminal_invariants"]
+    },
+    "jsonl-event-aggregation": {
+      "review": ["jsonl_summary_consistency", "jsonl_deterministic_outputs"],
+      "heldout": ["jsonl_grouped_counts", "jsonl_utc_date_normalization", "jsonl_invalid_and_duplicate_handling"]
+    },
+    "invoice-payment-reconciliation": {
+      "review": ["reconciliation_rows_and_order", "reconciliation_summary_and_validation"],
+      "heldout": ["reconciliation_cutoff_and_duplicates", "reconciliation_status_and_decimals", "reconciliation_unmatched_reporting"]
+    }
+  },
+  "schema_gate": {
+    "case_id": "evaluation_result_schema",
+    "scored": false,
+    "required_to_score": true
+  },
+  "expected_blocks": 4,
+  "expected_initial_generations": 4,
+  "expected_repair_cells": 8,
+  "blocks": [
+    {"block_id": "p001", "task_id": "appointment-booking-api", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "p002", "task_id": "shipment-event-api", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "p003", "task_id": "jsonl-event-aggregation", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "p004", "task_id": "invoice-payment-reconciliation", "condition_order": ["B-agentharness", "A-baseline"]}
+  ],
+  "design": {
+    "initial_generation": "exactly one real initial provider invocation per task",
+    "cloning": "A and B are byte-identical clones of the frozen initial workspace before condition-specific operations",
+    "repair": "exactly one local repair invocation per condition clone; no synthetic initial AgentAttempt in cell provenance",
+    "review_evaluation": "run on a temporary clone; expose to B only failed review-partition findings; zero findings is valid",
+    "heldout_exposure": "heldout IDs, outcomes, reports, and artifacts are never included in an agent prompt or agent-accessible workspace; GitHub/raw GitHub are denied by the egress proxy and direct Internet bypass is blocked",
+    "order": "AB/BA counterbalanced across four paired tasks",
+    "score": "number of passed heldout cases divided by 3; evaluation_result_schema is a non-scored gate"
+  },
+  "metrics": {
+    "primary": "paired heldout score B-agentharness minus A-baseline",
+    "secondary": [
+      "review failure count delivered to B",
+      "repair-response validity and finding accounting",
+      "repair retention and rollback",
+      "one-initial/two-repair invocation funnel"
+    ]
+  },
+  "directional_verdict_rule": {
+    "directional_signal_positive": "at least 3 of 4 paired differences are strictly positive and arithmetic mean is strictly positive",
+    "no_directional_signal": "at least 3 of 4 paired differences are non-positive and arithmetic mean is non-positive",
+    "mixed_or_inconclusive": "all other complete valid patterns"
+  },
+  "lifecycle": {
+    "freeze_first": true,
+    "exclusive_lock": true,
+    "resume_binding": ["repository_commit", "manifest_file_sha256", "manifest_payload_sha256"],
+    "interrupted_block_policy": "before any provider marker, quarantine/retry is allowed; any provider started marker without a completed block commit makes the run root non-resumable",
+    "collection_progress": "structural counts only; no scores, outcomes, or condition contrasts",
+    "analysis": "separate finalizer requires complete authorized collection audit and exact block hashes"
+  },
+  "stopping_policy": [
+    "quota_pause",
+    "provider_unavailable",
+    "initial_generation_invalid",
+    "treatment_not_delivered",
+    "integrity_mismatch"
+  ],
+  "frozen_file_sha256": {
+    "benchmarks/grading-env/run_exploratory_actionable_repair_v2.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/run_hermes_stage2codex2_docker.sh": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/codex_egress_proxy.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/codex_egress_probe.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/benchmark_cells.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/efficacy_v2.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/benchmark_hidden_evaluators.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/benchmark_hidden_evaluators_batch1.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/appointment-booking-api/SPEC.md": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/appointment-booking-api/CLAIMS_CONTRACT.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/appointment-booking-api/HELDOUT_EVALUATION_SUITE.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/shipment-event-api/SPEC.md": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/shipment-event-api/CLAIMS_CONTRACT.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/shipment-event-api/HELDOUT_EVALUATION_SUITE.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/jsonl-event-aggregation/SPEC.md": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/jsonl-event-aggregation/CLAIMS_CONTRACT.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/jsonl-event-aggregation/HELDOUT_EVALUATION_SUITE.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/invoice-payment-reconciliation/SPEC.md": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/invoice-payment-reconciliation/CLAIMS_CONTRACT.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/invoice-payment-reconciliation/HELDOUT_EVALUATION_SUITE.template.json": "FREEZE_REQUIRED:FILE_SHA256"
+  }
+}

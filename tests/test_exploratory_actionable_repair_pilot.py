@@ -93,7 +93,19 @@ class ExploratoryActionableRepairPilotTests(unittest.TestCase):
                 if args[:2] == ("rev-parse", "HEAD") or args[:2] == ("rev-parse", "origin/improve/actionable-repair-loop-20260725"):
                     return "published"
                 raise AssertionError(args)
-            with mock.patch.object(runner, "git", side_effect=fake_git), mock.patch.dict(
+            frozen_hashes = pilot.manifest["frozen_file_sha256"]
+            real_sha256_file = runner.sha256_file
+
+            def frozen_blob_sha256(path: Path) -> str:
+                try:
+                    relative = path.resolve().relative_to(runner.REPO_ROOT).as_posix()
+                except ValueError:
+                    return real_sha256_file(path)
+                return str(frozen_hashes.get(relative, real_sha256_file(path)))
+
+            with mock.patch.object(runner, "git", side_effect=fake_git), mock.patch.object(
+                runner, "sha256_file", side_effect=frozen_blob_sha256
+            ), mock.patch.dict(
                 os.environ, {"HERMES_HOME": "/home/fabio/.hermes/profiles/stage2codex2"}
             ):
                 result = pilot.preflight()

@@ -647,7 +647,7 @@ class BenchmarkCellsTests(unittest.TestCase):
             b_only = set(agentharness_repair_prompt.splitlines()) - set(baseline_repair_prompt.splitlines())
             self.assertEqual(
                 b_only,
-                {"Consult the structured AgentHarness verify-run feedback: ../outputs/pre-repair-verify-run-report.json"},
+                {"Consult the structured AgentHarness behavioral review feedback: ../outputs/pre-repair-verify-run-report.json"},
             )
             for prompt in (initial_prompt, baseline_repair_prompt, agentharness_repair_prompt):
                 self.assertNotIn(task_dir, prompt)
@@ -1641,6 +1641,38 @@ class BenchmarkCellsTests(unittest.TestCase):
         self.assertTrue(str(malformed["report_error"]).startswith("report_invalid_json:"))
         self.assertFalse(missing_feedback["report_valid"])
         self.assertEqual(missing_feedback["report_error"], "report_missing_feedback")
+
+    def test_invocation_timeout_runs_explicit_sandbox_cleanup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            outputs = root / "outputs"
+            workspace.mkdir()
+            outputs.mkdir()
+            invoker = HermesCliInvoker(
+                hermes_command="sandbox-wrapper",
+                max_retries=1,
+                sandbox_cleanup_arg="--sandbox-cleanup",
+            )
+            timed_out = subprocess.TimeoutExpired(cmd=["sandbox-wrapper"], timeout=1)
+            cleanup_ok = subprocess.CompletedProcess(
+                args=["sandbox-wrapper", "--sandbox-cleanup"],
+                returncode=0,
+                stdout="",
+                stderr="",
+            )
+            with mock.patch("agentharness.benchmark_cells.subprocess.run", side_effect=[timed_out, cleanup_ok]) as run:
+                attempt = invoker._invoke(
+                    prompt="test",
+                    attempt_name="attempt",
+                    prompt_kind="repair",
+                    outputs_dir=outputs,
+                    workspace=workspace,
+                )
+            self.assertEqual(attempt.exit_code, 124)
+            self.assertEqual(run.call_count, 2)
+            self.assertEqual(run.call_args_list[1].args[0], ["sandbox-wrapper", "--sandbox-cleanup"])
+            self.assertEqual(Path(run.call_args_list[1].kwargs["cwd"]), workspace)
 
 
 if __name__ == "__main__":
