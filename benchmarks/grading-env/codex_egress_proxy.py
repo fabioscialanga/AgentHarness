@@ -46,8 +46,6 @@ class Handler(socketserver.BaseRequestHandler):
             return
         print(f"ALLOW CONNECT {host}:{port}", flush=True)
         with upstream:
-            upstream.setblocking(False)
-            self.request.setblocking(False)
             self.request.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
             sockets = (self.request, upstream)
             while True:
@@ -64,7 +62,8 @@ class Handler(socketserver.BaseRequestHandler):
                     target = upstream if source is self.request else self.request
                     try:
                         target.sendall(payload)
-                    except OSError:
+                    except OSError as exc:
+                        print(f"RELAY_ERROR {host}:{port} {type(exc).__name__}", flush=True)
                         return
 
 

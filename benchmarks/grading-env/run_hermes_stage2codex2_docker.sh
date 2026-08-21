@@ -51,8 +51,14 @@ fi
 cleanup_resources
 mkdir -m 700 -- "$private_profile"
 cleanup() {
+  status=$?
+  if (( status != 0 )) && docker inspect "$proxy" >/dev/null 2>&1; then
+    printf '%s\n' '--- sandbox proxy log ---' >&2
+    docker logs "$proxy" >&2 || true
+    printf '%s\n' '--- end sandbox proxy log ---' >&2
+  fi
   cleanup_resources
-  rm -rf -- "$private_profile"
+  return "$status"
 }
 trap cleanup EXIT INT TERM
 

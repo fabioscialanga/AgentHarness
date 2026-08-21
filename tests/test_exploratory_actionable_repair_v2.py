@@ -186,6 +186,7 @@ def test_sandbox_wrapper_mounts_only_current_cell_and_private_auth() -> None:
     assert "/var/run/docker.sock" not in script
     assert 'ALLOWED_HOSTS = ("chatgpt.com", "auth.openai.com", "api.openai.com")' in proxy
     assert "select.select(sockets, (), sockets, 900)" in proxy
+    assert "setblocking(False)" not in proxy
     assert 'raw.githubusercontent.com' in probe and 'direct Internet bypass unexpectedly reachable' in probe
 
 
