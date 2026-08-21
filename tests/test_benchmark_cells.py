@@ -35,6 +35,7 @@ from agentharness.benchmark_cells import (
     load_repair_response,
     prepare_fresh_cell,
     replay_uncommitted_successful_invocations,
+    run_heldout_evaluation,
     score_from_evaluation,
     validate_repair_response_payload,
     write_run_json,
@@ -204,6 +205,38 @@ class _PreRepairFailureInvoker:
 
 
 class BenchmarkCellsTests(unittest.TestCase):
+    def test_heldout_evaluation_persists_valid_stdout_when_cli_omits_report_file(self) -> None:
+        payload = {
+            "ok": False,
+            "gating_errors": [],
+            "summary": {"passed": 3, "failed": 3, "invalid": 0},
+            "results": [{"case_id": f"case-{index}", "status": "passed" if index < 3 else "failed"} for index in range(6)],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outputs = root / "outputs"
+            outputs.mkdir()
+            run_path = root / "run.json"
+            run_path.write_text("{}\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                args=["agentharness", "evaluate"],
+                returncode=1,
+                stdout=json.dumps(payload),
+                stderr="",
+            )
+            with mock.patch("agentharness.benchmark_cells.subprocess.run", return_value=completed):
+                observed = run_heldout_evaluation(
+                    task_id="appointment-booking-api",
+                    run_id="persist-report-test",
+                    run_path=run_path,
+                    outputs_dir=outputs,
+                )
+            self.assertEqual(observed, payload)
+            self.assertEqual(
+                json.loads((outputs / "evaluation-report.json").read_text(encoding="utf-8")),
+                payload,
+            )
+
     def test_heldout_suite_resolver_supports_legacy_and_hidden_batch3_envelopes(self) -> None:
         legacy = heldout_suite_template_path("refund-approval-api")
         hidden = heldout_suite_template_path("pii-redaction-pipeline")

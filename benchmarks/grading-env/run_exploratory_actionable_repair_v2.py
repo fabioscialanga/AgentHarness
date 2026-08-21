@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import traceback
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -752,6 +753,7 @@ def main() -> int:
         structural_message(status="failed", completed_blocks=0, total_blocks=4, completed_cells=0, total_cells=8, invalidity=type(exc).__name__, exit_code=exc.exit_code)
         return exc.exit_code
     except Exception as exc:
+        traceback.print_exc(file=sys.stderr)
         structural_message(status="failed", completed_blocks=0, total_blocks=4, completed_cells=0, total_cells=8, invalidity=type(exc).__name__, exit_code=UNEXPECTED)
         return UNEXPECTED
 

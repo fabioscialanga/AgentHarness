@@ -1974,6 +1974,7 @@ def replay_uncommitted_successful_invocations(cell_dir: Path) -> dict[str, objec
 
 def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs_dir: Path) -> dict[str, object]:
     suite_path = outputs_dir / "suite.json"
+    outputs_identity = _capture_directory_identity(outputs_dir)
     write_rendered_json_template(
         heldout_suite_template_path(task_id),
         run_id=run_id,
@@ -2012,7 +2013,21 @@ def run_heldout_evaluation(*, task_id: str, run_id: str, run_path: Path, outputs
             "error": f"held-out evaluation timed out after {HELDOUT_EVAL_TIMEOUT_SECONDS} seconds",
         }
     if completed.stdout.strip().startswith("{"):
-        return json.loads(completed.stdout)
+        payload = json.loads(completed.stdout)
+        if not isinstance(payload, dict):
+            raise ValueError("held-out evaluator JSON payload must be an object")
+        # The CLI JSON stream is the authoritative evaluator payload.  Some
+        # successful CLI paths do not materialize --report-path, so persist the
+        # exact parsed payload ourselves before the collector crosses the
+        # scoring/commit boundary.  The no-follow writer also rejects an output
+        # directory swap or a report-path symlink.
+        _write_json_no_follow(
+            outputs_dir,
+            report_path.name,
+            payload,
+            expected_identity=outputs_identity,
+        )
+        return payload
     return {
         "ok": False,
         "summary": {"passed": 0, "failed": 0, "invalid": 0},
