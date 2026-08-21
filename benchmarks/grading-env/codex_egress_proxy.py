@@ -51,7 +51,7 @@ class Handler(socketserver.BaseRequestHandler):
             self.request.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
             sockets = (self.request, upstream)
             while True:
-                readable, _, exceptional = select.select(sockets, (), sockets, 30)
+                readable, _, exceptional = select.select(sockets, (), sockets, 900)
                 if exceptional or not readable:
                     return
                 for source in readable:

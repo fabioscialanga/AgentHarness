@@ -1674,6 +1674,15 @@ class BenchmarkCellsTests(unittest.TestCase):
             self.assertEqual(run.call_args_list[1].args[0], ["sandbox-wrapper", "--sandbox-cleanup"])
             self.assertEqual(Path(run.call_args_list[1].kwargs["cwd"]), workspace)
 
+    def test_connection_error_is_classified_as_retryable_provider_unavailable(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["hermes"],
+            returncode=1,
+            stdout="API call failed after 3 retries: Connection error.",
+            stderr="",
+        )
+        self.assertTrue(_is_retryable_invocation_failure(completed))
+
 
 if __name__ == "__main__":
     unittest.main()

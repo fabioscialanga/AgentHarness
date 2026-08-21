@@ -51,6 +51,7 @@ PROVIDER_UNAVAILABLE_MARKERS = (
     "temporarily unavailable",
     "quota",
     "produced no SSE events",
+    "connection error",
 )
 
 _EXCLUDED_PARTS = {".venv", ".pytest_cache", ".agentharness", ".stageb-test-venv", "__pycache__"}
