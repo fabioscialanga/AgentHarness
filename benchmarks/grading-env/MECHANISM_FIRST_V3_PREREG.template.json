@@ -1,0 +1,81 @@
+{
+  "schema_version": 3,
+  "pilot_id": "mechanism_first_controlled_start_v3",
+  "preregistration_status": "pending_freeze",
+  "frozen_at": "FREEZE_REQUIRED:UTC",
+  "repository_commit": "FREEZE_REQUIRED:GIT_COMMIT",
+  "manifest_payload_sha256": "FREEZE_REQUIRED:CANONICAL_SHA256",
+  "study_class": "exploratory_mechanism_first",
+  "execution_mode": "real",
+  "threat_model": {
+    "agent": "cooperative benchmark participant, not an adversary attempting account-level exfiltration or artifact forgery",
+    "provider_account_isolation": "fresh local Hermes sessions; no cryptographic exclusion of durable provider-account side channels",
+    "provider_call_evidence": "runner start/completion markers plus Hermes session identifiers and quota telemetry; not provider-signed receipts",
+    "claim_limit": "exploratory mechanism evidence only; no cryptographic provider-accounting or adversarial-isolation claim"
+  },
+  "provider": "openai-codex",
+  "model": "gpt-5.6-sol",
+  "hermes_command": "/home/fabio/AgentHarness-actionable-repair-20260725/benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
+  "hermes_command_sha256": "FREEZE_REQUIRED:HERMES_COMMAND_SHA256",
+  "hermes_home": "/home/fabio/.hermes/profiles/stage2codex2",
+  "toolsets": "terminal,file",
+  "max_turns": 40,
+  "invocation_timeout_seconds": 1800,
+  "quota_policy": {"single_window_pause_percent": 80.0, "usage_unavailable": "invalid_fail_closed"},
+  "tasks": [
+    "appointment-booking-api",
+    "shipment-event-api",
+    "jsonl-event-aggregation",
+    "invoice-payment-reconciliation"
+  ],
+  "conditions": ["A-baseline", "B-agentharness"],
+  "expected_initial_provider_calls": 0,
+  "expected_repair_provider_calls": 8,
+  "blocks": [
+    {"block_id": "v3-001", "task_id": "appointment-booking-api", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v3-002", "task_id": "shipment-event-api", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "v3-003", "task_id": "jsonl-event-aggregation", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v3-004", "task_id": "invoice-payment-reconciliation", "condition_order": ["B-agentharness", "A-baseline"]}
+  ],
+  "controlled_starts": {
+    "source": "task-expansion-batch1/references",
+    "defects": [
+      "appointment_reschedule_atomic",
+      "shipment_skipped_transition_atomic",
+      "jsonl_summary_consistency",
+      "reconciliation_summary_and_validation"
+    ],
+    "agent_visible_leakage_policy": "reject MUTANT, AGENTHARNESS_MUTANT, every evaluator check id, symlinks and runtime residue"
+  },
+  "design": {
+    "review": "one mandatory local opaque finding delivered only to B; A receives only local pytest evidence",
+    "cloned_start": "A and B byte/metadata identical before condition operations",
+    "prompt_contrast": "A receives the hardened local-pytest baseline prompt; B receives the hardened AgentHarness feedback prompt",
+    "heldout": "physically separate evaluator called only after both paired invocations",
+    "endpoint": "binary one iff target defect and every guard pass",
+    "exactly_once": "eight durable repair-start markers, no initial marker or initial provider call",
+    "resume": "run root is non-resumable after any repair-start marker"
+  },
+  "go_rule": {
+    "b_target_recovery_min": 3,
+    "b_gt_a_min": 2,
+    "a_gt_b": 0,
+    "mean_delta_min": 0.5,
+    "b_guard_regressions": 0,
+    "b_feedback": "delivered, immutable, and exactly accounted in every B cell",
+    "invalid": "any provider, harness, endpoint, marker, or accounting failure"
+  },
+  "frozen_file_sha256": {
+    "benchmarks/grading-env/run_mechanism_first_v3.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/MECHANISM_FIRST_V3_PREREG.template.json": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/run_hermes_stage2codex2_docker.sh": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/efficacy_v3.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/benchmark_review_evaluator_v3.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/benchmark_heldout_evaluator_v3.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "src/agentharness/benchmark_hidden_evaluators_batch1.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/task-expansion-batch1/references/appointment-booking-api/app/main.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/task-expansion-batch1/references/shipment-event-api/app/main.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/task-expansion-batch1/references/jsonl-event-aggregation/app/aggregate_events.py": "FREEZE_REQUIRED:FILE_SHA256",
+    "benchmarks/grading-env/task-expansion-batch1/references/invoice-payment-reconciliation/app/reconcile_invoices.py": "FREEZE_REQUIRED:FILE_SHA256"
+  }
+}

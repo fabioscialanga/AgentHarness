@@ -432,6 +432,7 @@ def _run_python_entrypoint(workspace: Path, candidates: list[str], args: list[st
         text=True,
         env=merged_env,
         check=False,
+        timeout=60,
     )
     if module_result.returncode == 0:
         return module_result
@@ -442,6 +443,7 @@ def _run_python_entrypoint(workspace: Path, candidates: list[str], args: list[st
         text=True,
         env=merged_env,
         check=False,
+        timeout=60,
     )
 
 

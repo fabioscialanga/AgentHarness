@@ -138,7 +138,8 @@ docker run --rm \
   --user "$(id -u):$(id -g)" \
   --tmpfs /tmp:rw,nosuid,size=1g \
   --tmpfs /run:rw,nosuid,size=64m \
-  --mount "type=bind,src=$cell_root,dst=/experiment" \
+  --mount "type=bind,src=$cell_root,dst=/experiment,readonly" \
+  --mount "type=bind,src=$PWD,dst=/experiment/$workspace_name" \
   --mount "type=bind,src=$private_profile,dst=/hermes-home" \
   --workdir "/experiment/$workspace_name" \
   --env HOME=/tmp/home \
