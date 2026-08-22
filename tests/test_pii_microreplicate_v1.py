@@ -127,3 +127,48 @@ def test_micro_interpretation_is_safety_gated() -> None:
         1,
         "localized_incremental_benefit",
     )
+
+
+def test_production_finalizer_positive_path_is_provider_free(monkeypatch: pytest.MonkeyPatch) -> None:
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        manifest_path = qualification_manifest(root / "manifest.json")
+        run_root = root / "run"
+        runner.MicroPilot(
+            manifest_path,
+            run_root,
+            invoker=runner.SyntheticRepairInvoker(),
+            usage=runner.synthetic_usage,
+            synthetic=True,
+        ).run()
+        manifest = json.loads(manifest_path.read_text())
+        manifest["execution_mode"] = "real"
+        manifest.pop("manifest_payload_sha256", None)
+        manifest["manifest_payload_sha256"] = canonical_hash(manifest)
+        runner.atomic_write(manifest_path, manifest)
+        runner.atomic_write(run_root / "preregistration.frozen.json", manifest)
+        manifest_hash = runner.sha256_file(manifest_path)
+        state_path = run_root / "campaign-state.private.json"
+        state = json.loads(state_path.read_text())
+        state["execution_mode"] = "real"
+        state["manifest_file_sha256"] = manifest_hash
+        runner.atomic_write(state_path, state)
+        audit_path = run_root / "collection-audit.final.json"
+        audit = json.loads(audit_path.read_text())
+        audit["execution_mode"] = "real"
+        audit["analysis_authorized"] = True
+        audit["manifest_file_sha256"] = manifest_hash
+        runner.atomic_write(audit_path, audit)
+        real_git = runner.git
+
+        def clean_git(*args: str) -> str:
+            if args[:2] == ("status", "--porcelain"):
+                return ""
+            return real_git(*args)
+
+        monkeypatch.setattr(runner, "git", clean_git)
+        result = runner.finalize(manifest_path, run_root)
+        assert result["verdict"] == "VALID"
+        assert result["A_binary_endpoint"] == 0
+        assert result["B_binary_endpoint"] == 1
+        assert result["interpretation"] == "localized_incremental_benefit"
