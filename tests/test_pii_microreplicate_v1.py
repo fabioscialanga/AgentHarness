@@ -36,6 +36,11 @@ def qualification_manifest(path: Path) -> Path:
     return path
 
 
+def test_template_timeout_matches_runtime() -> None:
+    manifest = json.loads(runner.TEMPLATE_PATH.read_text(encoding="utf-8"))
+    assert manifest["invocation_timeout_seconds"] == runner.AGENT_INVOCATION_TIMEOUT_SECONDS
+
+
 def test_micro_qualification_is_two_call_cloned_start_and_production_closed() -> None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)

@@ -23,7 +23,7 @@
   "model": "gpt-5.6-sol",
   "toolsets": "terminal,file",
   "max_turns": 40,
-  "invocation_timeout_seconds": 2400,
+  "invocation_timeout_seconds": 1800,
   "hermes_home": "/home/fabio/.hermes/profiles/stage2codex2",
   "hermes_command": "/home/fabio/AgentHarness-actionable-repair-20260725/benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
   "hermes_command_sha256": "FREEZE_REQUIRED:wrapper",
