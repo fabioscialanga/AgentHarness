@@ -421,9 +421,17 @@ def _discover_entrypoint(workspace: Path, candidates: list[str]) -> Path:
 
 def _run_python_entrypoint(workspace: Path, candidates: list[str], args: list[str], env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     entrypoint = _discover_entrypoint(workspace, candidates)
-    merged_env = os.environ.copy()
+    merged_env = {key: value for key, value in os.environ.items() if not key.startswith("PYTHON") and key not in {"HOME"}}
     if env:
-        merged_env.update(env)
+        merged_env.update({key: value for key, value in env.items() if not key.startswith("PYTHON") and key != "HOME"})
+    heldout_home = workspace / ".agentharness-heldout-home"
+    heldout_home.mkdir(parents=True, exist_ok=True)
+    merged_env.update({
+        "HOME": str(heldout_home.resolve()),
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONSAFEPATH": "1",
+        "PYTHONPATH": str(workspace.resolve()),
+    })
     module_name = ".".join(entrypoint.relative_to(workspace).with_suffix("").parts)
     module_result = subprocess.run(
         [sys.executable, "-m", module_name, *args],

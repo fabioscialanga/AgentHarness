@@ -1371,10 +1371,39 @@ def _base_env() -> dict[str, str]:
     return env
 
 
-def _canonical_pytest_env(workspace: Path) -> dict[str, str]:
+def _project_package_roster(workspace: Path, report_path: Path) -> tuple[str, ...]:
+    pre_audit = report_path.parent / "pre-repair-pytest.import-audit.json"
+    if report_path.name.startswith("post-repair-") and pre_audit.is_file():
+        payload = json.loads(pre_audit.read_text(encoding="utf-8"))
+        roster = payload.get("project_packages") if isinstance(payload, dict) else None
+        if isinstance(roster, list) and roster and all(isinstance(item, str) and item.isidentifier() for item in roster):
+            return tuple(roster)
+        raise ClassifiedCellFailure("harness_invalid", "Pre-repair project package roster is invalid")
+    roster = tuple(
+        sorted(
+            child.name
+            for child in workspace.iterdir()
+            if child.is_dir()
+            and not child.is_symlink()
+            and child.name.isidentifier()
+            and (child / "__init__.py").is_file()
+        )
+    )
+    if not roster:
+        raise ClassifiedCellFailure("harness_invalid", "Canonical project package roster is empty")
+    return roster
+
+
+def _canonical_pytest_env(workspace: Path, *, import_audit_path: Path, package_roster: tuple[str, ...]) -> dict[str, str]:
     env = sanitized_environment(default_execution_policy())
     env["AGENTHARNESS_GRADING_ENV_DIR"] = str(GRADING_ENV_DIR.resolve())
-    env["PYTHONPATH"] = str(workspace.resolve())
+    env["AGENTHARNESS_WORKSPACE_ROOT"] = str(workspace.resolve())
+    env["AGENTHARNESS_IMPORT_AUDIT_PATH"] = str(import_audit_path.resolve())
+    env["AGENTHARNESS_PROJECT_PACKAGE_ROSTER"] = ",".join(package_roster)
+    env["HOME"] = str((import_audit_path.parent / ".canonical-pytest-home").resolve())
+    env["PYTHONNOUSERSITE"] = "1"
+    env["PYTHONSAFEPATH"] = "1"
+    env["PYTHONPATH"] = os.pathsep.join((str(GRADING_ENV_DIR.resolve()), str(workspace.resolve())))
     return env
 
 
@@ -1383,16 +1412,20 @@ def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object
     python_path = ensure_test_venv(workspace)
     stdout_path = report_path.with_suffix(".stdout")
     stderr_path = report_path.with_suffix(".stderr")
+    import_audit_path = report_path.with_suffix(".import-audit.json")
+    import_audit_path.unlink(missing_ok=True)
+    (import_audit_path.parent / ".canonical-pytest-home").mkdir(parents=True, exist_ok=True)
+    package_roster = _project_package_roster(workspace, report_path)
     started = _utc_now()
     t0 = time.time()
     try:
         completed = subprocess.run(
-            [str(python_path), "-m", "pytest", "-q"],
+            [str(python_path), "-m", "pytest", "-q", "-p", "pytest_workspace_guard"],
             cwd=str(workspace),
             capture_output=True,
             text=True,
             check=False,
-            env=_canonical_pytest_env(workspace),
+            env=_canonical_pytest_env(workspace, import_audit_path=import_audit_path, package_roster=package_roster),
             timeout=PYTEST_TIMEOUT_SECONDS,
         )
     except subprocess.TimeoutExpired as exc:
@@ -1404,11 +1437,44 @@ def run_workspace_pytest(workspace: Path, report_path: Path) -> dict[str, object
     finished = _utc_now()
     stdout_path.write_text(completed.stdout, encoding="utf-8")
     stderr_path.write_text(completed.stderr, encoding="utf-8")
+    if not import_audit_path.is_file():
+        raise ClassifiedCellFailure("harness_invalid", f"Canonical pytest import audit missing for {workspace}")
+    try:
+        import_audit = json.loads(import_audit_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ClassifiedCellFailure("harness_invalid", f"Canonical pytest import audit invalid for {workspace}") from exc
+    guard_path = GRADING_ENV_DIR.resolve() / "pytest_workspace_guard.py"
+    guard_identity = import_audit.get("guard_module") if isinstance(import_audit, dict) else None
+    guard_observed_path = guard_identity.get("path") if isinstance(guard_identity, dict) else None
+    guard_observed_hash = guard_identity.get("sha256") if isinstance(guard_identity, dict) else None
+    violations = import_audit.get("violations") if isinstance(import_audit, dict) else None
+    observations = import_audit.get("observations") if isinstance(import_audit, dict) else None
+    if any(
+        (
+            import_audit.get("schema_version") != 2,
+            import_audit.get("workspace") != str(workspace.resolve()),
+            import_audit.get("project_packages") != list(package_roster),
+            import_audit.get("import_tracker_installed") is not True,
+            not isinstance(guard_identity, dict),
+            guard_observed_path != str(guard_path),
+            guard_observed_hash != hashlib.sha256(guard_path.read_bytes()).hexdigest(),
+            not isinstance(violations, list),
+            not isinstance(observations, list),
+        )
+    ):
+        raise ClassifiedCellFailure("harness_invalid", f"Canonical pytest import audit schema invalid for {workspace}")
+    if violations:
+        raise ClassifiedCellFailure(
+            "harness_invalid",
+            f"Canonical pytest imported project modules outside workspace {workspace}: {violations}",
+        )
     payload = {
-        "command": [str(python_path), "-m", "pytest", "-q"],
+        "command": [str(python_path), "-m", "pytest", "-q", "-p", "pytest_workspace_guard"],
         "exit_code": completed.returncode,
         "stdout_path": str(stdout_path),
         "stderr_path": str(stderr_path),
+        "import_audit_path": str(import_audit_path),
+        "import_audit_sha256": hashlib.sha256(import_audit_path.read_bytes()).hexdigest(),
         "started_at": started,
         "finished_at": finished,
         "duration_seconds": duration,

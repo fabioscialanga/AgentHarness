@@ -36,6 +36,7 @@ from agentharness.benchmark_cells import (
     prepare_fresh_cell,
     replay_uncommitted_successful_invocations,
     run_heldout_evaluation,
+    run_workspace_pytest,
     score_from_evaluation,
     validate_repair_response_payload,
     write_run_json,
@@ -1715,6 +1716,111 @@ class BenchmarkCellsTests(unittest.TestCase):
             stderr="",
         )
         self.assertTrue(_is_retryable_invocation_failure(completed))
+
+    def test_canonical_pytest_records_workspace_import_origins(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            package = workspace / "demo_package"
+            tests = workspace / "tests"
+            package.mkdir(parents=True)
+            tests.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+            (package / "value.py").write_text("VALUE = 7\n", encoding="utf-8")
+            (tests / "test_value.py").write_text(
+                "from demo_package.value import VALUE\n\ndef test_value():\n    assert VALUE == 7\n",
+                encoding="utf-8",
+            )
+            (workspace / "pyproject.toml").write_text(
+                "[project]\nname='demo-project'\nversion='0.1.0'\ndependencies=[]\n",
+                encoding="utf-8",
+            )
+            result = run_workspace_pytest(workspace, root / "pytest.json")
+            self.assertEqual(result["exit_code"], 0)
+            audit = json.loads(Path(str(result["import_audit_path"])).read_text(encoding="utf-8"))
+            self.assertEqual(audit["violations"], [])
+            self.assertTrue(any(row["module"] == "demo_package.value" for row in audit["observations"]))
+
+    def test_canonical_pytest_rejects_project_import_outside_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            outside = root / "outside"
+            for base, value in ((workspace, 7), (outside, 9)):
+                package = base / "demo_package"
+                package.mkdir(parents=True)
+                (package / "__init__.py").write_text("", encoding="utf-8")
+                (package / "value.py").write_text(f"VALUE = {value}\n", encoding="utf-8")
+            tests = workspace / "tests"
+            tests.mkdir()
+            (tests / "test_escape.py").write_text(
+                "import importlib, sys\n"
+                "def test_escape():\n"
+                "    [sys.modules.pop(name) for name in list(sys.modules) if name == 'demo_package' or name.startswith('demo_package.')]\n"
+                f"    sys.path.insert(0, {str(outside)!r})\n"
+                "    assert importlib.import_module('demo_package.value').VALUE == 9\n",
+                encoding="utf-8",
+            )
+            (workspace / "pyproject.toml").write_text(
+                "[project]\nname='demo-project'\nversion='0.1.0'\ndependencies=[]\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(ClassifiedCellFailure) as raised:
+                run_workspace_pytest(workspace, root / "pytest.json")
+            self.assertEqual(raised.exception.execution_status, "harness_invalid")
+            self.assertIn("outside workspace", raised.exception.classification_reason)
+
+    def test_canonical_pytest_guard_cannot_be_shadowed_by_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            package = workspace / "demo_pkg"
+            tests = workspace / "tests"
+            package.mkdir(parents=True)
+            tests.mkdir()
+            (package / "__init__.py").write_text("VALUE = 7\n", encoding="utf-8")
+            (workspace / "pytest_workspace_guard.py").write_text(
+                "raise RuntimeError('workspace shadow plugin loaded')\n", encoding="utf-8"
+            )
+            (tests / "test_import.py").write_text(
+                "from demo_pkg import VALUE\n\ndef test_value():\n    assert VALUE == 7\n",
+                encoding="utf-8",
+            )
+            report = root / "shadow.json"
+            result = run_workspace_pytest(workspace, report)
+            self.assertEqual(result["exit_code"], 0)
+            audit = json.loads(report.with_suffix(".import-audit.json").read_text(encoding="utf-8"))
+            self.assertEqual(
+                Path(audit["guard_module"]["path"]).resolve(),
+                (Path(__file__).resolve().parents[1] / "benchmarks/grading-env/pytest_workspace_guard.py").resolve(),
+            )
+
+    def test_canonical_pytest_records_external_import_even_after_sys_modules_pop(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            workspace = root / "workspace"
+            external = root / "outside"
+            for base, value in ((workspace, "local"), (external, "outside")):
+                package = base / "demo_pkg"
+                package.mkdir(parents=True)
+                (package / "__init__.py").write_text(f"VALUE = {value!r}\n", encoding="utf-8")
+            tests = workspace / "tests"
+            tests.mkdir()
+            (tests / "test_pop.py").write_text(
+                "import importlib,sys\n"
+                "def test_pop():\n"
+                "    sys.modules.pop('demo_pkg', None)\n"
+                f"    sys.path.insert(0, {str(external)!r})\n"
+                "    module=importlib.import_module('demo_pkg')\n"
+                "    assert module.VALUE == 'outside'\n"
+                "    sys.modules.pop('demo_pkg', None)\n"
+                "    sys.path.pop(0)\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(ClassifiedCellFailure) as raised:
+                run_workspace_pytest(workspace, root / "pop.json")
+            self.assertEqual(raised.exception.execution_status, "harness_invalid")
+            self.assertIn("outside workspace", raised.exception.classification_reason)
 
 
 if __name__ == "__main__":
