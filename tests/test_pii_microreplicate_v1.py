@@ -116,6 +116,10 @@ def test_pii_heldout_ignores_inherited_pythonpath(monkeypatch: pytest.MonkeyPatc
         digest = runner.write_heldout_import_audit(workspace, audit_path)
         assert digest == runner.sha256_file(audit_path)
         payload = json.loads(audit_path.read_text())
+        assert payload["schema_version"] == 2
+        assert payload["runtime"]["safe_path"] is True
+        assert payload["runtime"]["cwd"] == str(workspace.resolve())
+        assert isinstance(payload["runtime"]["removed_sys_path"], list)
         assert all(Path(path).resolve().is_relative_to(workspace.resolve()) for path in payload["origins"].values())
         heldout = evaluate_heldout(workspace, runner.TASK_ID)
         assert heldout["target_passed"] is False

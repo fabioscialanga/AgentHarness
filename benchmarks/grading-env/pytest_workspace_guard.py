@@ -15,6 +15,8 @@ _ORIGINAL_IMPORT = builtins.__import__
 _IMPORT_EVENTS: list[dict[str, str]] = []
 _TRACKER_INSTALLED = False
 _TRACKING_IMPORT = False
+_INITIAL_SYS_PATH: list[str] = []
+_REMOVED_SYS_PATH: list[str] = []
 
 
 def _within(path: Path, root: Path) -> bool:
@@ -66,6 +68,24 @@ def _guard_identity() -> dict[str, str]:
     return {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
+def _sanitize_sys_path() -> None:
+    global _INITIAL_SYS_PATH, _REMOVED_SYS_PATH
+    workspace = Path(os.environ["AGENTHARNESS_WORKSPACE_ROOT"]).resolve(strict=True)
+    grading = Path(os.environ["AGENTHARNESS_GRADING_ENV_DIR"]).resolve(strict=True)
+    allowed_roots = (workspace, grading, Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve())
+    _INITIAL_SYS_PATH = list(sys.path)
+    retained: list[str] = []
+    removed: list[str] = []
+    for entry in sys.path:
+        candidate = Path(entry or os.getcwd()).resolve(strict=False)
+        if any(_within(candidate, root) for root in allowed_roots):
+            retained.append(entry)
+        else:
+            removed.append(entry)
+    sys.path[:] = retained
+    _REMOVED_SYS_PATH = removed
+
+
 def _audit() -> dict[str, Any]:
     workspace = Path(os.environ["AGENTHARNESS_WORKSPACE_ROOT"]).resolve(strict=True)
     roster = _roster()
@@ -80,6 +100,15 @@ def _audit() -> dict[str, Any]:
         "schema_version": 2,
         "workspace": str(workspace),
         "project_packages": list(roster),
+        "runtime": {
+            "cwd": os.getcwd(),
+            "pwd": os.environ.get("PWD"),
+            "pythonpath": os.environ.get("PYTHONPATH"),
+            "safe_path": bool(sys.flags.safe_path),
+            "initial_sys_path": list(_INITIAL_SYS_PATH),
+            "removed_sys_path": list(_REMOVED_SYS_PATH),
+        },
+        "sys_path": list(sys.path),
         "guard_module": _guard_identity(),
         "import_tracker_installed": builtins.__import__ is _tracked_import,
         "observations": observations,
@@ -100,6 +129,7 @@ def _write_audit() -> dict[str, Any]:
 def pytest_configure(config: pytest.Config) -> None:
     global _TRACKER_INSTALLED
     _roster()
+    _sanitize_sys_path()
     builtins.__import__ = _tracked_import
     _TRACKER_INSTALLED = True
     _record_loaded_modules()

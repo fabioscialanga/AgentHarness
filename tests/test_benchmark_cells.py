@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -1740,6 +1741,18 @@ class BenchmarkCellsTests(unittest.TestCase):
             audit = json.loads(Path(str(result["import_audit_path"])).read_text(encoding="utf-8"))
             self.assertEqual(audit["violations"], [])
             self.assertTrue(any(row["module"] == "demo_package.value" for row in audit["observations"]))
+            self.assertTrue(audit["runtime"]["safe_path"])
+            self.assertEqual(audit["runtime"]["cwd"], str(workspace.resolve()))
+            command = result["command"]
+            self.assertIsInstance(command, list)
+            command = cast(list[str], command)
+            self.assertIn("-P", command)
+            self.assertIn("--import-mode=importlib", command)
+            self.assertEqual(command[command.index("--rootdir") + 1], str(workspace.resolve()))
+            allowed = (workspace.resolve(), (Path(__file__).resolve().parents[1] / "benchmarks/grading-env").resolve(), Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve())
+            for entry in audit["sys_path"]:
+                candidate = Path(entry or audit["runtime"]["cwd"]).resolve()
+                self.assertTrue(any(candidate == root or root in candidate.parents for root in allowed))
 
     def test_canonical_pytest_rejects_project_import_outside_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1768,7 +1781,7 @@ class BenchmarkCellsTests(unittest.TestCase):
             with self.assertRaises(ClassifiedCellFailure) as raised:
                 run_workspace_pytest(workspace, root / "pytest.json")
             self.assertEqual(raised.exception.execution_status, "harness_invalid")
-            self.assertIn("outside workspace", raised.exception.classification_reason)
+            self.assertIn("non-allowlisted sys.path", raised.exception.classification_reason)
 
     def test_canonical_pytest_guard_cannot_be_shadowed_by_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

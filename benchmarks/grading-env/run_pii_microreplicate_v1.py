@@ -207,27 +207,63 @@ def validate_import_audits(cell: Path, *, synthetic: bool) -> dict[str, str]:
 
 def write_heldout_import_audit(workspace: Path, destination: Path) -> str:
     workspace = workspace.resolve(strict=True)
-    environment = {key: value for key, value in os.environ.items() if not key.startswith("PYTHON") and key != "HOME"}
+    environment = {key: value for key, value in os.environ.items() if not key.startswith("PYTHON") and key not in {"HOME", "OLDPWD"}}
     home = destination.parent / ".heldout-import-home"
     home.mkdir(parents=True, exist_ok=True)
     environment.update({
         "HOME": str(home.resolve()),
+        "PWD": str(workspace),
         "PYTHONNOUSERSITE": "1",
         "PYTHONSAFEPATH": "1",
         "PYTHONPATH": str(workspace),
+        "AGENTHARNESS_WORKSPACE_ROOT": str(workspace),
     })
-    script = "import json,pii_redactor,pii_redactor.redact as r; print(json.dumps({'pii_redactor':pii_redactor.__file__,'pii_redactor.redact':r.__file__},sort_keys=True))"
-    completed = subprocess.run([sys.executable, "-c", script], cwd=workspace, env=environment, capture_output=True, text=True, check=False, timeout=60)
+    script = """
+import json, os, sys
+from pathlib import Path
+workspace = Path(os.environ['AGENTHARNESS_WORKSPACE_ROOT']).resolve(strict=True)
+allowed = (workspace, Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve())
+initial = list(sys.path)
+kept = []
+removed = []
+for entry in sys.path:
+    candidate = Path(entry or os.getcwd()).resolve(strict=False)
+    if any(candidate == root or root in candidate.parents for root in allowed):
+        kept.append(entry)
+    else:
+        removed.append(entry)
+sys.path[:] = kept
+import pii_redactor
+import pii_redactor.redact as redact
+print(json.dumps({
+    'origins': {'pii_redactor': pii_redactor.__file__, 'pii_redactor.redact': redact.__file__},
+    'runtime': {'cwd': os.getcwd(), 'pwd': os.environ.get('PWD'), 'safe_path': bool(sys.flags.safe_path), 'initial_sys_path': initial, 'removed_sys_path': removed, 'sys_path': list(sys.path)},
+}, sort_keys=True))
+"""
+    completed = subprocess.run([sys.executable, "-P", "-c", script], cwd=workspace, env=environment, capture_output=True, text=True, check=False, timeout=60)
     if completed.returncode != 0:
         raise IntegrityFailure("heldout import probe failed")
     try:
-        origins = json.loads(completed.stdout)
+        probe = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
         raise IntegrityFailure("heldout import probe payload invalid") from exc
+    origins = probe.get("origins") if isinstance(probe, Mapping) else None
+    runtime = probe.get("runtime") if isinstance(probe, Mapping) else None
     expected = {"pii_redactor", "pii_redactor.redact"}
-    if not isinstance(origins, Mapping) or set(origins) != expected or any(not isinstance(path, str) or not _within(Path(path), workspace) for path in origins.values()):
+    if (
+        not isinstance(origins, Mapping)
+        or set(origins) != expected
+        or any(not isinstance(path, str) or not _within(Path(path), workspace) for path in origins.values())
+        or not isinstance(runtime, Mapping)
+        or runtime.get("cwd") != str(workspace)
+        or runtime.get("pwd") != str(workspace)
+        or runtime.get("safe_path") is not True
+        or not isinstance(runtime.get("initial_sys_path"), list)
+        or not isinstance(runtime.get("removed_sys_path"), list)
+        or not isinstance(runtime.get("sys_path"), list)
+    ):
         raise IntegrityFailure("heldout import origin escaped workspace")
-    payload = {"schema_version": 1, "workspace": str(workspace), "environment": {"PYTHONNOUSERSITE": "1", "PYTHONSAFEPATH": "1", "PYTHONPATH": str(workspace)}, "origins": dict(origins), "violations": []}
+    payload = {"schema_version": 2, "workspace": str(workspace), "environment": {"PYTHONNOUSERSITE": "1", "PYTHONSAFEPATH": "1", "PYTHONPATH": str(workspace), "PWD": str(workspace)}, "runtime": dict(runtime), "origins": dict(origins), "violations": []}
     atomic_write(destination, payload, exclusive=True)
     return sha256_file(destination)
 
@@ -463,7 +499,22 @@ def finalize(manifest_path: Path, run_root: Path) -> dict[str, object]:
         heldout_payload = json.loads(heldout_path.read_text(encoding="utf-8"))
         origins = heldout_payload.get("origins") if isinstance(heldout_payload, Mapping) else None
         workspace = (cell_root / "workspace").resolve()
-        if sha256_file(heldout_path) != cell.get("heldout_import_audit_sha256") or heldout_payload.get("schema_version") != 1 or heldout_payload.get("workspace") != str(workspace) or heldout_payload.get("violations") != [] or not isinstance(origins, Mapping) or set(origins) != {"pii_redactor", "pii_redactor.redact"} or any(not isinstance(path, str) or not _within(Path(path), workspace) for path in origins.values()):
+        heldout_runtime = heldout_payload.get("runtime") if isinstance(heldout_payload, Mapping) else None
+        if (
+            sha256_file(heldout_path) != cell.get("heldout_import_audit_sha256")
+            or heldout_payload.get("schema_version") != 2
+            or heldout_payload.get("workspace") != str(workspace)
+            or heldout_payload.get("violations") != []
+            or not isinstance(origins, Mapping)
+            or set(origins) != {"pii_redactor", "pii_redactor.redact"}
+            or any(not isinstance(path, str) or not _within(Path(path), workspace) for path in origins.values())
+            or not isinstance(heldout_runtime, Mapping)
+            or heldout_runtime.get("cwd") != str(workspace)
+            or heldout_runtime.get("pwd") != str(workspace)
+            or heldout_runtime.get("safe_path") is not True
+            or not isinstance(heldout_runtime.get("removed_sys_path"), list)
+            or not isinstance(heldout_runtime.get("sys_path"), list)
+        ):
             raise IntegrityFailure("heldout import audit binding invalid")
     a_target = bool(by_condition["A-baseline"]["target_passed"])
     b_target = bool(by_condition["B-agentharness"]["target_passed"])
