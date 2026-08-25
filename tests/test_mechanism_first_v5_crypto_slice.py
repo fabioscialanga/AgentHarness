@@ -36,6 +36,15 @@ TASKS = {
         "package": "envelope_crypto",
         "module": "decrypt.py",
     },
+    "attenuated-capability-verifier": {
+        "script": GRADING / "qualify_v5_capability.py",
+        "reference": OUT / "references/attenuated-capability-verifier",
+        "env": "V5_CAPABILITY_REFERENCE",
+        "checks": ["capability_attenuation", "capability_chain_signatures", "capability_request_match", "capability_time_intersection", "capability_depth"],
+        "probe_counts": {"capability_attenuation": 5, "capability_chain_signatures": 7, "capability_request_match": 7, "capability_time_intersection": 8, "capability_depth": 6},
+        "package": "capability",
+        "module": "verify.py",
+    },
 }
 
 
