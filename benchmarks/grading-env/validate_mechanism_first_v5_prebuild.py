@@ -26,7 +26,7 @@ OUTCOME_TOKENS = ("a_target", "b_target", "delta_b_minus_a", "baseline_ceiling",
 EXPECTED_BASE_COMMIT = "95649a6ae0cbbbaf770f7f1363fbe6cc35d79f77"
 EXPECTED_SELECTION_SEED = "agentharness-mechanism-first-v5-admission-v1"
 EXPECTED_FREEZE_DATE = "2026-08-24"
-EXPECTED_LEDGER_SHA256 = "153a33cdea757da8c31815cf3afc4ab17b0c47b0e012ec018fe0089578a9ecf1"
+EXPECTED_LEDGER_SHA256 = "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c"
 EXPECTED_PRIOR_IDS = {
     "support-ticket-api", "csv-member-import", "incident-escalation-api", "inventory-adjustment-api",
     "leave-request-api", "refund-approval-api", "report-export-job", "webhook-ingestion-service",
