@@ -33,6 +33,7 @@ import argparse
 import hashlib
 import json
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -298,6 +299,16 @@ def gate_solution(
 
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
+        solution_copy = tmp / "solution"
+        shutil.copytree(
+            solution_dir,
+            solution_copy,
+            ignore=shutil.ignore_patterns("build", "*.egg-info", "__pycache__", "*.pyc", ".pytest_cache"),
+        )
+        if (solution_copy / "pyproject.toml").is_file():
+            reqs = [str(solution_copy)]
+        else:
+            reqs = ["-r", str(solution_copy / "requirements.txt")]
         try:
             venv_dir = make_venv(tmp)
         except RuntimeError as exc:
@@ -319,7 +330,7 @@ def gate_solution(
         if not passed:
             return
 
-        cmd = grader_cmd.format(python=str(py), solution=str(solution_dir))
+        cmd = grader_cmd.format(python=str(py), solution=str(solution_copy))
         cp = run(shlex.split(cmd))
         passed = cp.returncode == 0
         detail = "" if passed else (cp.stdout + cp.stderr).strip()[-400:]

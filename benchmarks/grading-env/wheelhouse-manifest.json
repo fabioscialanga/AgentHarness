@@ -12,6 +12,7 @@
       "uvicorn"
     ],
     "cli-solution": [
+      "cryptography",
       "pytest"
     ],
     "grader": [
@@ -37,6 +38,7 @@
       "uvicorn"
     ],
     "cli-solution": [
+      "cryptography==49.0.0",
       "pytest>=8.0,<9.0"
     ],
     "grader": [
@@ -52,7 +54,7 @@
     ]
   },
   "constraints_file": "constraints-py312.txt",
-  "constraints_sha256": "c798fb63d84016264f8399658162e9a5f413be2a9e226a69597ba7d10a4c2549",
+  "constraints_sha256": "b5b71040d1b21268a57c03c63e4c3d4629c4ae70747c5ac49244e63d2a773879",
   "files": [
     {
       "filename": "agentharness_verifier-0.2.0-py3-none-any.whl",
@@ -80,9 +82,19 @@
       "size_bytes": 136983
     },
     {
+      "filename": "cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf",
+      "size_bytes": 221822
+    },
+    {
       "filename": "click-8.4.2-py3-none-any.whl",
       "sha256": "e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76",
       "size_bytes": 119243
+    },
+    {
+      "filename": "cryptography-49.0.0-cp311-abi3-manylinux_2_34_x86_64.whl",
+      "sha256": "cbc77da8c523d5abd028635ba850a6966fcee2c82e2bf65a41d1d8afe0f98be9",
+      "size_bytes": 4749290
     },
     {
       "filename": "dnspython-2.8.0-py3-none-any.whl",
@@ -138,6 +150,11 @@
       "filename": "pluggy-1.6.0-py3-none-any.whl",
       "sha256": "e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746",
       "size_bytes": 20538
+    },
+    {
+      "filename": "pycparser-3.0-py3-none-any.whl",
+      "sha256": "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992",
+      "size_bytes": 48172
     },
     {
       "filename": "pydantic-2.13.4-py3-none-any.whl",
@@ -217,6 +234,7 @@
   ],
   "root_requirements": [
     "agentharness-verifier==0.2.0",
+    "cryptography==49.0.0",
     "email-validator",
     "fastapi",
     "httpx",

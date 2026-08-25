@@ -119,6 +119,14 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         temp_root = Path(tmp_dir)
+        normalized_distribution = distribution_name.replace("-", "_")
+        existing_project_wheels = sorted(WHEELHOUSE_DIR.glob(f"{normalized_distribution}-{agentharness_version}-*.whl"))
+        if len(existing_project_wheels) > 1:
+            raise RuntimeError("multiple existing first-party wheels for the frozen AgentHarness version")
+        preserved_project_wheel: Path | None = None
+        if existing_project_wheels:
+            preserved_project_wheel = temp_root / existing_project_wheels[0].name
+            shutil.copy2(existing_project_wheels[0], preserved_project_wheel)
         venv_dir = temp_root / "resolver-venv"
         run([sys.executable, "-m", "venv", str(venv_dir)])
         python_bin = venv_dir / "bin" / "python"
@@ -142,7 +150,10 @@ def main() -> int:
             encoding="utf-8",
         )
         run([str(python_bin), "-m", "pip", "download", "-d", str(WHEELHOUSE_DIR), "-r", str(third_party_constraints)])
-        run([str(python_bin), "-m", "pip", "wheel", "--no-deps", "-w", str(WHEELHOUSE_DIR), str(REPO_ROOT)])
+        if preserved_project_wheel is not None:
+            shutil.copy2(preserved_project_wheel, WHEELHOUSE_DIR / preserved_project_wheel.name)
+        else:
+            run([str(python_bin), "-m", "pip", "wheel", "--no-deps", "-w", str(WHEELHOUSE_DIR), str(REPO_ROOT)])
 
     manifest_payload = {
         "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
