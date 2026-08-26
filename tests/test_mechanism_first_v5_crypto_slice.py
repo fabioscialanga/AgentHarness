@@ -45,6 +45,15 @@ TASKS = {
         "package": "capability",
         "module": "verify.py",
     },
+    "atomic-batch-state-machine": {
+        "script": GRADING / "qualify_v5_atomic_batch.py",
+        "reference": OUT / "references/atomic-batch-state-machine",
+        "env": "V5_ATOMIC_BATCH_REFERENCE",
+        "checks": ["batch_all_or_none", "batch_duplicate_entity", "batch_error_index", "batch_idempotent_replay", "batch_response_order"],
+        "probe_counts": {"batch_all_or_none": 6, "batch_duplicate_entity": 5, "batch_error_index": 19, "batch_idempotent_replay": 7, "batch_response_order": 5},
+        "package": "batch_state_api",
+        "module": "main.py",
+    },
 }
 
 

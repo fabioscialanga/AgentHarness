@@ -11,6 +11,7 @@ MODULES = {
     "rotating-key-token-verifier": Path("rotating_token/verify.py"),
     "envelope-context-decryptor": Path("envelope_crypto/decrypt.py"),
     "attenuated-capability-verifier": Path("capability/verify.py"),
+    "atomic-batch-state-machine": Path("batch_state_api/main.py"),
 }
 
 
