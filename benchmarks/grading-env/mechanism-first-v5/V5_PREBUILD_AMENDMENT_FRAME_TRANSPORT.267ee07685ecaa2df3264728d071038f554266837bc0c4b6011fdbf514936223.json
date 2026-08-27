@@ -1,0 +1,22 @@
+{
+  "amendment_id": "v5-frame-parser-chunks-file-carrier",
+  "carrier_contract": {
+    "failure_semantics": "A missing, unreadable, non-UTF-8, or invalid-JSON carrier is invalid_input and preserves output.",
+    "literal": "--chunks accepts the frozen literal CHUNKS_JSON form unchanged.",
+    "path": "When the exact --chunks argument begins with @, the remaining text is a caller-supplied path whose exact strict UTF-8 contents are interpreted as CHUNKS_JSON.",
+    "semantic_equivalence": "For identical JSON bytes, literal and @PATH carriers have identical parsing, validation, chunk boundaries, output, and diagnostics."
+  },
+  "effective_before_efficacy": true,
+  "efficacy_cells_observed": 0,
+  "parent_json_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+  "provider_calls": 0,
+  "reason": "Linux MAX_ARG_STRLEN cannot carry some valid frozen inputs: hexadecimal JSON for the smallest nonzero endian-symmetric frame length 65792 exceeds the per-argument limit, while the frozen profile permits up to 2 MiB decoded input.",
+  "scope": {
+    "candidate_id": "length-prefixed-frame-parser",
+    "changes_mechanism_or_checks": false,
+    "transport_only": true
+  },
+  "schema_version": 1,
+  "status": "pre_data_transport_amendment",
+  "payload_sha256": "267ee07685ecaa2df3264728d071038f554266837bc0c4b6011fdbf514936223"
+}

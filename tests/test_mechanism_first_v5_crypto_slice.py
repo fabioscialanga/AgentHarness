@@ -64,6 +64,16 @@ TASKS = {
         "package": "ack_queue",
         "module": "cli.py",
     },
+    "length-prefixed-frame-parser": {
+        "script": GRADING / "qualify_v5_frame_parser.py",
+        "reference": OUT / "references/length-prefixed-frame-parser",
+        "env": "V5_FRAME_PARSER_REFERENCE",
+        "checks": ["frame_split_prefix_payload", "frame_max_before_alloc", "frame_truncated_eof", "frame_zero_and_multiple", "frame_endianness"],
+        "probe_counts": {"frame_split_prefix_payload": 8, "frame_max_before_alloc": 15, "frame_truncated_eof": 10, "frame_zero_and_multiple": 6, "frame_endianness": 5},
+        "admission_mutants": {"frame_split_prefix_near_miss": ["frame_split_prefix_payload"]},
+        "package": "frame_parser",
+        "module": "parse.py",
+    },
 }
 
 
@@ -151,6 +161,15 @@ def test_v5_crypto_visible_allowlist_and_private_ids_absent() -> None:
         assert "AGENTHARNESS_MUTANT" not in visible
         for private_id in [*task["checks"], *task.get("admission_mutants", {})]:
             assert private_id not in visible
+
+
+def test_v5_prebuild_transport_amendments_are_hash_bound() -> None:
+    validator = OUT / "validate_v5_prebuild_amendments.py"
+    completed = subprocess.run([sys.executable, str(validator)], cwd="/tmp", capture_output=True, text=True, timeout=30, check=False)
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert payload["amendments"] == 1
 
 
 def test_v5_crypto_dependency_is_in_frozen_wheelhouse() -> None:

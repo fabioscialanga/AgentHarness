@@ -1,0 +1,11 @@
+{
+  "amendments": [
+    {
+      "amendment_id": "v5-frame-parser-chunks-file-carrier",
+      "file": "V5_PREBUILD_AMENDMENT_FRAME_TRANSPORT.267ee07685ecaa2df3264728d071038f554266837bc0c4b6011fdbf514936223.json",
+      "payload_sha256": "267ee07685ecaa2df3264728d071038f554266837bc0c4b6011fdbf514936223"
+    }
+  ],
+  "parent_json_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+  "schema_version": 1
+}
