@@ -12,6 +12,7 @@ MODULES = {
     "envelope-context-decryptor": Path("envelope_crypto/decrypt.py"),
     "attenuated-capability-verifier": Path("capability/verify.py"),
     "atomic-batch-state-machine": Path("batch_state_api/main.py"),
+    "ack-token-work-queue": Path("ack_queue/cli.py"),
 }
 
 

@@ -54,6 +54,16 @@ TASKS = {
         "package": "batch_state_api",
         "module": "main.py",
     },
+    "ack-token-work-queue": {
+        "script": GRADING / "qualify_v5_ack_queue.py",
+        "reference": OUT / "references/ack-token-work-queue",
+        "env": "V5_ACK_QUEUE_REFERENCE",
+        "checks": ["ack_stale_worker_rejected", "ack_single_claim", "ack_visibility_timeout", "ack_nack_requeues", "ack_attempt_accounting"],
+        "probe_counts": {"ack_stale_worker_rejected": 24, "ack_single_claim": 6, "ack_visibility_timeout": 6, "ack_nack_requeues": 7, "ack_attempt_accounting": 6},
+        "admission_mutants": {"ack_stale_toctou": ["ack_stale_worker_rejected"]},
+        "package": "ack_queue",
+        "module": "cli.py",
+    },
 }
 
 
@@ -78,10 +88,17 @@ def test_v5_crypto_reference_and_singleton_mutation_matrices_are_exact() -> None
         assert payload["matrix"][0]["failed"] == []
         assert payload["matrix"][0]["passed"] == task["checks"]
         assert payload["matrix"][0]["executed_probes"] == task["probe_counts"]
-        for row, check in zip(payload["matrix"][1:], task["checks"], strict=True):
+        planned = payload["matrix"][1:1 + len(task["checks"])]
+        for row, check in zip(planned, task["checks"], strict=True):
             assert row["implementation"] == check
             assert row["failed"] == [check]
             assert row["passed"] == [name for name in task["checks"] if name != check]
+        admission = task.get("admission_mutants", {})
+        admission_rows = payload["matrix"][1 + len(task["checks"]):]
+        assert [row["implementation"] for row in admission_rows] == list(admission)
+        for row in admission_rows:
+            assert row["failed"] == admission[row["implementation"]]
+            assert row["passed"] == [name for name in task["checks"] if name not in row["failed"]]
 
 
 def test_v5_crypto_qualification_is_deterministic() -> None:
@@ -114,13 +131,14 @@ def test_v5_crypto_candidate_mode_exercises_arbitrary_workspace_without_mutants(
 def test_v5_crypto_source_mutants_are_distinct_and_have_no_runtime_selector(tmp_path: Path) -> None:
     for task_id, task in TASKS.items():
         digests = set()
-        for check in task["checks"]:
-            destination = tmp_path / task_id / check
-            materialize_mutant(task["reference"], task_id, check, destination)
+        private_mutants = [*task["checks"], *task.get("admission_mutants", {})]
+        for mutant in private_mutants:
+            destination = tmp_path / task_id / mutant
+            materialize_mutant(task["reference"], task_id, mutant, destination)
             source = (destination / task["package"] / task["module"]).read_bytes()
             assert b'os.environ.get("AGENTHARNESS_MUTANT"' not in source
             digests.add(hashlib.sha256(source).hexdigest())
-        assert len(digests) == len(task["checks"])
+        assert len(digests) == len(private_mutants)
 
 
 def test_v5_crypto_visible_allowlist_and_private_ids_absent() -> None:
@@ -131,8 +149,8 @@ def test_v5_crypto_visible_allowlist_and_private_ids_absent() -> None:
         assert actual == expected
         visible = (root / "SPEC.md").read_text(encoding="utf-8") + (root / task["package"] / task["module"]).read_text(encoding="utf-8")
         assert "AGENTHARNESS_MUTANT" not in visible
-        for check in task["checks"]:
-            assert check not in visible
+        for private_id in [*task["checks"], *task.get("admission_mutants", {})]:
+            assert private_id not in visible
 
 
 def test_v5_crypto_dependency_is_in_frozen_wheelhouse() -> None:
