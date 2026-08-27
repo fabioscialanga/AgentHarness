@@ -15,6 +15,7 @@ MODULES = {
     "ack-token-work-queue": Path("ack_queue/cli.py"),
     "length-prefixed-frame-parser": Path("frame_parser/parse.py"),
     "streaming-csv-quoted-records": Path("csv_stream/parse.py"),
+    "epoch-guarded-leader-heartbeat": Path("epoch_leader/cli.py"),
 }
 
 

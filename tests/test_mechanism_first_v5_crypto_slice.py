@@ -84,6 +84,16 @@ TASKS = {
         "package": "csv_stream",
         "module": "parse.py",
     },
+    "epoch-guarded-leader-heartbeat": {
+        "script": GRADING / "qualify_v5_epoch_leader.py",
+        "reference": OUT / "references/epoch-guarded-leader-heartbeat",
+        "env": "V5_EPOCH_LEADER_REFERENCE",
+        "checks": ["leader_stale_epoch_publish", "leader_epoch_monotonic", "leader_one_winner", "leader_expiry_boundary", "leader_publication_order"],
+        "probe_counts": {"leader_stale_epoch_publish": 24, "leader_epoch_monotonic": 7, "leader_one_winner": 6, "leader_expiry_boundary": 8, "leader_publication_order": 9},
+        "admission_mutants": {"leader_epoch_heartbeat_near_miss": ["leader_stale_epoch_publish"]},
+        "package": "epoch_leader",
+        "module": "cli.py",
+    },
 }
 
 
