@@ -74,6 +74,16 @@ TASKS = {
         "package": "frame_parser",
         "module": "parse.py",
     },
+    "streaming-csv-quoted-records": {
+        "script": GRADING / "qualify_v5_csv_stream.py",
+        "reference": OUT / "references/streaming-csv-quoted-records",
+        "env": "V5_CSV_STREAM_REFERENCE",
+        "checks": ["csv_quoted_chunk_state", "csv_header_exact", "csv_row_width", "csv_field_limit", "csv_strict_eof"],
+        "probe_counts": {"csv_quoted_chunk_state": 10, "csv_header_exact": 17, "csv_row_width": 8, "csv_field_limit": 8, "csv_strict_eof": 10},
+        "admission_mutants": {"csv_quoted_escape_near_miss": ["csv_quoted_chunk_state"]},
+        "package": "csv_stream",
+        "module": "parse.py",
+    },
 }
 
 
@@ -169,7 +179,7 @@ def test_v5_prebuild_transport_amendments_are_hash_bound() -> None:
     assert completed.returncode == 0, completed.stderr + completed.stdout
     payload = json.loads(completed.stdout)
     assert payload["ok"] is True
-    assert payload["amendments"] == 1
+    assert payload["amendments"] == 2
 
 
 def test_v5_crypto_dependency_is_in_frozen_wheelhouse() -> None:

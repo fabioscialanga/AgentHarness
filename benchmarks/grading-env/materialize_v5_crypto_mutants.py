@@ -14,6 +14,7 @@ MODULES = {
     "atomic-batch-state-machine": Path("batch_state_api/main.py"),
     "ack-token-work-queue": Path("ack_queue/cli.py"),
     "length-prefixed-frame-parser": Path("frame_parser/parse.py"),
+    "streaming-csv-quoted-records": Path("csv_stream/parse.py"),
 }
 
 

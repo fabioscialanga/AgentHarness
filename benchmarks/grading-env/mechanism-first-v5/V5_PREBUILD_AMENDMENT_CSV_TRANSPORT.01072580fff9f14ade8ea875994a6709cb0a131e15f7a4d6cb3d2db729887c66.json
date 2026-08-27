@@ -1,0 +1,22 @@
+{
+  "amendment_id": "v5-csv-stream-chunks-file-carrier",
+  "carrier_contract": {
+    "failure_semantics": "A missing, unreadable, non-UTF-8, or invalid-JSON carrier is invalid_input and preserves output.",
+    "literal_form": "--chunks accepts the frozen literal CHUNKS_JSON form unchanged.",
+    "path_form": "--chunks @PATH reads the exact UTF-8 CHUNKS_JSON bytes from caller-supplied PATH before applying the identical strict JSON, hexadecimal, and 2 MiB validation.",
+    "semantic_effect": "The carrier changes transport only; chunk boundaries, decoded bytes, limits, parser semantics, checks, mutants, and endpoint remain unchanged."
+  },
+  "efficacy_cells_observed": 0,
+  "execution_mode": "qualification_only",
+  "parent_ledger_payload_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+  "payload_sha256": "01072580fff9f14ade8ea875994a6709cb0a131e15f7a4d6cb3d2db729887c66",
+  "provider_calls_observed": 0,
+  "reason": "A valid near-limit hexadecimal CHUNKS_JSON value exceeds Linux MAX_ARG_STRLEN, so the frozen semantic domain cannot be exercised through one argv element alone.",
+  "schema_version": 1,
+  "scope": {
+    "candidate_id": "streaming-csv-quoted-records",
+    "interface_field": "CHUNKS_JSON",
+    "outcome_or_check_changes": false
+  },
+  "status": "pre_data_transport_amendment"
+}
