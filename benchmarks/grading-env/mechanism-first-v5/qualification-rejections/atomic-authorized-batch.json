@@ -1,0 +1,44 @@
+{
+  "candidate_id": "atomic-authorized-batch",
+  "campaign": "mechanism-first-v5",
+  "decision": "qualification_rejected",
+  "decided_at_utc": "2026-08-27T19:57:29Z",
+  "evaluated_from_commit": "30c1240e72ede910ef3be3edb3eade0f4b2c1bd5",
+  "family_id": "authorization-isolation",
+  "frozen_ledger_pointer_sha256": "01b25817ed7bffb619ce171c8234f3ae1462740b02f02ee82a21c9138b4bbc78",
+  "methodological_review": "NO-GO",
+  "reason_codes": [
+    "target_guard_overlap",
+    "probe_shaped_mutants_required_for_singleton_matrix",
+    "near_miss_not_independently_isolated"
+  ],
+  "rationale": [
+    "The target invariant that any unauthorized operation rejects the complete batch necessarily overlaps concrete-object authorization and stale-version atomicity.",
+    "A faithful sequential authorize-and-commit mutant also fails sibling stale-version/object-scope probes; singleton isolation was achievable only by conditioning mutant behavior on batch cardinality.",
+    "Cardinality-gated mutants are not the frozen planned mutants and would manufacture efficacy through probe partitioning rather than discriminate independent mechanisms.",
+    "The external-effect near miss could be made singleton only by omitting its prohibited effect from sibling rejection assertions."
+  ],
+  "experimental_matrix": {
+    "disposition": "not_accepted_as_evidence",
+    "sha256": "20045fafa4928e66b011c62ca7e6a6ef6c0ab532daf028669bcbcd92d908c7f0",
+    "summary": [
+      ["reference", []],
+      ["auth_batch_preflight", ["auth_batch_preflight"]],
+      ["auth_batch_subject_snapshot", ["auth_batch_subject_snapshot"]],
+      ["auth_batch_object_scope", ["auth_batch_object_scope"]],
+      ["auth_batch_versions", ["auth_batch_versions"]],
+      ["auth_batch_replay", ["auth_batch_replay"]],
+      ["auth_batch_external_effect_near_miss", ["auth_batch_preflight"]]
+    ],
+    "warning": "The apparent singleton result depended on rejected cardinality gates and effect-omitting sibling assertions."
+  },
+  "review_blockers": [
+    "Preflight mutant was activated only for batches of at least three operations.",
+    "Object-scope mutant was activated only for exactly two operations.",
+    "Sibling checks ignored effect-ledger changes to isolate the external-effect near miss.",
+    "Version-position probes did not establish general late-stale behavior or BEGIN IMMEDIATE concurrency semantics."
+  ],
+  "next_seeded_candidate": "tenant-scoped-resource-api",
+  "published_task_created": false,
+  "private_reference_retained": false
+}
