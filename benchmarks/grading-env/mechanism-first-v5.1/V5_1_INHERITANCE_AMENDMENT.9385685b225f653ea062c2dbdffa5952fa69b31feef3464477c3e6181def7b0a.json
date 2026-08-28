@@ -1,0 +1,14 @@
+{
+  "campaign": "mechanism-first-v5.1",
+  "amendment_id": "correct-v5-inheritance-hashes",
+  "status": "frozen_amendment",
+  "amends_ledger_sha256": "0c04f6dc763e289443712c76cd997a4bda600c5b8da4dd3e19d84542c1ed0bc5",
+  "reason": "The inherited V5 hash was copied from stale session context and did not match the live frozen ledger or pointer. This amendment corrects metadata only; the replacement candidate profile and admission contracts are unchanged.",
+  "authoritative_inheritance": {
+    "campaign": "mechanism-first-v5",
+    "pointer_file": "../mechanism-first-v5/V5_PREBUILD_CURRENT.json",
+    "pointer_sha256": "9d6416d6fa11c7ca5157f92efe87b2e51aa860c304f1401deafcfdae2cebfdc8",
+    "ledger_file": "../mechanism-first-v5/V5_PREBUILD_LEDGER.01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c.json",
+    "ledger_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c"
+  }
+}

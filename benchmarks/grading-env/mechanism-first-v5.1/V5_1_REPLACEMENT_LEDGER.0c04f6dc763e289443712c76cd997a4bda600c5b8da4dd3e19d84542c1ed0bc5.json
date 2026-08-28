@@ -1,0 +1,112 @@
+{
+  "campaign": "mechanism-first-v5.1",
+  "status": "frozen_prebuild",
+  "frozen_at_utc": "2026-08-28T08:59:59Z",
+  "admission_review": {
+    "decision": "GO",
+    "scope": "semantic singleton matrix, public near-miss observability, cache-retention controls, TTL, validation, and anti-duplication",
+    "blockers": [],
+    "high_findings": []
+  },
+  "inherits_from": {
+    "campaign": "mechanism-first-v5",
+    "pointer_sha256": "01b25817ed7bffb619ce171c8234f3ae1462740b02f02ee82a21c9138b4bbc78",
+    "qualified_authorization_candidate": "attenuated-capability-verifier"
+  },
+  "replacement_candidate": {
+    "admission_status": "candidate",
+    "family_id": "authorization-isolation",
+    "candidate_id": "context-complete-authorization-cache",
+    "construct": "an authorization decision cache whose identity includes every security-relevant request dimension and the immutable policy revision",
+    "interface_kind": "FastAPI with importable policy store and deterministic clock protocols",
+    "latent_invariant": "A cached authorization decision is reusable only for the exact tenant, subject, concrete resource, action, and policy revision for which it was computed.",
+    "target_check_id": "auth_cache_resource_identity",
+    "adversarial_axis": "Prime an allow for one resource, then request a distinct denied resource while every other cache-key dimension remains equal.",
+    "finding_concept": "Observed behavior: an allow cached for one concrete resource authorizes a different resource. Violated invariant: cached authorization decisions are bound to exact resource identity.",
+    "discriminating_counterexample": "An implementation can preserve tenant, subject, action, and revision isolation while omitting only concrete resource identity from the cache key.",
+    "independent_near_miss": "normalizes resource IDs to the segment before the first dot when constructing the cache key, so report and report.copy alias despite being distinct canonical resources",
+    "repair_mechanism_class": "construct a complete immutable cache key from all security-relevant dimensions rather than flushing or disabling the cache",
+    "normative_profile": "decision_cache.create_app(policy_store,clock,ttl_seconds=60) uses importable frozen PolicySnapshot(revision:int,evaluation_token:object); PolicyStoreProtocol.snapshot(tenant_id,subject_id)->PolicySnapshot and PolicyStoreProtocol.evaluate(snapshot,resource_id,action)->bool are synchronous. evaluation_token is non-None, opaque to the app, must be passed unchanged to evaluate, and is never part of cache identity. ClockProtocol.now()->int returns evaluator-controlled epoch seconds. ttl_seconds must be a non-boolean integer 1..3600; invalid ttl_seconds makes create_app raise ValueError before creating an app. POST /authorize accepts exact body tenant,subject,resource_id,action; canonical IDs/actions match ASCII [A-Za-z0-9][A-Za-z0-9._-]{0,63}; revision and clock values are non-boolean integers 1..9223372036854775807. For each tenant/subject, a revision identifies immutable policy content, is never reused for different decisions, and strictly increases when policy changes. Request processing order is fixed: validate body without callbacks; call snapshot exactly once; validate the snapshot; call clock exactly once; validate the clock; perform lookup; on a miss call evaluate exactly once with the unchanged snapshot. If body validation fails no callback is called; if snapshot raises or is invalid, clock/evaluate are not called; if clock raises or is invalid, evaluate is not called; if evaluate raises or returns a non-boolean, no entry is created. On a miss the app caches either allowed=true or allowed=false; on a hit it calls evaluate zero times and returns the stored decision. Success is exact 200 {allowed:boolean,policy_revision:int,cache:'hit'|'miss'}; controlled failure is exact 422 {detail:'invalid_request'} and creates no cache entry. Cache entries expire when now-created_at >= ttl_seconds; an expired lookup evaluates again and replaces the entry without sliding expiry on hits. The cache is process-local.",
+    "qualification_control": "Evaluator supplies synchronous in-memory PolicyStoreProtocol and ClockProtocol implementations with public snapshot/evaluate/clock call counters, mutates immutable strictly increasing policy snapshots only between completed public requests, varies exactly one cache-key dimension per guard, and observes only POST /authorize responses and those public counters. snapshot returns a newly allocated PolicySnapshot with a newly allocated identity-distinct evaluation_token on every call, including repeated snapshots at the same revision with unchanged evaluate semantics; same-revision exact repeats must still hit, so PolicySnapshot/token identity, equality, and hash cannot substitute for revision in cache identity. Every common control, scored guard, and near-miss probe uses a newly created app, store, clock, counters, and empty cache. Every implementation and mutant must pass all common_cache_controls; failure of a common control rejects the implementation independently of the five-check matrix.",
+    "private_static_reasoning_rubric": [
+      "identify every security-relevant dimension before defining cache identity",
+      "include immutable policy revision in the key and enforce deterministic half-open TTL expiry",
+      "do not repair by disabling cache or always reporting misses"
+    ],
+    "public_interface": {
+      "entrypoint": "decision_cache.create_app(policy_store,clock,ttl_seconds=60); POST /authorize",
+      "input_contract": "exact canonical tenant, subject, resource_id, action request and importable frozen policy interfaces defined by normative_profile",
+      "state_or_output_boundary": "callback order and counts follow normative_profile; evaluate exactly once on miss and zero times on hit; complete-key entries retain both allowed and denied decisions; invalid requests do not alter cache",
+      "failure_contract": "controlled validation or policy rejection preserves cache state and returns the exact documented error"
+    },
+    "common_cache_controls": [
+      {
+        "id": "cache_retains_allow_and_deny",
+        "contract": "Before expiry, exact repeated allowed and denied requests each produce miss then hit, identical decisions/revisions, and exactly one evaluate call per pair.",
+        "purpose": "Reject always-miss, cache disabling, allow-only caching, deny-only caching, flush-on-every-request, and fabricated hit labels."
+      },
+      {
+        "id": "cache_half_open_ttl",
+        "contract": "With ttl_seconds=60 and fill at t=100, an exact repeat at t=159 is a hit with no evaluation and an exact repeat at t=160 is a miss with one new evaluation.",
+        "purpose": "Prove retained cache use and deterministic half-open expiry."
+      },
+      {
+        "id": "cache_invalid_input_atomicity",
+        "contract": "Malformed requests, invalid snapshots, invalid clock values, and non-boolean evaluate results return exact invalid_request, create no entry, and cannot be turned into a later hit.",
+        "purpose": "Prove controlled failure atomicity."
+      }
+    ],
+    "anti_duplication": {
+      "singleflight-scope-key": "This task measures retained authorization decisions reused across completed sequential requests and invalidated by immutable policy revision/TTL; singleflight measures concurrent in-flight computation coalescing. Passing either does not imply the other.",
+      "version-fenced-read-cache": "This task caches boolean policy decisions keyed by principal/action/revision context; version-fenced-read-cache caches resource representations fenced by durable data versions. Passing either does not imply the other.",
+      "attenuated-capability-verifier": "This task binds reuse of computed decisions to complete context; attenuated-capability-verifier proves delegated signed authority only narrows. Passing either does not imply the other."
+    },
+    "checks": [
+      {
+        "id": "auth_cache_resource_identity",
+        "public_contract": "A cached decision for one resource never authorizes a distinct concrete resource.",
+        "planned_mutant": "omits resource_id from the cache key",
+        "planned_probe": "Run two fresh-app subcases: prime allowed doc-a/read then denied doc-b/read; and prime allowed report/read then denied report.copy/read. In each, tenant, subject, revision, action, and time remain equal; the distinct request must miss/evaluate/deny and its exact repeat must hit without evaluation.",
+        "expected_mutant_failed_checks": ["auth_cache_resource_identity"],
+        "expected_mutant_passed_checks": ["auth_cache_tenant","auth_cache_subject","auth_cache_action","auth_cache_policy_revision"],
+        "failure_atomicity": "invalid requests create no entry"
+      },
+      {
+        "id": "auth_cache_tenant",
+        "public_contract": "A decision is isolated by exact tenant identity.",
+        "planned_mutant": "omits tenant from the cache key",
+        "planned_probe": "Prime allow in tenant-a, then request the same subject/resource/action denied in tenant-b at equal revision.",
+        "expected_mutant_failed_checks": ["auth_cache_tenant"],
+        "expected_mutant_passed_checks": ["auth_cache_resource_identity","auth_cache_subject","auth_cache_action","auth_cache_policy_revision"],
+        "failure_atomicity": "denied decisions do not affect other tenants"
+      },
+      {
+        "id": "auth_cache_subject",
+        "public_contract": "A decision is isolated by exact subject identity.",
+        "planned_mutant": "omits subject from the cache key",
+        "planned_probe": "Prime allow for alice, then request the same tenant/resource/action denied for bob at equal revision.",
+        "expected_mutant_failed_checks": ["auth_cache_subject"],
+        "expected_mutant_passed_checks": ["auth_cache_resource_identity","auth_cache_tenant","auth_cache_action","auth_cache_policy_revision"],
+        "failure_atomicity": "denied decisions do not affect other subjects"
+      },
+      {
+        "id": "auth_cache_action",
+        "public_contract": "A decision is isolated by exact action.",
+        "planned_mutant": "omits action from the cache key",
+        "planned_probe": "Prime allowed read, then request denied delete for the same tenant, subject, resource, and revision.",
+        "expected_mutant_failed_checks": ["auth_cache_action"],
+        "expected_mutant_passed_checks": ["auth_cache_resource_identity","auth_cache_tenant","auth_cache_subject","auth_cache_policy_revision"],
+        "failure_atomicity": "a denied action does not poison an allowed action"
+      },
+      {
+        "id": "auth_cache_policy_revision",
+        "public_contract": "A decision from one policy revision is never reused after the policy snapshot revision changes.",
+        "planned_mutant": "omits policy revision from the cache key",
+        "planned_probe": "Prime allow at revision 7, replace the same tenant/subject snapshot with revision 8 denying it, then repeat before TTL expiry.",
+        "expected_mutant_failed_checks": ["auth_cache_policy_revision"],
+        "expected_mutant_passed_checks": ["auth_cache_resource_identity","auth_cache_tenant","auth_cache_subject","auth_cache_action"],
+        "failure_atomicity": "invalid replacement snapshots do not enter cache"
+      }
+    ]
+  }
+}

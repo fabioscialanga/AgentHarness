@@ -1,0 +1,17 @@
+{
+  "campaign": "mechanism-first-v5.1",
+  "json_file": "V5_1_REPLACEMENT_LEDGER.0c04f6dc763e289443712c76cd997a4bda600c5b8da4dd3e19d84542c1ed0bc5.json",
+  "json_sha256": "0c04f6dc763e289443712c76cd997a4bda600c5b8da4dd3e19d84542c1ed0bc5",
+  "inherits_campaign": "mechanism-first-v5",
+  "inherits_pointer_sha256": "9d6416d6fa11c7ca5157f92efe87b2e51aa860c304f1401deafcfdae2cebfdc8",
+  "inherits_ledger_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+  "amendment_file": "V5_1_INHERITANCE_AMENDMENT.9385685b225f653ea062c2dbdffa5952fa69b31feef3464477c3e6181def7b0a.json",
+  "amendment_sha256": "9385685b225f653ea062c2dbdffa5952fa69b31feef3464477c3e6181def7b0a",
+  "replacement_candidate_id": "context-complete-authorization-cache",
+  "replaces_rejected_candidates": [
+    "atomic-authorized-batch",
+    "tenant-scoped-resource-api",
+    "field-projection-authorization"
+  ],
+  "status": "frozen_prebuild"
+}
