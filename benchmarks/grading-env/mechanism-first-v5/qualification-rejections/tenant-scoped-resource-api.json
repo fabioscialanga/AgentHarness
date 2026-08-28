@@ -1,0 +1,37 @@
+{
+  "candidate_id": "tenant-scoped-resource-api",
+  "campaign": "mechanism-first-v5",
+  "decision": "qualification_rejected",
+  "decided_at_utc": "2026-08-28T08:22:46Z",
+  "evaluated_from_commit": "5135bc9afa871f153df41502b1bd1f47e0aca476",
+  "family_id": "authorization-isolation",
+  "frozen_ledger_pointer_sha256": "01b25817ed7bffb619ce171c8234f3ae1462740b02f02ee82a21c9138b4bbc78",
+  "methodological_review": "NO-GO",
+  "reason_codes": [
+    "target_guard_overlap",
+    "singleton_matrix_impossible_without_probe_shaping",
+    "near_miss_duplicates_target_mutant"
+  ],
+  "counterexample": {
+    "authenticated_tenant": "B",
+    "expected_version": 1,
+    "foreign_row": {"tenant": "A", "resource_id": "r", "version": 1},
+    "local_row": {"tenant": "B", "resource_id": "r", "version": 2},
+    "correct_result": "409 version_conflict; neither row changes",
+    "target_mutant_result": "The unscoped UPDATE matches and changes tenant A, then reports success for tenant B."
+  },
+  "rationale": [
+    "The frozen tenant_version_cas probe explicitly uses versions from colliding resources.",
+    "A stale local expected_version equal to the foreign row version is the direct black-box discriminator for comparing version before tenant filtering.",
+    "The frozen tenant_lookup_scope mutant uses the same unscoped resource ID and version predicate, so it also changes the foreign row and fails the version guard.",
+    "Avoiding this stale-local/foreign-current case would weaken the frozen version contract and shape the probe for singleton compliance.",
+    "The frozen independent near miss—correctly scoped reads followed by a PATCH update that omits tenant—is behaviorally the same defect as the designated target mutant."
+  ],
+  "review_blockers": [
+    "The designated target mutant necessarily fails tenant_lookup_scope and tenant_version_cas under a faithful colliding-version probe.",
+    "The independent near miss is not behaviorally independent from the target mutant."
+  ],
+  "next_seeded_candidate": "field-projection-authorization",
+  "published_task_created": false,
+  "private_reference_retained": false
+}
