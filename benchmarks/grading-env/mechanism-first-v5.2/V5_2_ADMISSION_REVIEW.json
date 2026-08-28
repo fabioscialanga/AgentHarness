@@ -1,0 +1,83 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "artifact_type": "independent_pre_freeze_admission_review",
+  "decision": "GO",
+  "reviewer": {
+    "system": "isolated Hermes Docker reviewer",
+    "session_id": "20260828_151104_39dbbd",
+    "read_only": true
+  },
+  "reviewed_draft_sha256": "916e378a5d408cad77fe374ffe8fcd7a64982886442ff1873e810781f1db345f",
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0,
+  "candidate_verdicts": [
+    {
+      "candidate_id": "transactional-release-pointer",
+      "decision": "GO",
+      "check_order": [
+        "release_generation_cas",
+        "release_artifact_approval",
+        "release_publication_completeness",
+        "release_failure_atomicity",
+        "release_idempotent_replay"
+      ],
+      "rows": {
+        "reference": ["PASS", "PASS", "PASS", "PASS", "PASS"],
+        "mutant_generation": ["FAIL", "PASS", "PASS", "PASS", "PASS"],
+        "mutant_approval": ["PASS", "FAIL", "PASS", "PASS", "PASS"],
+        "mutant_eventless": ["PASS", "PASS", "FAIL", "PASS", "PASS"],
+        "mutant_commit_on_error": ["PASS", "PASS", "PASS", "FAIL", "PASS"],
+        "mutant_no_replay": ["PASS", "PASS", "PASS", "PASS", "FAIL"],
+        "near_miss_split_transactions": ["PASS", "PASS", "PASS", "FAIL", "PASS"]
+      }
+    },
+    {
+      "candidate_id": "two-tier-read-through-cache",
+      "decision": "GO",
+      "check_order": [
+        "tier_l1_short_circuit",
+        "tier_l2_promotion",
+        "tier_origin_fill",
+        "tier_two_level_invalidation",
+        "tier_failure_non_admission"
+      ],
+      "rows": {
+        "reference": ["PASS", "PASS", "PASS", "PASS", "PASS"],
+        "mutant_ignore_l1": ["FAIL", "PASS", "PASS", "PASS", "PASS"],
+        "mutant_no_promotion": ["PASS", "FAIL", "PASS", "PASS", "PASS"],
+        "mutant_no_l2_fill": ["PASS", "PASS", "FAIL", "PASS", "PASS"],
+        "mutant_no_l2_delete": ["PASS", "PASS", "PASS", "FAIL", "PASS"],
+        "mutant_cache_error_sentinel": ["PASS", "PASS", "PASS", "PASS", "FAIL"],
+        "near_miss_casefold_l2_delete": ["PASS", "PASS", "PASS", "FAIL", "PASS"]
+      },
+      "binding_caveat": "tier_failure_non_admission must verify non-admission and retry after OriginError without reasserting successful origin-fill callback ownership; store callback exceptions other than OriginError remain out of scope."
+    },
+    {
+      "candidate_id": "portable-command-receipt-ledger",
+      "decision": "GO",
+      "check_order": [
+        "receipt_key_identity",
+        "receipt_tenant_scope",
+        "receipt_command_scope",
+        "receipt_revision_scope",
+        "receipt_database_portability"
+      ],
+      "rows": {
+        "reference": ["PASS", "PASS", "PASS", "PASS", "PASS"],
+        "mutant_omit_key": ["FAIL", "PASS", "PASS", "PASS", "PASS"],
+        "mutant_omit_tenant": ["PASS", "FAIL", "PASS", "PASS", "PASS"],
+        "mutant_omit_command": ["PASS", "PASS", "FAIL", "PASS", "PASS"],
+        "mutant_omit_revision": ["PASS", "PASS", "PASS", "FAIL", "PASS"],
+        "mutant_memory_only": ["PASS", "PASS", "PASS", "PASS", "FAIL"],
+        "near_miss_casefold_key": ["FAIL", "PASS", "PASS", "PASS", "PASS"]
+      }
+    }
+  ],
+  "reject_screen": {
+    "inherent_sibling_overlap": false,
+    "hidden_or_timing_only_observability": false,
+    "common_control_contamination": false,
+    "callback_infeasibility": false,
+    "substantive_within_batch_duplication": false
+  }
+}

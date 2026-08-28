@@ -1,0 +1,101 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "status": "frozen_prebuild",
+  "inherits": {
+    "v5_ledger_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+    "v5_pointer_sha256": "9d6416d6fa11c7ca5157f92efe87b2e51aa860c304f1401deafcfdae2cebfdc8",
+    "v5_1_ledger_sha256": "0c04f6dc763e289443712c76cd997a4bda600c5b8da4dd3e19d84542c1ed0bc5",
+    "v5_1_pointer_sha256": "ae767f67840468b8284279781528d0b87e3c6adc0c64fafe3bb0dd0397ad617b"
+  },
+  "purpose": "Replace all semantically inadmissible remaining frozen candidates with one transactional-transitions and two cache-idempotency tasks.",
+  "selection_rule": "All three profiles must independently pass semantic admission before freeze; no fallback to rejected V5 profiles.",
+  "source_draft_sha256": "916e378a5d408cad77fe374ffe8fcd7a64982886442ff1873e810781f1db345f",
+  "replacement_scope": {
+    "transactional-transitions": {
+      "required_slots": 1,
+      "replacement_candidate_ids": ["transactional-release-pointer"],
+      "rejected_v5_candidate_ids": ["transactional-outbox-order", "saga-compensation-engine", "durable-retry-scheduler"]
+    },
+    "cache-idempotency": {
+      "required_slots": 2,
+      "replacement_candidate_ids": ["two-tier-read-through-cache", "portable-command-receipt-ledger"],
+      "rejected_v5_candidate_ids": ["version-fenced-read-cache", "canonical-idempotent-command", "negative-cache-invalidation", "singleflight-scope-key"]
+    }
+  },
+  "pre_admission_rejections": {
+    "file": "V5_2_PRE_ADMISSION_REJECTIONS.json",
+    "sha256": "e45054cfd4abd5ff9a701baf9f249f2c885c44804331a7525c4e7f090984993c"
+  },
+  "admission_review": {
+    "decision": "GO",
+    "file": "V5_2_ADMISSION_REVIEW.json",
+    "sha256": "5c460e7d92b081278b02821ef9f7f70f4bfc7e985f4dfd917b0c4dbccd22eb09",
+    "reviewer_session_id": "20260828_151104_39dbbd",
+    "reviewed_draft_sha256": "916e378a5d408cad77fe374ffe8fcd7a64982886442ff1873e810781f1db345f"
+  },
+  "candidates": [
+    {
+      "candidate_id": "transactional-release-pointer",
+      "family_id": "transactional-transitions",
+      "runtime": "Python >=3.12; fastapi",
+      "public_interface": "release_pointer.create_app(store)->FastAPI; POST /v1/channels/{channel_id}/publish exact body request_id, expected_generation, artifact_digest; GET channel, events, and receipt views. Evaluator-owned ReleaseStore exposes begin, find_receipt, read_channel, artifact_is_approved, stage_channel, stage_event, stage_receipt, commit, rollback using fresh opaque transaction tokens.",
+      "normative_profile": "Validate before callbacks. Begin exactly once. Receipt replay is checked first and closes via rollback without staged writes. Fresh commands check generation then approval, stage channel generation+1, one immutable event, and one receipt containing canonical command fingerprint plus exact response, then commit once. Any StoreError before commit calls rollback once and returns exact 503 storage_failure; state remains byte-for-byte unchanged. Same request_id with different command returns exact 409 request_id_conflict without writes.",
+      "checks": [
+        {"check_id":"release_generation_cas","counterexample":"Current generation 7, approved B, fresh request expects 6: exact 409 and no state change.","mutant":"Unconditionally delete generation mismatch rejection."},
+        {"check_id":"release_artifact_approval","counterexample":"Current generation 7, unapproved C, fresh request expects 7: exact 422 and no state change.","mutant":"Unconditionally delete approval rejection."},
+        {"check_id":"release_publication_completeness","counterexample":"Fresh valid request produces generation 8 pointer, exactly one coherent A-to-B event, one receipt, and response bytes equal receipt.","mutant":"Unconditionally omit stage_event while retaining channel and receipt writes."},
+        {"check_id":"release_failure_atomicity","counterexample":"stage_receipt raises after channel/event staging: exact 503 and all three public views equal pre-state.","mutant":"Unconditionally commit rather than rollback in StoreError handler."},
+        {"check_id":"release_idempotent_replay","counterexample":"Preseed coherent committed receipt/event/pointer, replay exact original request: byte-identical response, no staged callbacks or append.","mutant":"Unconditionally delete receipt replay branch and process as new."}
+      ],
+      "near_miss": "Split receipt transaction: commit channel+event in T1 and receipt in T2. Deterministic stage_receipt failure leaves advanced pointer/event without receipt, failing only release_failure_atomicity. Distinct from wrong cleanup inside one transaction.",
+      "qualification_controls": "Fresh store per check; exact callback order/token identity/cardinality; exact validation/status/body; request-id conflict; StoreError at each stage; failure preserves prior committed fixture and failed request creates no durable component.",
+      "anti_overlap": "Generation and approval probes isolate one invalid fact. Completeness is fault-free fresh success. Atomicity alone injects failure. Replay starts from a coherent preseed and performs no fresh publication. Mutants are unconditional source edits.",
+      "anti_duplication": "Single release-pointer CAS plus event/receipt publication, not operation batching or a general transition graph; evaluator store boundary avoids candidate-owned schema or trigger assumptions."
+    },
+    {
+      "candidate_id": "two-tier-read-through-cache",
+      "family_id": "cache-idempotency",
+      "runtime": "Python >=3.12; synchronous direct API; no network, clock, or implementation-owned persistence",
+      "public_interface": "tiered_cache.TieredCache(l1,l2,origin) with get(key:str)->bytes and invalidate(key:str)->None. Evaluator-owned L1Store and L2Store each expose get(key)->bytes|None, put(key,value:bytes)->None, delete(key)->None; evaluator-owned Origin exposes load(key)->nonempty unpredictable bytes and may raise the frozen OriginError. Keys are case-sensitive ASCII [A-Za-z0-9._-], length 1..64. Callback traces, arguments, values, and injected tier contents are evaluator-observable.",
+      "normative_profile": "For valid get, query L1 first and return its bytes immediately on hit without touching L2 or origin. On L1 miss, query L2; on L2 hit put the exact bytes into L1 and return without origin. On both misses, call origin exactly once, then put the exact result into L2 followed by L1 and return it. OriginError or invalid origin result performs no put and propagates the controlled error. invalidate calls L1.delete with the exact key followed by L2.delete with the exact key; a later get follows the ordinary path. Store callback exceptions are outside this narrow profile. No TTL, capacity, concurrency, negative values, authorization, version fencing, or durability claim is made.",
+      "checks": [
+        {"check_id":"tier_l1_short_circuit","counterexample":"Preseed L1 key Doc-A with opaque A, L2 same key with distinct B, and origin with C; get must return A after only l1.get.","mutant":"Unconditionally ignore an L1 hit and continue to L2."},
+        {"check_id":"tier_l2_promotion","counterexample":"L1 misses and L2 contains opaque B; get returns B, calls l1.put(key,B) exactly once, and never calls origin.","mutant":"Unconditionally omit l1.put in the L2-hit branch."},
+        {"check_id":"tier_origin_fill","counterexample":"Both tiers miss and origin returns opaque C; require callback order l1.get,l2.get,origin.load,l2.put(C),l1.put(C), then return C.","mutant":"Unconditionally omit l2.put in the origin-success branch while retaining the L1 put."},
+        {"check_id":"tier_two_level_invalidation","counterexample":"Two fresh subprobes preseed both tiers under mixed-case Doc-A and lowercase doc-b, invalidate, then get; both must call both exact-key deletes and reach origin for a fresh value.","mutant":"Unconditionally omit l2.delete while retaining l1.delete."},
+        {"check_id":"tier_failure_non_admission","counterexample":"With both tiers empty, first origin.load raises OriginError and causes no puts; retry must invoke origin again and return its fresh token. This check does not reassert successful-fill callback ownership.","mutant":"Unconditionally put a reserved error sentinel into L2 before propagating OriginError, causing retry to return the sentinel without origin."}
+      ],
+      "near_miss": "Case-fold only the L2 deletion key during invalidate while deleting L1 by the exact key. It leaves stale L2 state for mixed-case Doc-A but correctly invalidates lowercase doc-b. The planned omission mutant fails both subprobes. The near miss fails only tier_two_level_invalidation with a public callback/value discriminant.",
+      "qualification_controls": "Fresh evaluator stores and origin per check; exact callback order, arguments, cardinality, and opaque byte identity; preseed fixtures through evaluator stores rather than candidate hooks; reserved error sentinel is excluded from valid origin outputs; invalid key and bool/non-bytes/empty origin-result guards before writes; store callback exceptions other than OriginError are explicitly unclaimed and not used as controls; repeated semantic matrices deterministic.",
+      "anti_overlap": "L1-short-circuit starts from an L1 hit. L2-promotion starts from L1 miss/L2 hit and directly observes its own L1 put, so an L1-bypass mutant is inert. Origin-fill starts from two misses. Invalidation alone invokes deletes. Failure alone raises from origin and uses no preseed. Branch-specific mutants are unconditional source deletions or handler behavior, not fixture gates. The lowercase second subprobe separates the near miss from complete L2-delete omission.",
+      "anti_duplication": "No inherited V5/V5.1 profile tests hierarchical tier precedence, L2-to-L1 promotion, ordered write-through fill, or two-tier explicit invalidation. It excludes TTL/negative caching, singleflight, complete authorization keys, version fencing, and durable command replay."
+    },
+    {
+      "candidate_id": "portable-command-receipt-ledger",
+      "family_id": "cache-idempotency",
+      "runtime": "Python >=3.12; fastapi; sqlite3",
+      "public_interface": "command_ledger.create_app(db_path,execute_once)->FastAPI; POST /commands/{command}. Exact headers X-Tenant, X-API-Revision, Idempotency-Key and one fixed valid JSON object payload. execute_once(tenant,command,revision,key,payload)->unique unpredictable visible-ASCII receipt. Exact success/replay 200 {receipt}.",
+      "normative_profile": "Identity is structural tuple (tenant,command,api_revision,idempotency_key), with canonical grammars and case-sensitive values. First completed request invokes callback once and durably stores exact canonical response in SQLite at the sole evaluator-provided db_path. Sequential replay returns stored bytes with zero callback. Entries do not expire during evaluation. Payload conflict, callback failure, concurrency/crash windows and general exactly-once delivery are explicitly unclaimed. Source is read-only; HOME/TMP fresh; database-copy transplant is the only state moved to a new process root after clean SQLite close/checkpoint.",
+      "checks": [
+        {"check_id":"receipt_key_identity","counterexample":"Fresh DB subprobes Pay-A/pay-a and Pay-A/Pay-B require distinct receipts/callbacks; exact replays suppress callbacks.","mutant":"Unconditionally omit idempotency_key from structural identity."},
+        {"check_id":"receipt_tenant_scope","counterexample":"Same command/revision/key/payload under tenant-a and tenant-b executes independently.","mutant":"Unconditionally omit tenant."},
+        {"check_id":"receipt_command_scope","counterexample":"Same tenant/revision/key/payload under create-order and cancel-order executes independently.","mutant":"Unconditionally omit command."},
+        {"check_id":"receipt_revision_scope","counterexample":"Same tenant/command/key/payload under revisions 3 and 4 executes independently.","mutant":"Unconditionally omit api_revision."},
+        {"check_id":"receipt_database_portability","counterexample":"P1 stores R1, closes and checkpoints; only the SQLite DB is copied to a fresh root with fresh HOME/TMP/P2 memory and callback log. P2 replays R1 with zero callback, then submits an identity differing in all four components and must invoke the operational P2 callback once.","mutant":"Unconditionally use process-memory ledger instead of db_path persistence."}
+      ],
+      "near_miss": "Case-fold Idempotency-Key before storage. Collapses Pay-A/pay-a but separates Pay-A/Pay-B; omission mutant collapses both. Fails only receipt_key_identity and has a public callback-trace discriminant.",
+      "qualification_controls": "Fresh DB per identity check; exact callback args/counts and unpredictable receipts; structural tuple collision cases; exact header/path grammar including 1/64/65 and int64 boundaries; malformed body before callback; readonly source and filesystem inventory; WAL checkpoint/clean close; P2 positive callback control. The P2 positive-control identity differs from the replay identity in tenant, command, revision, and key so every single omitted-component mutant remains non-aliasing.",
+      "anti_overlap": "Four identity checks vary exactly one component and run in-process on fresh DBs. Portability uses one fixed identity and a process-memory mutant; all omission mutants still persist and replay it. Near miss has two fresh-DB subprobes distinguishing casefold from omission.",
+      "anti_duplication": "Unlike webhook ingestion, measures four-part command receipt identity and database-only transplant replay, not signatures, raw webhook audit, normalization, or event lookup. Unlike the tiered cache, it measures durable replay across process/root boundaries rather than tier precedence and promotion."
+    }
+  ],
+  "admission_requirements": {
+    "exact_checks_per_candidate": 5,
+    "singleton_matrix": true,
+    "independent_public_near_miss": true,
+    "source_level_mutants_only": true,
+    "fresh_state_per_check": true,
+    "public_bundle_leak_free": true,
+    "all_prior_overlap_evidence_required": true
+  }
+}

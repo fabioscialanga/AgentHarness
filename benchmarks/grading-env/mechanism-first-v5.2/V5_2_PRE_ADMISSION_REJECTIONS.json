@@ -1,0 +1,59 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "artifact_type": "pre_admission_rejection_history",
+  "status": "pre_freeze",
+  "inherited_v5_ledger_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0,
+  "records": [
+    {
+      "candidate_id": "transactional-outbox-order",
+      "decision": "HOLD_NO_GO_AS_FROZEN",
+      "blocking_reason": "The split-commit target is plausibly observable under deterministic store failure, but the frozen near miss exposes only a transient confirmation with no deterministic public read or synchronization boundary."
+    },
+    {
+      "candidate_id": "saga-compensation-engine",
+      "decision": "NO_GO",
+      "blocking_reason": "The duplicate-ack mutant that advances twice necessarily skips or exposes a later compensation and therefore also violates reverse exactly-once compensation; the history mutant is additionally underspecified against authoritative completion state."
+    },
+    {
+      "candidate_id": "durable-retry-scheduler",
+      "decision": "NO_GO",
+      "blocking_reason": "Fault injection depends on implementation-owned SQLite history/schedule schema, and duplicate schedule state lacks a frozen public representation."
+    },
+    {
+      "candidate_id": "version-fenced-read-cache",
+      "decision": "NO_GO",
+      "blocking_reason": "The stale in-flight publication target overlaps update invalidation, the near miss duplicates the target, and compare-then-publish is not atomic across the frozen source/cache protocol."
+    },
+    {
+      "candidate_id": "canonical-idempotent-command",
+      "decision": "NO_GO",
+      "blocking_reason": "Decimal and tag canonicalization mutants necessarily violate the umbrella semantic-binding target; the near miss combines those sibling defects."
+    },
+    {
+      "candidate_id": "negative-cache-invalidation",
+      "decision": "NO_GO",
+      "blocking_reason": "Observable late-negative masking conflicts with positive precedence; generation, clock, TTL, and durable cache ownership are underspecified."
+    },
+    {
+      "candidate_id": "singleflight-scope-key",
+      "decision": "NO_GO",
+      "blocking_reason": "Mutable result identity is not observable through HTTP serialization, and subject identity conflicts with an undefined authorization digest."
+    },
+    {
+      "candidate_id": "bounded-ttl-result-cache",
+      "decision": "NO_GO_DRAFT_ONLY",
+      "draft_was_never_frozen": true,
+      "blocking_reason": "Although its singleton matrix was coherent, four of five mechanisms substantially recombined the rejected V5 cache profiles; it was replaced before freeze."
+    },
+    {
+      "candidate_id": "async-singleflight-coordinator",
+      "decision": "NO_GO_DRAFT_ONLY",
+      "draft_was_never_frozen": true,
+      "reviewed_draft_sha256": "4bc8ad45ca289608b6beb13dcc229dcb7d0b3fe2cab6b44c60f0cb34a497082a",
+      "blocking_reason": "Its singleton matrix and public observability were coherent, but it remained substantively the same semantic class as the rejected V5 singleflight profile rather than a distinct replacement."
+    }
+  ],
+  "methodological_rule": "Rejected profiles are not implemented or admitted by probe shaping. Replacement profiles require semantic review on exact bytes before freeze."
+}

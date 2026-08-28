@@ -1,0 +1,23 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "status": "frozen_prebuild",
+  "json_file": "V5_2_REPLACEMENT_LEDGER.10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783.json",
+  "json_sha256": "10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783",
+  "source_draft_file": "V5_2_REPLACEMENT_DRAFT.json",
+  "source_draft_sha256": "916e378a5d408cad77fe374ffe8fcd7a64982886442ff1873e810781f1db345f",
+  "admission_review_file": "V5_2_ADMISSION_REVIEW.json",
+  "admission_review_sha256": "5c460e7d92b081278b02821ef9f7f70f4bfc7e985f4dfd917b0c4dbccd22eb09",
+  "pre_admission_rejections_file": "V5_2_PRE_ADMISSION_REJECTIONS.json",
+  "pre_admission_rejections_sha256": "e45054cfd4abd5ff9a701baf9f249f2c885c44804331a7525c4e7f090984993c",
+  "inherits_v5_pointer_sha256": "9d6416d6fa11c7ca5157f92efe87b2e51aa860c304f1401deafcfdae2cebfdc8",
+  "inherits_v5_ledger_sha256": "01a331c23895b764f84952d266350fa50e581007e9950039973e8ea3c42e816c",
+  "inherits_v5_1_pointer_sha256": "ae767f67840468b8284279781528d0b87e3c6adc0c64fafe3bb0dd0397ad617b",
+  "inherits_v5_1_ledger_sha256": "0c04f6dc763e289443712c76cd997a4bda600c5b8da4dd3e19d84542c1ed0bc5",
+  "replacement_candidate_ids": [
+    "transactional-release-pointer",
+    "two-tier-read-through-cache",
+    "portable-command-receipt-ledger"
+  ],
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0
+}
