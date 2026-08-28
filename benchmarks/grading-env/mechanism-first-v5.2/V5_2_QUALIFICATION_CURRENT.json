@@ -12,13 +12,18 @@
       "file": "V5_2_TASK10_FINAL_REVIEW.json",
       "sha256": "f5a1db36da122b599b874e33fd34e35a1b46f507874c6bbe44302e707866f149",
       "decision": "GO"
+    },
+    "two-tier-read-through-cache": {
+      "file": "V5_2_TASK11_FINAL_REVIEW.json",
+      "sha256": "2f0ccc129f71f1b8e4117081c94e7e6fd223b9f1b817d3f3a605e4cda38abafd",
+      "decision": "GO"
     }
   },
   "qualified_candidates": [
-    "transactional-release-pointer"
+    "transactional-release-pointer",
+    "two-tier-read-through-cache"
   ],
   "pending_candidates": [
-    "two-tier-read-through-cache",
     "portable-command-receipt-ledger"
   ],
   "efficacy_cells_observed": 0,

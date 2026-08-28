@@ -1,0 +1,36 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "task_id": "two-tier-read-through-cache",
+  "artifact_type": "independent_final_qualification_review",
+  "decision": "GO",
+  "reviewer": {
+    "system": "isolated Hermes Docker reviewer",
+    "session_id": "proc_cf908abcb658"
+  },
+  "review_manifest_sha256": "728276c7714882d8cd3332a36be6921e7dde481c46c7a9728da9f418baf2db71",
+  "reviewed_qualification_result_sha256": "8ad36d6253ddf0ae0787f5a3518faeacc2a5e2ec8bca9be3fae2d5a7043e9de7",
+  "reproduction": {
+    "official_layout": true,
+    "generated_matrix_byte_equal": true,
+    "generated_matrix_sha256": "8ad36d6253ddf0ae0787f5a3518faeacc2a5e2ec8bca9be3fae2d5a7043e9de7"
+  },
+  "findings": {
+    "BLOCKER": [],
+    "HIGH": [],
+    "MEDIUM": [],
+    "LOW": []
+  },
+  "verified": [
+    "Reference passes all five checks and all common controls.",
+    "Each of five direct source patches fails exactly its own check.",
+    "Each direct patch targets one unique source site.",
+    "Origin-fill omission passes invalidation because invalidation does not reassert fill ownership.",
+    "Case-fold L2 deletion near miss fails only two-level invalidation; lowercase probes distinguish it from complete L2-delete omission.",
+    "Observations use public evaluator-owned TierStore and Origin callbacks, not candidate-private state.",
+    "No target-model or efficacy call occurred."
+  ],
+  "supersedes_review_session": "proc_fec6861a2c12",
+  "superseded_no_go_reason": "The prior flattened review bundle broke the qualifier's repository-relative ROOT. A read-only official-layout replica reproduced the expected matrix byte-for-byte.",
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0
+}

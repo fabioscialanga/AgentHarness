@@ -37,6 +37,23 @@ def main() -> int:
     require(task_review["reviewed_qualification_result_sha256"] == "b479bb3fefe0c688590c6a2dad54915bcb84173a0cc8805ecc38a36d881983a3", "task review targets another matrix")
     require(not any(task_review["findings"].values()), "task final review has findings")
 
+    tier_review_pointer = pointer["task_reviews"]["two-tier-read-through-cache"]
+    tier_review_path = HERE / tier_review_pointer["file"]
+    require(digest(tier_review_path) == tier_review_pointer["sha256"], "tiered-cache final review hash mismatch")
+    tier_review = load(tier_review_path)
+    require(tier_review["decision"] == tier_review_pointer["decision"] == "GO", "tiered-cache final review not GO")
+    tier_result_path = HERE / "qualification-results/two-tier-read-through-cache.json"
+    require(digest(tier_result_path) == tier_review["reviewed_qualification_result_sha256"], "tiered-cache review/result mismatch")
+    require(not any(tier_review["findings"].values()), "tiered-cache final review has findings")
+    tier_result = load(tier_result_path)
+    tier_rows = tier_result["matrix"]
+    require(tier_result["ok"] is True and tier_result["total_scored_probes_per_implementation"] == 50, "tiered-cache matrix not qualified")
+    require(len(tier_rows) == 7 and tier_rows[0]["failed"] == [], "tiered-cache reference or row count mismatch")
+    require(all(row["failed"] == [row["implementation"]] for row in tier_rows[1:6]), "tiered-cache planned matrix not singleton")
+    require(tier_rows[6]["implementation"] == "tier_l2_casefold_delete_near_miss", "tiered-cache near-miss identity mismatch")
+    require(tier_rows[6]["failed"] == ["tier_two_level_invalidation"], "tiered-cache near miss not singleton invalidation")
+    require(all(not row["common_failed"] for row in tier_rows), "tiered-cache common controls failed")
+
     amended = load(amendment)
     require(amended["status"] == "frozen_amendment", "amendment not frozen")
     require(amended["amends_ledger_sha256"] == pointer["ledger_sha256"], "amendment targets another ledger")
@@ -111,9 +128,48 @@ def main() -> int:
         "qualification-results",
     ]
     require(not [token for token in forbidden if token in public_text], "private qualification material leaked into public bundle")
-    require(pointer["qualified_candidates"] == ["transactional-release-pointer"], "qualification roster mismatch")
+
+    tier_public = ROOT / "benchmarks/two-tier-read-through-cache"
+    tier_reference = HERE / "references/two-tier-read-through-cache"
+    tier_qualifier = ROOT / "benchmarks/grading-env/qualify_v5_2_tiered_cache.py"
+    for path in (
+        tier_public / "SPEC.md",
+        tier_public / "README.md",
+        tier_public / "pyproject.toml",
+        tier_public / "CLAIMS_CONTRACT.template.json",
+        tier_public / "tiered_cache/__init__.py",
+        tier_public / "tiered_cache/core.py",
+        tier_public / "tiered_cache/interfaces.py",
+        tier_reference / "tiered_cache/core.py",
+        tier_qualifier,
+    ):
+        require(path.is_file(), f"missing artifact {path.relative_to(ROOT)}")
+    tier_private_source = (tier_reference / "tiered_cache/core.py").read_text()
+    require("AGENTHARNESS_MUTANT" not in tier_private_source and "MUTANT =" not in tier_private_source, "tiered-cache reference contains runtime selector")
+    tier_mutations = (
+        "tier_l1_short_circuit",
+        "tier_l2_promotion",
+        "tier_origin_fill",
+        "tier_two_level_invalidation",
+        "tier_failure_non_admission",
+        "tier_l2_casefold_delete_near_miss",
+    )
+    for mutation_id in tier_mutations:
+        require(
+            f'("two-tier-read-through-cache", "{mutation_id}")' in materializer_source,
+            f"direct source patch missing for {mutation_id}",
+        )
+    tier_public_text = "\n".join(path.read_text(errors="replace") for path in tier_public.rglob("*") if path.is_file())
+    tier_forbidden = ["AGENTHARNESS_MUTANT", "mechanism-first-v5.2", "qualification-results", *tier_mutations]
+    require(not [token for token in tier_forbidden if token in tier_public_text], "private tiered-cache qualification material leaked")
+
+    require(
+        pointer["qualified_candidates"] == ["transactional-release-pointer", "two-tier-read-through-cache"],
+        "qualification roster mismatch",
+    )
+    require(pointer["pending_candidates"] == ["portable-command-receipt-ledger"], "pending roster mismatch")
     require(pointer["efficacy_cells_observed"] == pointer["efficacy_provider_calls"] == 0, "pointer claims efficacy activity")
-    print("V5.2 task 10 qualification: GO (50/50 + singleton matrix + amended near miss)")
+    print("V5.2 tasks 10-11 qualification: GO (100 scored probes/reference + singleton matrices)")
     return 0
 
 

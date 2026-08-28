@@ -18,6 +18,7 @@ MODULES = {
     "epoch-guarded-leader-heartbeat": Path("epoch_leader/cli.py"),
     "context-complete-authorization-cache": Path("decision_cache/app.py"),
     "transactional-release-pointer": Path("release_pointer/app.py"),
+    "two-tier-read-through-cache": Path("tiered_cache/core.py"),
 }
 
 DIRECT_PATCHES = {
@@ -44,6 +45,30 @@ DIRECT_PATCHES = {
     ("transactional-release-pointer", "release_split_receipt_near_miss"): (
         '            store.stage_receipt(tx, new_receipt)\n',
         '''            try:\n                store.stage_receipt(tx, new_receipt)\n            except Exception:\n                try:\n                    store.commit(tx)\n                except Exception:\n                    pass\n                return _error("storage_failure", 503)\n''',
+    ),
+    ("two-tier-read-through-cache", "tier_l1_short_circuit"): (
+        '''        if first is not None:\n            return first\n''',
+        '',
+    ),
+    ("two-tier-read-through-cache", "tier_l2_promotion"): (
+        '''        if second is not None:\n            self._l1.put(key, second)\n            return second\n''',
+        '''        if second is not None:\n            return second\n''',
+    ),
+    ("two-tier-read-through-cache", "tier_origin_fill"): (
+        '        self._l2.put(key, loaded)\n',
+        '',
+    ),
+    ("two-tier-read-through-cache", "tier_two_level_invalidation"): (
+        '        self._l2.delete(key)\n',
+        '',
+    ),
+    ("two-tier-read-through-cache", "tier_failure_non_admission"): (
+        '        loaded = self._origin.load(key)\n',
+        '''        try:\n            loaded = self._origin.load(key)\n        except OriginError:\n            self._l2.put(key, b"__origin_error__")\n            raise\n''',
+    ),
+    ("two-tier-read-through-cache", "tier_l2_casefold_delete_near_miss"): (
+        '        self._l2.delete(key)\n',
+        '        self._l2.delete(key.lower())\n',
     ),
 }
 
