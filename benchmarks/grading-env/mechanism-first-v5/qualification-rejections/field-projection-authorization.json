@@ -1,0 +1,27 @@
+{
+  "candidate_id": "field-projection-authorization",
+  "campaign": "mechanism-first-v5",
+  "decision": "qualification_rejected",
+  "decided_at_utc": "2026-08-28T08:26:23Z",
+  "evaluated_from_commit": "3462f13fb37834c25ac675f15c9bc3fa5f16e2dd",
+  "family_id": "authorization-isolation",
+  "frozen_ledger_pointer_sha256": "01b25817ed7bffb619ce171c8234f3ae1462740b02f02ee82a21c9138b4bbc78",
+  "methodological_review": "NO-GO",
+  "reason_codes": [
+    "near_miss_not_publicly_observable",
+    "authorization_denial_response_underspecified"
+  ],
+  "rationale": [
+    "The designated target mutant is publicly discriminable and could satisfy its singleton failure set.",
+    "The frozen near miss computes initials before filtering but then removes unauthorized sources and applies the same rejection as the reference.",
+    "For contract-valid nonempty names, initials computation is deterministic, total, pure, and leaves no durable state.",
+    "Reference and near miss therefore have identical HTTP results, PolicyStore calls, and SQLite state for both allowed and denied requests.",
+    "Distinguishing the frozen near miss would require internal instrumentation, unsupported timing/resource assertions, or invalid fixture rows.",
+    "If the near miss instead returns initials after filtering its sources, it becomes the same dependency-bypass defect as the target rather than an independent near miss."
+  ],
+  "secondary_issue": "The frozen profile does not specify the exact status/body for an ordinary field-authorization denial.",
+  "recommended_reseed": "Use a publicly observable transitive-dependency near miss and freeze an exact authorization-denial response.",
+  "next_seeded_candidate": null,
+  "published_task_created": false,
+  "private_reference_retained": false
+}

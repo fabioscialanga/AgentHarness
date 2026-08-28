@@ -1,0 +1,19 @@
+{
+  "campaign": "mechanism-first-v5",
+  "status": "qualification_blocked",
+  "decided_at_utc": "2026-08-28T08:26:23Z",
+  "frozen_ledger_pointer_sha256": "01b25817ed7bffb619ce171c8234f3ae1462740b02f02ee82a21c9138b4bbc78",
+  "blocked_requirement": "two qualified tasks per family",
+  "family_id": "authorization-isolation",
+  "qualified_candidates": ["attenuated-capability-verifier"],
+  "rejected_candidates": [
+    "atomic-authorized-batch",
+    "tenant-scoped-resource-api",
+    "field-projection-authorization"
+  ],
+  "required_qualified_count": 2,
+  "actual_qualified_count": 1,
+  "efficacy_run_permitted": false,
+  "reason": "All remaining seeded candidates in the family failed mandatory methodological admission controls. Continuing would require changing the frozen campaign or accepting probe-shaped/non-observable evidence.",
+  "required_next_action": "Create and freeze a replacement authorization-isolation candidate, then qualify it before running final V5 efficacy."
+}
