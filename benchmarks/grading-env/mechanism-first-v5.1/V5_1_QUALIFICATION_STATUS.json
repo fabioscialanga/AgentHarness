@@ -1,0 +1,43 @@
+{
+  "campaign": "mechanism-first-v5.1",
+  "status": "replacement_qualified",
+  "qualified_at_utc": "2026-08-28T09:20:43Z",
+  "task_id": "context-complete-authorization-cache",
+  "family_id": "authorization-isolation",
+  "replaces_rejected_candidates": [
+    "atomic-authorized-batch",
+    "tenant-scoped-resource-api",
+    "field-projection-authorization"
+  ],
+  "ledger_sha256": "0c04f6dc763e289443712c76cd997a4bda600c5b8da4dd3e19d84542c1ed0bc5",
+  "amendment_sha256": "9385685b225f653ea062c2dbdffa5952fa69b31feef3464477c3e6181def7b0a",
+  "qualification_matrix_sha256": "e3b43029654830feaac29199ebfc760e283495c80bfc0b75856672bd6d29e3b5",
+  "reference": {
+    "scored_probes": 50,
+    "failed_checks": [],
+    "failed_common_controls": []
+  },
+  "source_level_singleton_matrix": {
+    "auth_cache_resource_identity": ["auth_cache_resource_identity"],
+    "auth_cache_tenant": ["auth_cache_tenant"],
+    "auth_cache_subject": ["auth_cache_subject"],
+    "auth_cache_action": ["auth_cache_action"],
+    "auth_cache_policy_revision": ["auth_cache_policy_revision"]
+  },
+  "near_miss": {
+    "implementation": "auth_cache_resource_alias_near_miss",
+    "failed_checks": ["auth_cache_resource_identity"]
+  },
+  "common_controls": {
+    "cache_retains_allow_and_deny": true,
+    "cache_half_open_ttl": true,
+    "cache_invalid_input_atomicity": true
+  },
+  "independent_acceptance_review": {
+    "blockers": 0,
+    "high_findings": 0,
+    "verdict": "GO"
+  },
+  "target_model_calls": 0,
+  "efficacy_cells": false
+}

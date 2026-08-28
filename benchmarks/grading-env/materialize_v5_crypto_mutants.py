@@ -16,6 +16,7 @@ MODULES = {
     "length-prefixed-frame-parser": Path("frame_parser/parse.py"),
     "streaming-csv-quoted-records": Path("csv_stream/parse.py"),
     "epoch-guarded-leader-heartbeat": Path("epoch_leader/cli.py"),
+    "context-complete-authorization-cache": Path("decision_cache/app.py"),
 }
 
 
