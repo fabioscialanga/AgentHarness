@@ -2,7 +2,7 @@
   "campaign": "mechanism-first-v5",
   "status": "qualification_blocked",
   "decided_at_utc": "2026-08-28T08:26:23Z",
-  "frozen_ledger_pointer_sha256": "01b25817ed7bffb619ce171c8234f3ae1462740b02f02ee82a21c9138b4bbc78",
+  "frozen_ledger_sha256": "01a331c23895b764f84952d266350ef7bd6f3de05adfcaf3a30d8c0d558a9841",
   "blocked_requirement": "two qualified tasks per family",
   "family_id": "authorization-isolation",
   "qualified_candidates": ["attenuated-capability-verifier"],
