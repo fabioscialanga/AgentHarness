@@ -1,0 +1,57 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "amendment_id": "repair-release-pointer-near-miss-isolation",
+  "status": "frozen_amendment",
+  "source_draft_file": "V5_2_QUALIFICATION_AMENDMENT_DRAFT.json",
+  "source_draft_sha256": "545050d9a63bea3ceb56e0fb00b6e9c444cc6b46c4bf83a1e6f48aca0d81c5de",
+  "independent_review": {
+    "file": "V5_2_QUALIFICATION_AMENDMENT_REVIEW.json",
+    "sha256": "67063486a2c4a59c108b358a98e8e3c9b24db6cdb8447deade0a33ae46b50f64",
+    "decision": "GO"
+  },
+  "executed_qualification": {
+    "file": "qualification-results/transactional-release-pointer.json",
+    "sha256": "b479bb3fefe0c688590c6a2dad54915bcb84173a0cc8805ecc38a36d881983a3",
+    "ok": true,
+    "reference_scored_probes": "50/50",
+    "planned_singleton_rows": 5,
+    "near_miss_failed_checks": ["release_failure_atomicity"]
+  },
+  "amends_ledger_file": "V5_2_REPLACEMENT_LEDGER.10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783.json",
+  "amends_ledger_sha256": "10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783",
+  "discovered_by": "executed source-level qualification matrix",
+  "observed_failure": {
+    "matrix_file": "/tmp/v52-release-pointer-matrix.json",
+    "reference": "PASS",
+    "planned_mutants": "five singleton rows",
+    "old_near_miss_failed_checks": [
+      "release_publication_completeness",
+      "release_failure_atomicity"
+    ],
+    "reason": "The old split-transaction near miss necessarily calls begin and commit twice on fault-free success. That violates the frozen normative rule 'Begin exactly once' and the publicly observable callback trace, so it cannot be a singleton near miss."
+  },
+  "supersedes_only": {
+    "candidate_id": "transactional-release-pointer",
+    "check_id": "release_failure_atomicity",
+    "old_counterexample": "stage_receipt raises after channel/event staging: exact 503 and all three public views equal pre-state.",
+    "new_counterexample": "Five fresh subprobes inject stage_receipt failure after channel/event staging; five fresh subprobes inject the first commit failure after all three stages. Every subprobe returns exact 503 and all three public views equal pre-state.",
+    "old_near_miss": "Split receipt transaction: commit channel+event in T1 and receipt in T2.",
+    "new_near_miss": "On stage_receipt StoreError only, incorrectly commit the active transaction and return storage_failure; all other StoreErrors still roll back. It is fault-free equivalent, uses one transaction, and fails only release_failure_atomicity. The planned mutant commits rather than rolls back for every StoreError, so the commit-failure subprobes distinguish it: planned mutant retries commit and persists all three records, while the near miss rolls back after the injected commit failure.",
+    "planned_mutant_unchanged": "Unconditionally commit rather than rollback in StoreError handler."
+  },
+  "unchanged": [
+    "all three replacement candidate IDs and families",
+    "all public interfaces and normative success behavior",
+    "all five planned source-level mutants",
+    "all check IDs",
+    "the other fourteen checks",
+    "efficacy_cells_observed=0 and efficacy_provider_calls=0"
+  ],
+  "required_matrix": {
+    "reference": ["PASS", "PASS", "PASS", "PASS", "PASS"],
+    "planned_release_failure_atomicity_mutant": ["PASS", "PASS", "PASS", "FAIL", "PASS"],
+    "amended_near_miss": ["PASS", "PASS", "PASS", "FAIL", "PASS"]
+  },
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0
+}

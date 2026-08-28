@@ -17,6 +17,34 @@ MODULES = {
     "streaming-csv-quoted-records": Path("csv_stream/parse.py"),
     "epoch-guarded-leader-heartbeat": Path("epoch_leader/cli.py"),
     "context-complete-authorization-cache": Path("decision_cache/app.py"),
+    "transactional-release-pointer": Path("release_pointer/app.py"),
+}
+
+DIRECT_PATCHES = {
+    ("transactional-release-pointer", "release_generation_cas"): (
+        '''            if expected != channel.generation:\n                store.rollback(tx)\n                return _error("generation_conflict", 409)\n''',
+        '',
+    ),
+    ("transactional-release-pointer", "release_artifact_approval"): (
+        '''            if not approved:\n                store.rollback(tx)\n                return _error("artifact_not_approved", 422)\n''',
+        '',
+    ),
+    ("transactional-release-pointer", "release_publication_completeness"): (
+        '            store.stage_event(tx, event)\n',
+        '',
+    ),
+    ("transactional-release-pointer", "release_failure_atomicity"): (
+        '''    def close_error(tx: object) -> JSONResponse:\n        try:\n            store.rollback(tx)\n''',
+        '''    def close_error(tx: object) -> JSONResponse:\n        try:\n            store.commit(tx)\n''',
+    ),
+    ("transactional-release-pointer", "release_idempotent_replay"): (
+        '''            if receipt is not None:\n                if receipt.command_fingerprint != fingerprint:\n                    store.rollback(tx)\n                    return _error("request_id_conflict", 409)\n                if (\n                    receipt.request_id != request_id\n                    or receipt.status_code != 200\n                    or not isinstance(receipt.response_body, bytes)\n                ):\n                    raise StoreError("invalid receipt")\n                store.rollback(tx)\n                return Response(receipt.response_body, status_code=receipt.status_code, media_type="application/json")\n''',
+        '',
+    ),
+    ("transactional-release-pointer", "release_split_receipt_near_miss"): (
+        '            store.stage_receipt(tx, new_receipt)\n',
+        '''            try:\n                store.stage_receipt(tx, new_receipt)\n            except Exception:\n                try:\n                    store.commit(tx)\n                except Exception:\n                    pass\n                return _error("storage_failure", 503)\n''',
+    ),
 }
 
 
@@ -29,6 +57,16 @@ def materialize_mutant(reference: Path, task_id: str, mutant_id: str, destinatio
     shutil.copytree(reference, destination, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "build", "*.egg-info", ".pytest_cache"))
     module = destination / MODULES[task_id]
     source = module.read_text(encoding="utf-8")
+    direct = DIRECT_PATCHES.get((task_id, mutant_id))
+    if direct is not None:
+        old, new = direct
+        if source.count(old) != 1:
+            raise RuntimeError(f"direct patch site is not unique: {task_id}/{mutant_id}")
+        patched = source.replace(old, new)
+        if patched == source:
+            raise RuntimeError(f"direct patch did not change source: {task_id}/{mutant_id}")
+        module.write_text(patched, encoding="utf-8")
+        return destination
     occurrences = sum(source.count(selector) for selector in SELECTORS)
     if occurrences == 0:
         raise RuntimeError(f"reference has no private mutation selector: {task_id}")

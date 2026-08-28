@@ -1,0 +1,26 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "status": "qualification_in_progress",
+  "prebuild_pointer_file": "V5_2_PREBUILD_CURRENT.json",
+  "prebuild_pointer_sha256": "66dc3c79400621a42a1d35e437e801ccd0bbd2d00d1879186630b78a81cffd30",
+  "ledger_file": "V5_2_REPLACEMENT_LEDGER.10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783.json",
+  "ledger_sha256": "10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783",
+  "amendment_file": "V5_2_QUALIFICATION_AMENDMENT.0422a9bba4f6ca3bdb7ef8d805b9bd0cfc8a5221a85b36e87b503d7fdac7da9c.json",
+  "amendment_sha256": "0422a9bba4f6ca3bdb7ef8d805b9bd0cfc8a5221a85b36e87b503d7fdac7da9c",
+  "task_reviews": {
+    "transactional-release-pointer": {
+      "file": "V5_2_TASK10_FINAL_REVIEW.json",
+      "sha256": "f5a1db36da122b599b874e33fd34e35a1b46f507874c6bbe44302e707866f149",
+      "decision": "GO"
+    }
+  },
+  "qualified_candidates": [
+    "transactional-release-pointer"
+  ],
+  "pending_candidates": [
+    "two-tier-read-through-cache",
+    "portable-command-receipt-ledger"
+  ],
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0
+}

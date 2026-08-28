@@ -1,0 +1,37 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "artifact_type": "independent_qualification_amendment_review",
+  "decision": "GO",
+  "reviewer": {
+    "system": "isolated Hermes Docker reviewer",
+    "session_id": "proc_05911810e9fe"
+  },
+  "reviewed_amendment_draft_sha256": "545050d9a63bea3ceb56e0fb00b6e9c444cc6b46c4bf83a1e6f48aca0d81c5de",
+  "findings": [
+    "The amendment repairs the false non-singleton split-transaction near miss.",
+    "The amended near miss is fault-free equivalent and uses one transaction.",
+    "stage_receipt and commit failure subprobes discriminate the amended near miss from the unchanged commit-on-any-StoreError planned mutant.",
+    "The amended near miss fails only release_failure_atomicity.",
+    "The scope is limited to transactional-release-pointer release_failure_atomicity counterexample and near miss.",
+    "No other check, candidate, interface, planned mutant, or efficacy state changes."
+  ],
+  "conceptual_matrix": {
+    "check_order": [
+      "release_generation_cas",
+      "release_artifact_approval",
+      "release_publication_completeness",
+      "release_failure_atomicity",
+      "release_idempotent_replay"
+    ],
+    "reference": ["PASS", "PASS", "PASS", "PASS", "PASS"],
+    "mutant_generation": ["FAIL", "PASS", "PASS", "PASS", "PASS"],
+    "mutant_approval": ["PASS", "FAIL", "PASS", "PASS", "PASS"],
+    "mutant_completeness": ["PASS", "PASS", "FAIL", "PASS", "PASS"],
+    "mutant_atomicity": ["PASS", "PASS", "PASS", "FAIL", "PASS"],
+    "mutant_replay": ["PASS", "PASS", "PASS", "PASS", "FAIL"],
+    "near_miss_amended": ["PASS", "PASS", "PASS", "FAIL", "PASS"]
+  },
+  "reviewer_caveat": "The reviewer container did not receive the frozen ledger. Local hash-bound validation must verify the amendment target against the repository ledger.",
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0
+}
