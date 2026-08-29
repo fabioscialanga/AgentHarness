@@ -1,0 +1,173 @@
+{
+  "efficacy_cells": 0,
+  "matrix": [
+    {
+      "checks": {
+        "envelope_context_binding": true,
+        "envelope_key_version": true,
+        "envelope_nonce_tag": true,
+        "envelope_output_atomicity": true,
+        "envelope_schema": true
+      },
+      "executed_probes": {
+        "envelope_context_binding": 5,
+        "envelope_key_version": 7,
+        "envelope_nonce_tag": 9,
+        "envelope_output_atomicity": 4,
+        "envelope_schema": 14
+      },
+      "failed": [],
+      "implementation": "reference",
+      "passed": [
+        "envelope_context_binding",
+        "envelope_key_version",
+        "envelope_nonce_tag",
+        "envelope_schema",
+        "envelope_output_atomicity"
+      ]
+    },
+    {
+      "checks": {
+        "envelope_context_binding": false,
+        "envelope_key_version": true,
+        "envelope_nonce_tag": true,
+        "envelope_output_atomicity": true,
+        "envelope_schema": true
+      },
+      "executed_probes": {
+        "envelope_context_binding": 5,
+        "envelope_key_version": 7,
+        "envelope_nonce_tag": 9,
+        "envelope_output_atomicity": 4,
+        "envelope_schema": 14
+      },
+      "failed": [
+        "envelope_context_binding"
+      ],
+      "implementation": "envelope_context_binding",
+      "passed": [
+        "envelope_key_version",
+        "envelope_nonce_tag",
+        "envelope_schema",
+        "envelope_output_atomicity"
+      ]
+    },
+    {
+      "checks": {
+        "envelope_context_binding": true,
+        "envelope_key_version": false,
+        "envelope_nonce_tag": true,
+        "envelope_output_atomicity": true,
+        "envelope_schema": true
+      },
+      "executed_probes": {
+        "envelope_context_binding": 5,
+        "envelope_key_version": 7,
+        "envelope_nonce_tag": 9,
+        "envelope_output_atomicity": 4,
+        "envelope_schema": 14
+      },
+      "failed": [
+        "envelope_key_version"
+      ],
+      "implementation": "envelope_key_version",
+      "passed": [
+        "envelope_context_binding",
+        "envelope_nonce_tag",
+        "envelope_schema",
+        "envelope_output_atomicity"
+      ]
+    },
+    {
+      "checks": {
+        "envelope_context_binding": true,
+        "envelope_key_version": true,
+        "envelope_nonce_tag": false,
+        "envelope_output_atomicity": true,
+        "envelope_schema": true
+      },
+      "executed_probes": {
+        "envelope_context_binding": 5,
+        "envelope_key_version": 7,
+        "envelope_nonce_tag": 9,
+        "envelope_output_atomicity": 4,
+        "envelope_schema": 14
+      },
+      "failed": [
+        "envelope_nonce_tag"
+      ],
+      "implementation": "envelope_nonce_tag",
+      "passed": [
+        "envelope_context_binding",
+        "envelope_key_version",
+        "envelope_schema",
+        "envelope_output_atomicity"
+      ]
+    },
+    {
+      "checks": {
+        "envelope_context_binding": true,
+        "envelope_key_version": true,
+        "envelope_nonce_tag": true,
+        "envelope_output_atomicity": true,
+        "envelope_schema": false
+      },
+      "executed_probes": {
+        "envelope_context_binding": 5,
+        "envelope_key_version": 7,
+        "envelope_nonce_tag": 9,
+        "envelope_output_atomicity": 4,
+        "envelope_schema": 14
+      },
+      "failed": [
+        "envelope_schema"
+      ],
+      "implementation": "envelope_schema",
+      "passed": [
+        "envelope_context_binding",
+        "envelope_key_version",
+        "envelope_nonce_tag",
+        "envelope_output_atomicity"
+      ]
+    },
+    {
+      "checks": {
+        "envelope_context_binding": true,
+        "envelope_key_version": true,
+        "envelope_nonce_tag": true,
+        "envelope_output_atomicity": false,
+        "envelope_schema": true
+      },
+      "executed_probes": {
+        "envelope_context_binding": 5,
+        "envelope_key_version": 7,
+        "envelope_nonce_tag": 9,
+        "envelope_output_atomicity": 4,
+        "envelope_schema": 14
+      },
+      "failed": [
+        "envelope_output_atomicity"
+      ],
+      "implementation": "envelope_output_atomicity",
+      "passed": [
+        "envelope_context_binding",
+        "envelope_key_version",
+        "envelope_nonce_tag",
+        "envelope_schema"
+      ]
+    }
+  ],
+  "mutant_runs": 5,
+  "ok": true,
+  "probe_counts": {
+    "envelope_context_binding": 5,
+    "envelope_key_version": 7,
+    "envelope_nonce_tag": 9,
+    "envelope_output_atomicity": 4,
+    "envelope_schema": 14
+  },
+  "reference_runs": 1,
+  "target_model_calls": 0,
+  "task_id": "envelope-context-decryptor",
+  "total_probes_per_implementation": 39
+}

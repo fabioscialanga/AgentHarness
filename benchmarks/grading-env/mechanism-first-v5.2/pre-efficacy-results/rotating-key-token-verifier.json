@@ -1,0 +1,173 @@
+{
+  "efficacy_cells": 0,
+  "matrix": [
+    {
+      "checks": {
+        "token_algorithm_pin": true,
+        "token_canonical_encoding": true,
+        "token_issuer_audience": true,
+        "token_rotation_window": true,
+        "token_time_claims": true
+      },
+      "executed_probes": {
+        "token_algorithm_pin": 3,
+        "token_canonical_encoding": 8,
+        "token_issuer_audience": 6,
+        "token_rotation_window": 8,
+        "token_time_claims": 9
+      },
+      "failed": [],
+      "implementation": "reference",
+      "passed": [
+        "token_rotation_window",
+        "token_issuer_audience",
+        "token_algorithm_pin",
+        "token_time_claims",
+        "token_canonical_encoding"
+      ]
+    },
+    {
+      "checks": {
+        "token_algorithm_pin": true,
+        "token_canonical_encoding": true,
+        "token_issuer_audience": true,
+        "token_rotation_window": false,
+        "token_time_claims": true
+      },
+      "executed_probes": {
+        "token_algorithm_pin": 3,
+        "token_canonical_encoding": 8,
+        "token_issuer_audience": 6,
+        "token_rotation_window": 8,
+        "token_time_claims": 9
+      },
+      "failed": [
+        "token_rotation_window"
+      ],
+      "implementation": "token_rotation_window",
+      "passed": [
+        "token_issuer_audience",
+        "token_algorithm_pin",
+        "token_time_claims",
+        "token_canonical_encoding"
+      ]
+    },
+    {
+      "checks": {
+        "token_algorithm_pin": true,
+        "token_canonical_encoding": true,
+        "token_issuer_audience": false,
+        "token_rotation_window": true,
+        "token_time_claims": true
+      },
+      "executed_probes": {
+        "token_algorithm_pin": 3,
+        "token_canonical_encoding": 8,
+        "token_issuer_audience": 6,
+        "token_rotation_window": 8,
+        "token_time_claims": 9
+      },
+      "failed": [
+        "token_issuer_audience"
+      ],
+      "implementation": "token_issuer_audience",
+      "passed": [
+        "token_rotation_window",
+        "token_algorithm_pin",
+        "token_time_claims",
+        "token_canonical_encoding"
+      ]
+    },
+    {
+      "checks": {
+        "token_algorithm_pin": false,
+        "token_canonical_encoding": true,
+        "token_issuer_audience": true,
+        "token_rotation_window": true,
+        "token_time_claims": true
+      },
+      "executed_probes": {
+        "token_algorithm_pin": 3,
+        "token_canonical_encoding": 8,
+        "token_issuer_audience": 6,
+        "token_rotation_window": 8,
+        "token_time_claims": 9
+      },
+      "failed": [
+        "token_algorithm_pin"
+      ],
+      "implementation": "token_algorithm_pin",
+      "passed": [
+        "token_rotation_window",
+        "token_issuer_audience",
+        "token_time_claims",
+        "token_canonical_encoding"
+      ]
+    },
+    {
+      "checks": {
+        "token_algorithm_pin": true,
+        "token_canonical_encoding": true,
+        "token_issuer_audience": true,
+        "token_rotation_window": true,
+        "token_time_claims": false
+      },
+      "executed_probes": {
+        "token_algorithm_pin": 3,
+        "token_canonical_encoding": 8,
+        "token_issuer_audience": 6,
+        "token_rotation_window": 8,
+        "token_time_claims": 9
+      },
+      "failed": [
+        "token_time_claims"
+      ],
+      "implementation": "token_time_claims",
+      "passed": [
+        "token_rotation_window",
+        "token_issuer_audience",
+        "token_algorithm_pin",
+        "token_canonical_encoding"
+      ]
+    },
+    {
+      "checks": {
+        "token_algorithm_pin": true,
+        "token_canonical_encoding": false,
+        "token_issuer_audience": true,
+        "token_rotation_window": true,
+        "token_time_claims": true
+      },
+      "executed_probes": {
+        "token_algorithm_pin": 3,
+        "token_canonical_encoding": 8,
+        "token_issuer_audience": 6,
+        "token_rotation_window": 8,
+        "token_time_claims": 9
+      },
+      "failed": [
+        "token_canonical_encoding"
+      ],
+      "implementation": "token_canonical_encoding",
+      "passed": [
+        "token_rotation_window",
+        "token_issuer_audience",
+        "token_algorithm_pin",
+        "token_time_claims"
+      ]
+    }
+  ],
+  "mutant_runs": 5,
+  "ok": true,
+  "probe_counts": {
+    "token_algorithm_pin": 3,
+    "token_canonical_encoding": 8,
+    "token_issuer_audience": 6,
+    "token_rotation_window": 8,
+    "token_time_claims": 9
+  },
+  "reference_runs": 1,
+  "target_model_calls": 0,
+  "task_id": "rotating-key-token-verifier",
+  "total_probes_per_implementation": 34
+}

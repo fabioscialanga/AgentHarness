@@ -1,0 +1,173 @@
+{
+  "efficacy_cells": 0,
+  "matrix": [
+    {
+      "checks": {
+        "batch_all_or_none": true,
+        "batch_duplicate_entity": true,
+        "batch_error_index": true,
+        "batch_idempotent_replay": true,
+        "batch_response_order": true
+      },
+      "executed_probes": {
+        "batch_all_or_none": 6,
+        "batch_duplicate_entity": 5,
+        "batch_error_index": 19,
+        "batch_idempotent_replay": 7,
+        "batch_response_order": 5
+      },
+      "failed": [],
+      "implementation": "reference",
+      "passed": [
+        "batch_all_or_none",
+        "batch_duplicate_entity",
+        "batch_error_index",
+        "batch_idempotent_replay",
+        "batch_response_order"
+      ]
+    },
+    {
+      "checks": {
+        "batch_all_or_none": false,
+        "batch_duplicate_entity": true,
+        "batch_error_index": true,
+        "batch_idempotent_replay": true,
+        "batch_response_order": true
+      },
+      "executed_probes": {
+        "batch_all_or_none": 6,
+        "batch_duplicate_entity": 5,
+        "batch_error_index": 19,
+        "batch_idempotent_replay": 7,
+        "batch_response_order": 5
+      },
+      "failed": [
+        "batch_all_or_none"
+      ],
+      "implementation": "batch_all_or_none",
+      "passed": [
+        "batch_duplicate_entity",
+        "batch_error_index",
+        "batch_idempotent_replay",
+        "batch_response_order"
+      ]
+    },
+    {
+      "checks": {
+        "batch_all_or_none": true,
+        "batch_duplicate_entity": false,
+        "batch_error_index": true,
+        "batch_idempotent_replay": true,
+        "batch_response_order": true
+      },
+      "executed_probes": {
+        "batch_all_or_none": 6,
+        "batch_duplicate_entity": 5,
+        "batch_error_index": 19,
+        "batch_idempotent_replay": 7,
+        "batch_response_order": 5
+      },
+      "failed": [
+        "batch_duplicate_entity"
+      ],
+      "implementation": "batch_duplicate_entity",
+      "passed": [
+        "batch_all_or_none",
+        "batch_error_index",
+        "batch_idempotent_replay",
+        "batch_response_order"
+      ]
+    },
+    {
+      "checks": {
+        "batch_all_or_none": true,
+        "batch_duplicate_entity": true,
+        "batch_error_index": false,
+        "batch_idempotent_replay": true,
+        "batch_response_order": true
+      },
+      "executed_probes": {
+        "batch_all_or_none": 6,
+        "batch_duplicate_entity": 5,
+        "batch_error_index": 19,
+        "batch_idempotent_replay": 7,
+        "batch_response_order": 5
+      },
+      "failed": [
+        "batch_error_index"
+      ],
+      "implementation": "batch_error_index",
+      "passed": [
+        "batch_all_or_none",
+        "batch_duplicate_entity",
+        "batch_idempotent_replay",
+        "batch_response_order"
+      ]
+    },
+    {
+      "checks": {
+        "batch_all_or_none": true,
+        "batch_duplicate_entity": true,
+        "batch_error_index": true,
+        "batch_idempotent_replay": false,
+        "batch_response_order": true
+      },
+      "executed_probes": {
+        "batch_all_or_none": 6,
+        "batch_duplicate_entity": 5,
+        "batch_error_index": 19,
+        "batch_idempotent_replay": 7,
+        "batch_response_order": 5
+      },
+      "failed": [
+        "batch_idempotent_replay"
+      ],
+      "implementation": "batch_idempotent_replay",
+      "passed": [
+        "batch_all_or_none",
+        "batch_duplicate_entity",
+        "batch_error_index",
+        "batch_response_order"
+      ]
+    },
+    {
+      "checks": {
+        "batch_all_or_none": true,
+        "batch_duplicate_entity": true,
+        "batch_error_index": true,
+        "batch_idempotent_replay": true,
+        "batch_response_order": false
+      },
+      "executed_probes": {
+        "batch_all_or_none": 6,
+        "batch_duplicate_entity": 5,
+        "batch_error_index": 19,
+        "batch_idempotent_replay": 7,
+        "batch_response_order": 5
+      },
+      "failed": [
+        "batch_response_order"
+      ],
+      "implementation": "batch_response_order",
+      "passed": [
+        "batch_all_or_none",
+        "batch_duplicate_entity",
+        "batch_error_index",
+        "batch_idempotent_replay"
+      ]
+    }
+  ],
+  "mutant_runs": 5,
+  "ok": true,
+  "probe_counts": {
+    "batch_all_or_none": 6,
+    "batch_duplicate_entity": 5,
+    "batch_error_index": 19,
+    "batch_idempotent_replay": 7,
+    "batch_response_order": 5
+  },
+  "reference_runs": 1,
+  "target_model_calls": 0,
+  "task_id": "atomic-batch-state-machine",
+  "total_probes_per_implementation": 42
+}

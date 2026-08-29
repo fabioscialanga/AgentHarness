@@ -1,0 +1,28 @@
+{
+  "suite_id": "mechanism-first-v5-pre-efficacy-12",
+  "artifact_type": "independent_final_pre_efficacy_review",
+  "decision": "GO",
+  "reviewer": {
+    "system": "isolated Hermes Docker reviewer",
+    "process_session_id": "proc_630ed700ab9c"
+  },
+  "official_layout_manifest_sha256": "c8afc2dcd4932b65b7f2e1f30aa32d964d0041a2ad4525de2968adf6b0d618b5",
+  "reviewed_report_sha256": "f61db03e78da63145655e412c599979945aea87898283db92ae67eff458e502f",
+  "findings": {
+    "BLOCKER": [],
+    "HIGH": [],
+    "MEDIUM": [],
+    "LOW": []
+  },
+  "verified": [
+    "Inherited V5, V5.1, and V5.2 pointer paths and hashes resolve in the official repository hierarchy.",
+    "The aggregate runner path and hash resolve from the pointer location.",
+    "All 12 qualifier hashes and public bundle tree hashes match repository bytes.",
+    "Exactly 12 unique raw qualification results are GO with clean references.",
+    "Every variant row has exactly one failed check and no common-control failure.",
+    "The declared probe total is 548 per complete reference pass.",
+    "Pointer, report, and all raw payloads record zero target-model calls and zero efficacy cells."
+  ],
+  "target_model_calls": 0,
+  "efficacy_cells_observed": 0
+}

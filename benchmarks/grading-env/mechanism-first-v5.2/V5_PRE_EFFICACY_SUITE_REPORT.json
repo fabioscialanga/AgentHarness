@@ -1,0 +1,434 @@
+{
+  "efficacy_cells_observed": 0,
+  "qualification_only": true,
+  "schema_version": 1,
+  "status": "GO",
+  "suite_id": "mechanism-first-v5-pre-efficacy-12",
+  "target_model_calls": 0,
+  "task_count": 12,
+  "task_ids": [
+    "rotating-key-token-verifier",
+    "envelope-context-decryptor",
+    "attenuated-capability-verifier",
+    "atomic-batch-state-machine",
+    "ack-token-work-queue",
+    "length-prefixed-frame-parser",
+    "streaming-csv-quoted-records",
+    "epoch-guarded-leader-heartbeat",
+    "context-complete-authorization-cache",
+    "transactional-release-pointer",
+    "two-tier-read-through-cache",
+    "portable-command-receipt-ledger"
+  ],
+  "tasks": [
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 6,
+      "probe_total_per_implementation": 34,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "9bc7582cdb35e64f00ec7bc95eaa74542eeb0230b7e55b42bc162f982cc07bbf",
+      "qualifier": "benchmarks/grading-env/qualify_v5_rotating_token.py",
+      "qualifier_sha256": "516f00995fc402a5c5e7b3c7a33d39389995fd8a39771390da37d767bfaeea37",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/rotating-key-token-verifier.json",
+      "result_sha256": "fdaec03c59bcb99379d2c50ad0161ec8d58e7886b3f92375afe3651da1720926",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "rotating-key-token-verifier",
+      "variant_failures": {
+        "token_algorithm_pin": [
+          "token_algorithm_pin"
+        ],
+        "token_canonical_encoding": [
+          "token_canonical_encoding"
+        ],
+        "token_issuer_audience": [
+          "token_issuer_audience"
+        ],
+        "token_rotation_window": [
+          "token_rotation_window"
+        ],
+        "token_time_claims": [
+          "token_time_claims"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 6,
+      "probe_total_per_implementation": 39,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "d86a45e935233992ff0e059afe21678283f8d10070a5047b7852158e28cf9bc6",
+      "qualifier": "benchmarks/grading-env/qualify_v5_envelope_crypto.py",
+      "qualifier_sha256": "48ddfdb08681f46f3236cbea876963cd4402970246e2943174234aebc67ec472",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/envelope-context-decryptor.json",
+      "result_sha256": "f70063664fad5ae7db0947380a51856d11709c7392338ae7abde03400c4e0b74",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "envelope-context-decryptor",
+      "variant_failures": {
+        "envelope_context_binding": [
+          "envelope_context_binding"
+        ],
+        "envelope_key_version": [
+          "envelope_key_version"
+        ],
+        "envelope_nonce_tag": [
+          "envelope_nonce_tag"
+        ],
+        "envelope_output_atomicity": [
+          "envelope_output_atomicity"
+        ],
+        "envelope_schema": [
+          "envelope_schema"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 6,
+      "probe_total_per_implementation": 33,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "d0e91a896d7423ee58969f6dbb6dd9a125db788c52ec25ab15334ed85b9b642d",
+      "qualifier": "benchmarks/grading-env/qualify_v5_capability.py",
+      "qualifier_sha256": "751e4af3c8c72bf8739d4e59644dc16152abe271475f7d553c3eb893da498a57",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/attenuated-capability-verifier.json",
+      "result_sha256": "d9e3855fc08170f9e7219e6000fee2ff91e30a296fb091fd5d9d2e1c63b0e354",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "attenuated-capability-verifier",
+      "variant_failures": {
+        "capability_attenuation": [
+          "capability_attenuation"
+        ],
+        "capability_chain_signatures": [
+          "capability_chain_signatures"
+        ],
+        "capability_depth": [
+          "capability_depth"
+        ],
+        "capability_request_match": [
+          "capability_request_match"
+        ],
+        "capability_time_intersection": [
+          "capability_time_intersection"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 6,
+      "probe_total_per_implementation": 42,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "5491cb3deea64ff98b6019d4502c7d2d4c699a75d344c07dbb037d96bb733fc9",
+      "qualifier": "benchmarks/grading-env/qualify_v5_atomic_batch.py",
+      "qualifier_sha256": "a73b139e190686ce8754b05b27066492a960925c2d574982efb03004f936a06f",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/atomic-batch-state-machine.json",
+      "result_sha256": "e47d4a45a3127ac6771fa5b981757e493c4eff5369c7311dceee935b4ca54ce0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "atomic-batch-state-machine",
+      "variant_failures": {
+        "batch_all_or_none": [
+          "batch_all_or_none"
+        ],
+        "batch_duplicate_entity": [
+          "batch_duplicate_entity"
+        ],
+        "batch_error_index": [
+          "batch_error_index"
+        ],
+        "batch_idempotent_replay": [
+          "batch_idempotent_replay"
+        ],
+        "batch_response_order": [
+          "batch_response_order"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 49,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "75cdeb7bcbb7f49f5960c9008e6bde0700923fd3cbdc9c280153f80abd0535a6",
+      "qualifier": "benchmarks/grading-env/qualify_v5_ack_queue.py",
+      "qualifier_sha256": "54b875e952569a66b6fc6489d9a479ff6bafed7d505506605fb9acbc3116fa17",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/ack-token-work-queue.json",
+      "result_sha256": "5cbf4ba683d4ed96ce6ee6508be8876c3bc3c36b6dc09f9158cade9fdb314b59",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "ack-token-work-queue",
+      "variant_failures": {
+        "ack_attempt_accounting": [
+          "ack_attempt_accounting"
+        ],
+        "ack_nack_requeues": [
+          "ack_nack_requeues"
+        ],
+        "ack_single_claim": [
+          "ack_single_claim"
+        ],
+        "ack_stale_toctou": [
+          "ack_stale_worker_rejected"
+        ],
+        "ack_stale_worker_rejected": [
+          "ack_stale_worker_rejected"
+        ],
+        "ack_visibility_timeout": [
+          "ack_visibility_timeout"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 44,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "cfd7a86a029afed3c0ce1443fc6014f46ea75067b94ef2b0ff1995f0cffdda69",
+      "qualifier": "benchmarks/grading-env/qualify_v5_frame_parser.py",
+      "qualifier_sha256": "43e2b274570ce5fe1d98f354028657a2ef807bac6e1345132adf07ffbd92a3b2",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/length-prefixed-frame-parser.json",
+      "result_sha256": "04d5def69115863c8fea50639cfeccd3dd14ad05b3b27603ad3d6cbb05338336",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "length-prefixed-frame-parser",
+      "variant_failures": {
+        "frame_endianness": [
+          "frame_endianness"
+        ],
+        "frame_max_before_alloc": [
+          "frame_max_before_alloc"
+        ],
+        "frame_split_prefix_near_miss": [
+          "frame_split_prefix_payload"
+        ],
+        "frame_split_prefix_payload": [
+          "frame_split_prefix_payload"
+        ],
+        "frame_truncated_eof": [
+          "frame_truncated_eof"
+        ],
+        "frame_zero_and_multiple": [
+          "frame_zero_and_multiple"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 53,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "13fcd8bfab6c37f1c3fce976b3bad04560da0e59fff1be25df3067fe92e1dd71",
+      "qualifier": "benchmarks/grading-env/qualify_v5_csv_stream.py",
+      "qualifier_sha256": "5f9855755461fd01cd55847312fcc8f3aa6e10b7a3c4c45f87b8bca6b5b18e74",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/streaming-csv-quoted-records.json",
+      "result_sha256": "651095c8823369231374eba23cabdfca0dfbe0a30764803dfbf12571c711b701",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "streaming-csv-quoted-records",
+      "variant_failures": {
+        "csv_field_limit": [
+          "csv_field_limit"
+        ],
+        "csv_header_exact": [
+          "csv_header_exact"
+        ],
+        "csv_quoted_chunk_state": [
+          "csv_quoted_chunk_state"
+        ],
+        "csv_quoted_escape_near_miss": [
+          "csv_quoted_chunk_state"
+        ],
+        "csv_row_width": [
+          "csv_row_width"
+        ],
+        "csv_strict_eof": [
+          "csv_strict_eof"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 54,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "bf0a08ff7d6787a3a85050295d84ebfbac5b163a14e89950a1683e749cbf0aed",
+      "qualifier": "benchmarks/grading-env/qualify_v5_epoch_leader.py",
+      "qualifier_sha256": "84ca81b6c51c671d620293a5e306cea74a2bffafff5688fec74670de2f108607",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/epoch-guarded-leader-heartbeat.json",
+      "result_sha256": "3a31d758a6cc5598b34b422fbb017f3bc54e49038be0c0549ff1565b63dc4414",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "epoch-guarded-leader-heartbeat",
+      "variant_failures": {
+        "leader_epoch_heartbeat_near_miss": [
+          "leader_stale_epoch_publish"
+        ],
+        "leader_epoch_monotonic": [
+          "leader_epoch_monotonic"
+        ],
+        "leader_expiry_boundary": [
+          "leader_expiry_boundary"
+        ],
+        "leader_one_winner": [
+          "leader_one_winner"
+        ],
+        "leader_publication_order": [
+          "leader_publication_order"
+        ],
+        "leader_stale_epoch_publish": [
+          "leader_stale_epoch_publish"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 50,
+      "public_bundle_files": 7,
+      "public_bundle_tree_sha256": "fc95b80bc1d8cffe24ddb7a1b8893564967c975dec894d827ef36b28700ee019",
+      "qualifier": "benchmarks/grading-env/qualify_v5_1_auth_cache.py",
+      "qualifier_sha256": "b8bc547dacecd8a51c0797f51c4e9df09ac839f91b0fd20adf82a422fb1269b2",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/context-complete-authorization-cache.json",
+      "result_sha256": "e3b43029654830feaac29199ebfc760e283495c80bfc0b75856672bd6d29e3b5",
+      "stderr_sha256": "bf40a6a8ff4f6d31c288fd78cc9d32d2edf00ebb0c48401d344886b004ea7b7c",
+      "target_model_calls": 0,
+      "task_id": "context-complete-authorization-cache",
+      "variant_failures": {
+        "auth_cache_action": [
+          "auth_cache_action"
+        ],
+        "auth_cache_policy_revision": [
+          "auth_cache_policy_revision"
+        ],
+        "auth_cache_resource_alias_near_miss": [
+          "auth_cache_resource_identity"
+        ],
+        "auth_cache_resource_identity": [
+          "auth_cache_resource_identity"
+        ],
+        "auth_cache_subject": [
+          "auth_cache_subject"
+        ],
+        "auth_cache_tenant": [
+          "auth_cache_tenant"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 50,
+      "public_bundle_files": 7,
+      "public_bundle_tree_sha256": "1c53bb730b058608817e6f3d658d9b113ac13cc7bf3871809ae6aa2d046bf104",
+      "qualifier": "benchmarks/grading-env/qualify_v5_2_release_pointer.py",
+      "qualifier_sha256": "f334cb46411e5fb05413234ed07d53436df0a44fe19a73b4d2e824c122f5574f",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/transactional-release-pointer.json",
+      "result_sha256": "b479bb3fefe0c688590c6a2dad54915bcb84173a0cc8805ecc38a36d881983a3",
+      "stderr_sha256": "bf40a6a8ff4f6d31c288fd78cc9d32d2edf00ebb0c48401d344886b004ea7b7c",
+      "target_model_calls": 0,
+      "task_id": "transactional-release-pointer",
+      "variant_failures": {
+        "release_artifact_approval": [
+          "release_artifact_approval"
+        ],
+        "release_failure_atomicity": [
+          "release_failure_atomicity"
+        ],
+        "release_generation_cas": [
+          "release_generation_cas"
+        ],
+        "release_idempotent_replay": [
+          "release_idempotent_replay"
+        ],
+        "release_publication_completeness": [
+          "release_publication_completeness"
+        ],
+        "release_split_receipt_near_miss": [
+          "release_failure_atomicity"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 50,
+      "public_bundle_files": 7,
+      "public_bundle_tree_sha256": "3cc1a6aef01b0b49f9f43bf56953eea2d60e6054849d28fedeb4f639e65d4f3e",
+      "qualifier": "benchmarks/grading-env/qualify_v5_2_tiered_cache.py",
+      "qualifier_sha256": "368e14734c531d32e7b91ab1e98c66c8c94a2c067347b4c000b77be8990a3870",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/two-tier-read-through-cache.json",
+      "result_sha256": "8ad36d6253ddf0ae0787f5a3518faeacc2a5e2ec8bca9be3fae2d5a7043e9de7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_model_calls": 0,
+      "task_id": "two-tier-read-through-cache",
+      "variant_failures": {
+        "tier_failure_non_admission": [
+          "tier_failure_non_admission"
+        ],
+        "tier_l1_short_circuit": [
+          "tier_l1_short_circuit"
+        ],
+        "tier_l2_casefold_delete_near_miss": [
+          "tier_two_level_invalidation"
+        ],
+        "tier_l2_promotion": [
+          "tier_l2_promotion"
+        ],
+        "tier_origin_fill": [
+          "tier_origin_fill"
+        ],
+        "tier_two_level_invalidation": [
+          "tier_two_level_invalidation"
+        ]
+      }
+    },
+    {
+      "efficacy_cells": false,
+      "matrix_rows": 7,
+      "probe_total_per_implementation": 50,
+      "public_bundle_files": 6,
+      "public_bundle_tree_sha256": "bea872835c009ead5ec67a6870ab573e1a1f1dc8e79f8519e1af58ff96fd2c4c",
+      "qualifier": "benchmarks/grading-env/qualify_v5_2_portable_receipts.py",
+      "qualifier_sha256": "eace1a841c466a229fecbfa4125cce481e48f26ce3c43d0f5165a5b88bb1c22b",
+      "reference_failed": [],
+      "result_file": "benchmarks/grading-env/mechanism-first-v5.2/pre-efficacy-results/portable-command-receipt-ledger.json",
+      "result_sha256": "0930efbd5a7c37b8e97eb449fcd8c56853bb3e7dba873b17747867ff66efcffa",
+      "stderr_sha256": "bf40a6a8ff4f6d31c288fd78cc9d32d2edf00ebb0c48401d344886b004ea7b7c",
+      "target_model_calls": 0,
+      "task_id": "portable-command-receipt-ledger",
+      "variant_failures": {
+        "receipt_command_identity": [
+          "receipt_command_identity"
+        ],
+        "receipt_key_casefold_near_miss": [
+          "receipt_key_identity"
+        ],
+        "receipt_key_identity": [
+          "receipt_key_identity"
+        ],
+        "receipt_process_portability": [
+          "receipt_process_portability"
+        ],
+        "receipt_revision_identity": [
+          "receipt_revision_identity"
+        ],
+        "receipt_tenant_identity": [
+          "receipt_tenant_identity"
+        ]
+      }
+    }
+  ],
+  "total_declared_probes_per_reference_pass": 548
+}

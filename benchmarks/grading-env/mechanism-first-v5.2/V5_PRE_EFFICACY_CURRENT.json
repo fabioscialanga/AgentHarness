@@ -1,0 +1,32 @@
+{
+  "suite_id": "mechanism-first-v5-pre-efficacy-12",
+  "status": "GO_pre_efficacy",
+  "inherited_freezes": [
+    {
+      "file": "../mechanism-first-v5/V5_PREBUILD_CURRENT.json",
+      "sha256": "9d6416d6fa11c7ca5157f92efe87b2e51aa860c304f1401deafcfdae2cebfdc8"
+    },
+    {
+      "file": "../mechanism-first-v5.1/V5_1_PREBUILD_CURRENT.json",
+      "sha256": "ae767f67840468b8284279781528d0b87e3c6adc0c64fafe3bb0dd0397ad617b"
+    },
+    {
+      "file": "V5_2_QUALIFICATION_CURRENT.json",
+      "sha256": "2adee4cfc0486207f169082b3052d28442571ad4038ff2c4bec59830a4cae976"
+    }
+  ],
+  "runner_file": "../qualify_v5_pre_efficacy_suite.py",
+  "runner_sha256": "3de7322f84ac2654dd397a69b1e2d5c96631b6336872dd5418054e15583d8dcf",
+  "report_file": "V5_PRE_EFFICACY_SUITE_REPORT.json",
+  "report_sha256": "f61db03e78da63145655e412c599979945aea87898283db92ae67eff458e502f",
+  "independent_final_review": {
+    "file": "V5_PRE_EFFICACY_FINAL_REVIEW.json",
+    "sha256": "59827ef56bd5bdd03c6b270431d682bdcc1d5aad0c6b3165cdf84170e729ed76",
+    "decision": "GO"
+  },
+  "task_count": 12,
+  "total_declared_probes_per_reference_pass": 548,
+  "qualification_only": true,
+  "target_model_calls": 0,
+  "efficacy_cells_observed": 0
+}

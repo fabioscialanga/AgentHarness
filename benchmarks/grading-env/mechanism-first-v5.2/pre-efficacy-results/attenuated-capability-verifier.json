@@ -1,0 +1,173 @@
+{
+  "efficacy_cells": 0,
+  "matrix": [
+    {
+      "checks": {
+        "capability_attenuation": true,
+        "capability_chain_signatures": true,
+        "capability_depth": true,
+        "capability_request_match": true,
+        "capability_time_intersection": true
+      },
+      "executed_probes": {
+        "capability_attenuation": 5,
+        "capability_chain_signatures": 7,
+        "capability_depth": 6,
+        "capability_request_match": 7,
+        "capability_time_intersection": 8
+      },
+      "failed": [],
+      "implementation": "reference",
+      "passed": [
+        "capability_attenuation",
+        "capability_chain_signatures",
+        "capability_request_match",
+        "capability_time_intersection",
+        "capability_depth"
+      ]
+    },
+    {
+      "checks": {
+        "capability_attenuation": false,
+        "capability_chain_signatures": true,
+        "capability_depth": true,
+        "capability_request_match": true,
+        "capability_time_intersection": true
+      },
+      "executed_probes": {
+        "capability_attenuation": 5,
+        "capability_chain_signatures": 7,
+        "capability_depth": 6,
+        "capability_request_match": 7,
+        "capability_time_intersection": 8
+      },
+      "failed": [
+        "capability_attenuation"
+      ],
+      "implementation": "capability_attenuation",
+      "passed": [
+        "capability_chain_signatures",
+        "capability_request_match",
+        "capability_time_intersection",
+        "capability_depth"
+      ]
+    },
+    {
+      "checks": {
+        "capability_attenuation": true,
+        "capability_chain_signatures": false,
+        "capability_depth": true,
+        "capability_request_match": true,
+        "capability_time_intersection": true
+      },
+      "executed_probes": {
+        "capability_attenuation": 5,
+        "capability_chain_signatures": 7,
+        "capability_depth": 6,
+        "capability_request_match": 7,
+        "capability_time_intersection": 8
+      },
+      "failed": [
+        "capability_chain_signatures"
+      ],
+      "implementation": "capability_chain_signatures",
+      "passed": [
+        "capability_attenuation",
+        "capability_request_match",
+        "capability_time_intersection",
+        "capability_depth"
+      ]
+    },
+    {
+      "checks": {
+        "capability_attenuation": true,
+        "capability_chain_signatures": true,
+        "capability_depth": true,
+        "capability_request_match": false,
+        "capability_time_intersection": true
+      },
+      "executed_probes": {
+        "capability_attenuation": 5,
+        "capability_chain_signatures": 7,
+        "capability_depth": 6,
+        "capability_request_match": 7,
+        "capability_time_intersection": 8
+      },
+      "failed": [
+        "capability_request_match"
+      ],
+      "implementation": "capability_request_match",
+      "passed": [
+        "capability_attenuation",
+        "capability_chain_signatures",
+        "capability_time_intersection",
+        "capability_depth"
+      ]
+    },
+    {
+      "checks": {
+        "capability_attenuation": true,
+        "capability_chain_signatures": true,
+        "capability_depth": true,
+        "capability_request_match": true,
+        "capability_time_intersection": false
+      },
+      "executed_probes": {
+        "capability_attenuation": 5,
+        "capability_chain_signatures": 7,
+        "capability_depth": 6,
+        "capability_request_match": 7,
+        "capability_time_intersection": 8
+      },
+      "failed": [
+        "capability_time_intersection"
+      ],
+      "implementation": "capability_time_intersection",
+      "passed": [
+        "capability_attenuation",
+        "capability_chain_signatures",
+        "capability_request_match",
+        "capability_depth"
+      ]
+    },
+    {
+      "checks": {
+        "capability_attenuation": true,
+        "capability_chain_signatures": true,
+        "capability_depth": false,
+        "capability_request_match": true,
+        "capability_time_intersection": true
+      },
+      "executed_probes": {
+        "capability_attenuation": 5,
+        "capability_chain_signatures": 7,
+        "capability_depth": 6,
+        "capability_request_match": 7,
+        "capability_time_intersection": 8
+      },
+      "failed": [
+        "capability_depth"
+      ],
+      "implementation": "capability_depth",
+      "passed": [
+        "capability_attenuation",
+        "capability_chain_signatures",
+        "capability_request_match",
+        "capability_time_intersection"
+      ]
+    }
+  ],
+  "mutant_runs": 5,
+  "ok": true,
+  "probe_counts": {
+    "capability_attenuation": 5,
+    "capability_chain_signatures": 7,
+    "capability_depth": 6,
+    "capability_request_match": 7,
+    "capability_time_intersection": 8
+  },
+  "reference_runs": 1,
+  "target_model_calls": 0,
+  "task_id": "attenuated-capability-verifier",
+  "total_probes_per_implementation": 33
+}
