@@ -1,0 +1,39 @@
+{
+  "schema_version": 7,
+  "suite_id": "mechanism-first-controlled-repair-v7",
+  "artifact_type": "independent_pre_data_review",
+  "decision": "GO",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "review_scope": "Read-only provider-free audit of the V7 bounded-diagnosis delta over V6.",
+  "evidence": {
+    "v4_v5_v6_default_max_turns": 40,
+    "v7_max_turns": 6,
+    "same_turn_budget_for_A_and_B": true,
+    "v7_calibration_anchors_observed_in_real_v6": [],
+    "v6_real_calibration_markers": 3,
+    "v6_real_evaluation_markers": 0,
+    "full_v7_invocation_roster": 15,
+    "provider_budget": 15,
+    "targeted_fast_tests": "2 passed, 11 deselected in 0.07s",
+    "previous_full_v7_tests": "13 passed in 227.90s",
+    "previous_v4_to_v7_regressions": "51 passed in 551.25s",
+    "hash_bound_artifacts_verified": 11
+  },
+  "unchanged_from_v6": [
+    "six-task evaluation roster and order",
+    "source-native materialization",
+    "opaque findings",
+    "heldout evaluator and paired endpoint",
+    "5-of-6 decision threshold",
+    "quota reducer and threshold"
+  ],
+  "blocking_findings": [],
+  "required_claim_boundary": "V7 can support only an exploratory claim about efficacy under a diagnosis budget limited to six turns per condition. It cannot be presented as general, independent, confirmatory, or unconditional efficacy evidence.",
+  "methodological_caveats": [
+    "The six-turn budget was selected after observing V6 ceiling and is disclosed outcome-aware adaptation.",
+    "A short symmetric budget may amplify the value of diagnostic feedback; that is the declared estimand, not a neutral general efficacy test.",
+    "Evaluation remains conditional on the bounded baseline calibration gate."
+  ],
+  "reviewer": "independent Hermes subagent, read-only provider-free audit"
+}

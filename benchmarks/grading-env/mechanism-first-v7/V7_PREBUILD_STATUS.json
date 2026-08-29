@@ -1,0 +1,21 @@
+{
+  "artifacts": {
+    "benchmarks/grading-env/MECHANISM_FIRST_V7_PREREG.template.json": "33d3eb6b825a0de63dcc2ced7441fc50ca5d7d5172310af3f3743a25fe019192",
+    "benchmarks/grading-env/mechanism-first-v6/V6_PROVIDER_FREE_QUALIFICATION_REPORT.json": "b425322c0692a6ada045cf5d7fc6c440ad7215b9ba9bbc290d06793d5fff871d",
+    "benchmarks/grading-env/mechanism-first-v6/qualify_v6_provider_free.py": "b4fec5e9c94c7413b298991da3030a0ae9690ee661b16e43c9452fa7c2d18411",
+    "benchmarks/grading-env/mechanism-first-v7/V7_PROVIDER_FREE_PREBUILD_REPORT.json": "84256490f598301dc5a3bf075b8dcebc3b6f7310feb1185b428ececf7e46ac69",
+    "benchmarks/grading-env/mechanism-first-v7/validate_v7_prebuild.py": "4ee032e006410b85ad1b0542d63a8155c2d8656788ae9704397598169a8d3e51",
+    "benchmarks/grading-env/mechanism-first-v7/V7_INDEPENDENT_PRE_DATA_REVIEW.json": "1faee6cec86ae4e0be822df627c03c70bc4ec64af21e03fb2f0b36704e9cf36c",
+    "benchmarks/grading-env/run_mechanism_first_v4.py": "4aace3e453ef68b15e05a499541a8b868255c363f519a0de7d21a7016636dc5c",
+    "benchmarks/grading-env/run_mechanism_first_v6.py": "83817dc0c349cb6573dc2c99c3eea06fa29341632fe91023334c4529b5e3c65b",
+    "benchmarks/grading-env/run_mechanism_first_v7.py": "163aae712920ed38850aa04222268f1fee0b44b8a123a5d2817a65f8e802dc2d",
+    "src/agentharness/efficacy_v6.py": "49d44106e25a32126f23194ac4fbd9f8a8aca7c261dada2257f836ce9114f21f",
+    "src/agentharness/efficacy_v7.py": "d82f2f75b1e958bb6c2fe1b03f616dff1a74fbabd3d7acfe9cffd2d8ce378d66",
+    "tests/test_mechanism_first_v7.py": "dbb6a55fdf54ee73e47f49ba1f036a70fe10fa972b6b602f3d1acc1184a9334d"
+  },
+  "audit_character": "maintainer_provider_free_prebuild_not_independent_audit",
+  "model_calls": 0,
+  "provider_calls": 0,
+  "schema_version": 7,
+  "status": "qualified_provider_free_prebuild"
+}

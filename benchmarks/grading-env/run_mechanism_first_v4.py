@@ -16,7 +16,7 @@ from agentharness.benchmark_review_evaluator_v4 import evaluate_review
 from agentharness.efficacy_v4 import CALIBRATION_TASKS, CONDITION_ORDERS, CONDITIONS, EVALUATION_TASKS, OPAQUE_FINDING_IDS, PILOT_ID, calibration_admission, canonical_hash, clone_pair, finalize_results, materialize_clean_reference, materialize_controlled_start, quota_admission, tree_fingerprint, validate_marker_accounting, validate_opaque_feedback
 
 TEMPLATE_PATH=REPO_ROOT/"benchmarks/grading-env/MECHANISM_FIRST_V4_PREREG.template.json"; PLACEHOLDER="FREEZE_REQUIRED:"
-SCHEMA_VERSION=4; PROTOCOL_TAG="v4"; REPLICATE_ID="v4-r1"; RESULT_FILENAME="MECHANISM_FIRST_V4_RESULT.json"
+SCHEMA_VERSION=4; PROTOCOL_TAG="v4"; REPLICATE_ID="v4-r1"; RESULT_FILENAME="MECHANISM_FIRST_V4_RESULT.json"; MAX_TURNS=40
 CALIBRATION_CALLS=len(CALIBRATION_TASKS); EVALUATION_CALLS=2*len(EVALUATION_TASKS); MAXIMUM_CALLS=CALIBRATION_CALLS+EVALUATION_CALLS
 class V4Error(RuntimeError): exit_code=50
 class IntegrityFailure(V4Error): exit_code=30
@@ -51,7 +51,7 @@ def validate_manifest_shape(m:Mapping[str,object])->None:
         if not isinstance(b,Mapping) or b.get("block_id")!=f"{PROTOCOL_TAG}-eval-{i+1:03d}" or b.get("task_id")!=EVALUATION_TASKS[i] or tuple(b.get("condition_order",[]))!=CONDITION_ORDERS[i]: raise IntegrityFailure("frozen AB/BA order mismatch")
     if m.get("expected_calibration_provider_calls")!=CALIBRATION_CALLS or m.get("expected_evaluation_provider_calls")!=EVALUATION_CALLS or m.get("maximum_provider_calls")!=MAXIMUM_CALLS or m.get("expected_initial_provider_calls")!=0: raise IntegrityFailure("provider budget mismatch")
     if m.get("quota_threshold_percent")!=76 or m.get("threat_model")!="cooperative-non-adversarial" or m.get("provider_signed_receipts") is not False: raise IntegrityFailure("protocol constants mismatch")
-    if m.get("provider")!="openai-codex" or m.get("model")!="gpt-5.6-sol" or m.get("toolsets")!="terminal,file" or m.get("max_turns")!=40 or m.get("hermes_home")!="/home/fabio/.hermes/profiles/stage2codex2": raise IntegrityFailure("runtime constants mismatch")
+    if m.get("provider")!="openai-codex" or m.get("model")!="gpt-5.6-sol" or m.get("toolsets")!="terminal,file" or m.get("max_turns")!=MAX_TURNS or m.get("hermes_home")!="/home/fabio/.hermes/profiles/stage2codex2": raise IntegrityFailure("runtime constants mismatch")
 
 def freeze_manifest(template:Path,output:Path,*,execution_mode:str="real"):
     if template.resolve()!=TEMPLATE_PATH.resolve() or output.resolve().is_relative_to(REPO_ROOT.resolve()) or output.exists(): raise IntegrityFailure("new external normative freeze required")

@@ -1,0 +1,26 @@
+{
+  "schema_version": 7,
+  "qualification": "provider-free-prebuild",
+  "audit_character": "maintainer_provider_free_prebuild_not_independent_audit",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "ok": true,
+  "checks": {
+    "v6_source_native_qualification": {
+      "ok": true,
+      "task_count": 6,
+      "reference_and_controlled_singletons": true,
+      "live_report_matches_v6_qualification_report": true
+    },
+    "v7_pytest": {
+      "ok": true,
+      "passed": 13,
+      "coverage": "V4 turn default, V7 configuration/rosters/markers, six inherited singleton tasks, full synthetic ADMIT, CEILING, quota and 5-of-6 threshold"
+    }
+  },
+  "limitations": [
+    "This is a maintainer-run provider-free prebuild qualification, not an independent audit.",
+    "No provider, model, Hermes chat, or external benchmark campaign was invoked.",
+    "Real campaign evidence can exist only after an external normative freeze and separately authorized run."
+  ]
+}
