@@ -1,0 +1,31 @@
+{
+  "schema_version": 8,
+  "qualification": "provider-free-prebuild",
+  "audit_character": "maintainer_provider_free_prebuild_not_independent_audit",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "ok": true,
+  "checks": {
+    "v6_source_native_qualification": {
+      "ok": true,
+      "task_count": 6,
+      "reference_and_controlled_singletons": true
+    },
+    "authorization_cache_qualification": {
+      "ok": true,
+      "scored_probes": 50,
+      "source_level_singletons": 5,
+      "independent_acceptance_review": "GO"
+    },
+    "v8_pytest": {
+      "ok": true,
+      "passed": 17,
+      "coverage": "eight-turn binding, exact rosters, six source-native singletons including authorization cache, leakage, markers, full synthetic ADMIT and CEILING, schema provenance, quota, threshold, disclosures"
+    }
+  },
+  "limitations": [
+    "This is provider-free maintainer qualification, not the independent audit.",
+    "V8 is exploratory and outcome-aware in motivation after V6 and invalid V7.",
+    "No provider, model, Hermes chat, or real campaign was invoked."
+  ]
+}

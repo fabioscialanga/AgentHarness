@@ -1,0 +1,30 @@
+{
+  "schema_version": 8,
+  "suite_id": "mechanism-first-controlled-repair-v8",
+  "artifact_type": "independent_pre_data_review",
+  "decision": "GO",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "blocking_findings": [],
+  "evidence": {
+    "v7_real_provider_calls": 1,
+    "v7_heldout_results": 0,
+    "v7_calibration_gate": false,
+    "csv_excluded_from_v8": true,
+    "v8_calibration_tasks_previously_observed": [],
+    "v8_max_turns_equal_for_A_and_B": 8,
+    "receipt_contract_changed_from_v7": false,
+    "authorization_cache_scored_probes": 50,
+    "v8_full_tests": "17 passed in 191.88s",
+    "v8_targeted_fast_tests": "4 passed, 13 deselected in 0.09s",
+    "finalizer_differential_cases": "2000/2000 equivalent",
+    "hash_bound_artifacts_verified": 11
+  },
+  "required_claim_boundary": "Exploratory efficacy under a symmetric eight-turn bounded-diagnosis budget; not independent, general, confirmatory, or unconditional efficacy.",
+  "methodological_caveats": [
+    "The increase from six to eight turns and CSV replacement are outcome-aware adaptations.",
+    "Six work turns plus two operational turns is a rationale, not a technically partitioned budget.",
+    "Evaluation remains conditional on the baseline calibration gate."
+  ],
+  "reviewer": "independent Hermes subagent, read-only provider-free audit"
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": 8,
+  "pilot_id": "mechanism-first-controlled-repair-v8",
+  "study_class": "exploratory",
+  "design": "exploratory bounded-diagnosis",
+  "preregistration_status": "template_not_frozen",
+  "execution_mode": "real",
+  "frozen_at": "FREEZE_REQUIRED:utc_timestamp",
+  "repository_commit": "FREEZE_REQUIRED:clean_commit_sha",
+  "manifest_payload_sha256": "FREEZE_REQUIRED:canonical_manifest_hash",
+  "provider": "openai-codex",
+  "model": "gpt-5.6-sol",
+  "profile": "stage2codex2",
+  "hermes_home": "/home/fabio/.hermes/profiles/stage2codex2",
+  "wrapper": "/home/fabio/AgentHarness-actionable-repair-20260725/benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
+  "hermes_command": "/home/fabio/AgentHarness-actionable-repair-20260725/benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
+  "hermes_command_sha256": "FREEZE_REQUIRED:wrapper_hash",
+  "toolsets": "terminal,file",
+  "max_turns": 8,
+  "invocation_timeout_seconds": 1800,
+  "threat_model": "cooperative-non-adversarial",
+  "provider_signed_receipts": false,
+  "replicate_id": "v8-r1",
+  "expected_initial_provider_calls": 0,
+  "expected_calibration_provider_calls": 3,
+  "expected_evaluation_provider_calls": 12,
+  "maximum_provider_calls": 15,
+  "quota_threshold_percent": 76,
+  "provenance": {
+    "v6_terminal_status": "CEILING",
+    "v6_observed_scope": "Only envelope-context-decryptor, attenuated-capability-verifier, and transactional-release-pointer calibration outcomes were observed; no V6 evaluation cells ran.",
+    "v7_terminal_status": "INVALID before heldout evaluation and calibration gate",
+    "v7_failure": "At turn 6 the baseline CSV invocation had changed the CSV implementation but did not write .agentharness/repair-response.json, so receipt accounting failed before any heldout result or gate decision.",
+    "v7_csv_exclusion": "The observed CSV diff is outcome-aware evidence and streaming-csv-quoted-records is excluded from V8.",
+    "turn_budget_rationale": "Eight turns are six work turns plus two operational turns for receipt creation and verification; A and B receive the same eight-turn budget.",
+    "unobserved_scope": "No real outcome was observed for context-complete-authorization-cache, length-prefixed-frame-parser, or atomic-batch-state-machine.",
+    "non_adaptation_commitment": "The paired endpoint and 5-of-6 threshold are unchanged; authorization cache replaces the outcome-aware CSV task.",
+    "claim_boundary": "V8 is exploratory, conditionally gated, outcome-aware in motivation, and cannot support an independent confirmatory or generally causal claim."
+  },
+  "calibration_tasks": [
+    "context-complete-authorization-cache",
+    "length-prefixed-frame-parser",
+    "atomic-batch-state-machine"
+  ],
+  "calibration_rule": {
+    "conditions": ["A-baseline"],
+    "admit": "All three invocations and heldout reference/guard checks are valid, all guards pass, and at least two of three anchors do not recover the target.",
+    "ceiling_abort": "With otherwise valid accounting and guards, two or three anchors recover the target; execute zero evaluation cells.",
+    "invalid": "Any invocation, receipt, heldout result, target accounting, guard accounting, or guard result is invalid."
+  },
+  "quota_rule": {
+    "windows": ["Session", "Weekly"],
+    "reducer": "max(Session.used_percent, Weekly.used_percent)",
+    "snapshots": ["before_calibration", "after_calibration", "before_each_evaluation_cell"],
+    "projected_usage": "after + 12 * max(0.5, (after-before)/3)",
+    "admit_if": "projected_usage <= 76 and every pre-cell reduced usage < 76",
+    "on_failure": "Stop before the next provider call and classify as provider/quota limitation."
+  },
+  "evaluation_tasks": [
+    "envelope-context-decryptor",
+    "attenuated-capability-verifier",
+    "transactional-release-pointer",
+    "context-complete-authorization-cache",
+    "length-prefixed-frame-parser",
+    "atomic-batch-state-machine"
+  ],
+  "task_targets": {
+    "envelope-context-decryptor": "envelope_context_binding",
+    "attenuated-capability-verifier": "capability_attenuation",
+    "transactional-release-pointer": "release_generation_cas",
+    "context-complete-authorization-cache": "auth_cache_resource_identity",
+    "length-prefixed-frame-parser": "frame_split_prefix_payload",
+    "atomic-batch-state-machine": "batch_all_or_none"
+  },
+  "evaluation_blocks": [
+    {"block_id": "v8-eval-001", "task_id": "envelope-context-decryptor", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v8-eval-002", "task_id": "attenuated-capability-verifier", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "v8-eval-003", "task_id": "transactional-release-pointer", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v8-eval-004", "task_id": "context-complete-authorization-cache", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "v8-eval-005", "task_id": "length-prefixed-frame-parser", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v8-eval-006", "task_id": "atomic-batch-state-machine", "condition_order": ["B-agentharness", "A-baseline"]}
+  ],
+  "cell_contract": {
+    "materialization": "Source-native V8 profile: V5 reference path with V6 AST selector compilation and V8 complete-roster leakage scan.",
+    "start": "A and B are byte-identical clones of one source-native controlled defect.",
+    "A-baseline": "Public SPEC and claims template only.",
+    "B-agentharness": "Same public inputs plus one immutable opaque V8 review finding sourced from V5 finding content.",
+    "provider_calls_per_cell": 1,
+    "initial_provider_calls": 0,
+    "heldout_timing": "Evaluate both cells only after both repairs in the block have completed."
+  },
+  "primary_endpoint": "Per-task paired binary success: target check passes and every sibling/common guard passes.",
+  "decision_rule": {
+    "GO": "B>A on at least 5 of 6 tasks, A>B on zero tasks, B target recovery on at least 5 of 6 tasks, and zero B guard regressions.",
+    "NO-GO": "A valid complete study that does not satisfy every GO condition.",
+    "INVALID": "Incomplete roster, invalid accounting/evaluation, treatment contamination, or integrity failure."
+  },
+  "secondary_report": "Descriptive only; it cannot override the unchanged primary decision.",
+  "frozen_file_sha256": {
+    "src/agentharness/efficacy_v8.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/efficacy_v7.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/efficacy_v6.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/efficacy_v5.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/benchmark_heldout_evaluator_v5.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/benchmark_cells.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_mechanism_first_v4.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_mechanism_first_v6.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_mechanism_first_v7.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_mechanism_first_v8.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_hermes_stage2codex2_docker.sh": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/materialize_v5_crypto_mutants.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v6/qualify_v6_provider_free.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/qualify_v5_1_auth_cache.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v8/validate_v8_prebuild.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v8/V8_INDEPENDENT_PRE_DATA_REVIEW.json": "FREEZE_REQUIRED:file_hash"
+  }
+}
