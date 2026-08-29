@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "analysis_not_authorized_for_synthetic": true,
+    "audit_provider_initial_calls_zero": true,
+    "audit_repair_calls_exact": true,
+    "calibration_blocks_exact": true,
+    "collection_complete": true,
+    "evaluation_blocks_exact": true,
+    "initial_provider_calls_zero": true,
+    "repair_completed_exact": true,
+    "repair_started_exact": true,
+    "synthetic_execution_mode": true
+  },
+  "code_sha256": {
+    "benchmarks/grading-env/run_mechanism_first_v4.py": "214499f67f980d368545235484f0d9736140f5090cd7482ce0d41ed9ec190d22",
+    "benchmarks/grading-env/run_mechanism_first_v5.py": "9a6ebda13625e391904be644a2f17d8f80509ae0ffebcd3b6cc442bc57bddeac",
+    "src/agentharness/benchmark_heldout_evaluator_v5.py": "3af2b03297191dc061a10e32413ad4b238e80a42b78460367fdd01ddad1b458f",
+    "src/agentharness/efficacy_v5.py": "d8a2f2abd343fa769bba5074ea6bed21d28e8dbb00d6cada804b46fcd5f9dc9a"
+  },
+  "ok": true,
+  "provider_model_calls": 0,
+  "schema_version": 5,
+  "suite_id": "mechanism-first-v5-efficacy-runner-qualification",
+  "synthetic_repair_invocations": 26
+}

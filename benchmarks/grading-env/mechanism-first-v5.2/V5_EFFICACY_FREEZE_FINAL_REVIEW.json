@@ -1,0 +1,50 @@
+{
+  "suite_id": "mechanism-first-controlled-repair-v5",
+  "artifact_type": "independent_final_freeze_review",
+  "decision": "GO",
+  "provider_model_calls": 0,
+  "reviewer": {
+    "system": "isolated Hermes Docker reviewer",
+    "process_session_id": "proc_eac9420e2956"
+  },
+  "review_bundle": {
+    "path": "/workspace/reviews/v5-efficacy-freeze-final/repo",
+    "sha256sums_sha256": "b794862ae819e98289d9ec47cc0e64514b734e2d590fc2dd0ddca40f12db08ff",
+    "standalone_git_snapshot": true,
+    "reviewer_owned": true
+  },
+  "commands_and_results": [
+    {
+      "command_class": "V4 and V5 regression tests in isolated Python 3.12 benchmark environment",
+      "result": "20 passed"
+    },
+    {
+      "command_class": "V5 efficacy freeze validator",
+      "result": "V5 efficacy freeze: GO (12 tasks admitted, runner qualified, zero provider calls)"
+    }
+  ],
+  "resolved_prior_audit_findings": [
+    "The first audit bundle omitted SQLAlchemy and a functional Git repository and retained a stale wrapper path; its NO-GO was environmental and triggered remediation.",
+    "The second bundle used mismatched ownership, so Git safe.directory was not visible under the reviewer's HOME; its NO-GO triggered a standalone reviewer-owned snapshot.",
+    "The stale provider wrapper path was replaced by the executable hash-bound repository wrapper.",
+    "The V5 feedback validator now requires non-empty claim_id, status, requirement, observed, remediation, and reason fields, with a regression test."
+  ],
+  "verified_properties": [
+    "12-task efficacy admission",
+    "two disjoint calibration anchors and 24 evaluation cells",
+    "zero initial provider calls and a maximum of 26 repair calls only after explicit launch",
+    "zero provider/model calls during admission and runner qualification",
+    "leak-free byte-identical cloned starts",
+    "workspace-only heldout evaluation",
+    "opaque singleton feedback",
+    "quota and calibration-ceiling stops",
+    "pre-data 10-of-12 decision threshold",
+    "exploratory claim scope",
+    "V4 defaults preserved"
+  ],
+  "residual_constraints": [
+    "The normative freeze is intentionally host-bound to absolute Hermes paths and a hash-bound wrapper.",
+    "No real provider/model benchmark call was made during this review."
+  ],
+  "blockers": []
+}

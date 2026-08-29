@@ -1,0 +1,41 @@
+{
+  "suite_id": "mechanism-first-controlled-repair-v5",
+  "status": "ready_to_freeze",
+  "provider_model_calls": 0,
+  "task_count": 12,
+  "maximum_provider_calls_after_explicit_launch": 26,
+  "template": {
+    "file": "../MECHANISM_FIRST_V5_PREREG.template.json",
+    "sha256": "566910e259f0959d2811d9b86d06cc53888feea3ba3eb566fe286fb473b45a0c"
+  },
+  "admission_report": {
+    "file": "V5_EFFICACY_FREEZE_ADMISSION_REPORT.json",
+    "sha256": "76a204a996b4df9582c9ac1c22d31a59c8846178f9093822bdf763b15dfa3aef"
+  },
+  "runner_qualification_report": {
+    "file": "V5_EFFICACY_RUNNER_QUALIFICATION_REPORT.json",
+    "sha256": "23010df25d98fc91e893a0a9ce62fb4f9bc25b1bb6622982826c06e0095f2cf2"
+  },
+  "validator": {
+    "file": "validate_v5_efficacy_freeze.py",
+    "sha256": "9a7f3d579001d476fe69e0afcdc3b3826ba5a3f2ace6c07d6128ec5188e86260"
+  },
+  "inherited_pre_efficacy_pointer": {
+    "file": "V5_PRE_EFFICACY_CURRENT.json",
+    "sha256": "adcda1b8757f06cb7b58bdc25a0ddf6069801dc2063d5e6feaff8fd89df51d98"
+  },
+  "independent_final_review": {
+    "file": "V5_EFFICACY_FREEZE_FINAL_REVIEW.json",
+    "sha256": "16b287555a112dbc1e2c7c98f0b4913513ae2cde3a2e45d227e801ebd830e545",
+    "decision": "GO"
+  },
+  "design": {
+    "calibration_tasks": 2,
+    "evaluation_tasks": 12,
+    "evaluation_cells": 24,
+    "conditions": ["A-baseline", "B-agentharness"],
+    "decision_threshold": "10/12 B>A, 0 A>B, >=10/12 B recovery, zero B guard regressions",
+    "study_class": "exploratory"
+  },
+  "next_transition": "Commit and push a clean implementation HEAD, generate one external normative manifest bound to that HEAD, validate it, then request explicit authorization before any provider call."
+}
