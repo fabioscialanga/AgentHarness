@@ -50,6 +50,14 @@ def main() -> int:
     require(manifest["maximum_provider_calls"] == 26 and manifest["expected_initial_provider_calls"] == 0, "provider budget mismatch")
     require(manifest["decision_rule"]["GO"].startswith("B>A on at least 10 of 12"), "decision threshold mismatch")
     require(manifest["interpretation"]["quota_429"].startswith("Provider limitation"), "quota attribution missing")
+    require(manifest.get("quota_telemetry") == {
+        "provider": "openai-codex",
+        "required_window_count": 2,
+        "required_labels": ["Session", "Weekly"],
+        "reducer": "maximum used_percent",
+        "threshold_percent": 76,
+        "invalid": "Missing, duplicate, extra, non-numeric, non-finite, or out-of-range windows fail closed before the next provider invocation.",
+    }, "quota telemetry amendment mismatch")
     require(Path(manifest["hermes_command"]).is_file() and os.access(manifest["hermes_command"], os.X_OK), "provider wrapper unavailable")
 
     admission = json.loads(ADMISSION.read_text(encoding="utf-8"))
@@ -85,6 +93,8 @@ def main() -> int:
         "benchmarks/grading-env/run_mechanism_first_v4.py",
         "benchmarks/grading-env/run_mechanism_first_v5.py",
         "benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
+        "benchmarks/grading-env/mechanism-first-v5.2/V5_QUOTA_TELEMETRY_AMENDMENT.json",
+        "benchmarks/grading-env/mechanism-first-v5.2/V5_QUOTA_TELEMETRY_AMENDMENT_REVIEW.json",
         "benchmarks/grading-env/mechanism-first-v5.2/V5_PRE_EFFICACY_CURRENT.json",
         "benchmarks/grading-env/mechanism-first-v5.2/V5_PRE_EFFICACY_SUITE_REPORT.json",
     }

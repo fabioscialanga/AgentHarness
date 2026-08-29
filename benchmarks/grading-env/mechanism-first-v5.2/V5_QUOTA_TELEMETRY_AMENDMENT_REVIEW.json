@@ -1,0 +1,55 @@
+{
+  "suite_id": "mechanism-first-controlled-repair-v5",
+  "artifact_type": "independent_pre_data_amendment_review",
+  "decision": "GO",
+  "provider_model_calls": 0,
+  "review_scope": "Quota telemetry shape correction only",
+  "verified_superseded_boundary": {
+    "run_root": "/home/fabio/.hermes/benchmarks/mechanism-first-v5/official-run-108d736",
+    "repair_calls_started": 0,
+    "repair_calls_completed": 0,
+    "provider_markers": 0,
+    "efficacy_outcomes_observed": false,
+    "state_sha256": "ed882b8da5a6850380d0bdddff33eaf909e25ec160e07771de71e40f2df66a0c"
+  },
+  "verified_amendment": {
+    "required_labels": ["Session", "Weekly"],
+    "required_window_count": 2,
+    "reducer": "maximum used_percent",
+    "fail_closed_on_invalid_shape": true,
+    "v5_only_override": true,
+    "v4_defaults_preserved": true
+  },
+  "unchanged_methodology": [
+    "task roster",
+    "calibration anchors and rule",
+    "A/B condition order",
+    "cloned starts",
+    "feedback and evaluators",
+    "primary endpoint",
+    "10-of-12 decision threshold",
+    "provider and model",
+    "26-call maximum budget",
+    "76-percent quota threshold"
+  ],
+  "commands_and_results": [
+    {
+      "command": "PYTHONPATH=src pytest -q tests/test_mechanism_first_v4.py tests/test_mechanism_first_v5.py",
+      "result": "21 passed"
+    },
+    {
+      "command": "PYTHONPATH=src python benchmarks/grading-env/mechanism-first-v5.2/validate_v5_efficacy_freeze.py",
+      "result": "V5 efficacy freeze: GO (12 tasks admitted, runner qualified, zero provider calls)"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "blockers": [],
+  "residual_requirements": [
+    "Commit and push the amended tree.",
+    "Generate a new external normative manifest bound to the amended commit.",
+    "Use a new empty run root; never resume the superseded root."
+  ]
+}

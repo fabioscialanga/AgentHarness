@@ -1,33 +1,41 @@
 {
   "suite_id": "mechanism-first-controlled-repair-v5",
-  "status": "ready_to_freeze",
+  "status": "amended_ready_to_freeze",
   "provider_model_calls": 0,
   "task_count": 12,
   "maximum_provider_calls_after_explicit_launch": 26,
   "template": {
     "file": "../MECHANISM_FIRST_V5_PREREG.template.json",
-    "sha256": "566910e259f0959d2811d9b86d06cc53888feea3ba3eb566fe286fb473b45a0c"
+    "sha256": "b66babd20326db8e7088cf45fa6ad2e8bd5a70ac6f24cd55bd55775bd29159cc"
   },
   "admission_report": {
     "file": "V5_EFFICACY_FREEZE_ADMISSION_REPORT.json",
-    "sha256": "76a204a996b4df9582c9ac1c22d31a59c8846178f9093822bdf763b15dfa3aef"
+    "sha256": "fe592a92a5d383ff51c0e0cf1ac14e14e78adbe4cab903312513daf3c9ce4b78"
   },
   "runner_qualification_report": {
     "file": "V5_EFFICACY_RUNNER_QUALIFICATION_REPORT.json",
-    "sha256": "23010df25d98fc91e893a0a9ce62fb4f9bc25b1bb6622982826c06e0095f2cf2"
+    "sha256": "e1ee11f7cfddfe227dafef532bdbfb4d7df2cdaae826045c058b77da309b3297"
   },
   "validator": {
     "file": "validate_v5_efficacy_freeze.py",
-    "sha256": "9a7f3d579001d476fe69e0afcdc3b3826ba5a3f2ace6c07d6128ec5188e86260"
+    "sha256": "6f6a2c3fbe54d992cb70c9bf05298315f644e343f85d5f41e34b8eab58334b4c"
   },
   "inherited_pre_efficacy_pointer": {
     "file": "V5_PRE_EFFICACY_CURRENT.json",
     "sha256": "adcda1b8757f06cb7b58bdc25a0ddf6069801dc2063d5e6feaff8fd89df51d98"
   },
-  "independent_final_review": {
+  "independent_base_review": {
     "file": "V5_EFFICACY_FREEZE_FINAL_REVIEW.json",
     "sha256": "16b287555a112dbc1e2c7c98f0b4913513ae2cde3a2e45d227e801ebd830e545",
     "decision": "GO"
+  },
+  "pre_data_amendment": {
+    "file": "V5_QUOTA_TELEMETRY_AMENDMENT.json",
+    "sha256": "873ad0ec6684ff55c0a98679d690f17433b7da5f48feebd77ab15300c1089dfb",
+    "provider_calls_before_amendment": 0,
+    "review_status": "GO",
+    "review_file": "V5_QUOTA_TELEMETRY_AMENDMENT_REVIEW.json",
+    "review_sha256": "23439fba6d9dbab24621e0ef37fed42cf4d0733954315ed75630ee7653fa7a9b"
   },
   "design": {
     "calibration_tasks": 2,
@@ -37,5 +45,5 @@
     "decision_threshold": "10/12 B>A, 0 A>B, >=10/12 B recovery, zero B guard regressions",
     "study_class": "exploratory"
   },
-  "next_transition": "Commit and push a clean implementation HEAD, generate one external normative manifest bound to that HEAD, validate it, then request explicit authorization before any provider call."
+  "next_transition": "Commit and push a clean amended HEAD, generate a new external normative manifest, and relaunch from a new empty run root under the already-granted authorization."
 }

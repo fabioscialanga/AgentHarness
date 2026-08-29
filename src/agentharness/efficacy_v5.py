@@ -10,6 +10,8 @@ import ast
 import hashlib
 import importlib.util
 import json
+import math
+import os
 import shutil
 import stat
 from pathlib import Path
@@ -319,6 +321,26 @@ def validate_marker_accounting(markers: Sequence[Mapping[str, object]], *, evalu
         observed.add(key)
     if observed != expected or len(markers) != len(expected):
         raise ValueError("provider_marker_roster_mismatch")
+
+
+def conservative_usage_percent(windows: Sequence[object]) -> float:
+    """Require the frozen Codex Session+Weekly shape and return the tighter window."""
+    required = {"Session", "Weekly"}
+    if len(windows) != 2:
+        raise ValueError("quota_window_count")
+    observed: dict[str, float] = {}
+    for window in windows:
+        label = getattr(window, "label", None)
+        value = getattr(window, "used_percent", None)
+        if label not in required or label in observed or isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("quota_window_shape")
+        numeric = float(value)
+        if not math.isfinite(numeric) or not 0 <= numeric <= 100:
+            raise ValueError("quota_window_range")
+        observed[str(label)] = numeric
+    if set(observed) != required:
+        raise ValueError("quota_window_labels")
+    return max(observed.values())
 
 
 def quota_admission(start_usage: float, end_usage: float) -> tuple[bool, float]:

@@ -4,6 +4,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -13,6 +14,7 @@ from agentharness.efficacy_v5 import (
     OPAQUE_FINDING_IDS,
     TASK_DEFECTS,
     clone_pair,
+    conservative_usage_percent,
     finalize_results,
     leakage_scan,
     materialize_clean_reference,
@@ -133,3 +135,25 @@ def test_v5_runner_configures_shared_engine_without_changing_source_defaults():
 def test_unknown_task_is_rejected(tmp_path: Path):
     with pytest.raises(ValueError, match="unknown_v5_task"):
         materialize_controlled_start(task_id="unknown", repo_root=ROOT, destination=tmp_path / "x")
+
+
+def test_conservative_usage_requires_exact_session_and_weekly_windows():
+    session = SimpleNamespace(label="Session", used_percent=2.0)
+    weekly = SimpleNamespace(label="Weekly", used_percent=59.0)
+    assert conservative_usage_percent([session, weekly]) == 59.0
+    assert conservative_usage_percent([weekly, session]) == 59.0
+    invalid = (
+        [session],
+        [session, session],
+        [session, weekly, SimpleNamespace(label="Extra", used_percent=1.0)],
+        [session, SimpleNamespace(label="Other", used_percent=59.0)],
+        [session, SimpleNamespace(label="Weekly", used_percent="59")],
+        [session, SimpleNamespace(label="Weekly", used_percent=True)],
+        [session, SimpleNamespace(label="Weekly", used_percent=float("nan"))],
+        [session, SimpleNamespace(label="Weekly", used_percent=float("inf"))],
+        [session, SimpleNamespace(label="Weekly", used_percent=-1.0)],
+        [session, SimpleNamespace(label="Weekly", used_percent=101.0)],
+    )
+    for windows in invalid:
+        with pytest.raises(ValueError, match="quota_window"):
+            conservative_usage_percent(windows)

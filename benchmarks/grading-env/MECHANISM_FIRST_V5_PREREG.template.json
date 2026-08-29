@@ -75,6 +75,14 @@
     "initial_provider_calls": 0,
     "heldout_timing": "Evaluate both cells only after both repairs in the block have completed."
   },
+  "quota_telemetry": {
+    "provider": "openai-codex",
+    "required_window_count": 2,
+    "required_labels": ["Session", "Weekly"],
+    "reducer": "maximum used_percent",
+    "threshold_percent": 76,
+    "invalid": "Missing, duplicate, extra, non-numeric, non-finite, or out-of-range windows fail closed before the next provider invocation."
+  },
   "primary_endpoint": "Per-task paired binary success: target check passes and all four sibling checks plus common controls pass.",
   "decision_rule": {
     "GO": "B>A on at least 10 of 12 tasks, A>B on zero tasks, mean paired delta at least 10/12, B target recovery at least 10/12, and zero B guard regressions.",
@@ -95,6 +103,8 @@
     "benchmarks/grading-env/run_mechanism_first_v4.py": "FREEZE_REQUIRED:file_hash",
     "benchmarks/grading-env/run_mechanism_first_v5.py": "FREEZE_REQUIRED:file_hash",
     "benchmarks/grading-env/run_hermes_stage2codex2_docker.sh": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v5.2/V5_QUOTA_TELEMETRY_AMENDMENT.json": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v5.2/V5_QUOTA_TELEMETRY_AMENDMENT_REVIEW.json": "FREEZE_REQUIRED:file_hash",
     "benchmarks/grading-env/materialize_v5_crypto_mutants.py": "FREEZE_REQUIRED:file_hash",
     "benchmarks/grading-env/qualify_v5_rotating_token.py": "FREEZE_REQUIRED:file_hash",
     "benchmarks/grading-env/qualify_v5_envelope_crypto.py": "FREEZE_REQUIRED:file_hash",

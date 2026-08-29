@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "suite_id": "mechanism-first-controlled-repair-v5",
+  "amendment_type": "pre-data quota telemetry shape correction",
+  "registered_at": "2026-08-29T21:39:12+02:00",
+  "superseded_repository_commit": "108d7360971bfa1a7cd95c3a7c463980ceb717f2",
+  "superseded_manifest_sha256": "432aa3a38a4c537f9c2467c622e9d603beadb9e487ad1412ea4ca7e258d8542c",
+  "superseded_run_root": "/home/fabio/.hermes/benchmarks/mechanism-first-v5/official-run-108d736",
+  "superseded_state_sha256": "ed882b8da5a6850380d0bdddff33eaf909e25ec160e07771de71e40f2df66a0c",
+  "provider_calls_started": 0,
+  "provider_calls_completed": 0,
+  "efficacy_outcomes_observed": false,
+  "failure": "The frozen V4-derived quota parser required exactly one recognized usage window, but the authoritative openai-codex telemetry returned exactly two windows labeled Session and Weekly.",
+  "amendment": {
+    "required_labels": ["Session", "Weekly"],
+    "required_window_count": 2,
+    "reducer": "maximum used_percent across the two required windows",
+    "threshold_percent_unchanged": 76,
+    "missing_duplicate_extra_or_non_numeric_window": "fail closed before the next provider invocation"
+  },
+  "methodological_effect": "None. Task roster, conditions, cloned starts, feedback, evaluators, call budget, calibration rule, endpoint, decision threshold, provider, and model remain unchanged.",
+  "relaunch_policy": "Publish amended code, generate a new external normative freeze, and relaunch from a new empty run root. Never resume the superseded root."
+}

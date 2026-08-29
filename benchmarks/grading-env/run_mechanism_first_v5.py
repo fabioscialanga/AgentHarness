@@ -43,6 +43,17 @@ def evaluate_review(_workspace: Path, task_id: str):
     return protocol.opaque_review_feedback(task_id)
 
 
+def real_usage(_phase: str) -> float:
+    try:
+        from agent.account_usage import fetch_account_usage
+
+        usage = fetch_account_usage("openai-codex")
+        windows = list(getattr(usage, "windows", []) or []) if getattr(usage, "available", False) else []
+        return protocol.conservative_usage_percent(windows)
+    except Exception as exc:
+        raise engine.InvocationFailure(f"quota telemetry unavailable:{type(exc).__name__}") from exc
+
+
 def configure() -> None:
     engine.TEMPLATE_PATH = TEMPLATE_PATH
     engine.SCHEMA_VERSION = 5
@@ -69,6 +80,7 @@ def configure() -> None:
     engine.validate_marker_accounting = protocol.validate_marker_accounting
     engine.calibration_admission = protocol.calibration_admission
     engine.quota_admission = protocol.quota_admission
+    engine.real_usage = real_usage
     engine.finalize_results = protocol.finalize_results
 
 
