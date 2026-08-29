@@ -1,0 +1,107 @@
+{
+  "schema_version": 6,
+  "pilot_id": "mechanism-first-controlled-repair-v6",
+  "study_class": "exploratory",
+  "preregistration_status": "template_not_frozen",
+  "execution_mode": "real",
+  "frozen_at": "FREEZE_REQUIRED:utc_timestamp",
+  "repository_commit": "FREEZE_REQUIRED:clean_commit_sha",
+  "manifest_payload_sha256": "FREEZE_REQUIRED:canonical_manifest_hash",
+  "provider": "openai-codex",
+  "model": "gpt-5.6-sol",
+  "hermes_home": "/home/fabio/.hermes/profiles/stage2codex2",
+  "hermes_command": "/home/fabio/AgentHarness-actionable-repair-20260725/benchmarks/grading-env/run_hermes_stage2codex2_docker.sh",
+  "hermes_command_sha256": "FREEZE_REQUIRED:wrapper_hash",
+  "toolsets": "terminal,file",
+  "max_turns": 40,
+  "invocation_timeout_seconds": 1800,
+  "threat_model": "cooperative-non-adversarial",
+  "provider_signed_receipts": false,
+  "replicate_id": "v6-r1",
+  "expected_initial_provider_calls": 0,
+  "expected_calibration_provider_calls": 3,
+  "expected_evaluation_provider_calls": 12,
+  "maximum_provider_calls": 15,
+  "quota_threshold_percent": 76,
+  "provenance": {
+    "v5_terminal_status": "CEILING",
+    "v5_evaluation_provider_calls": 0,
+    "motivation": "V5 terminated at calibration because its two inherited V4 anchors were too easy. Independent review also identified selector scars and simple tasks.",
+    "non_adaptation_commitment": "The six-task V6 evaluation roster and endpoint are fixed now; no V5 evaluation outcomes exist and no V6 outcome may alter them.",
+    "anchor_reuse_interpretation": "The three calibration anchors are independently rematerialized and re-invoked as the first three evaluation tasks with no conversation, workspace, feedback, or heldout-outcome carry-over. Because evaluation execution is conditional on baseline calibration failure on these same tasks, V6 is exploratory and conditional on its gate, not an independent confirmatory or generalizable efficacy estimate."
+  },
+  "calibration_tasks": [
+    "envelope-context-decryptor",
+    "attenuated-capability-verifier",
+    "transactional-release-pointer"
+  ],
+  "calibration_rule": {
+    "conditions": ["A-baseline"],
+    "admit": "All three invocations and heldout reference/guard checks are valid, all guards pass, and at least two of three anchors do not recover the target.",
+    "ceiling_abort": "With otherwise valid accounting and guards, two or three anchors recover the target; execute zero evaluation cells.",
+    "invalid": "Any invocation, heldout result, target accounting, guard accounting, or guard result is invalid."
+  },
+  "quota_rule": {
+    "windows": ["Session", "Weekly"],
+    "reducer": "max(Session.used_percent, Weekly.used_percent)",
+    "snapshots": ["before_calibration", "after_calibration", "before_each_evaluation_cell"],
+    "projected_usage": "after + 12 * max(0.5, (after-before)/3)",
+    "admit_if": "projected_usage <= 76 and every pre-cell reduced usage < 76",
+    "on_failure": "Stop before the next provider call and classify as provider/quota limitation."
+  },
+  "evaluation_tasks": [
+    "envelope-context-decryptor",
+    "attenuated-capability-verifier",
+    "transactional-release-pointer",
+    "streaming-csv-quoted-records",
+    "length-prefixed-frame-parser",
+    "atomic-batch-state-machine"
+  ],
+  "task_targets": {
+    "envelope-context-decryptor": "envelope_context_binding",
+    "attenuated-capability-verifier": "capability_attenuation",
+    "transactional-release-pointer": "release_generation_cas",
+    "streaming-csv-quoted-records": "csv_quoted_chunk_state",
+    "length-prefixed-frame-parser": "frame_split_prefix_payload",
+    "atomic-batch-state-machine": "batch_all_or_none"
+  },
+  "evaluation_blocks": [
+    {"block_id": "v6-eval-001", "task_id": "envelope-context-decryptor", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v6-eval-002", "task_id": "attenuated-capability-verifier", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "v6-eval-003", "task_id": "transactional-release-pointer", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v6-eval-004", "task_id": "streaming-csv-quoted-records", "condition_order": ["B-agentharness", "A-baseline"]},
+    {"block_id": "v6-eval-005", "task_id": "length-prefixed-frame-parser", "condition_order": ["A-baseline", "B-agentharness"]},
+    {"block_id": "v6-eval-006", "task_id": "atomic-batch-state-machine", "condition_order": ["B-agentharness", "A-baseline"]}
+  ],
+  "cell_contract": {
+    "materialization": "Copy the qualified V5/V5.2 native reference, compile the selected defect through AST partial evaluation, remove selectors/check IDs/literal boolean branches, and rename the atomic implementation cue.",
+    "start": "A and B are byte-identical clones of one source-native controlled defect.",
+    "A-baseline": "Public SPEC and claims template only.",
+    "B-agentharness": "Same public inputs plus one immutable opaque V6 review finding.",
+    "provider_calls_per_cell": 1,
+    "initial_provider_calls": 0,
+    "heldout_timing": "Evaluate both cells only after both repairs in the block have completed."
+  },
+  "primary_endpoint": "Per-task paired binary success: target check passes and every sibling/common guard passes.",
+  "decision_rule": {
+    "GO": "B>A on at least 5 of 6 tasks, A>B on zero tasks, B target recovery on at least 5 of 6 tasks, and zero B guard regressions.",
+    "NO-GO": "A valid complete study that does not satisfy every GO condition.",
+    "INVALID": "Incomplete roster, invalid accounting/evaluation, treatment contamination, or integrity failure."
+  },
+  "secondary_report": "Descriptive only: paired differences, mean paired delta, A recovery, B recovery, and guard outcomes; it cannot override the primary decision.",
+  "frozen_file_sha256": {
+    "src/agentharness/efficacy_v6.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/efficacy_v5.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/benchmark_heldout_evaluator_v5.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/efficacy_v4.py": "FREEZE_REQUIRED:file_hash",
+    "src/agentharness/benchmark_cells.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_mechanism_first_v4.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_mechanism_first_v6.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/run_hermes_stage2codex2_docker.sh": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/materialize_v5_crypto_mutants.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v6/qualify_v6_provider_free.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v6/validate_v6_prebuild.py": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v6/V6_PREBUILD_STATUS.json": "FREEZE_REQUIRED:file_hash",
+    "benchmarks/grading-env/mechanism-first-v6/V6_INDEPENDENT_PRE_DATA_REVIEW.json": "FREEZE_REQUIRED:file_hash"
+  }
+}

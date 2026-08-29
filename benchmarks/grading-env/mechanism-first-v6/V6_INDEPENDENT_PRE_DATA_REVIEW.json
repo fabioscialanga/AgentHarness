@@ -1,0 +1,28 @@
+{
+  "schema_version": 6,
+  "suite_id": "mechanism-first-controlled-repair-v6",
+  "artifact_type": "independent_pre_data_review",
+  "decision": "GO",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "review_scope": "Post-fix re-audit of the V6 marker identity blocker and related hardening.",
+  "evidence": {
+    "targeted_tests": "2 passed in 85.53s",
+    "synthetic_terminal_status": "collection_complete",
+    "synthetic_evaluation_calls": 12,
+    "marker_started_count": 15,
+    "marker_completed_count": 15,
+    "unique_invocation_task_condition_tuples": 15,
+    "validate_provider_artifacts": "PASS",
+    "incomplete_roster_failure": "provider_marker_roster_mismatch",
+    "duplicate_marker_failure": "provider_marker_invalid",
+    "evaluation_cell_schema": 6,
+    "heldout_evaluator_schema": 5,
+    "public_input_leakage": [],
+    "provider_free_validator": "GO"
+  },
+  "methodological_caveat": "The three calibration anchors are independently rematerialized for evaluation, but execution remains conditional on the same-task calibration gate. V6 is exploratory and conditional, not confirmatory or generalizable.",
+  "blocking_findings": [],
+  "residual_minor_findings": [],
+  "reviewer": "independent Hermes subagent, read-only provider-free audit"
+}

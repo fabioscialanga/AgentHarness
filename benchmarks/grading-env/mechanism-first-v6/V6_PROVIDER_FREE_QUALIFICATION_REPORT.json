@@ -1,0 +1,71 @@
+{
+  "model_calls": 0,
+  "ok": true,
+  "provider_calls": 0,
+  "public_input_leakage": [],
+  "qualification": "provider-free",
+  "rows": [
+    {
+      "clones_byte_identical": true,
+      "controlled_failed_only_target": true,
+      "controlled_guards_passed": true,
+      "controlled_target_passed": false,
+      "leakage": [],
+      "reference_guards_passed": true,
+      "reference_target_passed": true,
+      "task_id": "envelope-context-decryptor"
+    },
+    {
+      "clones_byte_identical": true,
+      "controlled_failed_only_target": true,
+      "controlled_guards_passed": true,
+      "controlled_target_passed": false,
+      "leakage": [],
+      "reference_guards_passed": true,
+      "reference_target_passed": true,
+      "task_id": "attenuated-capability-verifier"
+    },
+    {
+      "clones_byte_identical": true,
+      "controlled_failed_only_target": true,
+      "controlled_guards_passed": true,
+      "controlled_target_passed": false,
+      "leakage": [],
+      "reference_guards_passed": true,
+      "reference_target_passed": true,
+      "task_id": "transactional-release-pointer"
+    },
+    {
+      "clones_byte_identical": true,
+      "controlled_failed_only_target": true,
+      "controlled_guards_passed": true,
+      "controlled_target_passed": false,
+      "leakage": [],
+      "reference_guards_passed": true,
+      "reference_target_passed": true,
+      "task_id": "streaming-csv-quoted-records"
+    },
+    {
+      "clones_byte_identical": true,
+      "controlled_failed_only_target": true,
+      "controlled_guards_passed": true,
+      "controlled_target_passed": false,
+      "leakage": [],
+      "reference_guards_passed": true,
+      "reference_target_passed": true,
+      "task_id": "length-prefixed-frame-parser"
+    },
+    {
+      "clones_byte_identical": true,
+      "controlled_failed_only_target": true,
+      "controlled_guards_passed": true,
+      "controlled_target_passed": false,
+      "leakage": [],
+      "reference_guards_passed": true,
+      "reference_target_passed": true,
+      "task_id": "atomic-batch-state-machine"
+    }
+  ],
+  "schema_version": 6,
+  "task_count": 6
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 6,
+  "suite_id": "mechanism-first-controlled-repair-v6",
+  "status": "qualified_provider_free_prebuild",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "task_count": 6,
+  "calibration_calls": 3,
+  "evaluation_calls_if_admitted": 12,
+  "maximum_provider_calls": 15,
+  "v5_provenance": {
+    "terminal_status": "CEILING",
+    "evaluation_calls": 0,
+    "interpretation": "V5 did not estimate efficacy; V6 replaces easy inherited anchors and removes selector scars."
+  },
+  "artifacts": {
+    "src/agentharness/efficacy_v6.py": "49d44106e25a32126f23194ac4fbd9f8a8aca7c261dada2257f836ce9114f21f",
+    "benchmarks/grading-env/run_mechanism_first_v6.py": "83817dc0c349cb6573dc2c99c3eea06fa29341632fe91023334c4529b5e3c65b",
+    "benchmarks/grading-env/MECHANISM_FIRST_V6_PREREG.template.json": "25cfeece55eda0000d5a992f8a789df1b87f7b65cfa4ed1dd4f4047ff128e14c",
+    "benchmarks/grading-env/mechanism-first-v6/qualify_v6_provider_free.py": "b4fec5e9c94c7413b298991da3030a0ae9690ee661b16e43c9452fa7c2d18411",
+    "benchmarks/grading-env/mechanism-first-v6/validate_v6_prebuild.py": "74b2b1b131e2fd2462805e33551470354ef0a249c6f42f75dcbab36d770e3f58",
+    "benchmarks/grading-env/mechanism-first-v6/V6_PROVIDER_FREE_QUALIFICATION_REPORT.json": "b425322c0692a6ada045cf5d7fc6c440ad7215b9ba9bbc290d06793d5fff871d",
+    "tests/test_mechanism_first_v6.py": "3adfaa9c2c25e5930503c014e4d37e68591d79bf734b11c704fe65c006a487c9",
+    "benchmarks/grading-env/mechanism-first-v6/V6_INDEPENDENT_PRE_DATA_REVIEW.json": "30e48ba3a765ed631ff081db2f26a118dc9d274b6fe6dcec126a96f14f827d82"
+  },
+  "next_transition": "independent pre-data audit, commit, push, external normative freeze, preflight, calibration"
+}
