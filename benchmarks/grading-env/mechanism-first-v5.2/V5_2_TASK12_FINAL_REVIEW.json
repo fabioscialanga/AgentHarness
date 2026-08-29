@@ -1,0 +1,38 @@
+{
+  "campaign": "mechanism-first-v5.2",
+  "task_id": "portable-command-receipt-ledger",
+  "artifact_type": "independent_final_qualification_review",
+  "decision": "GO",
+  "reviewer": {
+    "system": "isolated Hermes Docker reviewer",
+    "session_id": "20260828_160343_2318b1",
+    "process_session_id": "proc_4dfd06437184"
+  },
+  "review_manifest_sha256": "fba89ddb97b38105de5b3e745080e0c0c79f7b9d4f513612de18be5c81b3266c",
+  "reviewed_qualification_result_sha256": "0930efbd5a7c37b8e97eb449fcd8c56853bb3e7dba873b17747867ff66efcffa",
+  "reproduction": {
+    "official_layout": true,
+    "generated_matrix_byte_equal": true,
+    "generated_matrix_sha256": "0930efbd5a7c37b8e97eb449fcd8c56853bb3e7dba873b17747867ff66efcffa"
+  },
+  "findings": {
+    "BLOCKER": [],
+    "HIGH": [],
+    "MEDIUM": [],
+    "LOW": [
+      "The shared materializer retains legacy runtime selector fallback infrastructure for older tasks. All six portable-command-receipt-ledger variants use explicit direct or structural source patches, so this is not active for this task."
+    ]
+  },
+  "verified": [
+    "Reference passes all five checks and all common controls.",
+    "Four identity omissions each fail only their corresponding storage identity check and preserve callback arguments.",
+    "The process-memory mutant passes identity checks and fails only real P1-copy-P2 portability.",
+    "Each of six variants is one faithful source diff hunk.",
+    "The case-fold key near miss fails only key identity; mixed-case and non-case pairs distinguish it from full key omission.",
+    "P1 closes SQLite connections, leaves no sidecars, and the evaluator copies only the supplied database file.",
+    "P2 replays exact P1 bytes without callback and executes one genuinely new identity.",
+    "No candidate-private state, target-model call, or efficacy call was used."
+  ],
+  "efficacy_cells_observed": 0,
+  "efficacy_provider_calls": 0
+}

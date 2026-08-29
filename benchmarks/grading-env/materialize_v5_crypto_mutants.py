@@ -19,6 +19,7 @@ MODULES = {
     "context-complete-authorization-cache": Path("decision_cache/app.py"),
     "transactional-release-pointer": Path("release_pointer/app.py"),
     "two-tier-read-through-cache": Path("tiered_cache/core.py"),
+    "portable-command-receipt-ledger": Path("command_ledger/app.py"),
 }
 
 DIRECT_PATCHES = {
@@ -70,6 +71,26 @@ DIRECT_PATCHES = {
         '        self._l2.delete(key)\n',
         '        self._l2.delete(key.lower())\n',
     ),
+    ("portable-command-receipt-ledger", "receipt_key_identity"): (
+        '    return tenant, command, revision, key\n',
+        '    return tenant, command, revision, ""\n',
+    ),
+    ("portable-command-receipt-ledger", "receipt_tenant_identity"): (
+        '    return tenant, command, revision, key\n',
+        '    return "", command, revision, key\n',
+    ),
+    ("portable-command-receipt-ledger", "receipt_command_identity"): (
+        '    return tenant, command, revision, key\n',
+        '    return tenant, "", revision, key\n',
+    ),
+    ("portable-command-receipt-ledger", "receipt_revision_identity"): (
+        '    return tenant, command, revision, key\n',
+        '    return tenant, command, 0, key\n',
+    ),
+    ("portable-command-receipt-ledger", "receipt_key_casefold_near_miss"): (
+        '    return tenant, command, revision, key\n',
+        '    return tenant, command, revision, key.lower()\n',
+    ),
 }
 
 
@@ -82,6 +103,17 @@ def materialize_mutant(reference: Path, task_id: str, mutant_id: str, destinatio
     shutil.copytree(reference, destination, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "build", "*.egg-info", ".pytest_cache"))
     module = destination / MODULES[task_id]
     source = module.read_text(encoding="utf-8")
+    if (task_id, mutant_id) == ("portable-command-receipt-ledger", "receipt_process_portability"):
+        start_marker = "def _run(\n"
+        end_marker = "\n\ndef create_app("
+        if source.count(start_marker) != 1 or source.count(end_marker) != 1:
+            raise RuntimeError("portable receipt _run patch boundaries are not unique")
+        start = source.index(start_marker)
+        end = source.index(end_marker, start)
+        replacement = '''_MEMORY: dict[tuple[str, str, int, str], bytes] = {}\n\n\ndef _run(db_path: Path, execute_once: Callable[[str, str, int, str, dict[str, Any]], str], identity: tuple[str, str, int, str], callback_identity: tuple[str, str, int, str], payload: dict[str, Any]) -> bytes:\n    existing = _MEMORY.get(identity)\n    if existing is not None:\n        return existing\n    receipt = execute_once(*callback_identity, payload)\n    if not isinstance(receipt, str) or RECEIPT.fullmatch(receipt) is None:\n        raise ValueError("invalid receipt")\n    body = _json({"receipt": receipt})\n    _MEMORY[identity] = body\n    return body\n'''
+        patched = source[:start] + replacement + source[end:]
+        module.write_text(patched, encoding="utf-8")
+        return destination
     direct = DIRECT_PATCHES.get((task_id, mutant_id))
     if direct is not None:
         old, new = direct

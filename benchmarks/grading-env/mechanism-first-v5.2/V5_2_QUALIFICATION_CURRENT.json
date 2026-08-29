@@ -1,6 +1,6 @@
 {
   "campaign": "mechanism-first-v5.2",
-  "status": "qualification_in_progress",
+  "status": "qualified_pre_efficacy",
   "prebuild_pointer_file": "V5_2_PREBUILD_CURRENT.json",
   "prebuild_pointer_sha256": "66dc3c79400621a42a1d35e437e801ccd0bbd2d00d1879186630b78a81cffd30",
   "ledger_file": "V5_2_REPLACEMENT_LEDGER.10a657b1d51c25fabc1b706f48302f10c8018926a49d5719fc4a915a1082b783.json",
@@ -17,15 +17,19 @@
       "file": "V5_2_TASK11_FINAL_REVIEW.json",
       "sha256": "2f0ccc129f71f1b8e4117081c94e7e6fd223b9f1b817d3f3a605e4cda38abafd",
       "decision": "GO"
+    },
+    "portable-command-receipt-ledger": {
+      "file": "V5_2_TASK12_FINAL_REVIEW.json",
+      "sha256": "55ff505305fb08b49fea5e71de1c1ba5040bf2a5b80a9e51fceb2e62cf8819a2",
+      "decision": "GO"
     }
   },
   "qualified_candidates": [
     "transactional-release-pointer",
-    "two-tier-read-through-cache"
-  ],
-  "pending_candidates": [
+    "two-tier-read-through-cache",
     "portable-command-receipt-ledger"
   ],
+  "pending_candidates": [],
   "efficacy_cells_observed": 0,
   "efficacy_provider_calls": 0
 }

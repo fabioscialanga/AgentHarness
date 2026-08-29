@@ -163,13 +163,68 @@ def main() -> int:
     tier_forbidden = ["AGENTHARNESS_MUTANT", "mechanism-first-v5.2", "qualification-results", *tier_mutations]
     require(not [token for token in tier_forbidden if token in tier_public_text], "private tiered-cache qualification material leaked")
 
+    receipt_review_pointer = pointer["task_reviews"]["portable-command-receipt-ledger"]
+    receipt_review_path = HERE / receipt_review_pointer["file"]
+    require(digest(receipt_review_path) == receipt_review_pointer["sha256"], "portable-receipt final review hash mismatch")
+    receipt_review = load(receipt_review_path)
+    require(receipt_review["decision"] == receipt_review_pointer["decision"] == "GO", "portable-receipt final review not GO")
+    require(not receipt_review["findings"]["BLOCKER"] and not receipt_review["findings"]["HIGH"] and not receipt_review["findings"]["MEDIUM"], "portable-receipt final review has material findings")
+    receipt_result_path = HERE / "qualification-results/portable-command-receipt-ledger.json"
+    require(digest(receipt_result_path) == receipt_review["reviewed_qualification_result_sha256"], "portable-receipt review/result mismatch")
+    receipt_result = load(receipt_result_path)
+    receipt_rows = receipt_result["matrix"]
+    require(receipt_result["ok"] is True and receipt_result["total_scored_probes_per_implementation"] == 50, "portable-receipt matrix not qualified")
+    require(receipt_result["target_model_calls"] == 0 and receipt_result["efficacy_cells"] is False, "portable-receipt qualification used efficacy calls")
+    require(len(receipt_rows) == 7 and receipt_rows[0]["failed"] == [], "portable-receipt reference or row count mismatch")
+    require(all(row["failed"] == [row["implementation"]] for row in receipt_rows[1:6]), "portable-receipt planned matrix not singleton")
+    require(receipt_rows[6]["implementation"] == "receipt_key_casefold_near_miss", "portable-receipt near-miss identity mismatch")
+    require(receipt_rows[6]["failed"] == ["receipt_key_identity"], "portable-receipt near miss not singleton key identity")
+    require(all(not row["common_failed"] for row in receipt_rows), "portable-receipt common controls failed")
+
+    receipt_public = ROOT / "benchmarks/portable-command-receipt-ledger"
+    receipt_reference = HERE / "references/portable-command-receipt-ledger"
+    receipt_qualifier = ROOT / "benchmarks/grading-env/qualify_v5_2_portable_receipts.py"
+    receipt_driver = ROOT / "benchmarks/grading-env/v5_2_receipt_process_driver.py"
+    for path in (
+        receipt_public / "SPEC.md",
+        receipt_public / "README.md",
+        receipt_public / "pyproject.toml",
+        receipt_public / "CLAIMS_CONTRACT.template.json",
+        receipt_public / "command_ledger/__init__.py",
+        receipt_public / "command_ledger/app.py",
+        receipt_reference / "command_ledger/app.py",
+        receipt_qualifier,
+        receipt_driver,
+    ):
+        require(path.is_file(), f"missing artifact {path.relative_to(ROOT)}")
+    receipt_private_source = (receipt_reference / "command_ledger/app.py").read_text()
+    require("AGENTHARNESS_MUTANT" not in receipt_private_source and "MUTANT =" not in receipt_private_source and "_MEMORY" not in receipt_private_source, "portable-receipt reference contains latent mutation state")
+    receipt_mutations = (
+        "receipt_key_identity",
+        "receipt_tenant_identity",
+        "receipt_command_identity",
+        "receipt_revision_identity",
+        "receipt_process_portability",
+        "receipt_key_casefold_near_miss",
+    )
+    require('"portable-command-receipt-ledger": Path("command_ledger/app.py")' in materializer_source, "portable-receipt materializer mapping missing")
+    require(all(mutation_id in materializer_source for mutation_id in receipt_mutations), "portable-receipt source patch roster incomplete")
+    receipt_public_text = "\n".join(path.read_text(errors="replace") for path in receipt_public.rglob("*") if path.is_file())
+    receipt_forbidden = ["AGENTHARNESS_MUTANT", "mechanism-first-v5.2", "qualification-results", *receipt_mutations]
+    require(not [token for token in receipt_forbidden if token in receipt_public_text], "private portable-receipt qualification material leaked")
+
+    require(pointer["status"] == "qualified_pre_efficacy", "qualification pointer not closed pre-efficacy")
     require(
-        pointer["qualified_candidates"] == ["transactional-release-pointer", "two-tier-read-through-cache"],
+        pointer["qualified_candidates"] == [
+            "transactional-release-pointer",
+            "two-tier-read-through-cache",
+            "portable-command-receipt-ledger",
+        ],
         "qualification roster mismatch",
     )
-    require(pointer["pending_candidates"] == ["portable-command-receipt-ledger"], "pending roster mismatch")
+    require(pointer["pending_candidates"] == [], "pending roster is not empty")
     require(pointer["efficacy_cells_observed"] == pointer["efficacy_provider_calls"] == 0, "pointer claims efficacy activity")
-    print("V5.2 tasks 10-11 qualification: GO (100 scored probes/reference + singleton matrices)")
+    print("V5.2 tasks 10-12 qualification: GO (150 scored probes/reference + singleton matrices)")
     return 0
 
 
