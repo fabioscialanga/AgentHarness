@@ -1,0 +1,26 @@
+{
+  "schema_version": 9,
+  "suite_id": "mechanism-first-controlled-repair-v9",
+  "artifact_type": "independent_pre_data_review",
+  "decision": "GO",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "blockers": [],
+  "resolved_blockers": [
+    "Controller receipt binds task, run, invocation, session, exit, provider evidence, stdout/stderr hashes, prompt hash, feedback hash/claim IDs, and solution hashes; exact read-back and production finalizer validation cover calibration and evaluation cells.",
+    "The frozen-file closure includes the V9 runtime, direct benchmark_cells dependencies, materializers, evaluators, qualifiers, six reference source trees, and six public SPEC/claims pairs."
+  ],
+  "verified": [
+    "A/B use identical cloned starts and equal eight-turn budgets.",
+    "Legacy V4-V8 behavior keeps model-authored repair response required by default; only V9 disables it.",
+    "V9 makes an ITT assignment/delivery claim and no model reading, acceptance, citation, or adoption claim.",
+    "All six V9 tasks had zero prior real campaign invocations.",
+    "Calibration overlap, outcome awareness, and exploratory claim boundary are explicitly disclosed.",
+    "Provider marker accounting is exactly three calibration plus twelve evaluation calls when admitted.",
+    "Primary 5-of-6 threshold and guard constraints are unchanged."
+  ],
+  "nonblocking_limitations": [
+    "A clean commit, external freeze, live quota preflight, and real collection remain required.",
+    "The study remains exploratory and bounded to this roster, model, provider, and eight-turn repair budget."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 9,
+  "status": "qualified_provider_free_prebuild",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "audit_character": "independent_pre_data_review_GO",
+  "artifact_sha256": {
+    "src/agentharness/benchmark_cells.py": "ec9a2ddac6f84bab9b328a11eda17f939c88ab642be2fae6c98a672f3aac6bf8",
+    "src/agentharness/efficacy_v9.py": "c138bb2d010d9d3fb2a7ddbbd9ad860fba7b3b64de5c3e4cb1f75e4816d2b0ca",
+    "benchmarks/grading-env/run_mechanism_first_v4.py": "055b0005cb5880bcea32c1c1c19e36b9f7ee99c3a7e706abec00c73197cc70cd",
+    "benchmarks/grading-env/run_mechanism_first_v9.py": "f65d9a700a4c6d5267322f5f2e9379811e14e0e8486d416099842cee90dfd9e3",
+    "benchmarks/grading-env/MECHANISM_FIRST_V9_PREREG.template.json": "f857e48eb9450248d3bc14422a506600e9f1f611ee4a26a334e0ca9de32d135c",
+    "tests/test_mechanism_first_v9.py": "0ccfa6e7e04ce69f724a5970382a284d7e3e9442c209b91964a1c33b5c1a64a5",
+    "benchmarks/grading-env/mechanism-first-v9/V9_PROVIDER_FREE_PREBUILD_REPORT.json": "5b3f8a3b6680e3dfc48ed1a1a45757be7ba73d4f08f664cf9e74d7ad0a04b206",
+    "benchmarks/grading-env/mechanism-first-v9/V9_INDEPENDENT_PRE_DATA_REVIEW.json": "18d336089cbaa17c047173e425b5c5fd2446707756fdc94aa3e2d148a39e7bcb",
+    "benchmarks/grading-env/mechanism-first-v9/validate_v9_prebuild.py": "7482c7c2519cf38111b4d49cbd5030bf6bd90617fb87951569ac41446b3bb2a0"
+  }
+}

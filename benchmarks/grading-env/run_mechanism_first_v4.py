@@ -6,7 +6,7 @@ import argparse, fcntl, hashlib, json, os, shutil, subprocess, sys, tempfile, tr
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Iterator, Mapping, Protocol
+from typing import Callable, Iterator, Mapping, Protocol, cast
 
 REPO_ROOT=Path(__file__).resolve().parents[2]; SRC_ROOT=REPO_ROOT/"src"
 if str(SRC_ROOT) not in sys.path: sys.path.insert(0,str(SRC_ROOT))
@@ -18,6 +18,7 @@ from agentharness.efficacy_v4 import CALIBRATION_TASKS, CONDITION_ORDERS, CONDIT
 TEMPLATE_PATH=REPO_ROOT/"benchmarks/grading-env/MECHANISM_FIRST_V4_PREREG.template.json"; PLACEHOLDER="FREEZE_REQUIRED:"
 SCHEMA_VERSION=4; PROTOCOL_TAG="v4"; REPLICATE_ID="v4-r1"; RESULT_FILENAME="MECHANISM_FIRST_V4_RESULT.json"; MAX_TURNS=40
 CALIBRATION_CALLS=len(CALIBRATION_TASKS); EVALUATION_CALLS=2*len(EVALUATION_TASKS); MAXIMUM_CALLS=CALIBRATION_CALLS+EVALUATION_CALLS
+REQUIRE_MODEL_REPAIR_RESPONSE=True
 class V4Error(RuntimeError): exit_code=50
 class IntegrityFailure(V4Error): exit_code=30
 class InvocationFailure(V4Error): exit_code=13
@@ -41,14 +42,18 @@ def atomic_write(path:Path,payload:object,*,exclusive:bool=False)->None:
     with temporary.open("x",encoding="utf-8") as stream: json.dump(payload,stream,indent=2,sort_keys=True); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
     os.replace(temporary,path); os.chmod(path,0o600)
 
+def _string_tuple(value:object)->tuple[str,...]:
+    if not isinstance(value,list): return ()
+    return tuple(str(item) for item in value)
+
 def validate_manifest_shape(m:Mapping[str,object])->None:
     if m.get("schema_version")!=SCHEMA_VERSION or m.get("pilot_id")!=PILOT_ID: raise IntegrityFailure("manifest identity mismatch")
     if m.get("execution_mode") not in {"real","qualification"}: raise IntegrityFailure("execution mode invalid")
-    if tuple(m.get("calibration_tasks",[]))!=CALIBRATION_TASKS or tuple(m.get("evaluation_tasks",[]))!=EVALUATION_TASKS: raise IntegrityFailure("task roster mismatch")
+    if _string_tuple(m.get("calibration_tasks"))!=CALIBRATION_TASKS or _string_tuple(m.get("evaluation_tasks"))!=EVALUATION_TASKS: raise IntegrityFailure("task roster mismatch")
     blocks=m.get("evaluation_blocks")
     if not isinstance(blocks,list) or len(blocks)!=len(EVALUATION_TASKS): raise IntegrityFailure("evaluation block roster mismatch")
     for i,b in enumerate(blocks):
-        if not isinstance(b,Mapping) or b.get("block_id")!=f"{PROTOCOL_TAG}-eval-{i+1:03d}" or b.get("task_id")!=EVALUATION_TASKS[i] or tuple(b.get("condition_order",[]))!=CONDITION_ORDERS[i]: raise IntegrityFailure("frozen AB/BA order mismatch")
+        if not isinstance(b,Mapping) or b.get("block_id")!=f"{PROTOCOL_TAG}-eval-{i+1:03d}" or b.get("task_id")!=EVALUATION_TASKS[i] or _string_tuple(b.get("condition_order"))!=CONDITION_ORDERS[i]: raise IntegrityFailure("frozen AB/BA order mismatch")
     if m.get("expected_calibration_provider_calls")!=CALIBRATION_CALLS or m.get("expected_evaluation_provider_calls")!=EVALUATION_CALLS or m.get("maximum_provider_calls")!=MAXIMUM_CALLS or m.get("expected_initial_provider_calls")!=0: raise IntegrityFailure("provider budget mismatch")
     if m.get("quota_threshold_percent")!=76 or m.get("threat_model")!="cooperative-non-adversarial" or m.get("provider_signed_receipts") is not False: raise IntegrityFailure("protocol constants mismatch")
     if m.get("provider")!="openai-codex" or m.get("model")!="gpt-5.6-sol" or m.get("toolsets")!="terminal,file" or m.get("max_turns")!=MAX_TURNS or m.get("hermes_home")!="/home/fabio/.hermes/profiles/stage2codex2": raise IntegrityFailure("runtime constants mismatch")
@@ -90,9 +95,9 @@ def exclusive_lock(path:Path)->Iterator[None]:
 class RepairInvoker(Protocol):
     def run_cloned_repair(self,manifest:dict[str,object],outputs_dir:Path,workspace:Path)->AgentInvocationResult: ...
 class _SyntheticResult:
-    def __init__(self,feedback:bool,claim:str|None):
+    def __init__(self,feedback:bool,claim:str|None,*,require_model_response:bool,receipt_path:Path|None=None):
         self.attempts=[{"attempt_name":"attempt-2-repair","exit_code":0}]
-        self.treatment_delivery={"repair_invocation_succeeded":True,"treatment_prompt_immutable":True,"feedback_delivered":feedback,"feedback_immutable":True if feedback else None,"feedback_items_accounted":True,"repair_response_valid":True,"feedback_claim_ids":[claim] if claim else []}
+        self.treatment_delivery={"repair_invocation_succeeded":True,"repair_invocation_evidence_present":True,"treatment_prompt_immutable":True,"feedback_delivered":feedback,"feedback_immutable":True if feedback else None,"feedback_items_accounted":True if require_model_response else None,"repair_response_valid":True if require_model_response else None,"model_repair_response_required":require_model_response,"controller_delivery_receipt_valid":not require_model_response,"controller_delivery_receipt_path":str(receipt_path) if receipt_path else None,"controller_delivery_receipt_sha256":sha256_file(receipt_path) if receipt_path else None,"model_response_required":False if not require_model_response else None,"feedback_claim_ids":[claim] if claim else []}
 class SyntheticRepairInvoker:
     def __init__(self,*,calibration_repairs:int=0): self.calibration_repairs=calibration_repairs; self.calls=[]
     def run_cloned_repair(self,manifest,outputs_dir,workspace):
@@ -104,8 +109,13 @@ class SyntheticRepairInvoker:
             with tempfile.TemporaryDirectory() as td:
                 clean=Path(td)/"clean"; materialize_clean_reference(task_id=task,repo_root=REPO_ROOT,destination=clean); shutil.rmtree(workspace); shutil.copytree(clean,workspace)
         feedback=condition=="B-agentharness"; claim=OPAQUE_FINDING_IDS.get(task) if feedback else None
-        atomic_write(outputs_dir/"repair-response.json",{"schema_version":1,"decision":"applied" if repair else "no_change","summary":"Synthetic qualification repair.","findings":[] if not claim else [{"finding_id":claim,"source":"agentharness","disposition":"applied","reason":"Synthetic qualification.","changed_files":[]}]})
-        return _SyntheticResult(feedback,claim)
+        receipt_path=None
+        if REQUIRE_MODEL_REPAIR_RESPONSE:
+            atomic_write(outputs_dir/"repair-response.json",{"schema_version":1,"decision":"applied" if repair else "no_change","summary":"Synthetic qualification repair.","findings":[] if not claim else [{"finding_id":claim,"source":"agentharness","disposition":"applied","reason":"Synthetic qualification.","changed_files":[]}]})
+        else:
+            receipt_path=outputs_dir/"controller-delivery-receipt.json"
+            atomic_write(receipt_path,{"schema_version":1,"author":"controller","condition":condition,"task_id":task,"run_id":manifest.get("run_id"),"invocation_id":manifest.get("invocation_id"),"session_id":"synthetic","exit_code":0,"invocation_evidence_present":True,"model_response_required":False,"feedback_claim_ids":[claim] if claim else []})
+        return _SyntheticResult(feedback,claim,require_model_response=REQUIRE_MODEL_REPAIR_RESPONSE,receipt_path=receipt_path)
 
 def synthetic_usage(_phase:str)->float: return 10.0
 def real_usage(_phase:str)->float:
@@ -124,9 +134,16 @@ def cleanup(workspace:Path,command:str)->None:
 
 def accounting(result:object,condition:str,task:str):
     attempts=getattr(result,"attempts",None); delivery=getattr(result,"treatment_delivery",None)
-    if not isinstance(attempts,list) or len(attempts)!=1 or not isinstance(delivery,Mapping) or any(delivery.get(k) is not True for k in ("repair_invocation_succeeded","treatment_prompt_immutable","feedback_items_accounted","repair_response_valid")): raise InvocationFailure("invocation accounting invalid")
+    if not isinstance(attempts,list) or len(attempts)!=1 or not isinstance(delivery,Mapping): raise InvocationFailure("invocation accounting invalid")
+    if REQUIRE_MODEL_REPAIR_RESPONSE:
+        if any(delivery.get(k) is not True for k in ("repair_invocation_succeeded","treatment_prompt_immutable","feedback_items_accounted","repair_response_valid")): raise InvocationFailure("invocation accounting invalid")
+    elif any((delivery.get("repair_invocation_succeeded") is not True,delivery.get("repair_invocation_evidence_present") is not True,delivery.get("treatment_prompt_immutable") is not True,delivery.get("controller_delivery_receipt_valid") is not True,delivery.get("model_repair_response_required") is not False,delivery.get("model_response_required") is not False,isinstance(delivery.get("controller_delivery_receipt_path"),str) is not True,isinstance(delivery.get("controller_delivery_receipt_sha256"),str) is not True)):
+        raise InvocationFailure("controller delivery accounting invalid")
     if condition=="B-agentharness" and (delivery.get("feedback_delivered") is not True or delivery.get("feedback_immutable") is not True or delivery.get("feedback_claim_ids")!=[OPAQUE_FINDING_IDS[task]]): raise InvocationFailure("feedback accounting invalid")
-    return {"invocation_valid":True,"feedback_delivered":condition=="B-agentharness","feedback_immutable":True,"feedback_accounted":True}
+    row={"invocation_valid":True,"feedback_delivered":condition=="B-agentharness","feedback_immutable":True,"feedback_accounted":True}
+    if not REQUIRE_MODEL_REPAIR_RESPONSE:
+        row.update(controller_delivery_receipt_path=delivery["controller_delivery_receipt_path"],controller_delivery_receipt_sha256=delivery["controller_delivery_receipt_sha256"],repair_invocation_evidence_present=True)
+    return row
 
 def validate_provider_artifacts(run_root:Path,*,evaluation_admitted:bool)->None:
     if list(run_root.rglob("provider-invocation.initial.*.json")):
@@ -158,12 +175,13 @@ class V4Pilot:
     def _invoke(self,block:Path,task:str,condition:str,workspace:Path,feedback:Path|None,state:dict,origin_ref:dict[str,object])->dict:
         label="A" if condition=="A-baseline" else "B"; cell=block/f"cell-{label}"; inputs=cell/"inputs"; inputs.mkdir(parents=True,exist_ok=True)
         spec=inputs/"SPEC.md"; claims=inputs/"CLAIMS_CONTRACT.template.json"; shutil.copy2(REPO_ROOT/"benchmarks"/task/"SPEC.md",spec); shutil.copy2(REPO_ROOT/"benchmarks"/task/"CLAIMS_CONTRACT.template.json",claims)
-        manifest=build_cell_manifest(task_id=task,condition=condition,replicate_id=REPLICATE_ID,cell_dir=cell); manifest.update({"run_id":f"{PILOT_ID}-{block.name}-{label}","diagnostic_stage":PILOT_ID,"spec_path":str(spec),"claims_template_path":str(claims),"initial_origin":origin_ref})
+        invocation_id=f"{block.name}:{condition}:repair-1"
+        manifest=build_cell_manifest(task_id=task,condition=condition,replicate_id=REPLICATE_ID,cell_dir=cell); manifest.update({"run_id":f"{PILOT_ID}-{block.name}-{label}","invocation_id":invocation_id,"diagnostic_stage":PILOT_ID,"spec_path":str(spec),"claims_template_path":str(claims),"initial_origin":origin_ref})
         if feedback: manifest["review_feedback_path"]=str(feedback)
         elif condition=="A-baseline" and "review_feedback_path" in manifest: raise IntegrityFailure("A received feedback")
         atomic_write(cell/"cell_manifest.json",manifest)
         if not self.synthetic: cleanup(workspace,str(self.manifest["hermes_command"]))
-        invocation_id=f"{block.name}:{condition}:repair-1"; started=cell/"provider-invocation.repair.started.json"; completed=cell/"provider-invocation.repair.completed.json"
+        started=cell/"provider-invocation.repair.started.json"; completed=cell/"provider-invocation.repair.completed.json"
         atomic_write(started,{"schema_version":SCHEMA_VERSION,"phase":"repair","invocation_id":invocation_id,"task_id":task,"condition":condition,"initial_provider_call":False,"started_at":utc_now()},exclusive=True); state["repair_calls_started"]+=1; atomic_write(self.state_path,state)
         status="failed"; failure=None
         try:
@@ -224,6 +242,32 @@ class V4Pilot:
             calibration_hashes={p.relative_to(self.run_root).as_posix():sha256_file(p) for p in sorted((self.run_root/"private-calibration").glob(f"{PROTOCOL_TAG}-cal-*/calibration-result.private.json"))}
             audit={"schema_version":SCHEMA_VERSION,"pilot_id":PILOT_ID,"collection_complete":True,"analysis_authorized":self.manifest["execution_mode"]=="real" and not self.synthetic,"terminal_status":"collection_complete","execution_mode":self.manifest["execution_mode"],"provider_initial_calls":0,"repair_calls_started":MAXIMUM_CALLS,"repair_calls_completed":MAXIMUM_CALLS,"block_commit_sha256":block_hashes,"calibration_result_sha256":calibration_hashes,"provider_marker_sha256":marker_hashes,"quota_snapshots_sha256":sha256_file(self.run_root/"quota-snapshots.private.json"),"calibration_gate_sha256":sha256_file(self.run_root/"calibration-gate.private.json"),"quota_admission_sha256":sha256_file(self.run_root/"quota-admission.private.json"),**binding}; atomic_write(self.audit_path,audit,exclusive=True); state.update(status="collection_complete",calibration_decision="ADMIT"); atomic_write(self.state_path,state); return {"status":"collection_complete","evaluation_calls":EVALUATION_CALLS}
 
+def _validate_controller_receipt(row:Mapping[str,object],*,run_root:Path,block:Path,task:str,condition:str)->None:
+    label="A" if condition=="A-baseline" else "B"
+    outputs=(block/f"cell-{label}"/"outputs").resolve()
+    receipt_path=Path(str(row.get("controller_delivery_receipt_path","")))
+    expected=outputs/"controller-delivery-receipt.json"
+    if receipt_path.resolve()!=expected or not receipt_path.is_file() or receipt_path.is_symlink() or not receipt_path.resolve().is_relative_to(run_root.resolve()): raise IntegrityFailure("controller receipt path invalid")
+    digest=row.get("controller_delivery_receipt_sha256")
+    if not isinstance(digest,str) or sha256_file(receipt_path)!=digest: raise IntegrityFailure("controller receipt hash invalid")
+    receipt=json.loads(receipt_path.read_text())
+    if any((receipt.get("schema_version")!=1,receipt.get("author")!="controller",receipt.get("task_id")!=task,receipt.get("condition")!=condition,receipt.get("run_id")!=f"{PILOT_ID}-{block.name}-{label}",receipt.get("invocation_id")!=f"{block.name}:{condition}:repair-1",receipt.get("exit_code")!=0,receipt.get("invocation_evidence_present") is not True,not isinstance(receipt.get("session_id"),str),not receipt.get("session_id"),receipt.get("model_response_required") is not False)):
+        raise IntegrityFailure("controller receipt semantic binding invalid")
+    for key in ("invocation_stdout","invocation_stderr"):
+        artifact=Path(str(receipt.get(f"{key}_path","")))
+        artifact_hash=receipt.get(f"{key}_sha256")
+        if not artifact.is_file() or artifact.is_symlink() or not artifact.resolve().is_relative_to(outputs) or not isinstance(artifact_hash,str) or sha256_file(artifact)!=artifact_hash:
+            raise IntegrityFailure("controller receipt invocation artifact invalid")
+    prompt=Path(str(receipt.get("treatment_prompt_path","")))
+    if prompt.resolve()!=outputs/"pre-repair-treatment-prompt.txt" or not prompt.is_file() or sha256_file(prompt)!=receipt.get("treatment_prompt_sha256_post") or receipt.get("treatment_prompt_sha256_pre")!=receipt.get("treatment_prompt_sha256_post"):
+        raise IntegrityFailure("controller receipt prompt binding invalid")
+    feedback_path=receipt.get("feedback_path")
+    if condition=="A-baseline" and feedback_path is not None: raise IntegrityFailure("A controller receipt feedback contamination")
+    if condition=="B-agentharness":
+        feedback=Path(str(feedback_path))
+        if not feedback.is_file() or not feedback.resolve().is_relative_to(outputs) or sha256_file(feedback)!=receipt.get("feedback_sha256_post") or receipt.get("feedback_sha256_pre")!=receipt.get("feedback_sha256_post") or receipt.get("feedback_claim_ids")!=[OPAQUE_FINDING_IDS[task]]:
+            raise IntegrityFailure("B controller receipt feedback binding invalid")
+
 def finalize(*,manifest_path:Path,run_root:Path):
     manifest_path=manifest_path.resolve(); run_root=run_root.resolve(); m=json.loads(manifest_path.read_text()); validate_manifest_shape(m)
     if m.get("execution_mode")!="real": raise IntegrityFailure("production finalizer rejects qualification artifacts")
@@ -255,6 +299,14 @@ def finalize(*,manifest_path:Path,run_root:Path):
         raise IntegrityFailure("quota admission semantics invalid")
     expected_blocks={f"{PROTOCOL_TAG}-eval-{i:03d}" for i in range(1,len(EVALUATION_TASKS)+1)}
     if set(audit.get("block_commit_sha256",{}))!=expected_blocks: raise IntegrityFailure("block audit roster invalid")
+    if not REQUIRE_MODEL_REPAIR_RESPONSE:
+        for i,task in enumerate(CALIBRATION_TASKS,1):
+            block=run_root/"private-calibration"/f"{PROTOCOL_TAG}-cal-{i:03d}"
+            calibration_path=block/"calibration-result.private.json"
+            payload=json.loads(calibration_path.read_text())
+            row=payload.get("row")
+            if not isinstance(row,Mapping) or row.get("task_id")!=task or row.get("condition")!="A-baseline": raise IntegrityFailure("calibration receipt row binding invalid")
+            _validate_controller_receipt(row,run_root=run_root,block=block,task=task,condition="A-baseline")
     rows=[]
     for i,task in enumerate(EVALUATION_TASKS,1):
         block_id=f"{PROTOCOL_TAG}-eval-{i:03d}"; block=run_root/"private-blocks"/block_id; path=block/"block-result.commit.json"
@@ -267,8 +319,10 @@ def finalize(*,manifest_path:Path,run_root:Path):
         for cell in cells:
             if any(cell.get(k) is not True for k in ("invocation_valid","heldout_valid","target_evaluated","guards_evaluated")): raise IntegrityFailure("cell validity binding invalid")
             if cell.get("task_id")!=task: raise IntegrityFailure("cell task binding invalid")
-            if cell.get("condition")=="B-agentharness" and any(cell.get(k) is not True for k in ("feedback_delivered","feedback_immutable","feedback_accounted")): raise IntegrityFailure("B treatment binding invalid")
-            if cell.get("condition")=="A-baseline" and cell.get("feedback_delivered") is not False: raise IntegrityFailure("A treatment contamination")
+            condition=str(cell.get("condition"))
+            if not REQUIRE_MODEL_REPAIR_RESPONSE: _validate_controller_receipt(cell,run_root=run_root,block=block,task=task,condition=condition)
+            if condition=="B-agentharness" and any(cell.get(k) is not True for k in ("feedback_delivered","feedback_immutable","feedback_accounted")): raise IntegrityFailure("B treatment binding invalid")
+            if condition=="A-baseline" and cell.get("feedback_delivered") is not False: raise IntegrityFailure("A treatment contamination")
         rows.extend(cells)
     result=finalize_results(rows)
     if result["verdict"]=="INVALID": raise IntegrityFailure(str(result.get("reason")))
@@ -281,8 +335,8 @@ def main():
         if not args.run_root: raise IntegrityFailure("--run-root required")
         if args.finalize: print(json.dumps(finalize(manifest_path=args.manifest,run_root=args.run_root),indent=2)); return 0
         if args.preflight: print(json.dumps(preflight(args.manifest,args.run_root,synthetic=args.synthetic),indent=2)); return 0
-        m=json.loads(args.manifest.read_text()); invoker=SyntheticRepairInvoker() if args.synthetic else HermesCliInvoker(hermes_command=m["hermes_command"],toolsets=m["toolsets"],max_retries=1,provider=m["provider"],model=m["model"],max_turns=int(m["max_turns"]),sandbox_cleanup_arg="--sandbox-cleanup")
-        print(json.dumps(V4Pilot(args.manifest,args.run_root,invoker=invoker,usage=synthetic_usage if args.synthetic else real_usage,synthetic=args.synthetic).run(),indent=2)); return 0
+        m=json.loads(args.manifest.read_text()); invoker=SyntheticRepairInvoker() if args.synthetic else HermesCliInvoker(hermes_command=m["hermes_command"],toolsets=m["toolsets"],max_retries=1,provider=m["provider"],model=m["model"],max_turns=int(m["max_turns"]),sandbox_cleanup_arg="--sandbox-cleanup",require_model_repair_response=REQUIRE_MODEL_REPAIR_RESPONSE)
+        print(json.dumps(V4Pilot(args.manifest,args.run_root,invoker=cast(RepairInvoker,invoker),usage=synthetic_usage if args.synthetic else real_usage,synthetic=args.synthetic).run(),indent=2)); return 0
     except V4Error as exc: print(json.dumps({"verdict":"INVALID","reason":str(exc)}),file=sys.stderr); return exc.exit_code
     except Exception as exc: traceback.print_exc(); print(json.dumps({"verdict":"INVALID","reason":f"unexpected:{type(exc).__name__}"}),file=sys.stderr); return 50
 if __name__=="__main__": raise SystemExit(main())

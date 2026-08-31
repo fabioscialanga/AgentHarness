@@ -1,0 +1,22 @@
+{
+  "schema_version": 9,
+  "qualification": "provider-free-prebuild",
+  "audit_character": "maintainer_provider_free_prebuild_not_independent_audit",
+  "provider_calls": 0,
+  "model_calls": 0,
+  "ok": true,
+  "source_native_profiles": 6,
+  "clean_reference_targets_passed": 6,
+  "clean_reference_guards_passed": 6,
+  "controlled_targets_failed": 6,
+  "controlled_guards_passed": 6,
+  "agent_visible_leaks": 0,
+  "v9_tests_passed": 21,
+  "benchmark_cells_regressions_passed": 47,
+  "synthetic_repair_calls": 15,
+  "synthetic_evaluation_cells": 12,
+  "pyright_errors": 0,
+  "receipt_mode": "controller-authored ITT assignment/delivery receipt; no model adoption claim",
+  "roster_real_invocation_history": "none of the six V9 tasks had a prior real campaign invocation",
+  "primary_threshold": "unchanged: B>A on >=5/6, A>B=0, B recovery >=5/6, B guard regressions=0"
+}

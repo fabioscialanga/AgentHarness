@@ -294,6 +294,7 @@ class HermesCliInvoker:
         max_turns: int | str | None = None,
         admission_hook: Callable[[str, int], None] | None = None,
         sandbox_cleanup_arg: str | None = None,
+        require_model_repair_response: bool = True,
     ) -> None:
         self._hermes_command = hermes_command or "hermes"
         self._toolsets = toolsets
@@ -304,6 +305,7 @@ class HermesCliInvoker:
         self._max_turns = str(max_turns) if max_turns is not None else None
         self._admission_hook = admission_hook
         self._sandbox_cleanup_arg = sandbox_cleanup_arg
+        self._require_model_repair_response = require_model_repair_response
 
     def run_initial_generation(
         self, manifest: dict[str, object], outputs_dir: Path, workspace: Path
@@ -451,6 +453,7 @@ class HermesCliInvoker:
                     spec_path=spec_path,
                     pytest_stdout_path=str(pytest_result["stdout_path"]),
                     pytest_stderr_path=str(pytest_result["stderr_path"]),
+                    require_repair_response=self._require_model_repair_response,
                 )
                 _write_repair_treatment_prompt(
                     prompt=repair_prompt,
@@ -494,6 +497,7 @@ class HermesCliInvoker:
                     pytest_stdout_path=str(pytest_result["stdout_path"]),
                     pytest_stderr_path=str(pytest_result["stderr_path"]),
                     verify_feedback_path=verify_feedback_path,
+                    require_repair_response=self._require_model_repair_response,
                 )
                 _write_repair_treatment_prompt(
                     prompt=repair_prompt,
@@ -575,14 +579,19 @@ class HermesCliInvoker:
             "repair_invocation_evidence_present": _has_invocation_evidence(repair_attempt),
             "repair_invocation_succeeded": _successful_agent_attempt(repair_attempt),
             "feedback_delivered": False,
-            "repair_response_valid": False,
-            "repair_response_path": str(repair_response_source),
+            "model_repair_response_required": self._require_model_repair_response,
+            "model_response_required": True if self._require_model_repair_response else False,
+            "controller_delivery_receipt_valid": False,
+            "controller_delivery_receipt_path": None,
+            "controller_delivery_receipt_sha256": None,
+            "repair_response_valid": False if self._require_model_repair_response else None,
+            "repair_response_path": str(repair_response_source) if self._require_model_repair_response else None,
             "repair_response_sha256": None,
             "repair_decision": None,
             "repair_final_outcome": None,
             "repair_change_retained": None,
             "repair_findings_count": 0,
-            "feedback_items_accounted": condition != "B-agentharness",
+            "feedback_items_accounted": (condition != "B-agentharness") if self._require_model_repair_response else None,
         }
         if condition == "B-agentharness":
             assert verify_feedback_path is not None and feedback_sha256_pre is not None
@@ -620,78 +629,105 @@ class HermesCliInvoker:
                     treatment_delivery=treatment_delivery,
                 ),
             )
-        try:
-            raw_repair_response = _read_json_no_follow(
-                repair_response_parent,
-                "repair-response.json",
-                expected_identity=repair_response_parent_identity,
-            )
-        except (OSError, UnicodeError, ValueError) as exc:
-            raise ClassifiedCellFailure(
-                "harness_invalid",
-                f"treatment_not_delivered:repair_response_read_failed:{type(exc).__name__}",
-                invocation_result=AgentInvocationResult(
-                    attempts=attempts,
-                    attempt_solution_hashes=attempt_solution_hashes.copy(),
-                    treatment_delivery=treatment_delivery,
-                ),
-            ) from exc
         raw_repair_hash = compute_solution_hash(workspace) if rel_solution_files(workspace) else None
         attempt_solution_hashes["attempt_2_repair_raw"] = raw_repair_hash
         solution_changed = attempt_solution_hashes.get("attempt_1_initial") != raw_repair_hash
-        try:
-            feedback_claim_ids = (
-                _feedback_claim_ids(verify_feedback_path)
-                if condition == "B-agentharness" and verify_feedback_path is not None
-                else []
-            )
-            repair_response = validate_repair_response_payload(
-                raw_repair_response,
-                condition=condition,
-                solution_changed=solution_changed,
-                feedback_claim_ids=feedback_claim_ids,
-            )
-        except ValueError as exc:
-            raise ClassifiedCellFailure(
-                "harness_invalid",
-                f"treatment_not_delivered:{exc}",
-                invocation_result=AgentInvocationResult(
-                    attempts=attempts,
-                    attempt_solution_hashes=attempt_solution_hashes.copy(),
-                    treatment_delivery=treatment_delivery,
-                ),
-            ) from exc
-        try:
-            persisted_response = _write_json_no_follow(
-                outputs_dir,
-                "repair-response.json",
-                repair_response,
-                expected_identity=outputs_identity,
-            )
-        except OSError as exc:
-            raise ClassifiedCellFailure(
-                "harness_invalid",
-                f"treatment_not_delivered:repair_response_persist_failed:{type(exc).__name__}",
-                invocation_result=AgentInvocationResult(
-                    attempts=attempts,
-                    attempt_solution_hashes=attempt_solution_hashes.copy(),
-                    treatment_delivery=treatment_delivery,
-                ),
-            ) from exc
-        treatment_delivery.update(
-            {
-                "repair_response_valid": True,
-                "repair_response_path": str(persisted_response),
+        feedback_claim_ids = (
+            _feedback_claim_ids(verify_feedback_path)
+            if condition == "B-agentharness" and verify_feedback_path is not None
+            else []
+        )
+        if self._require_model_repair_response:
+            try:
+                raw_repair_response = _read_json_no_follow(
+                    repair_response_parent,
+                    "repair-response.json",
+                    expected_identity=repair_response_parent_identity,
+                )
+            except (OSError, UnicodeError, ValueError) as exc:
+                raise ClassifiedCellFailure(
+                    "harness_invalid",
+                    f"treatment_not_delivered:repair_response_read_failed:{type(exc).__name__}",
+                    invocation_result=AgentInvocationResult(attempts=attempts, attempt_solution_hashes=attempt_solution_hashes.copy(), treatment_delivery=treatment_delivery),
+                ) from exc
+            try:
+                repair_response = validate_repair_response_payload(
+                    raw_repair_response, condition=condition, solution_changed=solution_changed,
+                    feedback_claim_ids=feedback_claim_ids,
+                )
+            except ValueError as exc:
+                raise ClassifiedCellFailure(
+                    "harness_invalid", f"treatment_not_delivered:{exc}",
+                    invocation_result=AgentInvocationResult(attempts=attempts, attempt_solution_hashes=attempt_solution_hashes.copy(), treatment_delivery=treatment_delivery),
+                ) from exc
+            try:
+                persisted_response = _write_json_no_follow(
+                    outputs_dir, "repair-response.json", repair_response, expected_identity=outputs_identity,
+                )
+            except OSError as exc:
+                raise ClassifiedCellFailure(
+                    "harness_invalid", f"treatment_not_delivered:repair_response_persist_failed:{type(exc).__name__}",
+                    invocation_result=AgentInvocationResult(attempts=attempts, attempt_solution_hashes=attempt_solution_hashes.copy(), treatment_delivery=treatment_delivery),
+                ) from exc
+            treatment_delivery.update({
+                "repair_response_valid": True, "repair_response_path": str(persisted_response),
                 "repair_response_sha256": _sha256_file(persisted_response),
                 "repair_decision": repair_response["decision"],
                 "repair_findings_count": len(cast(list[object], repair_response["findings"])),
-                "feedback_items_accounted": True,
-                "feedback_claim_ids": feedback_claim_ids,
-                "feedback_postverify_total": None,
-                "feedback_postverify_supported": None,
+                "feedback_items_accounted": True, "feedback_claim_ids": feedback_claim_ids,
+                "feedback_postverify_total": None, "feedback_postverify_supported": None,
                 "feedback_postverify_unresolved": None,
+            })
+        else:
+            repair_attempt = attempts[-1]
+            invocation_stdout_sha256 = _sha256_file(repair_attempt.stdout_path)
+            invocation_stderr_sha256 = _sha256_file(repair_attempt.stderr_path)
+            invocation_command_sha256 = hashlib.sha256(
+                json.dumps(repair_attempt.command, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+            ).hexdigest()
+            receipt: dict[str, object] = {
+                "schema_version": 1, "author": "controller", "condition": condition,
+                "task_id": task_id, "run_id": run_id,
+                "invocation_id": str(manifest.get("invocation_id", run_id)),
+                "session_id": repair_attempt.session_id, "exit_code": repair_attempt.exit_code,
+                "invocation_evidence_present": _has_invocation_evidence(repair_attempt),
+                "invocation_stdout_path": str(repair_attempt.stdout_path),
+                "invocation_stdout_sha256": invocation_stdout_sha256,
+                "invocation_stderr_path": str(repair_attempt.stderr_path),
+                "invocation_stderr_sha256": invocation_stderr_sha256,
+                "invocation_command_sha256": invocation_command_sha256,
+                "treatment_prompt_path": str(repair_prompt_path),
+                "treatment_prompt_sha256_pre": treatment_prompt_sha256_pre,
+                "treatment_prompt_sha256_post": treatment_prompt_sha256_post,
+                "feedback_path": str(verify_feedback_path) if verify_feedback_path is not None else None,
+                "feedback_sha256_pre": treatment_delivery.get("feedback_sha256_pre"),
+                "feedback_sha256_post": treatment_delivery.get("feedback_sha256_post"),
+                "feedback_claim_ids": feedback_claim_ids,
+                "initial_solution_hash": attempt_solution_hashes.get("attempt_1_initial"),
+                "raw_repair_solution_hash": raw_repair_hash,
+                "solution_changed": solution_changed, "model_response_required": False,
             }
-        )
+            try:
+                persisted_receipt = _write_json_no_follow(
+                    outputs_dir, "controller-delivery-receipt.json", receipt, expected_identity=outputs_identity,
+                )
+                persisted_receipt.chmod(0o444)
+                persisted_payload = json.loads(persisted_receipt.read_text(encoding="utf-8"))
+                if persisted_payload != receipt:
+                    raise ValueError("controller_delivery_receipt_readback_mismatch")
+                persisted_receipt_sha256 = _sha256_file(persisted_receipt)
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                raise ClassifiedCellFailure(
+                    "harness_invalid", f"treatment_not_delivered:controller_delivery_receipt_persist_failed:{type(exc).__name__}",
+                    invocation_result=AgentInvocationResult(attempts=attempts, attempt_solution_hashes=attempt_solution_hashes.copy(), treatment_delivery=treatment_delivery),
+                ) from exc
+            treatment_delivery.update({
+                "controller_delivery_receipt_valid": True,
+                "controller_delivery_receipt_path": str(persisted_receipt),
+                "controller_delivery_receipt_sha256": persisted_receipt_sha256,
+                "repair_invocation_evidence_present": True,
+                "feedback_claim_ids": feedback_claim_ids,
+            })
         try:
             cumulative_diff = write_cumulative_diff(
                 snapshot_dir,
@@ -820,10 +856,13 @@ class HermesCliInvoker:
             compute_solution_hash(workspace) if rel_solution_files(workspace) else None
         )
         if not bool(repair_safety["rollback_required"]):
-            treatment_delivery["repair_final_outcome"] = treatment_delivery.get("repair_decision")
-            treatment_delivery["repair_change_retained"] = (
-                treatment_delivery.get("repair_decision") == "applied"
-            )
+            if self._require_model_repair_response:
+                treatment_delivery["repair_final_outcome"] = treatment_delivery.get("repair_decision")
+                treatment_delivery["repair_change_retained"] = treatment_delivery.get("repair_decision") == "applied"
+            else:
+                final_changed = attempt_solution_hashes.get("attempt_1_initial") != attempt_solution_hashes["attempt_2_repair"]
+                treatment_delivery["repair_final_outcome"] = "change_retained" if final_changed else "no_change"
+                treatment_delivery["repair_change_retained"] = final_changed
         return AgentInvocationResult(
             attempts=attempts,
             attempt_solution_hashes=attempt_solution_hashes,
@@ -2234,7 +2273,12 @@ def _require_scoring_treatment_delivery(
             "treatment_not_delivered: missing repair provenance",
             invocation_result=invocation_result,
         )
-    repair_response_accepted = delivery.get("repair_response_valid") is True or (
+    model_response_required = delivery.get("model_repair_response_required") is not False
+    repair_response_accepted = (
+        delivery.get("repair_response_valid") is True
+        if model_response_required
+        else delivery.get("controller_delivery_receipt_valid") is True
+    ) or (
         condition == "A-baseline"
         and delivery.get("recovered_from_persisted_invocation_evidence") is True
         and delivery.get("repair_response_legacy_exemption") is True
@@ -2251,7 +2295,7 @@ def _require_scoring_treatment_delivery(
             ok
             and delivery.get("feedback_delivered") is True
             and delivery.get("feedback_immutable") is True
-            and delivery.get("feedback_items_accounted") is True
+            and (delivery.get("feedback_items_accounted") is True or not model_response_required)
         )
     else:
         ok = ok and delivery.get("feedback_delivered") is False
@@ -2491,10 +2535,11 @@ def _repair_response_contract_instructions() -> str:
 - for every AgentHarness feedback item consulted, include exactly one source=agentharness finding whose finding_id is that item's claim_id"""
 
 
-def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path) -> str:
+def _build_baseline_repair_prompt(*, task_id: str, workspace: Path, spec_path: Path, pytest_stdout_path: str | Path, pytest_stderr_path: str | Path, require_repair_response: bool = True) -> str:
     spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
     pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
     pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
+    response_contract = _repair_response_contract_instructions() if require_repair_response else ""
     return f"""
 This is the one bounded repair pass for task {task_id}.
 The current working directory is the only project workspace.
@@ -2509,7 +2554,7 @@ Safety constraints for this bounded repair:
 - never create local packages that shadow declared third-party dependencies
 - prefer a no-op over a speculative infrastructure workaround
 - all changes across retries are cumulative and will be checked as one repair diff
-{_repair_response_contract_instructions()}
+{response_contract}
 Make targeted fixes inside the current working directory, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
@@ -2523,11 +2568,13 @@ def _build_agentharness_repair_prompt(
     pytest_stdout_path: str | Path,
     pytest_stderr_path: str | Path,
     verify_feedback_path: Path,
+    require_repair_response: bool = True,
 ) -> str:
     spec_ref = _prompt_relative_path(workspace=workspace, target=spec_path)
     pytest_stdout_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stdout_path)))
     pytest_stderr_ref = _prompt_relative_path(workspace=workspace, target=Path(str(pytest_stderr_path)))
     verify_feedback_ref = _prompt_relative_path(workspace=workspace, target=verify_feedback_path)
+    response_contract = _repair_response_contract_instructions() if require_repair_response else ""
     return f"""
 This is the one bounded repair pass for task {task_id}.
 The current working directory is the only project workspace.
@@ -2543,7 +2590,7 @@ Safety constraints for this bounded repair:
 - never create local packages that shadow declared third-party dependencies
 - prefer a no-op over a speculative infrastructure workaround
 - all changes across retries are cumulative and will be checked as one repair diff
-{_repair_response_contract_instructions()}
+{response_contract}
 Make targeted fixes inside the current working directory, rerun local tests if helpful, and stop.
 Do not read any held-out evaluation suite.
 """.strip()
