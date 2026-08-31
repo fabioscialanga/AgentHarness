@@ -1,0 +1,25 @@
+{
+  "schema_version": 9,
+  "suite_id": "mechanism-first-controlled-repair-v9",
+  "artifact_type": "real_terminal_outcome",
+  "repository_commit": "1c660c2f57f2d7616f0ca99f49c9149c3a1b30d9",
+  "execution_mode": "real",
+  "terminal_status": "CEILING",
+  "calibration": {
+    "anchors_evaluated": 3,
+    "repair_calls_started": 3,
+    "repair_calls_completed": 3,
+    "decision": "CEILING"
+  },
+  "evaluation_calls": 0,
+  "provider_initial_calls": 0,
+  "primary_efficacy_verdict": "NOT_ESTIMATED",
+  "interpretation": "The baseline repaired enough preregistered calibration anchors to trigger the ceiling rule. The V9 protocol therefore stopped before paired A/B evaluation. This is a valid terminal benchmark outcome, not evidence for or against AgentHarness efficacy.",
+  "project_conclusion": "The controlled synthetic repair campaign is closed. Across the completed campaign lineage, available qualified tasks did not provide a stable discriminating regime for estimating incremental AgentHarness efficacy under the fixed model and repair budget. No public efficacy claim is supported.",
+  "recommended_next_evidence": "If product work continues, use naturally occurring repositories or user studies with independently sampled failures and preregistered outcomes rather than creating another synthetic campaign revision.",
+  "artifact_sha256": {
+    "frozen_manifest": "a0799e01c497b53b0c64c272690ae5b126220be3542c959cd6b8c28a1529828b",
+    "campaign_state": "4ecd8ae1f82abef3af829a451c06c4cc22b575bc7cfbd1a951198516bbc48d02",
+    "calibration_gate": "3608b1ba15578fce8cda967110ab4a91901cf64cc994df13ccd6f0fc995be2e0"
+  }
+}
