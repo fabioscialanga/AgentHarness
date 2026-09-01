@@ -28,7 +28,7 @@
   <img src="https://img.shields.io/badge/harness_invalid-separated-dc2626?style=flat-square" alt="Harness invalid separated" />
   <img src="https://img.shields.io/badge/held--out_eval-deterministic-0891b2?style=flat-square" alt="Deterministic held-out evaluation" />
   <img src="https://img.shields.io/badge/offline_grading-reproducible-15803d?style=flat-square" alt="Offline grading reproducible" />
-  <img src="https://img.shields.io/badge/benchmark-A%2FB_ready-9333ea?style=flat-square" alt="A/B benchmark ready" />
+  <img src="https://img.shields.io/badge/job_supervisor-alpha-9333ea?style=flat-square" alt="Persistent job supervisor alpha" />
 </p>
 
 <table>
@@ -91,7 +91,7 @@ AgentHarness does not trust the report. It reruns the claim, captures what actua
 
 It also refuses the opposite mistake. A broken sandbox, missing dependency, or grader fault is a problem of the measurement layer, not of the solution. AgentHarness keeps that boundary explicit so a low score still means something.
 
-AgentHarness does not run agents. It verifies what they claim to have done. It is model-agnostic and agent-agnostic.
+AgentHarness does not implement an agent or model runtime. It verifies claims and can supervise an external command's lifecycle, while remaining model-agnostic and agent-agnostic.
 
 ---
 
@@ -129,6 +129,21 @@ agentharness verify-run \
 
 ---
 
+## Supervise a real job
+
+The alpha supervisor persists state and logs around an external command, applies preflight, timeout and retry rules, verifies success, and hashes required artifacts:
+
+```bash
+agentharness supervise job.yaml
+agentharness status job.yaml --json
+agentharness stop job.yaml
+agentharness resume job.yaml
+```
+
+See [`docs/supervisor.md`](docs/supervisor.md) for the minimal YAML contract and exact v1 limits. This is a local process supervisor, not a security sandbox or distributed workflow platform.
+
+---
+
 ## The idea in one line
 
 A raw model is not enough. Reliable agentic engineering needs a harness around it: context, rules, verification, evidence, and a clear boundary between a real failure and an invalid measurement. AgentHarness is that harness, focused on the verification end.
@@ -145,7 +160,7 @@ What it is:
 What it is not:
 - not a general semantic reviewer that invents reliable acceptance tests from any prompt
 - not a hostile-code sandbox
-- not an agent runner
+- not an agent or model implementation; supervision wraps an external command
 - not a prompt framework
 - not a replacement for upstream spec and workflow tooling
 - not a system that accepts logs at face value
@@ -362,7 +377,7 @@ AgentHarness non si fida del report. Riesegue il claim, cattura cio che e succes
 
 Rifiuta anche l'errore opposto. Una sandbox rotta, una dipendenza mancante o un guasto del grader sono problemi dello strumento di misura, non della soluzione. AgentHarness mantiene questo confine esplicito, cosi un punteggio basso continua a significare qualcosa.
 
-AgentHarness non esegue agenti. Verifica cio che dichiarano di aver fatto. E indipendente dal modello e dall'agente.
+AgentHarness non implementa un runtime per agenti o modelli. Verifica le dichiarazioni e puo supervisionare il ciclo di vita di un comando esterno, restando indipendente dal modello e dall'agente.
 
 ## Vedilo smascherare una bugia in 60 secondi
 
@@ -404,7 +419,7 @@ Cosa e:
 - un confine tra fallimento della soluzione e fallimento dell'harness
 
 Cosa non e:
-- non e un agent runner
+- non implementa un agente o un modello; la supervisione avvolge un comando esterno
 - non e un prompt framework
 - non sostituisce i tool a monte per specifica e workflow
 - non accetta i log come prova sufficiente

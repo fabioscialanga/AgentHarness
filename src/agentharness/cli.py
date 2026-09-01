@@ -14,6 +14,7 @@ from .direct_check import check_workspace
 from .evaluation import evaluate_run
 from .generation import generate_framework_outputs
 from .resilience import run_resilience_plan
+from .supervisor import SupervisorError, get_job_status, resume_job, start_job, stop_job
 from .validation import validate_project_directory
 from .verification import verify_project_directory
 from .verify import verify_run
@@ -249,6 +250,25 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional JSONL trace path for structured resilience events",
     )
+
+    supervise_parser = subparsers.add_parser("supervise", help="Start a persistent supervised job from YAML")
+    supervise_parser.add_argument("config", type=Path, help="Supervisor job YAML")
+    supervise_parser.add_argument("--foreground", action="store_true", help="Run synchronously instead of detaching")
+    supervise_parser.add_argument("--run-id", help="Optional path-safe run identifier")
+    supervise_parser.add_argument("--json", action="store_true", help="Print state as JSON")
+
+    status_parser = subparsers.add_parser("status", help="Show the current state of a supervised job")
+    status_parser.add_argument("config", type=Path, help="Supervisor job YAML")
+    status_parser.add_argument("--json", action="store_true", help="Print state as JSON")
+
+    stop_parser = subparsers.add_parser("stop", help="Stop the current supervised job")
+    stop_parser.add_argument("config", type=Path, help="Supervisor job YAML")
+    stop_parser.add_argument("--json", action="store_true", help="Print state as JSON")
+
+    resume_parser = subparsers.add_parser("resume", help="Resume the current supervised run when retry budget remains")
+    resume_parser.add_argument("config", type=Path, help="Supervisor job YAML")
+    resume_parser.add_argument("--foreground", action="store_true", help="Resume synchronously instead of detaching")
+    resume_parser.add_argument("--json", action="store_true", help="Print state as JSON")
 
     bootstrap_parser = subparsers.add_parser(
         "bootstrap",
@@ -516,6 +536,23 @@ def _print_resilient_run_result(result, as_json: bool) -> None:
         print(f"Trace written: {result.trace_path}")
 
 
+def _print_supervisor_state(state: dict[str, object], as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(state, indent=2, sort_keys=True))
+        return
+    print(f"[{str(state.get('status', 'unknown')).upper()}] job {state.get('job_id', '')}")
+    if state.get("run_id"):
+        print(f"Run: {state['run_id']}")
+    if state.get("worker_alive") is not None:
+        print(f"Worker alive: {bool(state['worker_alive'])}")
+    attempts = state.get("attempts", [])
+    if isinstance(attempts, list):
+        print(f"Attempts: {len(attempts)}")
+    missing = state.get("missing_artifacts", [])
+    if isinstance(missing, list) and missing:
+        print(f"Missing artifacts: {', '.join(str(item) for item in missing)}")
+
+
 def _print_bootstrap_result(result, as_json: bool) -> None:
     if as_json:
         print(json.dumps(result.to_dict(), indent=2))
@@ -650,6 +687,25 @@ def main(argv: list[str] | None = None) -> int:
         )
         _print_resilient_run_result(result, args.json)
         return 0 if result.ok else 1
+
+    if args.command in {"supervise", "status", "stop", "resume"}:
+        try:
+            if args.command == "supervise":
+                state = start_job(args.config, detach=not args.foreground, run_id=args.run_id)
+            elif args.command == "status":
+                state = get_job_status(args.config)
+            elif args.command == "stop":
+                state = stop_job(args.config)
+            else:
+                state = resume_job(args.config, detach=not args.foreground)
+        except (SupervisorError, OSError) as exc:
+            if args.json:
+                print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
+            else:
+                print(f"[INVALID] supervisor: {exc}", file=sys.stderr)
+            return 2
+        _print_supervisor_state(state, args.json)
+        return 0 if state.get("status") in {"created", "running", "retrying", "succeeded", "not_started", "stopped"} else 1
 
     if args.command == "bootstrap":
         options = BootstrapOptions(
