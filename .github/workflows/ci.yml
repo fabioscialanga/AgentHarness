@@ -34,7 +34,11 @@ jobs:
           python -m pip install -e .
 
       - name: Run version-independent core tests
-        run: python -m pytest -q --ignore-glob='tests/test_*benchmark_hidden_evaluator.py'
+        run: >-
+          python -m pytest -q
+          --ignore-glob='tests/test_*benchmark_hidden_evaluator.py'
+          --ignore-glob='tests/test_task_expansion_batch*.py'
+          --ignore='tests/test_stage2_campaign.py'
 
   full-suite:
     name: Full suite and frozen grading environment
@@ -50,10 +54,10 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install package
+      - name: Install package and grading extras
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -e ".[grading]"
 
       - name: Run full suite
         run: python -m pytest -q
@@ -93,6 +97,7 @@ jobs:
           mkdir -p .agentharness
           RUN_ID="ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           /tmp/agentharness-smoke-venv/bin/agentharness --help
+          /tmp/agentharness-smoke-venv/bin/agentharness-security-bundle --help
           /tmp/agentharness-smoke-venv/bin/agentharness check \
             --workspace . \
             --command "python -m pytest -q" \

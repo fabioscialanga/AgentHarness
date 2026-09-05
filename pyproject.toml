@@ -30,6 +30,12 @@ dependencies = [
   "fastapi>=0.110",
   "httpx>=0.27",
   "pytest>=8,<9",
+  "cryptography>=43,<47",
+]
+
+[project.optional-dependencies]
+grading = [
+  "scipy>=1.11,<2",
 ]
 
 [project.urls]
@@ -40,6 +46,7 @@ Source = "https://github.com/fabioscialanga/AgentHarness"
 
 [project.scripts]
 agentharness = "agentharness.cli:main"
+agentharness-security-bundle = "agentharness.security_bundle:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
