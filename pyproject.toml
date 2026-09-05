@@ -33,6 +33,11 @@ dependencies = [
   "cryptography>=43,<47",
 ]
 
+[project.optional-dependencies]
+grading = [
+  "scipy>=1.11,<2",
+]
+
 [project.urls]
 Homepage = "https://github.com/fabioscialanga/AgentHarness"
 Documentation = "https://github.com/fabioscialanga/AgentHarness#readme"
