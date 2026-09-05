@@ -37,6 +37,7 @@ jobs:
         run: >-
           python -m pytest -q
           --ignore-glob='tests/test_*benchmark_hidden_evaluator.py'
+          --ignore-glob='tests/test_task_expansion_batch*.py'
           --ignore='tests/test_stage2_campaign.py'
 
   full-suite:
