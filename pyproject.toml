@@ -41,6 +41,7 @@ Source = "https://github.com/fabioscialanga/AgentHarness"
 
 [project.scripts]
 agentharness = "agentharness.cli:main"
+agentharness-security-bundle = "agentharness.security_bundle:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
