@@ -65,6 +65,14 @@ jobs:
           python -m pip install -e .
           python -m pip install 'numpy>=2.0' 'scipy>=1.14' 'pandas>=2.2' 'statsmodels>=0.14'
 
+      - name: Bind frozen grader to Python 3.12
+        shell: bash
+        run: |
+          if [[ ! -x /usr/bin/python3.12 ]]; then
+            sudo ln -s "$(command -v python)" /usr/bin/python3.12
+          fi
+          /usr/bin/python3.12 --version
+
       # The frozen Hermes preflight requires a private executable path absent on hosted runners.
       # It is checked separately below; all other Stage 2 tests run here.
       - name: Run full suite except external Hermes preflight
