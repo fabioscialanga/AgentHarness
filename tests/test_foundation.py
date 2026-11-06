@@ -1,4 +1,5 @@
 import json
+import os
 import socket
 
 import pytest
@@ -71,6 +72,42 @@ def test_cli_rejects_invalid_config(tmp_path, capsys):
 def test_nonexistent_project_is_rejected(tmp_path):
     with pytest.raises(ConfigError):
         status(tmp_path / "missing")
+
+
+@pytest.mark.parametrize("link_parent", [False, True])
+def test_symbolic_config_paths_are_rejected(tmp_path, link_parent):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    project = tmp_path / "project"
+    project.mkdir()
+    try:
+        if link_parent:
+            (project / ".agentharness").symlink_to(outside, target_is_directory=True)
+        else:
+            (project / ".agentharness").mkdir()
+            (outside / "config.yaml").write_text("secret", encoding="utf-8")
+            (project / ".agentharness" / "config.yaml").symlink_to(outside / "config.yaml")
+    except (OSError, NotImplementedError) as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+    with pytest.raises(ConfigError):
+        set_enabled(project, True)
+    if not link_parent:
+        assert (outside / "config.yaml").read_text(encoding="utf-8") == "secret"
+
+
+def test_failed_atomic_replace_preserves_existing_state(tmp_path, monkeypatch):
+    set_enabled(tmp_path, True)
+    path = config_path(tmp_path)
+    before = path.read_bytes()
+
+    def fail_replace(*args):
+        raise OSError("simulated replacement failure")
+
+    monkeypatch.setattr(os, "replace", fail_replace)
+    with pytest.raises(OSError, match="simulated replacement failure"):
+        set_enabled(tmp_path, False)
+    assert path.read_bytes() == before
+    assert list(path.parent.glob(".config-*.tmp")) == []
 
 
 def test_existing_commands_remain_registered():
