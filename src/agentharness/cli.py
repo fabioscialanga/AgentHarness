@@ -5,16 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from .benchmark_hidden_evaluators import evaluate_benchmark_task
-from .benchmarking import render_json_template, write_rendered_json_template
-from .bootstrap import BootstrapOptions, bootstrap_project
-from .direct_check import check_workspace
-from .evaluation import evaluate_run
-from .generation import generate_framework_outputs
-from .resilience import run_resilience_plan
-from .validation import validate_project_directory
-from .verification import verify_project_directory
-from .verify import verify_run
+
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -23,6 +14,11 @@ def build_parser() -> argparse.ArgumentParser:
         description="Work with AgentHarness-style project definitions",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    for name in ("enable", "disable", "status"):
+        state_parser = subparsers.add_parser(name, help=f"{name.capitalize()} project-local AgentHarness state")
+        state_parser.add_argument("--project", type=Path, default=Path("."), help="Project directory (default: current directory)")
+        state_parser.add_argument("--json", action="store_true", help="Print the result as JSON")
 
     check_parser = subparsers.add_parser(
         "check",
@@ -490,7 +486,32 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    if args.command in ("enable", "disable", "status"):
+        from .config import ConfigError, set_enabled, status
+
+        try:
+            changed = False
+            if args.command != "status":
+                _, changed = set_enabled(args.project, args.command == "enable")
+            result = status(args.project)
+        except (ConfigError, OSError) as exc:
+            if args.json:
+                print(json.dumps({"ok": False, "error": str(exc)}))
+            else:
+                print(f"[INVALID] {args.command}: {exc}", file=sys.stderr)
+            return 2
+        result.update({"ok": True, "changed": changed})
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            print(f"AgentHarness: {'enabled' if result['enabled'] else 'disabled'} ({result['profile']}, {result['mode']})")
+            print(f"Project: {result['project']}")
+            print(f"Configured: {'yes' if result['configured'] else 'no'}; host adapter: none; automatic checks: off")
+            print("Recent checks: unknown; estimated cost: unavailable")
+        return 0
+
     if args.command == "check":
+        from .direct_check import check_workspace
         try:
             result = check_workspace(
                 args.workspace,
@@ -512,16 +533,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if result.ok else 1
 
     if args.command == "validate":
+        from .validation import validate_project_directory
         result = validate_project_directory(args.path)
         _print_validation_result(result, args.json)
         return 0 if result.ok else 1
 
     if args.command == "generate":
+        from .generation import generate_framework_outputs
         result = generate_framework_outputs(args.path)
         _print_generation_result(result, args.json)
         return 0
 
     if args.command == "verify":
+        from .verification import verify_project_directory
         result = verify_project_directory(
             args.path,
             write_report=args.write_report,
@@ -530,6 +554,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if result.ok else 1
 
     if args.command == "verify-run":
+        from .verify import verify_run
         result = verify_run(
             args.run,
             args.claims,
@@ -543,6 +568,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if result.ok else 1
 
     if args.command == "evaluate":
+        from .evaluation import evaluate_run
         result = evaluate_run(
             args.run,
             args.suite,
@@ -554,6 +580,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if result.ok else 1
 
     if args.command == "render-evaluation-suite":
+        from .benchmarking import render_json_template, write_rendered_json_template
         output_path = write_rendered_json_template(
             args.template,
             run_id=args.run_id,
@@ -571,6 +598,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "benchmark-evaluate-task":
+        from .benchmark_hidden_evaluators import evaluate_benchmark_task
         result = evaluate_benchmark_task(args.run, args.task_id)
         payload = result.to_dict()
         _print_benchmark_task_evaluation_result(payload, args.json)
@@ -579,6 +607,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if result.critical_ok else 1
 
     if args.command == "run-plan":
+        from .resilience import run_resilience_plan
         result = run_resilience_plan(
             args.plan,
             write_report=args.write_report,
@@ -589,6 +618,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if result.ok else 1
 
     if args.command == "bootstrap":
+        from .bootstrap import BootstrapOptions, bootstrap_project
         options = BootstrapOptions(
             project_name=args.project_name,
             project_slug=args.project_slug,
