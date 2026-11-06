@@ -68,6 +68,11 @@ def test_cli_rejects_invalid_config(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)["ok"] is False
 
 
+def test_nonexistent_project_is_rejected(tmp_path):
+    with pytest.raises(ConfigError):
+        status(tmp_path / "missing")
+
+
 def test_existing_commands_remain_registered():
     from agentharness.cli import build_parser
 

@@ -28,6 +28,14 @@ def config_path(project: str | Path) -> Path:
     return Path(project).resolve() / ".agentharness" / "config.yaml"
 
 
+def _check_project(project: str | Path) -> None:
+    root = Path(project)
+    if not root.is_dir():
+        raise ConfigError("project must be an existing directory")
+    if (root / ".agentharness").is_symlink():
+        raise ConfigError(".agentharness must not be a symlink")
+
+
 def _validate(data: Any) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ConfigError("config must be a YAML mapping")
@@ -49,6 +57,7 @@ def _validate(data: Any) -> dict[str, Any]:
 
 
 def load_config(project: str | Path) -> tuple[dict[str, Any], bool]:
+    _check_project(project)
     path = config_path(project)
     if not path.exists() and not path.is_symlink():
         return DEFAULT_CONFIG.copy(), False
@@ -63,8 +72,6 @@ def load_config(project: str | Path) -> tuple[dict[str, Any], bool]:
 
 
 def set_enabled(project: str | Path, enabled: bool) -> tuple[dict[str, Any], bool]:
-    if not Path(project).is_dir():
-        raise ConfigError("project must be an existing directory")
     data, configured = load_config(project)
     if configured and data["enabled"] == enabled:
         return data, False
