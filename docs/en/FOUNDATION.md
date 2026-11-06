@@ -1,0 +1,7 @@
+# Foundation CLI (M1)
+
+Run `agentharness enable`, `agentharness disable`, or `agentharness status` in a project directory. Use `--project PATH` to select another directory and `--json` for machine-readable output. The default state, before a config exists, is disabled with the `balanced` profile. `status` does not create a file. `enable` and `disable` write `.agentharness/config.yaml` atomically and are idempotent; disabling preserves all other settings and evidence.
+
+Schema version 1 contains `schema_version`, `enabled`, `profile` (`minimal`, `balanced`, `strict`), `mode` (`manual`), and empty `policy` and `budget` maps. M1 validates the whole file and rejects malformed or unsupported values. The profile is stored for future use; it does not alter execution in M1. Edit only while no other command is writing the file. `changed` in JSON indicates whether this invocation changed the file; `configured` says whether it exists. `recent_checks` and `cost_estimate` are `null` because this CLI does not measure them. `host_adapter_installed`, `automatic_checks`, and `llm_calls` are false for this foundation CLI, not a claim about other tools in the project.
+
+Enabling the CLI stores consent for future project-local behavior. It installs no Claude Code or Codex hook, starts no daemon, runs no automatic checks, and makes no LLM call. Existing explicit verification commands retain their semantics. Invalid configuration exits with code 2; valid state commands exit with code 0.
