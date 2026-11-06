@@ -514,8 +514,6 @@ def _utcnow_iso() -> str:
 def _system_python_candidates() -> list[Path]:
     return [
         Path(f"/usr/bin/python{sys.version_info.major}.{sys.version_info.minor}"),
-        Path(f"/usr/bin/python{sys.version_info.major}"),
-        Path("/usr/bin/python3"),
         Path(sys.executable),
     ]
 

@@ -19,6 +19,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 BENCHMARKS_DIR = REPO_ROOT / "benchmarks"
 TASK_ID = "support-ticket-api"
 
+
+def test_benchmark_venv_uses_matching_python_minor() -> None:
+    assert benchmark_hidden_evaluators._system_python_candidates() == [
+        Path(f"/usr/bin/python{sys.version_info.major}.{sys.version_info.minor}"),
+        Path(sys.executable),
+    ]
+
+
 GOOD_APP = textwrap.dedent(
     '''
     from __future__ import annotations
