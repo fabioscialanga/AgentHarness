@@ -1,0 +1,7 @@
+# CLI Foundation (M1)
+
+Esegui `agentharness enable`, `agentharness disable` o `agentharness status` nella directory del progetto. `--project PERCORSO` seleziona un'altra directory; `--json` produce output leggibile da programmi. Prima che esista una configurazione, lo stato predefinito è disabilitato con profilo `balanced`. `status` non crea file. `enable` e `disable` scrivono `.agentharness/config.yaml` in modo atomico e sono idempotenti; la disabilitazione conserva le altre impostazioni e le evidenze.
+
+Lo schema versione 1 contiene `schema_version`, `enabled`, `profile` (`minimal`, `balanced`, `strict`), `mode` (`manual`) e le mappe vuote `policy` e `budget`. M1 valida l'intero file e rifiuta valori malformati o non supportati. Il profilo è memorizzato per usi futuri e non cambia l'esecuzione in M1. Modifica il file solo quando nessun altro comando lo sta scrivendo. In JSON, `changed` indica se questa invocazione ha modificato il file; `configured` indica se esiste. `recent_checks` e `cost_estimate` valgono `null` perché la CLI non li misura. `host_adapter_installed`, `automatic_checks` e `llm_calls` sono falsi per questa CLI Foundation, senza descrivere altri strumenti del progetto.
+
+L'abilitazione della CLI memorizza uno stato locale. Non installa hook Claude Code o Codex, non avvia daemon, non esegue controlli automatici e non chiama LLM. I comandi di verifica espliciti conservano il proprio significato. Una configurazione invalida produce exit code 2; i comandi di stato validi producono exit code 0.

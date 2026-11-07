@@ -11,6 +11,8 @@ __pycache__/
 **/.agentharness/traces/
 .agentharness/resilience/
 **/.agentharness/resilience/
+.agentharness/config.yaml
+**/.agentharness/config.yaml
 
 # Local reports and editor noise
 *.verify-report.json
