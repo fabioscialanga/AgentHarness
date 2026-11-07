@@ -20,6 +20,17 @@ def build_parser() -> argparse.ArgumentParser:
         state_parser.add_argument("--project", type=Path, default=Path("."), help="Project directory (default: current directory)")
         state_parser.add_argument("--json", action="store_true", help="Print the result as JSON")
 
+    host_parser = subparsers.add_parser("host-event", help="Prototype: handle one opt-in host Stop event from stdin")
+    host_parser.add_argument("--host", choices=("claude", "codex"), required=True)
+    host_parser.add_argument("--project", type=Path, default=Path("."))
+
+    for name in ("install", "uninstall"):
+        adapter_parser = subparsers.add_parser(name, help=f"{name.capitalize()} a project-local host adapter")
+        adapter_parser.add_argument("--host", choices=("codex",), required=True)
+        adapter_parser.add_argument("--project", type=Path, default=Path("."))
+        adapter_parser.add_argument("--yes", action="store_true", help="Explicitly consent to the host configuration change")
+        adapter_parser.add_argument("--json", action="store_true", help="Print the result as JSON")
+
     check_parser = subparsers.add_parser(
         "check",
         help="Verify that a command succeeds in a persistent copy of a workspace",
@@ -485,6 +496,39 @@ def _print_bootstrap_result(result, as_json: bool) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command in ("install", "uninstall"):
+        from .codex_adapter import AdapterError, change_codex_hook
+
+        action = args.command
+        if not args.yes:
+            if not sys.stdin.isatty():
+                print("Explicit consent required: rerun with --yes", file=sys.stderr)
+                return 2
+            answer = input(f"{action} project-local Codex Stop hook in {args.project.resolve()}? [y/N] ")
+            if answer.strip().lower() not in ("y", "yes"):
+                print("Cancelled")
+                return 2
+        try:
+            changed = change_codex_hook(args.project, install=action == "install")
+        except (AdapterError, OSError) as exc:
+            if args.json:
+                print(json.dumps({"ok": False, "error": str(exc)}))
+            else:
+                print(f"AgentHarness: {exc}", file=sys.stderr)
+            return 1
+        result = {"ok": True, "host": "codex", "action": action, "changed": changed, "project": str(args.project.resolve())}
+        print(json.dumps(result) if args.json else f"AgentHarness Codex {action}: {'changed' if changed else 'already in desired state'}")
+        return 0
+
+    if args.command == "host-event":
+        from .host_prototype import response_json
+
+        try:
+            print(response_json(args.project, args.host, json.load(sys.stdin)))
+        except Exception:
+            print("{}")  # Hook errors never block the host or continue a turn.
+        return 0
 
     if args.command in ("enable", "disable", "status"):
         from .config import ConfigError, set_enabled, status
