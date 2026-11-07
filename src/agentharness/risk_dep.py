@@ -90,7 +90,7 @@ def _git(root: Path, *args: str, max_bytes: int = MAX_DIFF_BYTES) -> bytes:
         total = 0
         try:
             assert process.stdout is not None
-            while chunk := process.stdout.read(64 * 1024):
+            while chunk := process.stdout.read(min(64 * 1024, max_bytes - total + 1)):
                 total += len(chunk)
                 if total > max_bytes:
                     overflow.set()
