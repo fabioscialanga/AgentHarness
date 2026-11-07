@@ -12,6 +12,8 @@ Per prova manuale isolata: `echo '{"hook_event_name":"Stop","stop_hook_active":f
 
 Comando test: `.venv/Scripts/python.exe -m pytest -q tests/test_host_prototype.py tests/test_foundation.py` su Windows Python 3.12: **18 passed**, exit code 0, 0,74 s. I test verificano disabilitazione, nessuna discovery quando disabilitato, singolo suggerimento per modifica significativa, deduplicazione, silenzio sui file ordinari e risposta innocua a payload invalido.
 
+Regressione core in clone Linux Python 3.12 isolato, con sole dipendenze runtime: `python -m pytest -q` sui moduli `test_claim_verify`, `test_direct_check`, `test_foundation`, `test_host_prototype`, `test_level2_reliability`, `test_release_check`, `test_repair_safety`, `test_runtime_features`, `test_validation`: **106 passed**, exit code 0, 18,42 s. I benchmark/Stage 2 non sono stati ripetuti in M2 perché il prototipo non modifica i loro percorsi; il risultato della CI M1 resta distinto.
+
 Microbenchmark locale, Windows Python 3.12, repository temporaneo, `handle_stop` chiamato direttamente:
 
 | Scenario | Ripetizioni | Mediana | Massimo | Messaggi |
