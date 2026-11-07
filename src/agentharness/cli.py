@@ -20,6 +20,10 @@ def build_parser() -> argparse.ArgumentParser:
         state_parser.add_argument("--project", type=Path, default=Path("."), help="Project directory (default: current directory)")
         state_parser.add_argument("--json", action="store_true", help="Print the result as JSON")
 
+    host_parser = subparsers.add_parser("host-event", help="Prototype: handle one opt-in host Stop event from stdin")
+    host_parser.add_argument("--host", choices=("claude", "codex"), required=True)
+    host_parser.add_argument("--project", type=Path, default=Path("."))
+
     check_parser = subparsers.add_parser(
         "check",
         help="Verify that a command succeeds in a persistent copy of a workspace",
@@ -485,6 +489,15 @@ def _print_bootstrap_result(result, as_json: bool) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command == "host-event":
+        from .host_prototype import response_json
+
+        try:
+            print(response_json(args.project, args.host, json.load(sys.stdin)))
+        except (ValueError, OSError):
+            print("{}")  # Hook errors never block the host or continue a turn.
+        return 0
 
     if args.command in ("enable", "disable", "status"):
         from .config import ConfigError, set_enabled, status

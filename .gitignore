@@ -13,6 +13,8 @@ __pycache__/
 **/.agentharness/resilience/
 .agentharness/config.yaml
 **/.agentharness/config.yaml
+.agentharness/host-prototype.json
+**/.agentharness/host-prototype.json
 
 # Local reports and editor noise
 *.verify-report.json
