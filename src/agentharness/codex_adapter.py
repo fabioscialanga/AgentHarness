@@ -66,7 +66,7 @@ def _command(project: Path, executable: Path) -> dict:
     return {"type": "command", "command": unix, "commandWindows": powershell, "timeout": 5, "statusMessage": MARKER}
 
 
-def _validate_owned(group: dict, project: Path) -> None:
+def _validate_owned(group: dict, project: Path) -> Path:
     handlers = group.get("hooks")
     if set(group) != {"hooks"} or not isinstance(handlers, list) or len(handlers) != 1:
         raise AdapterError("AgentHarness hook was modified; refusing removal")
@@ -79,6 +79,7 @@ def _validate_owned(group: dict, project: Path) -> None:
         tokens = shlex.split(handler["command"])
         if len(tokens) != 8 or handler != _command(project, Path(tokens[0])):
             raise AdapterError("AgentHarness hook was modified; refusing removal")
+        return Path(tokens[0])
     except (TypeError, ValueError) as exc:
         raise AdapterError("AgentHarness hook was modified; refusing removal") from exc
 
@@ -109,12 +110,20 @@ def change_codex_hook(project: str | Path, *, install: bool, executable: str | P
         if len(owned) > 1:
             raise AdapterError("multiple AgentHarness hooks found")
         if install:
-            if owned:
-                _validate_owned(stop[owned[0]], root)
-                return False
             python = Path(executable or sys.executable).resolve(strict=True)
-            if not python.is_file():
-                raise AdapterError("Python executable is not a file")
+            if not python.is_file() or not os.access(python, os.X_OK):
+                raise AdapterError("Python executable is not available")
+            if owned:
+                referenced = _validate_owned(stop[owned[0]], root)
+                try:
+                    available = referenced.resolve(strict=True)
+                except OSError:
+                    available = None
+                if available is None or not available.is_file() or not os.access(available, os.X_OK):
+                    raise AdapterError("existing Codex hook references an unavailable Python interpreter; uninstall the adapter, reinstall it, then review the new hook in Codex")
+                if available != python:
+                    raise AdapterError("existing Codex hook references a different Python interpreter; uninstall the adapter, reinstall it, then review the new hook in Codex")
+                return False
             stop.append({"hooks": [_command(root, python)]})
             data["hooks"]["Stop"] = stop
         else:

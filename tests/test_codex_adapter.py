@@ -54,6 +54,32 @@ def test_missing_and_existing_empty_config(tmp_path):
     assert json.loads(path.read_text(encoding="utf-8")) == {"description": "existing empty file", "hooks": {}}
 
 
+def test_missing_installed_interpreter_requires_explicit_reinstall(tmp_path):
+    old_python = tmp_path / ("old-python.exe" if sys.platform == "win32" else "old-python")
+    old_python.write_bytes(b"placeholder")
+    old_python.chmod(0o755)
+    assert change_codex_hook(tmp_path, install=True, executable=old_python)
+    path = _config(tmp_path)
+    before = path.read_bytes()
+    old_python.unlink()
+    with pytest.raises(AdapterError, match="unavailable Python interpreter.*uninstall.*reinstall"):
+        change_codex_hook(tmp_path, install=True)
+    assert path.read_bytes() == before
+    assert change_codex_hook(tmp_path, install=False)
+    assert change_codex_hook(tmp_path, install=True)
+
+
+def test_different_installer_interpreter_requires_explicit_reinstall(tmp_path):
+    old_python = tmp_path / ("old-python.exe" if sys.platform == "win32" else "old-python")
+    old_python.write_bytes(b"placeholder")
+    old_python.chmod(0o755)
+    assert change_codex_hook(tmp_path, install=True, executable=old_python)
+    before = _config(tmp_path).read_bytes()
+    with pytest.raises(AdapterError, match="different Python interpreter.*uninstall.*reinstall"):
+        change_codex_hook(tmp_path, install=True)
+    assert _config(tmp_path).read_bytes() == before
+
+
 @pytest.mark.parametrize("raw", [b"{bad", b'{"hooks":{},"hooks":{}}', b'{"hooks":[]}', b'{"hooks":{"Stop":{}}}'])
 def test_invalid_config_untouched(tmp_path, raw):
     path = _config(tmp_path)
