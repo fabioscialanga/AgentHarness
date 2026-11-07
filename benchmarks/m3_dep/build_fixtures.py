@@ -87,7 +87,8 @@ def repo_init(repo: Path, number: int) -> str:
     write(repo / "tests/test_dep.py", PASS_TEST)
     write(repo / "tests/test_other.py", OTHER_TEST)
     if number != 10:
-        write(repo / "pyproject.toml", BASE)
+        baseline = BASE.replace('"requests>=2,<3"', '"My_Pkg>=2,<3"') if number == 13 else BASE
+        write(repo / "pyproject.toml", baseline)
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "Synthetic baseline")
     return git(repo, "rev-parse", "HEAD")
@@ -107,7 +108,7 @@ def altered(number: int) -> str:
     if number == 10:
         return BASE
     if number == 13:
-        return BASE.replace('"requests>=2,<3"', '"ReQuEsTs>=2,<3"')
+        return BASE.replace('"requests>=2,<3"', '"my-pkg>=2,<3"')
     if number == 14:
         return BASE.replace('"requests>=2,<3"', '"requests[PDF,cli]>=2,<3"')
     if number == 15:
@@ -375,7 +376,7 @@ def main() -> None:
 
 def freeze_manifest() -> None:
     manifest_paths = [HERE / ".gitattributes", HERE / "ledger.json", HERE / "m3-binding-v0.schema.json", HERE / "build_fixtures.py",
-                      HERE / "validate_dataset.py", *sorted(FIXTURES.glob("*.zip"))]
+                      HERE / "validate_dataset.py", HERE / "test_validate_dataset.py", *sorted(FIXTURES.glob("*.zip"))]
     write(HERE / "MANIFEST.sha256", "".join(f"{digest(p)}  {p.relative_to(HERE).as_posix()}\n" for p in manifest_paths))
 
 

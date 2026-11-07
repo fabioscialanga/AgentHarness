@@ -252,16 +252,16 @@
     },
     {
       "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
-      "base_commit": "c74aabc3e518f02352d84fd8af7f176c333c7b2c",
-      "diff_sha256": "88df3ceb5f4d01bf4135bb497ff777f8f8d530b6370fdd2a30744956b6303893",
+      "base_commit": "beaf9b9b9f80d06a989385743ddf7626eaa0652f",
+      "diff_sha256": "ee97f738350bc115911c7ab5b70ad5da6f5bd2b3f5c90893eca6763f0d8065e7",
       "evidence_inventory": [],
       "evidence_label": "—",
-      "fixture_sha256": "5c1f8ce680f0269f643521af73057a89e5b65a4d86b4ce5300f4ef75c5a0e387",
+      "fixture_sha256": "cedb6e023a9e7b08669d21bb946ce5ae67dda61fd0382e95a5a9f5bc78fd83d6",
       "id": "D13",
       "notes": [],
       "risk_label": "N",
       "state_kind": "working-tree",
-      "target_commit": "c74aabc3e518f02352d84fd8af7f176c333c7b2c"
+      "target_commit": "beaf9b9b9f80d06a989385743ddf7626eaa0652f"
     },
     {
       "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
