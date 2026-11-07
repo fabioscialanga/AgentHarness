@@ -50,9 +50,9 @@ Massimo 128 directory run, 1 MiB per JSON, 8 MiB letti complessivi, 256 path di 
 
 ### Costo misurato
 
-La [misura CP3-A Windows](M3_CP3A_WINDOWS_EVAL.json) e quella [Linux](M3_CP3A_LINUX_EVAL.json) registrano **253 chiamate Git** sulle 37 fixture, media 6,84 per caso. Windows: **12,374 s Git cumulati**, p50/p95 detection **337,859/405,420 ms**; Linux: **0,555 s Git cumulati**, p50/p95 **13,397/21,831 ms**. I byte Git restituiti sono rispettivamente 25.193 e 24.120. Sono misure di detection, non dell'hook.
+La [misura CP3-A Windows](M3_CP3A_WINDOWS_EVAL.json) e quella [Linux](M3_CP3A_LINUX_EVAL.json) registrano **253 chiamate Git** sulle 37 fixture, media 6,84 per caso. Windows: **10,480 s Git cumulati**, p50/p95 detection **287,154/344,378 ms**; Linux: **0,473 s Git cumulati**, p50/p95 **12,206/21,878 ms**. I byte Git restituiti sono rispettivamente 25.193 e 24.120. Sono misure di detection, non dell'hook.
 
-La [sonda CP3-B Windows](M3_CP3B_PERF_WINDOWS.json) crea un controllo locale esplicito e ripete dieci matching read-only sullo stesso stato. Check più binding: **1.469,311 ms**. Matching p50/p95: **758,193/1.465,451 ms**; **14 chiamate Git per matching** (due ricatture complete) e circa **16 KiB di artifact letti per matching**. Le cifre variano con cache e carico della macchina. La latenza Windows supera la soglia prospettata per un futuro hook: **non** è autorizzato collegare questo percorso allo Stop in CP3-B. CP3-C dovrà ridurre le ricatture senza indebolire il controllo delle corse e misurare l'overhead end-to-end contro M2.
+La [sonda CP3-B Windows](M3_CP3B_PERF_WINDOWS.json) crea un controllo locale esplicito e ripete dieci matching read-only sullo stesso stato. Check più binding: **961,341 ms**. Matching p50/p95: **620,939/742,902 ms**; **14 chiamate Git per matching** (due ricatture complete) e circa **16 KiB di artifact letti per matching**. Le cifre variano con cache e carico della macchina. La latenza Windows supera la soglia prospettata per un futuro hook: **non** è autorizzato collegare questo percorso allo Stop in CP3-B. CP3-C dovrà ridurre le ricatture senza indebolire il controllo delle corse e misurare l'overhead end-to-end contro M2.
 
 ## Riproduzione e limiti
 

@@ -14,10 +14,10 @@
     }
   },
   "correct": 37,
-  "p50_ms": 13.397,
-  "p95_ms": 21.831,
+  "p50_ms": 12.206,
+  "p95_ms": 21.878,
   "git_calls_total": 253,
-  "git_ms_total": 555.444,
+  "git_ms_total": 472.845,
   "git_output_bytes_total": 24120,
   "rows": [
     {
@@ -25,9 +25,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 72.438,
+      "elapsed_ms": 42.483,
       "git_calls": 7,
-      "git_ms": 70.697,
+      "git_ms": 41.056,
       "git_output_bytes": 645
     },
     {
@@ -35,9 +35,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 16.989,
+      "elapsed_ms": 12.206,
       "git_calls": 7,
-      "git_ms": 16.324,
+      "git_ms": 11.697,
       "git_output_bytes": 645
     },
     {
@@ -45,9 +45,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 20.082,
+      "elapsed_ms": 12.301,
       "git_calls": 7,
-      "git_ms": 19.545,
+      "git_ms": 11.777,
       "git_output_bytes": 645
     },
     {
@@ -55,9 +55,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 13.014,
+      "elapsed_ms": 12.488,
       "git_calls": 7,
-      "git_ms": 12.302,
+      "git_ms": 11.938,
       "git_output_bytes": 876
     },
     {
@@ -65,9 +65,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 14.497,
+      "elapsed_ms": 11.442,
       "git_calls": 7,
-      "git_ms": 14.013,
+      "git_ms": 10.984,
       "git_output_bytes": 675
     },
     {
@@ -75,9 +75,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 15.954,
+      "elapsed_ms": 13.447,
       "git_calls": 7,
-      "git_ms": 15.123,
+      "git_ms": 12.634,
       "git_output_bytes": 676
     },
     {
@@ -85,9 +85,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 12.79,
+      "elapsed_ms": 21.403,
       "git_calls": 7,
-      "git_ms": 12.207,
+      "git_ms": 20.737,
       "git_output_bytes": 590
     },
     {
@@ -95,9 +95,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 13.243,
+      "elapsed_ms": 21.878,
       "git_calls": 7,
-      "git_ms": 12.755,
+      "git_ms": 21.148,
       "git_output_bytes": 578
     },
     {
@@ -105,9 +105,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "toml_invalid",
-      "elapsed_ms": 21.831,
+      "elapsed_ms": 15.631,
       "git_calls": 7,
-      "git_ms": 20.812,
+      "git_ms": 14.969,
       "git_output_bytes": 655
     },
     {
@@ -115,9 +115,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 20.157,
+      "elapsed_ms": 12.948,
       "git_calls": 6,
-      "git_ms": 19.525,
+      "git_ms": 12.48,
       "git_output_bytes": 83
     },
     {
@@ -125,9 +125,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 14.487,
+      "elapsed_ms": 13.184,
       "git_calls": 7,
-      "git_ms": 14.038,
+      "git_ms": 12.72,
       "git_output_bytes": 921
     },
     {
@@ -135,9 +135,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "explicit_range_required",
-      "elapsed_ms": 3.172,
+      "elapsed_ms": 3.947,
       "git_calls": 2,
-      "git_ms": 3.045,
+      "git_ms": 3.832,
       "git_output_bytes": 68
     },
     {
@@ -145,9 +145,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 17.722,
+      "elapsed_ms": 11.913,
       "git_calls": 7,
-      "git_ms": 17.146,
+      "git_ms": 11.476,
       "git_output_bytes": 636
     },
     {
@@ -155,9 +155,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 14.653,
+      "elapsed_ms": 12.406,
       "git_calls": 7,
-      "git_ms": 13.994,
+      "git_ms": 11.944,
       "git_output_bytes": 669
     },
     {
@@ -165,9 +165,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 13.325,
+      "elapsed_ms": 13.693,
       "git_calls": 7,
-      "git_ms": 12.858,
+      "git_ms": 13.178,
       "git_output_bytes": 642
     },
     {
@@ -175,9 +175,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 13.145,
+      "elapsed_ms": 13.181,
       "git_calls": 7,
-      "git_ms": 12.588,
+      "git_ms": 12.72,
       "git_output_bytes": 641
     },
     {
@@ -185,9 +185,9 @@
       "expected": "no_change",
       "observed": "no_change",
       "reason": null,
-      "elapsed_ms": 11.838,
+      "elapsed_ms": 11.775,
       "git_calls": 7,
-      "git_ms": 11.37,
+      "git_ms": 11.32,
       "git_output_bytes": 664
     },
     {
@@ -195,9 +195,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 13.637,
+      "elapsed_ms": 10.675,
       "git_calls": 7,
-      "git_ms": 13.15,
+      "git_ms": 10.171,
       "git_output_bytes": 628
     },
     {
@@ -205,9 +205,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 15.705,
+      "elapsed_ms": 14.742,
       "git_calls": 7,
-      "git_ms": 15.181,
+      "git_ms": 14.195,
       "git_output_bytes": 578
     },
     {
@@ -215,9 +215,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "unsupported_requirement_changed",
-      "elapsed_ms": 15.032,
+      "elapsed_ms": 11.676,
       "git_calls": 7,
-      "git_ms": 14.416,
+      "git_ms": 11.227,
       "git_output_bytes": 668
     },
     {
@@ -225,9 +225,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "unsupported_requirement_changed",
-      "elapsed_ms": 13.197,
+      "elapsed_ms": 11.293,
       "git_calls": 7,
-      "git_ms": 12.716,
+      "git_ms": 10.761,
       "git_output_bytes": 675
     },
     {
@@ -235,9 +235,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "unsupported_requirement_changed",
-      "elapsed_ms": 12.771,
+      "elapsed_ms": 10.537,
       "git_calls": 7,
-      "git_ms": 12.331,
+      "git_ms": 10.021,
       "git_output_bytes": 642
     },
     {
@@ -245,9 +245,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "dynamic_dependencies",
-      "elapsed_ms": 12.894,
+      "elapsed_ms": 12.228,
       "git_calls": 7,
-      "git_ms": 12.394,
+      "git_ms": 11.799,
       "git_output_bytes": 603
     },
     {
@@ -255,9 +255,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "duplicate_ambiguous",
-      "elapsed_ms": 11.716,
+      "elapsed_ms": 12.702,
       "git_calls": 7,
-      "git_ms": 11.207,
+      "git_ms": 12.244,
       "git_output_bytes": 612
     },
     {
@@ -265,9 +265,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 13.397,
+      "elapsed_ms": 11.537,
       "git_calls": 7,
-      "git_ms": 12.937,
+      "git_ms": 11.07,
       "git_output_bytes": 645
     },
     {
@@ -275,9 +275,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 12.539,
+      "elapsed_ms": 11.074,
       "git_calls": 7,
-      "git_ms": 11.955,
+      "git_ms": 10.444,
       "git_output_bytes": 645
     },
     {
@@ -285,9 +285,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 13.737,
+      "elapsed_ms": 12.287,
       "git_calls": 7,
-      "git_ms": 13.204,
+      "git_ms": 11.781,
       "git_output_bytes": 645
     },
     {
@@ -295,9 +295,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 14.863,
+      "elapsed_ms": 13.39,
       "git_calls": 7,
-      "git_ms": 14.345,
+      "git_ms": 12.939,
       "git_output_bytes": 863
     },
     {
@@ -305,9 +305,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 13.476,
+      "elapsed_ms": 10.99,
       "git_calls": 7,
-      "git_ms": 12.855,
+      "git_ms": 10.463,
       "git_output_bytes": 988
     },
     {
@@ -315,9 +315,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 12.819,
+      "elapsed_ms": 10.962,
       "git_calls": 7,
-      "git_ms": 12.332,
+      "git_ms": 10.488,
       "git_output_bytes": 645
     },
     {
@@ -325,9 +325,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 12.023,
+      "elapsed_ms": 10.898,
       "git_calls": 7,
-      "git_ms": 11.476,
+      "git_ms": 10.424,
       "git_output_bytes": 645
     },
     {
@@ -335,9 +335,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 14.806,
+      "elapsed_ms": 10.583,
       "git_calls": 7,
-      "git_ms": 14.3,
+      "git_ms": 10.14,
       "git_output_bytes": 645
     },
     {
@@ -345,9 +345,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 17.145,
+      "elapsed_ms": 12.146,
       "git_calls": 7,
-      "git_ms": 16.419,
+      "git_ms": 11.652,
       "git_output_bytes": 869
     },
     {
@@ -355,9 +355,9 @@
       "expected": "abstain",
       "observed": "abstain",
       "reason": "unsupported_requirement_changed",
-      "elapsed_ms": 11.951,
+      "elapsed_ms": 11.976,
       "git_calls": 7,
-      "git_ms": 11.466,
+      "git_ms": 11.499,
       "git_output_bytes": 649
     },
     {
@@ -365,9 +365,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 11.756,
+      "elapsed_ms": 11.833,
       "git_calls": 7,
-      "git_ms": 11.203,
+      "git_ms": 11.312,
       "git_output_bytes": 645
     },
     {
@@ -375,9 +375,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 11.748,
+      "elapsed_ms": 12.78,
       "git_calls": 7,
-      "git_ms": 11.282,
+      "git_ms": 12.058,
       "git_output_bytes": 876
     },
     {
@@ -385,9 +385,9 @@
       "expected": "risk",
       "observed": "risk",
       "reason": null,
-      "elapsed_ms": 12.508,
+      "elapsed_ms": 12.034,
       "git_calls": 7,
-      "git_ms": 11.933,
+      "git_ms": 11.547,
       "git_output_bytes": 645
     }
   ]

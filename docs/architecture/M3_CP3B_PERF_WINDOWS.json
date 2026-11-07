@@ -1,71 +1,71 @@
 {
   "schema_version": "m3.cp3b-perf.v0",
   "platform": "win32",
-  "check_and_binding_ms": 1469.311,
+  "check_and_binding_ms": 961.341,
   "match_runs": 10,
-  "match_p50_ms": 758.193,
-  "match_p95_ms": 1465.451,
+  "match_p50_ms": 620.9385,
+  "match_p95_ms": 742.902,
   "match_git_calls_total": 140,
   "match_artifact_bytes_total": 161090,
   "rows": [
     {
-      "elapsed_ms": 702.386,
+      "elapsed_ms": 592.684,
       "git_calls": 14,
-      "git_ms": 683.484,
+      "git_ms": 578.302,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 773.256,
+      "elapsed_ms": 597.965,
       "git_calls": 14,
-      "git_ms": 745.207,
+      "git_ms": 575.258,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 703.966,
+      "elapsed_ms": 602.908,
       "git_calls": 14,
-      "git_ms": 678.718,
+      "git_ms": 580.969,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 691.468,
+      "elapsed_ms": 742.902,
       "git_calls": 14,
-      "git_ms": 667.461,
+      "git_ms": 713.769,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 743.13,
+      "elapsed_ms": 655.515,
       "git_calls": 14,
-      "git_ms": 707.746,
+      "git_ms": 632.475,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 1100.1,
+      "elapsed_ms": 661.063,
       "git_calls": 14,
-      "git_ms": 1072.305,
+      "git_ms": 637.082,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 1465.451,
+      "elapsed_ms": 623.65,
       "git_calls": 14,
-      "git_ms": 1412.486,
+      "git_ms": 602.305,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 968.755,
+      "elapsed_ms": 723.086,
       "git_calls": 14,
-      "git_ms": 926.931,
+      "git_ms": 699.923,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 878.918,
+      "elapsed_ms": 618.227,
       "git_calls": 14,
-      "git_ms": 839.665,
+      "git_ms": 597.179,
       "artifact_bytes_read": 16109
     },
     {
-      "elapsed_ms": 687.28,
+      "elapsed_ms": 578.372,
       "git_calls": 14,
-      "git_ms": 662.082,
+      "git_ms": 556.709,
       "artifact_bytes_read": 16109
     }
   ]

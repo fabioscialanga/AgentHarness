@@ -34,10 +34,10 @@ Sul campione congelato: precisione e recall per `S` = 22/22 = **1,00**, F1 = **1
 
 | Ambiente | p50 detection | p95 detection | Esito |
 | --- | ---: | ---: | --- |
-| Windows, `.venv` locale | 337,859 ms | 405,420 ms | 37/37 |
-| Linux, Docker `python:3.11`, repository montato read-only | 13,397 ms | 21,831 ms | 37/37 |
+| Windows, `.venv` locale | 287,154 ms | 344,378 ms | 37/37 |
+| Linux, Docker `python:3.11`, repository montato read-only | 12,206 ms | 21,878 ms | 37/37 |
 
-Le latenze Windows sono un rischio per la futura soglia dell'hook; CP3-C dovrà misurare e ridurre il percorso effettivamente invocato allo Stop, senza aggirare i controlli di stato. Queste cifre non sono overhead M2-vs-M3 e non includono avvio del processo host. La strumentazione aggiunta in CP3-B ha misurato **253 chiamate Git** sulle 37 fixture (media 6,84; intervallo 2–7), **12,374 s** cumulati e **25.193 byte** restituiti su Windows; su Linux **0,555 s** cumulati e **24.120 byte**. Il reader ora arresta il processo quando l'output supera il limite, anziché attendere la terminazione. L'integrazione Codex, la deduplicazione M3, il benchmark end-to-end e la CI completa restano **NOT RUN** in CP3-A/CP3-B.
+Le latenze Windows sono un rischio per la futura soglia dell'hook; CP3-C dovrà misurare e ridurre il percorso effettivamente invocato allo Stop, senza aggirare i controlli di stato. Queste cifre non sono overhead M2-vs-M3 e non includono avvio del processo host. La strumentazione aggiunta in CP3-B ha misurato **253 chiamate Git** sulle 37 fixture (media 6,84; intervallo 2–7), **10,480 s** cumulati e **25.193 byte** restituiti su Windows; su Linux **0,473 s** cumulati e **24.120 byte**. Il reader ora arresta il processo quando l'output supera il limite, anziché attendere la terminazione. L'integrazione Codex, la deduplicazione M3, il benchmark end-to-end e la CI completa restano **NOT RUN** in CP3-A/CP3-B.
 
 ## Riproduzione
 
