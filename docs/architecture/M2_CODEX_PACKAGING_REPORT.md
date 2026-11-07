@@ -16,7 +16,7 @@ La TUI ha richiesto trust del progetto, poi revisione dell'hook con `/hooks`. Do
 
 ## Test e regressioni
 
-I test `test_codex_adapter.py` coprono preservazione di hook estranei, installazione/rimozione ripetute, consenso, JSON malformato e duplicato, modifica di un hook AgentHarness, concorrenza rilevata, errore di `os.replace`, quoting di percorsi con spazi, lock e symlink. Il set mirato Windows `test_codex_adapter.py`, `test_host_prototype.py`, `test_foundation.py` ha dato **45 passed in 1,76 s**, exit 0. La regressione core Linux dal commit finale verrà registrata qui dopo l'esecuzione. Benchmark/Stage 2: **NOT RUN**.
+I test `test_codex_adapter.py` coprono preservazione di hook estranei, installazione/rimozione ripetute, consenso, JSON malformato e duplicato, modifica di un hook AgentHarness, concorrenza rilevata, errore di `os.replace`, quoting e invocazione del comando con percorsi contenenti spazi, lock e symlink. Il set mirato Windows `test_codex_adapter.py`, `test_host_prototype.py`, `test_foundation.py` ha dato **46 passed in 2,77 s**, exit 0. La regressione core Linux dal commit finale verrà registrata qui dopo l'esecuzione. Benchmark/Stage 2: **NOT RUN**.
 
 ## Misure
 

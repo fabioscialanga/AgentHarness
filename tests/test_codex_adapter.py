@@ -1,10 +1,13 @@
 import json
 import os
+import subprocess
+import sys
 
 import pytest
 
 from agentharness.cli import main
 from agentharness.codex_adapter import AdapterError, MARKER, change_codex_hook
+from agentharness.config import set_enabled
 
 
 def _config(root):
@@ -125,3 +128,21 @@ def test_symlinked_config_rejected(tmp_path):
     with pytest.raises(AdapterError, match="symbolic link"):
         change_codex_hook(tmp_path, install=True)
     assert target.read_text(encoding="utf-8") == '{"hooks":{}}'
+
+
+def test_generated_command_runs_with_project_path_containing_spaces(tmp_path):
+    root = tmp_path / "project with spaces"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    target = root / "pyproject.toml"
+    target.write_text("[project]\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "pyproject.toml"], check=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-q", "-m", "baseline"], check=True)
+    target.write_text("[project]\n# changed\n", encoding="utf-8")
+    set_enabled(root, True)
+    change_codex_hook(root, install=True)
+    handler = json.loads(_config(root).read_text(encoding="utf-8"))["hooks"]["Stop"][0]["hooks"][0]
+    shell = ["powershell", "-NoProfile", "-Command", handler["commandWindows"]] if sys.platform == "win32" else ["sh", "-c", handler["command"]]
+    result = subprocess.run(shell, cwd=root, input='{"hook_event_name":"Stop","stop_hook_active":false}', text=True, capture_output=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert "systemMessage" in result.stdout

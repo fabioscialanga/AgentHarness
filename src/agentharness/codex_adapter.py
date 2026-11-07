@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import shlex
+import stat
 import sys
 import tempfile
 from pathlib import Path
@@ -131,6 +132,8 @@ def change_codex_hook(project: str | Path, *, install: bool, executable: str | P
         with tempfile.NamedTemporaryFile("wb", dir=codex, prefix=".hooks-", suffix=".tmp", delete=False) as handle:
             temporary = handle.name
             handle.write(replacement)
+        if original is not None:
+            os.chmod(temporary, stat.S_IMODE(path.stat().st_mode))
         # Optimistic check catches concurrent external edits before replacement.
         if _read(path)[1] != original:
             raise AdapterError("hooks.json changed concurrently")
