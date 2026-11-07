@@ -275,6 +275,10 @@ The two layers are complementary. One helps generate the work. This one helps de
 - `workflows/`, `checklists/`, `policies/`: task templates, review rules, testing rules, and guardrails
 - `.framework/`: generated metadata, risk matrices, required checks
 
+## Experimental Codex adapter (M2)
+
+Project-local `Stop` hook installation is opt-in and requires a separate trust review in Codex. See the [English setup guide](docs/CODEX_ADAPTER_EN.md) or [guida in italiano](docs/CODEX_ADAPTER_IT.md) for install, enable, disable, and uninstall steps. The adapter suggests checks; it does not run them automatically.
+
 ## Honest status
 
 A verification project should be the last to overclaim.

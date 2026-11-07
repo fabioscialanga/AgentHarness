@@ -41,6 +41,19 @@ def test_cli_requires_consent(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out.splitlines()[-1])["changed"]
 
 
+def test_missing_and_existing_empty_config(tmp_path):
+    path = _config(tmp_path)
+    assert not change_codex_hook(tmp_path, install=False)
+    assert not path.parent.exists()
+    assert change_codex_hook(tmp_path, install=True)
+    assert change_codex_hook(tmp_path, install=False)
+    assert json.loads(path.read_text(encoding="utf-8")) == {"hooks": {}}
+    path.write_text('{"description":"existing empty file","hooks":{}}', encoding="utf-8")
+    assert change_codex_hook(tmp_path, install=True)
+    assert change_codex_hook(tmp_path, install=False)
+    assert json.loads(path.read_text(encoding="utf-8")) == {"description": "existing empty file", "hooks": {}}
+
+
 @pytest.mark.parametrize("raw", [b"{bad", b'{"hooks":{},"hooks":{}}', b'{"hooks":[]}', b'{"hooks":{"Stop":{}}}'])
 def test_invalid_config_untouched(tmp_path, raw):
     path = _config(tmp_path)
@@ -60,6 +73,30 @@ def test_modified_owned_hook_not_removed(tmp_path):
     before = path.read_bytes()
     with pytest.raises(AdapterError):
         change_codex_hook(tmp_path, install=False)
+    assert path.read_bytes() == before
+
+
+def test_foreign_hook_with_same_label_is_not_removed(tmp_path):
+    path = _config(tmp_path)
+    path.parent.mkdir()
+    foreign = {"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "echo foreign", "statusMessage": MARKER}]}]}}
+    path.write_text(json.dumps(foreign), encoding="utf-8")
+    before = path.read_bytes()
+    with pytest.raises(AdapterError, match="modified"):
+        change_codex_hook(tmp_path, install=False)
+    with pytest.raises(AdapterError, match="modified"):
+        change_codex_hook(tmp_path, install=True)
+    assert path.read_bytes() == before
+
+
+def test_foreign_hook_with_agentharness_command_but_no_label_is_preserved(tmp_path):
+    change_codex_hook(tmp_path, install=True)
+    path = _config(tmp_path)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["hooks"]["Stop"][0]["hooks"][0]["statusMessage"] = "Other tool"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    before = path.read_bytes()
+    assert not change_codex_hook(tmp_path, install=False)
     assert path.read_bytes() == before
 
 

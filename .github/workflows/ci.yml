@@ -39,6 +39,8 @@ jobs:
             tests/test_claim_verify.py \
             tests/test_direct_check.py \
             tests/test_foundation.py \
+            tests/test_host_prototype.py \
+            tests/test_codex_adapter.py \
             tests/test_level2_reliability.py \
             tests/test_release_check.py \
             tests/test_repair_safety.py \
