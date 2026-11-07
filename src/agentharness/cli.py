@@ -495,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
 
         try:
             print(response_json(args.project, args.host, json.load(sys.stdin)))
-        except (ValueError, OSError):
+        except Exception:
             print("{}")  # Hook errors never block the host or continue a turn.
         return 0
 
