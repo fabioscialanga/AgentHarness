@@ -1,0 +1,280 @@
+{
+  "schema_version": "m3.cp3a-eval.v0",
+  "scope": "detection only; evidence matching NOT RUN",
+  "fixture_count": 37,
+  "matrix": {
+    "abstain": {
+      "abstain": 8
+    },
+    "no_change": {
+      "no_change": 7
+    },
+    "risk": {
+      "risk": 22
+    }
+  },
+  "correct": 37,
+  "p50_ms": 294.245,
+  "p95_ms": 346.803,
+  "rows": [
+    {
+      "id": "D01",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 325.735
+    },
+    {
+      "id": "D02",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 287.207
+    },
+    {
+      "id": "D03",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 321.071
+    },
+    {
+      "id": "D04",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 274.129
+    },
+    {
+      "id": "D05",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 263.913
+    },
+    {
+      "id": "D06",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 277.482
+    },
+    {
+      "id": "D07",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 294.245
+    },
+    {
+      "id": "D08",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 302.424
+    },
+    {
+      "id": "D09",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "toml_invalid",
+      "elapsed_ms": 290.691
+    },
+    {
+      "id": "D10",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 245.197
+    },
+    {
+      "id": "D11",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 276.273
+    },
+    {
+      "id": "D12",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "explicit_range_required",
+      "elapsed_ms": 74.709
+    },
+    {
+      "id": "D13",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 276.012
+    },
+    {
+      "id": "D14",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 293.461
+    },
+    {
+      "id": "D15",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 281.568
+    },
+    {
+      "id": "D16",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 272.902
+    },
+    {
+      "id": "D17",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 274.036
+    },
+    {
+      "id": "D18",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 274.26
+    },
+    {
+      "id": "D19",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 304.9
+    },
+    {
+      "id": "D20",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 287.767
+    },
+    {
+      "id": "D21",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 278.109
+    },
+    {
+      "id": "D22",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 298.394
+    },
+    {
+      "id": "D23",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "dynamic_dependencies",
+      "elapsed_ms": 304.555
+    },
+    {
+      "id": "D24",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "duplicate_ambiguous",
+      "elapsed_ms": 305.58
+    },
+    {
+      "id": "D25",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 288.207
+    },
+    {
+      "id": "D26",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 292.757
+    },
+    {
+      "id": "D27",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 341.651
+    },
+    {
+      "id": "D28",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 345.012
+    },
+    {
+      "id": "D29",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 346.803
+    },
+    {
+      "id": "D30",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 343.152
+    },
+    {
+      "id": "D31",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 301.512
+    },
+    {
+      "id": "D32",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 316.527
+    },
+    {
+      "id": "D33",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 404.628
+    },
+    {
+      "id": "D34",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 323.914
+    },
+    {
+      "id": "D35",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 322.592
+    },
+    {
+      "id": "D36",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 306.989
+    },
+    {
+      "id": "D37",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 295.78
+    }
+  ]
+}
