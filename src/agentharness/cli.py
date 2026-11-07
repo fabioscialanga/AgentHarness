@@ -59,6 +59,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional changed-file glob forbidden by the scope claim; repeat for multiple patterns",
     )
     check_parser.add_argument("--json", action="store_true", help="Print the check result as JSON")
+    check_parser.add_argument(
+        "--approve-dep-control", action="store_true",
+        help="Explicitly approve the fixed M3 DEP check mapping and write a state binding when possible",
+    )
 
     validate_parser = subparsers.add_parser(
         "validate",
@@ -557,23 +561,44 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check":
         from .direct_check import check_workspace
         try:
-            result = check_workspace(
-                args.workspace,
-                args.test_command,
-                run_id=args.run_id,
-                output_dir=args.output_dir,
-                working_dir=args.working_dir,
-                timeout_seconds=args.timeout,
-                allowed_paths=args.allowed_path,
-                forbidden_paths=args.forbidden_path,
-            )
+            if args.approve_dep_control:
+                from .dep_evidence import ApprovedDepControl, check_dep_workspace, local_environment_id
+                if args.output_dir or args.working_dir or args.allowed_path or args.forbidden_path:
+                    raise ValueError("M3 DEP mapping requires the default output, cwd and scope options")
+                control = ApprovedDepControl(args.workspace.resolve(), local_environment_id(), command=args.test_command)
+                bound = check_dep_workspace(args.workspace, control, run_id=args.run_id, timeout_seconds=args.timeout)
+                if bound.check is None:
+                    raise ValueError(f"M3 DEP check not run: {bound.reason}")
+                result = bound.check
+            else:
+                bound = None
+                result = check_workspace(
+                    args.workspace,
+                    args.test_command,
+                    run_id=args.run_id,
+                    output_dir=args.output_dir,
+                    working_dir=args.working_dir,
+                    timeout_seconds=args.timeout,
+                    allowed_paths=args.allowed_path,
+                    forbidden_paths=args.forbidden_path,
+                )
         except (ValueError, FileExistsError, OSError) as exc:
             if args.json:
                 print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
             else:
                 print(f"[INVALID] check: {exc}", file=sys.stderr)
             return 2
-        _print_check_result(result, args.json)
+        if bound is not None:
+            if args.json:
+                payload = result.to_dict()
+                payload["m3_binding_path"] = str(bound.binding_path) if bound.binding_path else None
+                payload["m3_binding_reason"] = bound.reason
+                print(json.dumps(payload, indent=2))
+            else:
+                _print_check_result(result, False)
+                print(f"M3 DEP binding: {bound.binding_path if bound.binding_path else 'unavailable (' + str(bound.reason) + ')'}")
+        else:
+            _print_check_result(result, args.json)
         return 0 if result.ok else 1
 
     if args.command == "validate":

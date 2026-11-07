@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import zipfile
 from pathlib import Path
 
@@ -151,8 +152,18 @@ def test_git_error_abstains(tmp_path: Path) -> None:
 
 def test_git_timeout_abstains(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = _repo(tmp_path)
-    def timeout(*_args: object, **_kwargs: object) -> None:
-        raise subprocess.TimeoutExpired("git", 1)
-    monkeypatch.setattr("agentharness.risk_dep.subprocess.run", timeout)
+    original = subprocess.Popen
+    def slow(_args: object, **kwargs: object):
+        return original([sys.executable, "-c", "import time; time.sleep(2)"], **kwargs)
+    monkeypatch.setattr("agentharness.risk_dep.subprocess.Popen", slow)
+    monkeypatch.setattr("agentharness.risk_dep.GIT_TIMEOUT_SECONDS", 0.03)
     result = detect_dependency_change(repo)
     assert result.status == "abstain" and result.reason == "git_timeout"
+
+
+def test_git_output_is_stopped_at_byte_limit(tmp_path: Path) -> None:
+    from agentharness import risk_dep
+    repo = _repo(tmp_path)
+    with pytest.raises(risk_dep._Abstain) as error:
+        risk_dep._git(repo, "show", "HEAD:pyproject.toml", max_bytes=4)
+    assert error.value.reason == "git_output_budget"

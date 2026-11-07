@@ -1,0 +1,72 @@
+{
+  "schema_version": "m3.cp3b-perf.v0",
+  "platform": "win32",
+  "check_and_binding_ms": 1469.311,
+  "match_runs": 10,
+  "match_p50_ms": 758.193,
+  "match_p95_ms": 1465.451,
+  "match_git_calls_total": 140,
+  "match_artifact_bytes_total": 161090,
+  "rows": [
+    {
+      "elapsed_ms": 702.386,
+      "git_calls": 14,
+      "git_ms": 683.484,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 773.256,
+      "git_calls": 14,
+      "git_ms": 745.207,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 703.966,
+      "git_calls": 14,
+      "git_ms": 678.718,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 691.468,
+      "git_calls": 14,
+      "git_ms": 667.461,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 743.13,
+      "git_calls": 14,
+      "git_ms": 707.746,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 1100.1,
+      "git_calls": 14,
+      "git_ms": 1072.305,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 1465.451,
+      "git_calls": 14,
+      "git_ms": 1412.486,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 968.755,
+      "git_calls": 14,
+      "git_ms": 926.931,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 878.918,
+      "git_calls": 14,
+      "git_ms": 839.665,
+      "artifact_bytes_read": 16109
+    },
+    {
+      "elapsed_ms": 687.28,
+      "git_calls": 14,
+      "git_ms": 662.082,
+      "artifact_bytes_read": 16109
+    }
+  ]
+}

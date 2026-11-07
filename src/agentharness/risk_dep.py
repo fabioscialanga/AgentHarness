@@ -11,7 +11,8 @@ import os
 import re
 import stat
 import subprocess
-import tempfile
+import threading
+import time
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -70,27 +71,62 @@ def _frame(tag: str, data: bytes) -> bytes:
 
 
 def _git(root: Path, *args: str, max_bytes: int = MAX_DIFF_BYTES) -> bytes:
-    """Read bounded Git output through a temporary file and a hard timeout."""
+    """Read Git output with a hard byte ceiling and monotonic timeout."""
     environment = os.environ.copy()
-    environment.update({"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
+    environment.update({"GIT_CONFIG_NOSYSTEM": "1",
                         "GIT_OPTIONAL_LOCKS": "0", "GIT_PAGER": "cat"})
-    with tempfile.TemporaryFile() as output:
+    try:
+        process = subprocess.Popen(
+            ["git", "-C", str(root), *args], stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, env=environment,
+        )
+    except OSError as exc:
+        raise _Abstain("git_unavailable") from exc
+    chunks: list[bytes] = []
+    completed = threading.Event()
+    overflow = threading.Event()
+
+    def drain() -> None:
+        total = 0
         try:
-            completed = subprocess.run(
-                ["git", "-C", str(root), *args], stdout=output,
-                stderr=subprocess.DEVNULL, timeout=GIT_TIMEOUT_SECONDS,
-                check=False, env=environment,
-            )
+            assert process.stdout is not None
+            while chunk := process.stdout.read(64 * 1024):
+                total += len(chunk)
+                if total > max_bytes:
+                    overflow.set()
+                    break
+                chunks.append(chunk)
+        finally:
+            completed.set()
+
+    reader = threading.Thread(target=drain, daemon=True)
+    reader.start()
+    deadline = time.monotonic() + GIT_TIMEOUT_SECONDS
+    try:
+        while not completed.wait(0.01):
+            if time.monotonic() >= deadline:
+                raise _Abstain("git_timeout")
+        if overflow.is_set():
+            raise _Abstain("git_output_budget")
+        remaining = max(0.001, deadline - time.monotonic())
+        try:
+            code = process.wait(timeout=remaining)
         except subprocess.TimeoutExpired as exc:
             raise _Abstain("git_timeout") from exc
-        except OSError as exc:
-            raise _Abstain("git_unavailable") from exc
-        if completed.returncode != 0:
+        if code != 0:
             raise _Abstain("git_invalid")
-        if output.tell() > max_bytes:
-            raise _Abstain("git_output_budget")
-        output.seek(0)
-        return output.read(max_bytes + 1)
+        return b"".join(chunks)
+    finally:
+        if process.poll() is None:
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+        process.wait()
+        reader.join(timeout=0.1)
+        if process.stdout is not None:
+            process.stdout.close()
+        reader.join(timeout=0.1)
 
 
 def _safe_file(root: Path) -> bytes | None:

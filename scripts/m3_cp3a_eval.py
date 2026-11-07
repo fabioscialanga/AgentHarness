@@ -18,7 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DATASET = ROOT / "benchmarks" / "m3_dep"
 EXPECTED = {"S": "risk", "N": "no_change", "A": "abstain"}
 sys.path.insert(0, str(ROOT / "src" / "agentharness"))
-from risk_dep import detect_dependency_change  # noqa: E402 - pure module, no package runtime needed
+import risk_dep  # noqa: E402 - pure module, no package runtime needed
+
+detect_dependency_change = risk_dep.detect_dependency_change
 
 
 def evaluate() -> dict:
@@ -35,13 +37,35 @@ def evaluate() -> dict:
             kwargs = {}
             if scenario["state_kind"] == "committed":
                 kwargs = {"base_commit": scenario["base_commit"], "target_commit": scenario["target_commit"]}
+            git_calls = 0
+            git_ms = 0.0
+            git_output_bytes = 0
+            original_git = risk_dep._git
+
+            def measured_git(*args, **options):
+                nonlocal git_calls, git_ms, git_output_bytes
+                began = time.perf_counter_ns()
+                try:
+                    output = original_git(*args, **options)
+                    git_output_bytes += len(output)
+                    return output
+                finally:
+                    git_calls += 1
+                    git_ms += (time.perf_counter_ns() - began) / 1_000_000
+
+            risk_dep._git = measured_git
             started = time.perf_counter_ns()
-            detected = detect_dependency_change(repo, **kwargs)
+            try:
+                detected = detect_dependency_change(repo, **kwargs)
+            finally:
+                risk_dep._git = original_git
             elapsed_ms = (time.perf_counter_ns() - started) / 1_000_000
             expected = EXPECTED[scenario["risk_label"]]
             matrix[expected][detected.status] += 1
             rows.append({"id": scenario["id"], "expected": expected, "observed": detected.status,
-                         "reason": detected.reason, "elapsed_ms": round(elapsed_ms, 3)})
+                         "reason": detected.reason, "elapsed_ms": round(elapsed_ms, 3),
+                         "git_calls": git_calls, "git_ms": round(git_ms, 3),
+                         "git_output_bytes": git_output_bytes})
     durations = sorted(row["elapsed_ms"] for row in rows)
     result = {
         "schema_version": "m3.cp3a-eval.v0",
@@ -51,6 +75,9 @@ def evaluate() -> dict:
         "correct": sum(row["expected"] == row["observed"] for row in rows),
         "p50_ms": durations[len(durations) // 2],
         "p95_ms": durations[max(0, (95 * len(durations) + 99) // 100 - 1)],
+        "git_calls_total": sum(row["git_calls"] for row in rows),
+        "git_ms_total": round(sum(row["git_ms"] for row in rows), 3),
+        "git_output_bytes_total": sum(row["git_output_bytes"] for row in rows),
         "rows": rows,
     }
     return result
