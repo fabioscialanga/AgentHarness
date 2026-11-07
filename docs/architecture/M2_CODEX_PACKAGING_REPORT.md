@@ -18,6 +18,8 @@ La TUI ha richiesto trust del progetto, poi revisione dell'hook con `/hooks`. Do
 
 I test `test_codex_adapter.py` coprono preservazione di hook estranei, installazione/rimozione ripetute, consenso, JSON malformato e duplicato, modifica di un hook AgentHarness, concorrenza rilevata, errore di `os.replace`, quoting e invocazione del comando con percorsi contenenti spazi, lock e symlink. Il set mirato Windows `test_codex_adapter.py`, `test_host_prototype.py`, `test_foundation.py` ha dato **46 passed in 2,77 s**, exit 0. La regressione core in un clone Git pulito Linux `python:3.12`, dal commit `064430f` con dipendenze installate, sui nove moduli core della CI più `test_host_prototype.py` e `test_codex_adapter.py`, ha dato **134 passed in 26,67 s**, exit 0. Benchmark/Stage 2: **NOT RUN**.
 
+Verifica finale dopo l'aggiunta dei test di ownership e dei casi di configurazione: 49 test mirati passati nel virtualenv Windows. La selezione core e M2 della nuova matrice CI, eseguita in cloni Git puliti Linux con dipendenze installate, ha dato **137 passed** su Python 3.11 (20,21 s), **137 passed** su Python 3.12 (15,59 s) e **137 passed** su Python 3.13 (15,48 s), tutti con exit 0. Questi sono risultati locali; l'esito di GitHub Actions sulla PR va registrato separatamente.
+
 ## Misure
 
 Nel virtualenv Windows, 30 invocazioni ciascuna, payload sintetico `{"hook_event_name":"Stop","stop_hook_active":false}`:
