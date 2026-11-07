@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from .direct_check import DEFAULT_IGNORED_NAMES, DirectCheckResult, check_workspace
+from .reexecution import prepare_execution_tokens
 from .risk_dep import DetectionResult, detect_dependency_change
 
 
@@ -66,8 +67,32 @@ class ApprovedDepControl:
             raise ValueError("environment_id is required")
 
 
-def local_environment_id() -> str:
-    return f"python:{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}|platform:{sys.platform}"
+def _effective_interpreter() -> Path | None:
+    tokens = prepare_execution_tokens(["python", "-m", "pytest"])
+    path = Path(tokens[0]) if tokens else None
+    return path.absolute() if path is not None and path.is_absolute() and path.is_file() else None
+
+
+def local_environment_id(executable: str | Path | None = None) -> str | None:
+    """Identify the executable actually selected by the existing reexecutor.
+
+    A relative PATH fallback cannot be attested and returns None. The digest
+    binds invocation path and executable bytes, including distinct venv paths.
+    """
+    path = Path(executable) if executable is not None else _effective_interpreter()
+    if path is None or not path.is_absolute() or not path.is_file():
+        return None
+    try:
+        if path.stat().st_size > 32 * 1024 * 1024:
+            return None
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            while block := handle.read(64 * 1024):
+                digest.update(block)
+        identity = f"m3-python-v0\0{os.path.normcase(str(path.absolute()))}\0{digest.hexdigest()}"
+        return "m3-python-v0:" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
+    except OSError:
+        return None
 
 
 @dataclass(frozen=True)
@@ -312,6 +337,14 @@ def _binding_payload(project: Path, detection: DetectionResult, control: Approve
     artifacts = _artifact_map(check.artifact_dir, project, budget)
     report = _safe_json(check.report_path, check.artifact_dir, budget)
     _, execution = _execution(report)
+    reported_executable = execution.get("executable_path")
+    effective = _effective_interpreter()
+    if effective is None or not isinstance(reported_executable, str) or not Path(reported_executable).is_absolute():
+        raise _Unknown("environment_unverified")
+    if os.path.normcase(os.path.abspath(reported_executable)) != os.path.normcase(str(effective)):
+        raise _Unknown("environment_unverified")
+    if local_environment_id(effective) != control.environment_id:
+        raise _Unknown("environment_unverified")
     state = detection.state
     assert state is not None
     return {
@@ -334,6 +367,8 @@ def check_dep_workspace(project: str | Path, control: ApprovedDepControl, *, run
     """Run the existing explicit check and bind it only if three snapshots agree."""
     root = Path(project).resolve()
     control.validate(root)
+    if local_environment_id() != control.environment_id:
+        return BoundCheckResult(None, None, "environment_unverified")
     before = detect_dependency_change(root)
     if before.status != "risk":
         return BoundCheckResult(None, None, f"detection:{before.status}:{before.reason or 'none'}")
@@ -439,6 +474,14 @@ def _candidate(run_dir: Path, project: Path, detection: DetectionResult,
     claim, execution = _execution(report)
     if declared != control.command or execution.get("command") != control.command:
         return "unknown", "irrelevant"
+    reported_executable = execution.get("executable_path")
+    effective = _effective_interpreter()
+    if effective is None or not isinstance(reported_executable, str) or not Path(reported_executable).is_absolute():
+        return "unknown", "environment_unverified"
+    if os.path.normcase(os.path.abspath(reported_executable)) != os.path.normcase(str(effective)):
+        return "unknown", "environment_unverified"
+    if local_environment_id(effective) != control.environment_id:
+        return "unknown", "environment_unverified"
     if not execution.get("completed") or execution.get("timed_out") or claim.get("truth_source") != "reexecuted":
         return "unknown", "unverified"
     _report_outputs(execution, run_dir, budget)
@@ -465,6 +508,8 @@ def match_dep_evidence(project: str | Path, detection: DetectionResult,
         raise ValueError("matching requires a detected DEP risk")
     root = Path(project).resolve()
     control.validate(root)
+    if local_environment_id() != control.environment_id:
+        return EvidenceDecision("unknown", "environment_unverified")
     clock = now or datetime.now(timezone.utc)
     if clock.tzinfo is None:
         raise ValueError("now must include a timezone")
@@ -509,6 +554,8 @@ def match_dep_evidence(project: str | Path, detection: DetectionResult,
         final = detect_dependency_change(root)
         if final.status != "risk" or final.state != detection.state:
             return EvidenceDecision("unknown", "state_changed")
+        if local_environment_id() != control.environment_id:
+            return EvidenceDecision("unknown", "environment_unverified")
         return result
     except _Unknown as exc:
         return EvidenceDecision("unknown", exc.reason)

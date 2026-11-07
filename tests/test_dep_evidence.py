@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import venv
 import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -159,6 +160,35 @@ def test_cli_plain_check_keeps_m2_output(project: tuple[Path, ApprovedDepControl
     assert code == 0 and payload["ok"] is True
     assert "m3_binding_path" not in payload
     assert not (repo / ".agentharness/runs/plain/m3-binding-v0.json").exists()
+
+
+def test_two_interpreters_bind_only_the_executed_one(project: tuple[Path, ApprovedDepControl],
+                                                      tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo, control = project
+    other = tmp_path / "other-python"
+    venv.EnvBuilder(with_pip=False).create(other)
+    other_python = other / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    assert other_python.is_file()
+    other_id = local_environment_id(other_python)
+    assert other_id and other_id != control.environment_id
+    monkeypatch.setenv("PATH", str(other_python.parent) + os.pathsep + os.environ["PATH"])
+    bound = check_dep_workspace(repo, control, run_id="two-interpreters")
+    assert bound.binding_path is not None and bound.check.ok
+    report = json.loads(bound.check.report_path.read_text(encoding="utf-8"))
+    execution = report["results"][0]["audit"]["commands"][0]["reexecution"]
+    assert Path(execution["executable_path"]) == Path(sys.executable).absolute()
+    assert match_dep_evidence(repo, detect_dependency_change(repo), control).status == "covered"
+    wrong = ApprovedDepControl(repo, other_id)
+    decision = match_dep_evidence(repo, detect_dependency_change(repo), wrong)
+    assert decision.status == "unknown" and decision.reason == "environment_unverified"
+
+
+def test_unverifiable_interpreter_does_not_bind(project: tuple[Path, ApprovedDepControl],
+                                                monkeypatch: pytest.MonkeyPatch) -> None:
+    repo, control = project
+    monkeypatch.setattr("agentharness.dep_evidence.prepare_execution_tokens", lambda _tokens: ["python", "-m", "pytest"])
+    bound = check_dep_workspace(repo, control, run_id="unverifiable")
+    assert bound.check is None and bound.binding_path is None and bound.reason == "environment_unverified"
 
 
 def test_unbound_green_report_is_unknown(project: tuple[Path, ApprovedDepControl]) -> None:
