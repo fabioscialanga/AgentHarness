@@ -92,6 +92,8 @@ def _record_once(root: Path, fingerprint: str) -> bool:
     state = root / ".agentharness" / "host-prototype.json"
     lock = root / ".agentharness" / ".host-prototype.lock"
     try:
+        if state.parent.is_symlink():
+            return False
         state.parent.mkdir(parents=True, exist_ok=True)
         try:
             lock.mkdir()

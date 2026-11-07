@@ -99,6 +99,17 @@ def test_state_write_failure_is_silent(tmp_path, monkeypatch):
     assert handle_stop(tmp_path, "codex", STOP, discover=lambda root: ("pyproject.toml",)) == {}
 
 
+def test_symlinked_watched_file_is_silent(tmp_path):
+    set_enabled(tmp_path, True)
+    outside = tmp_path.parent / (tmp_path.name + "-outside")
+    outside.write_text("content", encoding="utf-8")
+    try:
+        (tmp_path / "pyproject.toml").symlink_to(outside)
+    except OSError:
+        pytest.skip("symlinks unavailable")
+    assert handle_stop(tmp_path, "codex", STOP, discover=lambda root: ("pyproject.toml",)) == {}
+
+
 def test_git_timeout_is_silent(tmp_path, monkeypatch):
     set_enabled(tmp_path, True)
     def timeout(*args, **kwargs):
