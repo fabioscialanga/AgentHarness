@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/agentharness/m3-binding-v0.schema.json",
+  "title": "AgentHarness M3 local evidence binding v0",
+  "description": "Proposed sidecar; does not change the meaning of M1/M2 artifacts. Benchmark-oracle provenance is not production attestation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provenance", "risk_id", "rule_id", "run_id", "state", "scope", "check", "snapshot_sha256", "artifact_sha256", "captured_at", "evaluated_at", "reexecution_finished_at"],
+  "properties": {
+    "schema_version": {"const": "m3.binding.v0"},
+    "provenance": {"enum": ["local-capture", "benchmark-oracle"]},
+    "risk_id": {"type": "string", "minLength": 1},
+    "rule_id": {"const": "DEP-PEP621-V0"},
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "state": {
+      "type": "object", "additionalProperties": false,
+      "required": ["base_commit", "target_commit", "diff_sha256", "state_id", "kind"],
+      "properties": {
+        "base_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "target_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "diff_sha256": {"$ref": "#/$defs/sha256"},
+        "state_id": {"$ref": "#/$defs/sha256"},
+        "kind": {"enum": ["working-tree", "committed"]}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["risk_paths", "evidence_paths"],
+      "properties": {
+        "risk_paths": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "evidence_paths": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapping_id", "command", "cwd", "environment_id"],
+      "properties": {
+        "mapping_id": {"const": "DEP-PEP621-PYTEST-V0"},
+        "command": {"type": "string", "minLength": 1},
+        "cwd": {"type": "string", "minLength": 1},
+        "environment_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "snapshot_sha256": {"$ref": "#/$defs/sha256"},
+    "artifact_sha256": {
+      "type": "object", "minProperties": 3,
+      "patternProperties": {"^\\.agentharness/runs/[A-Za-z0-9._-]+/": {"$ref": "#/$defs/sha256"}},
+      "additionalProperties": false
+    },
+    "captured_at": {"type": "string", "format": "date-time"},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "reexecution_finished_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

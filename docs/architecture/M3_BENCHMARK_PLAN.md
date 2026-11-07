@@ -1,8 +1,8 @@
 # M3 Checkpoint 1 — Piano di benchmark
 
-**Stato:** piano e label pre-registrate; nessun benchmark M3 è stato eseguito e nessun test viene avviato automaticamente. Le fixture saranno repository sintetici locali con commit/diff e artifact `check`/`verify-run` già preparati da esecuzioni **esplicitamente richieste** durante la costruzione del dataset. Questa revisione congela la **specifica e le label**; i byte delle fixture non esistono ancora e dovranno essere congelati con SHA-256 in un manifest approvato **prima di scrivere il motore**. Le etichette sono definite da due revisori indipendenti prima di valutare il motore; i disaccordi sono adjudicati e conservati nel ledger.
+**Stato:** piano e label pre-registrate; il dataset DEP è stato preparato nel Checkpoint 2, senza eseguire il motore M3. Le fixture sono repository sintetici con commit/diff e artifact `check`/`verify-run` preparati da esecuzioni **esplicitamente richieste** durante la costruzione. I byte delle 37 fixture DEP, il ledger e i contratti sono congelati da `benchmarks/m3_dep/MANIFEST.sha256` **prima di scrivere il motore**. Le label D01–D36 restano quelle preregistrate; D37 aggiunge il caso di timestamp futuro entro la tolleranza. La revisione indipendente del dataset resta il prossimo checkpoint.
 
-## Dataset iniziale: 60 scenari, di cui 36 DEP
+## Dataset iniziale: 61 scenari, di cui 37 DEP
 
 Legenda: `S` = rischio concreto da segnalare, `N` = nessun rischio secondo la regola, `A` = ambiguo/astensione. Evidenza `C` = covered, `U` = uncovered, `F` = failed, `?` = unknown, `—` = non applicabile. «Corrente» significa stesso commit, diff, scope e ambiente ammissibile del contratto; «vecchio» significa binding o tempo non più validi. L'azione attesa è: `S/U` suggerire verifica; `S/F` segnalare fallimento con artifact; `S/C` mostrare stato solo su richiesta; `S/?` chiedere nuova prova o chiarimento; `N` silenzio; `A` astenersi senza inventare un risultato.
 
@@ -43,7 +43,8 @@ Legenda: `S` = rischio concreto da segnalare, `N` = nessun rischio secondo la re
 | D33 | DEP | Bump valido; riesecuzione corrente in timeout | S | ? | Timeout non è fallimento attestato né successo. |
 | D34 | DEP | Versione pre-release o epoch modificata | A | ? | Versione fuori dal sottoinsieme. |
 | D35 | DEP | Timestamp di riesecuzione futuro di oltre 5 minuti | S | ? | Clock/payload non affidabile. |
-| D36 | DEP | Bump valido; `check` corrente negativo e altra verifica pertinente positiva ma diversa | S | F | Il controllo richiesto fallito non è cancellato dall'altro. |
+| D36 | DEP | Bump valido; `check` richiesto negativo e altro comando non richiesto positivo | S | F | Il controllo richiesto fallito non è cancellato dall'altro. |
+| D37 | DEP | Bump valido; riesecuzione terminata 2 minuti dopo il clock di valutazione, entro tolleranza | S | C | Skew futuro ≤5 minuti, senza estendere la scadenza di 24 ore. |
 | C01 | CIR | Trigger workflow di release ampliato, nessun artifact | S | U | Nuovo percorso di pubblicazione. |
 | C02 | CIR | Step CI cambiato; job corrente riuscito con commit e log verificabili | S | C | Controllo pertinente sul target esatto. |
 | C03 | CIR | Solo commenti YAML | N | — | Nessun cambio materiale. |
@@ -80,4 +81,4 @@ La fixture C02 richiede un adapter di importazione di evidenza CI **progettato e
 5. **Confronto verticale:** per le fixture DEP supportate, eseguire task appaiati con Codex solo e Codex+AgentHarness, stesso modello/versione, prompt, budget e stato iniziale, ordine randomizzato. Revisori ciechi giudicano: rischio individuato, correttezza dello stato dell'evidenza, falsa dichiarazione di test passati, verifiche richieste dall'utente, tempo e token. Almeno tre repliche per fixture prima di stimare intervalli di confidenza; il piano non presume un vantaggio. La label `covered` valuta **solo la copertura del controllo pertinente**, mai la sicurezza generale della dipendenza.
 6. **Gate MVP proposto:** nessun falso `covered`, regressioni M1/M2 nulle e nessun comando automatico. Sui casi DEP determinati, precisione ≥0,90 e recall ≥0,80; riportare comunque gli intervalli di confidenza, perché il campione è piccolo. Rispetto a M2 sulla stessa macchina, percorso disabled senza nuove chiamate Git e p95 non oltre +10%; percorso enabled senza rischio con p95 incrementale ≤50 ms. Al massimo un nuovo messaggio per rischio e `state_id`; 0 chiamate LLM AgentHarness. Le soglie saranno confermate o corrette dalla revisione indipendente **prima** del codice. Se DEP non supera il gate, correggere regole o binding; non aggiungere categorie per compensare.
 
-**Risultati M3:** **NOT RUN**. Questo documento definisce soltanto dataset, ground truth e misure da sottoporre a revisione indipendente.
+**Risultati del motore M3:** **NOT RUN**. È stata eseguita soltanto la preparazione esplicita delle fixture e la validazione di integrità del dataset; precisione, recall e overhead del motore restano da misurare dopo la revisione indipendente.
