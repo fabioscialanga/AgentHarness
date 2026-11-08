@@ -508,6 +508,9 @@ def match_dep_evidence(project: str | Path, detection: DetectionResult,
         raise ValueError("matching requires a detected DEP risk")
     root = Path(project).resolve()
     control.validate(root)
+    if (detection.captured_root != root or detection.captured_monotonic is None
+            or not 0 <= time.monotonic() - detection.captured_monotonic <= 2.0):
+        return EvidenceDecision("unknown", "capture_unverified")
     if local_environment_id() != control.environment_id:
         return EvidenceDecision("unknown", "environment_unverified")
     clock = now or datetime.now(timezone.utc)
@@ -515,15 +518,15 @@ def match_dep_evidence(project: str | Path, detection: DetectionResult,
         raise ValueError("now must include a timezone")
     budget = _ReadBudget()
     try:
-        current = detect_dependency_change(root)
-        if current.status != "risk" or current.state != detection.state:
-            return EvidenceDecision("unknown", "state_changed")
+        # The caller's detection is the initial capture. A final independent
+        # capture below rejects changes while artifacts are being inspected.
         runs = root / ".agentharness" / "runs"
         if not runs.exists():
-            return EvidenceDecision("uncovered", "absent")
-        if runs.is_symlink() or not runs.is_dir():
+            entries = []
+        elif runs.is_symlink() or not runs.is_dir():
             raise _Unknown("unsafe_path")
-        entries = sorted(runs.iterdir())
+        else:
+            entries = sorted(runs.iterdir())
         if len(entries) > MAX_RUN_DIRS:
             raise _Unknown("budget")
         candidates: list[tuple[str, str, str | None]] = []

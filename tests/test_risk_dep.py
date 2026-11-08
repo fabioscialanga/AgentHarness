@@ -167,3 +167,22 @@ def test_git_output_is_stopped_at_byte_limit(tmp_path: Path) -> None:
     with pytest.raises(risk_dep._Abstain) as error:
         risk_dep._git(repo, "show", "HEAD:pyproject.toml", max_bytes=4)
     assert error.value.reason == "git_output_budget"
+
+
+def test_combined_rev_parse_preserves_state_id(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from agentharness import risk_dep
+    repo = _repo(tmp_path)
+    path = repo / "pyproject.toml"
+    path.write_text(path.read_text(encoding="utf-8").replace("a>=1", "a>=2"), encoding="utf-8")
+    original = risk_dep._git
+    combined = detect_dependency_change(repo)
+
+    def separate(root: Path, *args: str, **kwargs: object) -> bytes:
+        if args == ("rev-parse", "--show-toplevel", "HEAD"):
+            return original(root, "rev-parse", "--show-toplevel") + original(root, "rev-parse", "HEAD")
+        return original(root, *args, **kwargs)
+
+    monkeypatch.setattr(risk_dep, "_git", separate)
+    legacy_output = detect_dependency_change(repo)
+    assert combined.status == legacy_output.status
+    assert combined.state == legacy_output.state

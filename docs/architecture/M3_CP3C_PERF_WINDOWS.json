@@ -1,0 +1,198 @@
+{
+  "schema_version": "m3.cp3c-perf.v0",
+  "platform": "win32",
+  "python": "3.12.10",
+  "runs": 30,
+  "scenario": "explicit risk with valid evidence",
+  "m2_disabled_subprocess_p50_ms": 121.715,
+  "m2_disabled_subprocess_p95_ms": 133.726,
+  "p50_total_ms": 560.601,
+  "p95_total_ms": 685.841,
+  "p50_detection_ms": 262.997,
+  "p50_git_ms": 542.463,
+  "git_calls_per_run": [
+    12
+  ],
+  "rows": [
+    {
+      "total_ms": 581.895,
+      "detection_ms": 267.816,
+      "git_calls": 12,
+      "git_ms": 555.27
+    },
+    {
+      "total_ms": 558.693,
+      "detection_ms": 267.849,
+      "git_calls": 12,
+      "git_ms": 538.891
+    },
+    {
+      "total_ms": 471.042,
+      "detection_ms": 219.254,
+      "git_calls": 12,
+      "git_ms": 454.425
+    },
+    {
+      "total_ms": 493.875,
+      "detection_ms": 235.323,
+      "git_calls": 12,
+      "git_ms": 477.825
+    },
+    {
+      "total_ms": 564.673,
+      "detection_ms": 254.202,
+      "git_calls": 12,
+      "git_ms": 544.795
+    },
+    {
+      "total_ms": 554.719,
+      "detection_ms": 251.202,
+      "git_calls": 12,
+      "git_ms": 533.137
+    },
+    {
+      "total_ms": 569.9,
+      "detection_ms": 261.853,
+      "git_calls": 12,
+      "git_ms": 547.361
+    },
+    {
+      "total_ms": 651.23,
+      "detection_ms": 285.247,
+      "git_calls": 12,
+      "git_ms": 619.789
+    },
+    {
+      "total_ms": 685.841,
+      "detection_ms": 332.013,
+      "git_calls": 12,
+      "git_ms": 660.008
+    },
+    {
+      "total_ms": 726.601,
+      "detection_ms": 309.103,
+      "git_calls": 12,
+      "git_ms": 700.421
+    },
+    {
+      "total_ms": 643.193,
+      "detection_ms": 304.612,
+      "git_calls": 12,
+      "git_ms": 622.111
+    },
+    {
+      "total_ms": 636.623,
+      "detection_ms": 340.389,
+      "git_calls": 12,
+      "git_ms": 617.47
+    },
+    {
+      "total_ms": 578.044,
+      "detection_ms": 257.951,
+      "git_calls": 12,
+      "git_ms": 553.792
+    },
+    {
+      "total_ms": 521.57,
+      "detection_ms": 236.648,
+      "git_calls": 12,
+      "git_ms": 504.326
+    },
+    {
+      "total_ms": 474.447,
+      "detection_ms": 239.929,
+      "git_calls": 12,
+      "git_ms": 457.155
+    },
+    {
+      "total_ms": 503.588,
+      "detection_ms": 245.05,
+      "git_calls": 12,
+      "git_ms": 477.448
+    },
+    {
+      "total_ms": 533.455,
+      "detection_ms": 259.163,
+      "git_calls": 12,
+      "git_ms": 507.995
+    },
+    {
+      "total_ms": 515.847,
+      "detection_ms": 258.92,
+      "git_calls": 12,
+      "git_ms": 496.727
+    },
+    {
+      "total_ms": 535.479,
+      "detection_ms": 264.141,
+      "git_calls": 12,
+      "git_ms": 514.996
+    },
+    {
+      "total_ms": 601.245,
+      "detection_ms": 302.166,
+      "git_calls": 12,
+      "git_ms": 577.365
+    },
+    {
+      "total_ms": 600.522,
+      "detection_ms": 321.101,
+      "git_calls": 12,
+      "git_ms": 584.834
+    },
+    {
+      "total_ms": 562.39,
+      "detection_ms": 275.204,
+      "git_calls": 12,
+      "git_ms": 543.48
+    },
+    {
+      "total_ms": 547.873,
+      "detection_ms": 264.963,
+      "git_calls": 12,
+      "git_ms": 529.827
+    },
+    {
+      "total_ms": 491.681,
+      "detection_ms": 234.804,
+      "git_calls": 12,
+      "git_ms": 476.583
+    },
+    {
+      "total_ms": 510.071,
+      "detection_ms": 251.529,
+      "git_calls": 12,
+      "git_ms": 492.674
+    },
+    {
+      "total_ms": 530.019,
+      "detection_ms": 247.001,
+      "git_calls": 12,
+      "git_ms": 513.837
+    },
+    {
+      "total_ms": 558.812,
+      "detection_ms": 259.459,
+      "git_calls": 12,
+      "git_ms": 541.446
+    },
+    {
+      "total_ms": 652.979,
+      "detection_ms": 310.735,
+      "git_calls": 12,
+      "git_ms": 627.628
+    },
+    {
+      "total_ms": 687.492,
+      "detection_ms": 340.661,
+      "git_calls": 12,
+      "git_ms": 664.292
+    },
+    {
+      "total_ms": 651.71,
+      "detection_ms": 318.317,
+      "git_calls": 12,
+      "git_ms": 628.051
+    }
+  ]
+}

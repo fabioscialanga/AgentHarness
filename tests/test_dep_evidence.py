@@ -8,6 +8,7 @@ import subprocess
 import sys
 import venv
 import zipfile
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -51,6 +52,53 @@ def test_missing_evidence_is_uncovered(project: tuple[Path, ApprovedDepControl])
     repo, control = project
     detected = detect_dependency_change(repo)
     assert match_dep_evidence(repo, detected, control).status == "uncovered"
+
+
+def test_matching_reuses_initial_capture_and_checks_final_state(project: tuple[Path, ApprovedDepControl],
+                                                                 monkeypatch: pytest.MonkeyPatch) -> None:
+    from agentharness import risk_dep
+    repo, control = project
+    detected = detect_dependency_change(repo)
+    original = risk_dep._git
+    calls = []
+
+    def counted(*args, **kwargs):
+        calls.append(args)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(risk_dep, "_git", counted)
+    assert match_dep_evidence(repo, detected, control).status == "uncovered"
+    assert len(calls) == 6  # one final capture; combined rev-parse
+
+
+def test_missing_evidence_race_never_returns_uncovered(project: tuple[Path, ApprovedDepControl],
+                                                        monkeypatch: pytest.MonkeyPatch) -> None:
+    from agentharness import risk_dep
+    repo, control = project
+    detected = detect_dependency_change(repo)
+    original = risk_dep._git
+    changed = False
+
+    def change_before_final(*args, **kwargs):
+        nonlocal changed
+        if not changed:
+            changed = True
+            path = repo / "pyproject.toml"
+            path.write_text(path.read_text(encoding="utf-8").replace("a>=2", "a>=3"), encoding="utf-8")
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(risk_dep, "_git", change_before_final)
+    decision = match_dep_evidence(repo, detected, control)
+    assert decision.status == "unknown" and decision.reason == "state_changed"
+
+
+def test_old_or_foreign_capture_is_unverified(project: tuple[Path, ApprovedDepControl]) -> None:
+    repo, control = project
+    detected = detect_dependency_change(repo)
+    for altered in (replace(detected, captured_monotonic=0.0),
+                    replace(detected, captured_root=repo.parent)):
+        decision = match_dep_evidence(repo, altered, control)
+        assert decision.status == "unknown" and decision.reason == "capture_unverified"
 
 
 def test_explicit_check_binds_and_covers(project: tuple[Path, ApprovedDepControl]) -> None:

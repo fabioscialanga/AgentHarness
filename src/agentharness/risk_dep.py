@@ -60,6 +60,8 @@ class DetectionResult:
     state: StateIdentity | None = None
     candidate: RiskCandidate | None = None
     reason: str | None = None
+    captured_root: Path | None = None
+    captured_monotonic: float | None = None
 
 
 def _sha(data: bytes) -> str:
@@ -281,10 +283,14 @@ def _commit_file(root: Path, commit: str) -> bytes | None:
 
 
 def _state(root: Path, base_commit: str | None, target_commit: str | None) -> tuple[StateIdentity, bytes | None, bytes | None, bool]:
-    top = _git(root, "rev-parse", "--show-toplevel", max_bytes=4096).decode("utf-8", "strict").strip()
+    revision = _git(root, "rev-parse", "--show-toplevel", "HEAD", max_bytes=4160).decode("utf-8", "strict").splitlines()
+    if len(revision) != 2:
+        raise _Abstain("git_invalid")
+    top, head = revision
+    top = top.strip()
     if Path(top).resolve() != root:
         raise _Abstain("project_not_git_root")
-    head = _git(root, "rev-parse", "HEAD", max_bytes=64).decode("ascii").strip()
+    head = head.strip()
     if not _SHA.fullmatch(head):
         raise _Abstain("git_invalid")
     if base_commit is None and target_commit is None:
@@ -346,20 +352,24 @@ def detect_dependency_change(
         if not root.is_dir():
             raise _Abstain("project_invalid")
         state, before, after, has_changes = _state(root, base_commit, target_commit)
+        captured_monotonic = time.monotonic()
         if state.kind == "working-tree" and before == after and not has_changes:
             # A clean HEAD cannot identify an earlier committed change without
             # an explicit base, even though it has no working-tree DEP change.
-            return DetectionResult("abstain", state=state, reason="committed_base_unspecified")
+            return DetectionResult("abstain", state=state, reason="committed_base_unspecified",
+                                   captured_root=root, captured_monotonic=captured_monotonic)
         left = _project(before)
         right = _project(after)
         changed, description = _compare(left, right)
         if not changed:
-            return DetectionResult("no_change", state=state)
+            return DetectionResult("no_change", state=state, captured_root=root,
+                                   captured_monotonic=captured_monotonic)
         change_id = _sha(_frame(RULE_ID, state.state_id.encode()) + _frame("scope", b"pyproject.toml"))
         return DetectionResult(
             "risk", state=state,
             candidate=RiskCandidate(RULE_ID, ("pyproject.toml",), change_id,
                                     f"PEP 621 dependencies changed ({description})"),
+            captured_root=root, captured_monotonic=captured_monotonic,
         )
     except _Abstain as exc:
         return DetectionResult("abstain", reason=exc.reason)
