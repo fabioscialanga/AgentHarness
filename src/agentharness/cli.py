@@ -20,6 +20,15 @@ def build_parser() -> argparse.ArgumentParser:
         state_parser.add_argument("--project", type=Path, default=Path("."), help="Project directory (default: current directory)")
         state_parser.add_argument("--json", action="store_true", help="Print the result as JSON")
 
+    dep_parser = subparsers.add_parser(
+        "dep-assess", help="Read-only DEP risk and evidence consultation (no checks executed)",
+    )
+    dep_parser.add_argument("--project", type=Path, default=Path("."), help="Git project root")
+    dep_selection = dep_parser.add_mutually_exclusive_group()
+    dep_selection.add_argument("--control", help="Explicitly select the fixed approved DEP mapping for this query")
+    dep_selection.add_argument("--control-run", help="Run id of an explicitly approved local DEP binding")
+    dep_parser.add_argument("--json", action="store_true", help="Print the stable M3 assessment JSON")
+
     host_parser = subparsers.add_parser("host-event", help="Prototype: handle one opt-in host Stop event from stdin")
     host_parser.add_argument("--host", choices=("claude", "codex"), required=True)
     host_parser.add_argument("--project", type=Path, default=Path("."))
@@ -500,6 +509,39 @@ def _print_bootstrap_result(result, as_json: bool) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command == "dep-assess":
+        from .dep_assessment import assess_dep
+
+        try:
+            result = assess_dep(args.project, control_mapping=args.control, control_run=args.control_run)
+        except (OSError, ValueError, RuntimeError) as exc:
+            if args.json:
+                print(json.dumps({"ok": False, "error": str(exc)}))
+            else:
+                print(f"[INVALID] dep-assess: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            detection = result["detection"]
+            print(f"DEP detection: {detection['status']}" +
+                  (f" ({detection['reason']})" if detection["reason"] else ""))
+            if detection["description"]:
+                print(detection["description"])
+            evidence = result["evidence"]
+            if evidence is None:
+                print("DEP evidence: not assessed (no detected risk)")
+            else:
+                print(f"DEP evidence: {evidence['status']}" +
+                      (f" ({evidence['reason']})" if evidence["reason"] else ""))
+                if evidence["status"] == "covered":
+                    print("Coverage applies only to the approved DEP check; dependency safety is not established.")
+                if evidence["control_binding"]:
+                    print(f"Selected binding: {evidence['control_binding']}")
+                for reference in evidence["artifact_refs"]:
+                    print(f"Artifact: {reference}")
+        return 0
 
     if args.command in ("install", "uninstall"):
         from .codex_adapter import AdapterError, change_codex_hook

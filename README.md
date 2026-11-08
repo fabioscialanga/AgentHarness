@@ -226,6 +226,7 @@ If the agent says a test suite passed, AgentHarness does not treat that as proof
 
 ## The rest of the surface
 
+- `agentharness dep-assess` is an explicit, read-only DEP risk and evidence consultation. See [DEP consultation](docs/architecture/M3_DEP_ASSESS_CLI.md) for the fixed mapping, JSON contract, and limits.
 - `agentharness evaluate` runs deterministic held-out suites against a run and its workspace. It produces a continuous task score from independent acceptance checks.
 - `agentharness verify` checks a project against its contract, checks semantic consistency between `AGENTS.md` and `project.yaml`, and detects drift in checked-in `.framework` artifacts.
 - `agentharness run-plan` executes a retry-aware plan with explicit fallbacks and records attempts, outputs, and winner selection as an audit trail.
@@ -456,6 +457,7 @@ Se l'agente dichiara che una suite e verde, AgentHarness non lo tratta come prov
 
 ## Il resto della superficie
 
+- `agentharness dep-assess` consulta esplicitamente rischio ed evidenze DEP in sola lettura. Vedi [consultazione DEP](docs/architecture/M3_DEP_ASSESS_CLI.md) per mapping, JSON e limiti.
 - `agentharness evaluate` esegue suite held-out deterministiche contro una run e il suo workspace. Produce uno score continuo da controlli di accettazione indipendenti.
 - `agentharness verify` controlla un progetto rispetto al contratto, controlla la coerenza semantica tra `AGENTS.md` e `project.yaml` e rileva drift negli artefatti `.framework` versionati.
 - `agentharness run-plan` esegue un piano con retry e fallback espliciti e registra tentativi, output e selezione del vincitore come audit trail.

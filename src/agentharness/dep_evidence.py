@@ -109,6 +109,42 @@ class EvidenceDecision:
     run_ids: tuple[str, ...] = ()
 
 
+def approved_dep_control_from_run(project: str | Path, run_id: str) -> ApprovedDepControl:
+    """Read one explicitly selected local binding; never infer approval from a command.
+
+    This only selects the fixed mapping. ``match_dep_evidence`` still validates
+    state, environment, provenance, hashes, outputs and contradictions.
+    """
+    root = Path(project).resolve()
+    if not isinstance(run_id, str) or not _RUN_ID.fullmatch(run_id):
+        raise ValueError("control_run_invalid")
+    agent_dir = root / ".agentharness"
+    runs = agent_dir / "runs"
+    run_dir = runs / run_id
+    if agent_dir.is_symlink() or runs.is_symlink() or run_dir.is_symlink() or not run_dir.is_dir():
+        raise ValueError("control_run_unavailable")
+    binding_path = run_dir / "m3-binding-v0.json"
+    if not binding_path.is_file() or binding_path.is_symlink():
+        raise ValueError("control_binding_unavailable")
+    try:
+        binding = _shape(_safe_json(binding_path, run_dir, _ReadBudget()))
+    except _Unknown as exc:
+        raise ValueError(f"control_binding_{exc.reason}") from exc
+    if (binding["provenance"] != "local-capture" or binding["risk_id"] != RISK_ID
+            or binding["run_id"] != run_id
+            or binding["scope"] != {"risk_paths": ["pyproject.toml"],
+                                    "evidence_paths": ["pyproject.toml", "tests/test_dep.py"]}):
+        raise ValueError("control_binding_unapproved")
+    mapped = binding["check"]
+    control = ApprovedDepControl(root, mapped["environment_id"], command=mapped["command"],
+                                 cwd=mapped["cwd"], mapping_id=mapped["mapping_id"])
+    try:
+        control.validate(root)
+    except ValueError as exc:
+        raise ValueError("control_binding_unapproved") from exc
+    return control
+
+
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 

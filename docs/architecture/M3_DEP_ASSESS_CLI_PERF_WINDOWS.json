@@ -1,0 +1,53 @@
+{
+  "schema_version": "m3.dep-assess-cli-perf.v0",
+  "platform": "win32",
+  "python": "3.12.10",
+  "runs_per_scenario": 30,
+  "setup_check_excluded": true,
+  "scenarios": {
+    "no_change": {
+      "detection": "no_change",
+      "evidence": null,
+      "in_process_p50_ms": 247.101,
+      "in_process_p95_ms": 293.683,
+      "process_p50_ms": 375.414,
+      "process_p95_ms": 414.82,
+      "git_calls": [
+        6
+      ]
+    },
+    "risk_no_control": {
+      "detection": "risk",
+      "evidence": "unknown",
+      "in_process_p50_ms": 252.66,
+      "in_process_p95_ms": 312.86,
+      "process_p50_ms": 376.824,
+      "process_p95_ms": 447.64,
+      "git_calls": [
+        6
+      ]
+    },
+    "risk_uncovered": {
+      "detection": "risk",
+      "evidence": "uncovered",
+      "in_process_p50_ms": 523.842,
+      "in_process_p95_ms": 600.452,
+      "process_p50_ms": 657.207,
+      "process_p95_ms": 760.07,
+      "git_calls": [
+        12
+      ]
+    },
+    "risk_covered": {
+      "detection": "risk",
+      "evidence": "covered",
+      "in_process_p50_ms": 519.612,
+      "in_process_p95_ms": 553.909,
+      "process_p50_ms": 644.389,
+      "process_p95_ms": 690.01,
+      "git_calls": [
+        12
+      ]
+    }
+  }
+}
