@@ -42,7 +42,7 @@ def _preflight_no_risk(root: Path) -> bool:
         return False
 
 
-def evaluate(root: Path, control: dep_evidence.ApprovedDepControl, *, enabled: bool) -> str:
+def evaluate(root: Path, control: dep_evidence.ApprovedDepControl | None = None, *, enabled: bool) -> str:
     """Explicit benchmark-only orchestrator; never executes tests or host hooks."""
     if not enabled:
         return "disabled"
@@ -51,6 +51,8 @@ def evaluate(root: Path, control: dep_evidence.ApprovedDepControl, *, enabled: b
     detection = risk_dep.detect_dependency_change(root)
     if detection.status != "risk":
         return detection.status
+    if control is None:
+        control = dep_evidence.ApprovedDepControl(root, dep_evidence.local_environment_id())
     return dep_evidence.match_dep_evidence(root, detection, control).status
 
 
@@ -139,5 +141,4 @@ if __name__ == "__main__":
     else:
         os.environ["PATH"] = str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", "")
         project = args.one.resolve()
-        control = dep_evidence.ApprovedDepControl(project, dep_evidence.local_environment_id())
-        print(evaluate(project, control, enabled=not args.disabled))
+        print(evaluate(project, enabled=not args.disabled))

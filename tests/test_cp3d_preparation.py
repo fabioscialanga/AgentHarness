@@ -81,6 +81,18 @@ def test_disabled_path_does_not_call_git(root: Path, monkeypatch: pytest.MonkeyP
     assert evaluate(repo, control, enabled=False) == "disabled"
 
 
+def test_no_risk_does_not_hash_interpreter(root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from scripts import m3_cp3d_prepare
+    repo, _ = _repo(root, "no-env", None)
+
+    def forbidden() -> None:
+        raise AssertionError("interpreter fingerprint requested without risk")
+
+    monkeypatch.setattr(m3_cp3d_prepare.dep_evidence, "local_environment_id", forbidden)
+    assert evaluate(repo, enabled=True) == "no_dep_risk"
+    assert evaluate(repo, enabled=False) == "disabled"
+
+
 def test_no_risk_skips_matcher(root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from scripts import m3_cp3d_prepare
     repo, control = _repo(root, "skip", '[project]\nname="sample"\ndependencies=["my-pkg>=1.0"]\n')

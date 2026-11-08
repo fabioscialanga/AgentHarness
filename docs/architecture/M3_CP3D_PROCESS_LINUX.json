@@ -6,36 +6,36 @@
   "scope": "explicit prototype, new Python process, no Codex host",
   "scenarios": {
     "disabled": {
-      "p50_ms": 399.037,
-      "p95_ms": 426.078,
+      "p50_ms": 448.376,
+      "p95_ms": 492.323,
       "decisions": {
         "disabled": 30
       }
     },
     "no_change": {
-      "p50_ms": 396.923,
-      "p95_ms": 452.342,
+      "p50_ms": 500.228,
+      "p95_ms": 578.352,
       "decisions": {
         "no_dep_risk": 30
       }
     },
     "equivalent": {
-      "p50_ms": 472.877,
-      "p95_ms": 584.541,
+      "p50_ms": 478.134,
+      "p95_ms": 719.208,
       "decisions": {
         "no_dep_risk": 30
       }
     },
     "risk_absent": {
-      "p50_ms": 525.323,
-      "p95_ms": 645.481,
+      "p50_ms": 511.513,
+      "p95_ms": 653.636,
       "decisions": {
         "uncovered": 30
       }
     },
     "risk_covered": {
-      "p50_ms": 475.357,
-      "p95_ms": 632.554,
+      "p50_ms": 503.229,
+      "p95_ms": 530.56,
       "decisions": {
         "covered": 30
       }
