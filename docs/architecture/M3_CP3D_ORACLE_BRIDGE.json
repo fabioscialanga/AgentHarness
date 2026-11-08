@@ -1,0 +1,304 @@
+{
+  "schema_version": "m3.cp3d-oracle-bridge.v0",
+  "integrity_validated": true,
+  "production_covered_from_oracle": 0,
+  "fixtures": 37,
+  "rows": [
+    {
+      "fixture": "D01",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "U",
+      "oracle_runs": 0,
+      "production_decision": "uncovered"
+    },
+    {
+      "fixture": "D02",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "C",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D03",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D04",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "F",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D05",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D06",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D07",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "U",
+      "oracle_runs": 0,
+      "production_decision": "uncovered"
+    },
+    {
+      "fixture": "D08",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "uncovered"
+    },
+    {
+      "fixture": "D09",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D10",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "U",
+      "oracle_runs": 0,
+      "production_decision": "uncovered"
+    },
+    {
+      "fixture": "D11",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "C",
+      "oracle_runs": 1,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D12",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D13",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D14",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D15",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D16",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D17",
+      "risk_label": "N",
+      "detected": "no_change",
+      "oracle_evidence_label": "\u2014",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D18",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "U",
+      "oracle_runs": 0,
+      "production_decision": "uncovered"
+    },
+    {
+      "fixture": "D19",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "C",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D20",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D21",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D22",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D23",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D24",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D25",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D26",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D27",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D28",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D29",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 2,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D30",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "U",
+      "oracle_runs": 1,
+      "production_decision": "uncovered"
+    },
+    {
+      "fixture": "D31",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "C",
+      "oracle_runs": 2,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D32",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 2,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D33",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D34",
+      "risk_label": "A",
+      "detected": "abstain",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 0,
+      "production_decision": "not_applicable"
+    },
+    {
+      "fixture": "D35",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "?",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D36",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "F",
+      "oracle_runs": 2,
+      "production_decision": "unknown"
+    },
+    {
+      "fixture": "D37",
+      "risk_label": "S",
+      "detected": "risk",
+      "oracle_evidence_label": "C",
+      "oracle_runs": 1,
+      "production_decision": "unknown"
+    }
+  ]
+}
