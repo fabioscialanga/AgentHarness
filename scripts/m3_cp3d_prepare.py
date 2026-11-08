@@ -42,13 +42,17 @@ def _preflight_no_risk(root: Path) -> bool:
         return False
 
 
-def evaluate(root: Path, control: dep_evidence.ApprovedDepControl | None = None, *, enabled: bool) -> str:
+def evaluate(root: Path, control: dep_evidence.ApprovedDepControl | None = None, *, enabled: bool,
+             diagnostic: dict[str, str] | None = None) -> str:
     """Explicit benchmark-only orchestrator; never executes tests or host hooks."""
     if not enabled:
         return "disabled"
     if _preflight_no_risk(root):
         return "no_dep_risk"
     detection = risk_dep.detect_dependency_change(root)
+    if diagnostic is not None:
+        diagnostic["detection_status"] = detection.status
+        diagnostic["detection_reason"] = detection.reason or ""
     if detection.status != "risk":
         return detection.status
     if control is None:
@@ -135,10 +139,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--one", type=Path)
     parser.add_argument("--disabled", action="store_true")
+    parser.add_argument("--audit", action="store_true", help="Emit benchmark-only decision diagnostics")
     args = parser.parse_args()
     if args.one is None:
         print(json.dumps(main(), indent=2))
     else:
         os.environ["PATH"] = str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", "")
         project = args.one.resolve()
-        print(evaluate(project, enabled=not args.disabled))
+        diagnostic: dict[str, str] = {}
+        decision = evaluate(project, enabled=not args.disabled, diagnostic=diagnostic)
+        print(json.dumps({"decision": decision, **diagnostic}) if args.audit else decision)

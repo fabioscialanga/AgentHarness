@@ -1,0 +1,49 @@
+{
+  "schema_version": "m3.cp3d-process-perf.v0",
+  "platform": "win32",
+  "python": "3.12.10",
+  "runs_per_scenario": 30,
+  "scope": "explicit prototype, new Python process, no Codex host",
+  "scenarios": {
+    "disabled": {
+      "p50_ms": 207.125,
+      "p95_ms": 315.56,
+      "decisions": {
+        "disabled": 30
+      },
+      "abstention_reasons": {}
+    },
+    "no_change": {
+      "p50_ms": 307.299,
+      "p95_ms": 351.031,
+      "decisions": {
+        "no_dep_risk": 30
+      },
+      "abstention_reasons": {}
+    },
+    "equivalent": {
+      "p50_ms": 318.174,
+      "p95_ms": 354.083,
+      "decisions": {
+        "no_dep_risk": 30
+      },
+      "abstention_reasons": {}
+    },
+    "risk_absent": {
+      "p50_ms": 767.003,
+      "p95_ms": 851.893,
+      "decisions": {
+        "uncovered": 30
+      },
+      "abstention_reasons": {}
+    },
+    "risk_covered": {
+      "p50_ms": 825.042,
+      "p95_ms": 1109.652,
+      "decisions": {
+        "covered": 30
+      },
+      "abstention_reasons": {}
+    }
+  }
+}

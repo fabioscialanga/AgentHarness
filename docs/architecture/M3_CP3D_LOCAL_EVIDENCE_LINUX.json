@@ -1,0 +1,93 @@
+{
+  "schema_version": "m3.local-evidence-perf.v0",
+  "platform": "linux",
+  "python": "3.12.16",
+  "runs_per_scenario": 30,
+  "provenance": "local-capture",
+  "scenarios": {
+    "covered": {
+      "status": "covered",
+      "reasons": {
+        "none": 30
+      },
+      "p50_match_ms": 21.653,
+      "p95_match_ms": 25.777,
+      "git_calls_per_match": [
+        6
+      ],
+      "artifact_bytes_per_match": [
+        15225
+      ]
+    },
+    "failed": {
+      "status": "failed",
+      "reasons": {
+        "none": 30
+      },
+      "p50_match_ms": 19.985,
+      "p95_match_ms": 26.478,
+      "git_calls_per_match": [
+        6
+      ],
+      "artifact_bytes_per_match": [
+        16522
+      ]
+    },
+    "uncovered": {
+      "status": "uncovered",
+      "reasons": {
+        "absent": 30
+      },
+      "p50_match_ms": 12.895,
+      "p95_match_ms": 18.065,
+      "git_calls_per_match": [
+        6
+      ],
+      "artifact_bytes_per_match": [
+        0
+      ]
+    },
+    "unknown_tampered": {
+      "status": "unknown",
+      "reasons": {
+        "tampered": 30
+      },
+      "p50_match_ms": 14.91,
+      "p95_match_ms": 21.086,
+      "git_calls_per_match": [
+        6
+      ],
+      "artifact_bytes_per_match": [
+        9439
+      ]
+    },
+    "unknown_stale": {
+      "status": "unknown",
+      "reasons": {
+        "state_changed": 30
+      },
+      "p50_match_ms": 12.384,
+      "p95_match_ms": 19.647,
+      "git_calls_per_match": [
+        6
+      ],
+      "artifact_bytes_per_match": [
+        2460
+      ]
+    },
+    "unknown_contradictory": {
+      "status": "unknown",
+      "reasons": {
+        "contradictory": 30
+      },
+      "p50_match_ms": 20.765,
+      "p95_match_ms": 25.78,
+      "git_calls_per_match": [
+        6
+      ],
+      "artifact_bytes_per_match": [
+        34108
+      ]
+    }
+  }
+}
