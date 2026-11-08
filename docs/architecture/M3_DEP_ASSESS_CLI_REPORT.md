@@ -16,6 +16,13 @@ Il JSON `m3.dep-assess.v0` ha campi `schema_version`, `project`, `detection`, `e
 - Dataset congelato: validatore **37/37 fixture valide**, quattro test del validatore **4/4 passed**. Manifest e label invariati.
 - La suite Stage 2 completa **NOT RUN in questa verifica**; al checkpoint precedente aveva dato 385 passed e 1 Hermes esterno deselected. Hermes esterno resta **NOT RUN** qui. Nessun esito Stage 2 nuovo viene dichiarato PASS.
 
+## Verifica prima della PR
+
+- `main` locale e remoto: `497bcd84aba6ad39cd77d9d6d4f6d743bc376b88`. Il diff del branch rispetto a `main` contiene esclusivamente dataset, contratti, sorgenti, test e report M3, oltre all'aggiunta dei test M3 nella CI. Nessun file dell'adapter Codex o dell'hook è modificato.
+- La selezione core CI e i quattro moduli M3, eseguita in container Linux da `git archive HEAD` con package installato (`pip install -e .`), passa su Python **3.11: 254 passed (35,66 s)**, **3.12: 254 passed (33,03 s)** e **3.13: 254 passed (24,27 s)**. Per ogni runtime il validatore riporta **37/37** e i suoi test **4/4**. Questi risultati sono locali; i risultati GitHub Actions vanno controllati sul commit pubblicato.
+- I due failure Windows sono stati riprodotti anche su `main` in un worktree temporaneo separato, usando lo stesso interprete e lo stesso ambiente. Il run mirato su `main` dà **2 failed**, con `FileNotFoundError [WinError 2]` nel `run-plan` e differenza tra `/` e `\\` nei percorsi generati. I file di test e implementazione coinvolti sono identici nel diff M3. Il worktree temporaneo è stato rimosso; `main` non è stato modificato.
+- Il dataset congelato, il manifest e le label non hanno modifiche successive all'approvazione; il validatore ne verifica gli hash. `dep-assess` è una consultazione esplicita di sola lettura: i test coprono l'assenza di riesecuzione, rete e scritture agli artifact. Nessun percorso dell'hook Codex importa il matcher DEP.
+
 ## Costo Windows della nuova CLI
 
 Sonda esplicita [M3_DEP_ASSESS_CLI_PERF_WINDOWS.json](M3_DEP_ASSESS_CLI_PERF_WINDOWS.json): 30 ripetizioni per scenario in repository sintetici temporanei. Il check che prepara l'evidenza valida è fuori dal tempo misurato. Le due colonne misurano rispettivamente chiamata `cli.main` nello stesso processo e `python -m agentharness dep-assess` in un nuovo processo; i processi Git sono contati nel percorso in-process, che usa la stessa detection/matching.
