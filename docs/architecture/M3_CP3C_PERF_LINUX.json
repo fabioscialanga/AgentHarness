@@ -1,0 +1,198 @@
+{
+  "schema_version": "m3.cp3c-perf.v0",
+  "platform": "linux",
+  "python": "3.12.16",
+  "runs": 30,
+  "scenario": "explicit risk with valid evidence",
+  "m2_disabled_subprocess_p50_ms": 325.502,
+  "m2_disabled_subprocess_p95_ms": 382.794,
+  "p50_total_ms": 32.823,
+  "p95_total_ms": 40.609,
+  "p50_detection_ms": 11.557,
+  "p50_git_ms": 23.538,
+  "git_calls_per_run": [
+    12
+  ],
+  "rows": [
+    {
+      "total_ms": 40.788,
+      "detection_ms": 13.706,
+      "git_calls": 12,
+      "git_ms": 28.947
+    },
+    {
+      "total_ms": 39.992,
+      "detection_ms": 15.807,
+      "git_calls": 12,
+      "git_ms": 29.378
+    },
+    {
+      "total_ms": 33.997,
+      "detection_ms": 13.095,
+      "git_calls": 12,
+      "git_ms": 25.22
+    },
+    {
+      "total_ms": 30.194,
+      "detection_ms": 10.831,
+      "git_calls": 12,
+      "git_ms": 21.511
+    },
+    {
+      "total_ms": 33.622,
+      "detection_ms": 15.324,
+      "git_calls": 12,
+      "git_ms": 25.252
+    },
+    {
+      "total_ms": 26.57,
+      "detection_ms": 9.42,
+      "git_calls": 12,
+      "git_ms": 19.159
+    },
+    {
+      "total_ms": 28.379,
+      "detection_ms": 11.325,
+      "git_calls": 12,
+      "git_ms": 20.75
+    },
+    {
+      "total_ms": 29.422,
+      "detection_ms": 9.674,
+      "git_calls": 12,
+      "git_ms": 21.318
+    },
+    {
+      "total_ms": 25.415,
+      "detection_ms": 8.59,
+      "git_calls": 12,
+      "git_ms": 18.532
+    },
+    {
+      "total_ms": 40.609,
+      "detection_ms": 15.003,
+      "git_calls": 12,
+      "git_ms": 30.771
+    },
+    {
+      "total_ms": 37.078,
+      "detection_ms": 12.677,
+      "git_calls": 12,
+      "git_ms": 25.597
+    },
+    {
+      "total_ms": 37.761,
+      "detection_ms": 15.472,
+      "git_calls": 12,
+      "git_ms": 27.087
+    },
+    {
+      "total_ms": 31.305,
+      "detection_ms": 12.502,
+      "git_calls": 12,
+      "git_ms": 22.186
+    },
+    {
+      "total_ms": 39.615,
+      "detection_ms": 10.982,
+      "git_calls": 12,
+      "git_ms": 27.837
+    },
+    {
+      "total_ms": 47.216,
+      "detection_ms": 18.03,
+      "git_calls": 12,
+      "git_ms": 33.049
+    },
+    {
+      "total_ms": 35.126,
+      "detection_ms": 12.224,
+      "git_calls": 12,
+      "git_ms": 24.288
+    },
+    {
+      "total_ms": 34.923,
+      "detection_ms": 14.093,
+      "git_calls": 12,
+      "git_ms": 24.34
+    },
+    {
+      "total_ms": 29.57,
+      "detection_ms": 9.514,
+      "git_calls": 12,
+      "git_ms": 21.78
+    },
+    {
+      "total_ms": 25.238,
+      "detection_ms": 9.394,
+      "git_calls": 12,
+      "git_ms": 17.672
+    },
+    {
+      "total_ms": 31.063,
+      "detection_ms": 8.897,
+      "git_calls": 12,
+      "git_ms": 23.054
+    },
+    {
+      "total_ms": 33.701,
+      "detection_ms": 11.501,
+      "git_calls": 12,
+      "git_ms": 24.022
+    },
+    {
+      "total_ms": 25.847,
+      "detection_ms": 8.944,
+      "git_calls": 12,
+      "git_ms": 18.491
+    },
+    {
+      "total_ms": 27.73,
+      "detection_ms": 10.698,
+      "git_calls": 12,
+      "git_ms": 20.563
+    },
+    {
+      "total_ms": 28.339,
+      "detection_ms": 11.017,
+      "git_calls": 12,
+      "git_ms": 20.556
+    },
+    {
+      "total_ms": 32.966,
+      "detection_ms": 12.971,
+      "git_calls": 12,
+      "git_ms": 24.185
+    },
+    {
+      "total_ms": 33.879,
+      "detection_ms": 13.612,
+      "git_calls": 12,
+      "git_ms": 24.964
+    },
+    {
+      "total_ms": 32.681,
+      "detection_ms": 14.997,
+      "git_calls": 12,
+      "git_ms": 24.518
+    },
+    {
+      "total_ms": 33.946,
+      "detection_ms": 11.613,
+      "git_calls": 12,
+      "git_ms": 23.034
+    },
+    {
+      "total_ms": 29.968,
+      "detection_ms": 11.462,
+      "git_calls": 12,
+      "git_ms": 21.087
+    },
+    {
+      "total_ms": 29.655,
+      "detection_ms": 9.495,
+      "git_calls": 12,
+      "git_ms": 19.058
+    }
+  ]
+}

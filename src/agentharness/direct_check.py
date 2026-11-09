@@ -8,7 +8,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from .models import VerifyRunResult
 from .verify import verify_run
@@ -217,6 +217,7 @@ def check_workspace(
     timeout_seconds: int = 60,
     allowed_paths: Iterable[str] = (),
     forbidden_paths: Iterable[str] = (),
+    snapshot_observer: Callable[[Path], None] | None = None,
 ) -> DirectCheckResult:
     original_workspace = Path(workspace).resolve()
     if not original_workspace.is_dir():
@@ -242,6 +243,8 @@ def check_workspace(
     artifact_dir.mkdir(parents=True)
     snapshot_workspace = artifact_dir / "workspace"
     _snapshot_workspace(original_workspace, snapshot_workspace)
+    if snapshot_observer is not None:
+        snapshot_observer(snapshot_workspace)
 
     run_path = artifact_dir / "run.json"
     claims_path = artifact_dir / "claims.json"

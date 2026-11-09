@@ -62,6 +62,7 @@ class ReexecutionResult:
     completed: bool
     command: str
     command_tokens: list[str] = field(default_factory=list)
+    executable_path: str | None = None
     reason: str | None = None
     exit_code: int | None = None
     stdout_path: str | None = None
@@ -105,6 +106,7 @@ class ReexecutionResult:
             "completed": self.completed,
             "command": self.command,
             "command_tokens": self.command_tokens,
+            "executable_path": self.executable_path,
             "reason": self.reason,
             "exit_code": self.exit_code,
             "stdout_path": self.stdout_path,
@@ -333,6 +335,8 @@ def reexecute_command(
     started_epoch = time.time()
     started_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started_epoch))
     execution_tokens = prepare_execution_tokens(tokens)
+    executable = Path(execution_tokens[0]) if execution_tokens else None
+    executable_path = str(executable.absolute()) if executable is not None and executable.is_absolute() and executable.is_file() else None
     try:
         completed = subprocess.run(
             execution_tokens,
@@ -352,6 +356,7 @@ def reexecute_command(
             completed=False,
             command=command,
             command_tokens=tokens,
+            executable_path=executable_path,
             reason=f"executable not available for reexecution: {exc}",
             cwd=str(cwd),
             timeout_seconds=policy.timeout_seconds,
@@ -371,6 +376,7 @@ def reexecute_command(
             completed=False,
             command=command,
             command_tokens=tokens,
+            executable_path=executable_path,
             reason="reexecution timed out before a verdict was established",
             cwd=str(cwd),
             timeout_seconds=policy.timeout_seconds,
@@ -393,6 +399,7 @@ def reexecute_command(
         completed=True,
         command=command,
         command_tokens=tokens,
+        executable_path=executable_path,
         exit_code=completed.returncode,
         stdout_path=str(stdout_path),
         stderr_path=str(stderr_path),

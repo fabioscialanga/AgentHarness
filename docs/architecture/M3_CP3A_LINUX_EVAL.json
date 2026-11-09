@@ -1,0 +1,394 @@
+{
+  "schema_version": "m3.cp3a-eval.v0",
+  "scope": "detection only; evidence matching NOT RUN",
+  "fixture_count": 37,
+  "matrix": {
+    "abstain": {
+      "abstain": 8
+    },
+    "no_change": {
+      "no_change": 7
+    },
+    "risk": {
+      "risk": 22
+    }
+  },
+  "correct": 37,
+  "p50_ms": 12.206,
+  "p95_ms": 21.878,
+  "git_calls_total": 253,
+  "git_ms_total": 472.845,
+  "git_output_bytes_total": 24120,
+  "rows": [
+    {
+      "id": "D01",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 42.483,
+      "git_calls": 7,
+      "git_ms": 41.056,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D02",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.206,
+      "git_calls": 7,
+      "git_ms": 11.697,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D03",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.301,
+      "git_calls": 7,
+      "git_ms": 11.777,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D04",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.488,
+      "git_calls": 7,
+      "git_ms": 11.938,
+      "git_output_bytes": 876
+    },
+    {
+      "id": "D05",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 11.442,
+      "git_calls": 7,
+      "git_ms": 10.984,
+      "git_output_bytes": 675
+    },
+    {
+      "id": "D06",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 13.447,
+      "git_calls": 7,
+      "git_ms": 12.634,
+      "git_output_bytes": 676
+    },
+    {
+      "id": "D07",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 21.403,
+      "git_calls": 7,
+      "git_ms": 20.737,
+      "git_output_bytes": 590
+    },
+    {
+      "id": "D08",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 21.878,
+      "git_calls": 7,
+      "git_ms": 21.148,
+      "git_output_bytes": 578
+    },
+    {
+      "id": "D09",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "toml_invalid",
+      "elapsed_ms": 15.631,
+      "git_calls": 7,
+      "git_ms": 14.969,
+      "git_output_bytes": 655
+    },
+    {
+      "id": "D10",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.948,
+      "git_calls": 6,
+      "git_ms": 12.48,
+      "git_output_bytes": 83
+    },
+    {
+      "id": "D11",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 13.184,
+      "git_calls": 7,
+      "git_ms": 12.72,
+      "git_output_bytes": 921
+    },
+    {
+      "id": "D12",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "explicit_range_required",
+      "elapsed_ms": 3.947,
+      "git_calls": 2,
+      "git_ms": 3.832,
+      "git_output_bytes": 68
+    },
+    {
+      "id": "D13",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 11.913,
+      "git_calls": 7,
+      "git_ms": 11.476,
+      "git_output_bytes": 636
+    },
+    {
+      "id": "D14",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 12.406,
+      "git_calls": 7,
+      "git_ms": 11.944,
+      "git_output_bytes": 669
+    },
+    {
+      "id": "D15",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 13.693,
+      "git_calls": 7,
+      "git_ms": 13.178,
+      "git_output_bytes": 642
+    },
+    {
+      "id": "D16",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 13.181,
+      "git_calls": 7,
+      "git_ms": 12.72,
+      "git_output_bytes": 641
+    },
+    {
+      "id": "D17",
+      "expected": "no_change",
+      "observed": "no_change",
+      "reason": null,
+      "elapsed_ms": 11.775,
+      "git_calls": 7,
+      "git_ms": 11.32,
+      "git_output_bytes": 664
+    },
+    {
+      "id": "D18",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 10.675,
+      "git_calls": 7,
+      "git_ms": 10.171,
+      "git_output_bytes": 628
+    },
+    {
+      "id": "D19",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 14.742,
+      "git_calls": 7,
+      "git_ms": 14.195,
+      "git_output_bytes": 578
+    },
+    {
+      "id": "D20",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 11.676,
+      "git_calls": 7,
+      "git_ms": 11.227,
+      "git_output_bytes": 668
+    },
+    {
+      "id": "D21",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 11.293,
+      "git_calls": 7,
+      "git_ms": 10.761,
+      "git_output_bytes": 675
+    },
+    {
+      "id": "D22",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 10.537,
+      "git_calls": 7,
+      "git_ms": 10.021,
+      "git_output_bytes": 642
+    },
+    {
+      "id": "D23",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "dynamic_dependencies",
+      "elapsed_ms": 12.228,
+      "git_calls": 7,
+      "git_ms": 11.799,
+      "git_output_bytes": 603
+    },
+    {
+      "id": "D24",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "duplicate_ambiguous",
+      "elapsed_ms": 12.702,
+      "git_calls": 7,
+      "git_ms": 12.244,
+      "git_output_bytes": 612
+    },
+    {
+      "id": "D25",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 11.537,
+      "git_calls": 7,
+      "git_ms": 11.07,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D26",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 11.074,
+      "git_calls": 7,
+      "git_ms": 10.444,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D27",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.287,
+      "git_calls": 7,
+      "git_ms": 11.781,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D28",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 13.39,
+      "git_calls": 7,
+      "git_ms": 12.939,
+      "git_output_bytes": 863
+    },
+    {
+      "id": "D29",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 10.99,
+      "git_calls": 7,
+      "git_ms": 10.463,
+      "git_output_bytes": 988
+    },
+    {
+      "id": "D30",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 10.962,
+      "git_calls": 7,
+      "git_ms": 10.488,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D31",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 10.898,
+      "git_calls": 7,
+      "git_ms": 10.424,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D32",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 10.583,
+      "git_calls": 7,
+      "git_ms": 10.14,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D33",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.146,
+      "git_calls": 7,
+      "git_ms": 11.652,
+      "git_output_bytes": 869
+    },
+    {
+      "id": "D34",
+      "expected": "abstain",
+      "observed": "abstain",
+      "reason": "unsupported_requirement_changed",
+      "elapsed_ms": 11.976,
+      "git_calls": 7,
+      "git_ms": 11.499,
+      "git_output_bytes": 649
+    },
+    {
+      "id": "D35",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 11.833,
+      "git_calls": 7,
+      "git_ms": 11.312,
+      "git_output_bytes": 645
+    },
+    {
+      "id": "D36",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.78,
+      "git_calls": 7,
+      "git_ms": 12.058,
+      "git_output_bytes": 876
+    },
+    {
+      "id": "D37",
+      "expected": "risk",
+      "observed": "risk",
+      "reason": null,
+      "elapsed_ms": 12.034,
+      "git_calls": 7,
+      "git_ms": 11.547,
+      "git_output_bytes": 645
+    }
+  ]
+}

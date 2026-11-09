@@ -45,7 +45,16 @@ jobs:
             tests/test_release_check.py \
             tests/test_repair_safety.py \
             tests/test_runtime_features.py \
-            tests/test_validation.py
+            tests/test_validation.py \
+            tests/test_risk_dep.py \
+            tests/test_dep_evidence.py \
+            tests/test_cp3d_preparation.py \
+            tests/test_dep_assessment_cli.py
+
+      - name: Validate frozen M3 DEP dataset
+        run: |
+          python benchmarks/m3_dep/validate_dataset.py
+          python -m unittest discover -s benchmarks/m3_dep -p 'test_*.py' -q
 
   full-suite:
     name: Full suite and frozen grading environment

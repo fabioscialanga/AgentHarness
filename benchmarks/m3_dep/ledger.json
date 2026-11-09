@@ -1,0 +1,898 @@
+{
+  "scenarios": [
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "b936c67e9e3d9010d276105a74c6243f857d1889",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evidence_inventory": [],
+      "evidence_label": "U",
+      "fixture_sha256": "3faa91f33c6319e55cd5329a18441f993ca107c7a1e78da24ac92a165e120b4c",
+      "id": "D01",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "b936c67e9e3d9010d276105a74c6243f857d1889"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "e19f28fd01ed51de1648f88e1d9e3d5f272cc7df",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:15.851285+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D02-current/claims.json": "5965c0b357cd6c8a2de543134232c100436d19f0a497c504de6b66f0954aaa00",
+            ".agentharness/runs/D02-current/m3-binding-v0.json": "40e9aa0b7bf812dd9645c1f36e6211e483032ef9d9a3e94da90b77266b8179cd",
+            ".agentharness/runs/D02-current/run.json": "3447f4efb84f91248de480e7917a11a4779bf64298224a14432634556263cf62",
+            ".agentharness/runs/D02-current/verify-report.json": "8f2dffa6dd5f35108e7a3028f01aac234c422ba2a9cd0c7c48fc16e6a334f587"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:15Z",
+          "report_ok": true,
+          "run_id": "D02-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "C",
+      "fixture_sha256": "53a8d9fe45204aaf2b84d689803de5c29ca38dfbcd2caa6ba006a301c6d63127",
+      "id": "D02",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "e19f28fd01ed51de1648f88e1d9e3d5f272cc7df"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "522d75c0769d8f869c84435b8d642b24a2928a28",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D03-old/claims.json": "7577bf0a9e18243bb92aa08e62dd9476c666bd571332a5ea55a175b113dd7969",
+            ".agentharness/runs/D03-old/run.json": "04c314c0a154dcbd8313edc7fd73ae6c4c38e8185702837bae65002b9790d61b",
+            ".agentharness/runs/D03-old/verify-report.json": "c70bc1e835ecfb33d8a7d0e1cfc1d3bb96194b96705078aa3472511375afd562"
+          },
+          "binding_present": false,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:16Z",
+          "report_ok": true,
+          "run_id": "D03-old",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "12d175361f3a495fa5eaeb20b2fd8af329f26c26213938386e7630d8b7c77113",
+      "id": "D03",
+      "notes": [
+        "artifact pre-dates dependency diff"
+      ],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "522d75c0769d8f869c84435b8d642b24a2928a28"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "522d75c0769d8f869c84435b8d642b24a2928a28",
+      "diff_sha256": "d6c0639d855c7829255b2918a04a799998c6c88648f3ee5b7c3f53f019f3113d",
+      "evaluation_clock_at": "2026-11-07T18:29:17.503859+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D04-current/claims.json": "357c9f4d2fb0349d4ce99166caa840551a41e88051282d50221fbb0610a43284",
+            ".agentharness/runs/D04-current/m3-binding-v0.json": "e135185ef84c4d7369db0896c10137141368a1f509e6c110e67b915386e5d2a2",
+            ".agentharness/runs/D04-current/run.json": "1fedfb9c06e044b595c97b8aa17e623d584988c6c2af585b33434e7d56a35e2b",
+            ".agentharness/runs/D04-current/verify-report.json": "fb80bc7e4eb78e2d0bd33678e2e6e2d62140cd2f8cc437dd1849999e4243dd52"
+          },
+          "binding_present": true,
+          "claim_status": "unsupported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 1,
+          "finished_at": "2026-11-07T18:29:17Z",
+          "report_ok": false,
+          "run_id": "D04-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "F",
+      "fixture_sha256": "67613f15b2a734c68e9c652aaa64a3a82c647e864db8aaf26eca8c304510fa09",
+      "id": "D04",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "522d75c0769d8f869c84435b8d642b24a2928a28"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "f265c87a01aea0693fd2faf954ce12ef5506c6b4",
+      "diff_sha256": "f312b41ea92781c26f474585b89eadd8c60fe0135edf16036b25c014cba2a5f4",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "4868732f20278d208b932724cf82f8392282d5227c8d748d8ef233ea2908d759",
+      "id": "D05",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "f265c87a01aea0693fd2faf954ce12ef5506c6b4"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "59c00f5b2395987aa44344e8368e7e68b93810b5",
+      "diff_sha256": "39315f4521c716d43a32888575b22a7aa2eedfc260ea1a693b19ab9116ab7b5d",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "cd97ad5242d8767cb724d60625850d507add832c79d8b978b53b0e7afd39a0fa",
+      "id": "D06",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "59c00f5b2395987aa44344e8368e7e68b93810b5"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "59c00f5b2395987aa44344e8368e7e68b93810b5",
+      "diff_sha256": "a51dbd6d8a8723edc16df05031c17d731d86a10b9a3f80031b8f60c217116ae7",
+      "evidence_inventory": [],
+      "evidence_label": "U",
+      "fixture_sha256": "66d623f9d028f42e47b6caf75a6ecaf6c54901651ad480d56afa6a5284847c77",
+      "id": "D07",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "59c00f5b2395987aa44344e8368e7e68b93810b5"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "3425393c6c2f6b69782557bc36d751eca9014b72",
+      "diff_sha256": "a230191836fe76b0c8847ce8728914d1e5e9ee3d23e5dadfe9ef49b3e5fd7032",
+      "evaluation_clock_at": "2026-11-07T18:29:19.692681+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D08-current/claims.json": "a445a21c3609c57fe43bc8e4974882db240b574199cc9498b2c3ea48e124d3db",
+            ".agentharness/runs/D08-current/run.json": "9957429cbbd94230b492a96c636162addfb899031fae93cb081edb5cc4a3d7e7",
+            ".agentharness/runs/D08-current/verify-report.json": "af367fe3f954f04a52617ad2e83e1012cfd723ba3c7e4992fb4f4472797874be"
+          },
+          "binding_present": false,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_other.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:19Z",
+          "report_ok": true,
+          "run_id": "D08-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "f6fd3ca7008a3e174198c12787a10d50283c5e21c5279ba1138238dbd680a8de",
+      "id": "D08",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "3425393c6c2f6b69782557bc36d751eca9014b72"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "3425393c6c2f6b69782557bc36d751eca9014b72",
+      "diff_sha256": "d1a56488c7dfa075b5e0c1bdf048b1a850ac087540f97cb541d226309b4a6af9",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "7303ef72a89ada0d690e204c1302ccb27d7e7ed962b5f72d8be31e25e349f3a8",
+      "id": "D09",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "3425393c6c2f6b69782557bc36d751eca9014b72"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "47a27e1cf4d95b0b82f6e1e1f4624a700253c224",
+      "diff_sha256": "fe844327808a0e4aae5fc23943ae2bd1ada9d5137b10a5f755be1c6466690c80",
+      "evidence_inventory": [],
+      "evidence_label": "U",
+      "fixture_sha256": "b133749045fb3672c40f3f091e1bc5387f47c84b1eb4577ec197e8b9c48ef4e8",
+      "id": "D10",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "47a27e1cf4d95b0b82f6e1e1f4624a700253c224"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "3026df37f0297b07e75a15b97e2cf1de1481fb9c",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:21.563800+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D11-current/claims.json": "0eaddbe9cb78c345d27b233a55aec59c2bdc2c4e9a89263faa2c85a77f56a20e",
+            ".agentharness/runs/D11-current/m3-binding-v0.json": "93fe23c6a3d31bbc5b6a64d07dd482711bdace0f4ff08488dab3e86543aff8bc",
+            ".agentharness/runs/D11-current/run.json": "ef9a26e225b6231c7c625e499cbe2120a74458cbd7b3aebdb95446fe8edb7ac3",
+            ".agentharness/runs/D11-current/verify-report.json": "b03936e34ad6e92549bb6507734a60ffdf449b46c0eebf0799ffb4cdcb748da6"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:21Z",
+          "report_ok": true,
+          "run_id": "D11-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "C",
+      "fixture_sha256": "d00de941e93c3ecc8ef02caa51379d5b2e0a7177c7dced802869b7dc28277657",
+      "id": "D11",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "committed",
+      "target_commit": "8e59bcf84419e01ca38d530e543e2ec760e2a5f1"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": null,
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "16791aa8cb1d89036ea682b31390192aeece7156dfb1d6f4325c1bf5778b6e4a",
+      "id": "D12",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "committed",
+      "target_commit": "253e9e92aed27956e676990f44292d2ab6dcae9d"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "beaf9b9b9f80d06a989385743ddf7626eaa0652f",
+      "diff_sha256": "ee97f738350bc115911c7ab5b70ad5da6f5bd2b3f5c90893eca6763f0d8065e7",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "cedb6e023a9e7b08669d21bb946ce5ae67dda61fd0382e95a5a9f5bc78fd83d6",
+      "id": "D13",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "beaf9b9b9f80d06a989385743ddf7626eaa0652f"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "cd79b40eaca2aa50fe97687546aa70f83bfc3d15",
+      "diff_sha256": "1c5549c9063706a221d5a4c42c98181bfb1c3c06c09cf39363982942650d5bdb",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "35cd17bcf284ddcf25e790f308c8e6f4e7ecbe86bbe02f0a8c30bcb42d666da6",
+      "id": "D14",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "cd79b40eaca2aa50fe97687546aa70f83bfc3d15"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "b3470977081251dd82a68cdfecfaf95b88ce2d21",
+      "diff_sha256": "b57866957bf54ebda99254db2536de2658517cbfc36026dbcdb6738759d55570",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "84b78929d34de99161d32b4c45dead6ad1a18b4976762a1dfd7cf939fe85b486",
+      "id": "D15",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "b3470977081251dd82a68cdfecfaf95b88ce2d21"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "1de8c7e45641cc87e05e45599d1f86bb8f397178",
+      "diff_sha256": "7bd63c89c55b1df067ccb086f3a20283f64062efa09657cc09eb8bfc7ec88190",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "9bc7a32c676ba01444d4b83da58a7790fa3784d9259a949bc13b1d6899c8c105",
+      "id": "D16",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "1de8c7e45641cc87e05e45599d1f86bb8f397178"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "540150863c847e9d2d1b0f52fcb21734e691ef5d",
+      "diff_sha256": "f4e1ddafc30478c6a6393af0b8d71ea83e0d46bac8c1b8039ba598f1ac180b0d",
+      "evidence_inventory": [],
+      "evidence_label": "—",
+      "fixture_sha256": "4391cd7da23f0a65795cdc6f01bee4c0eae920b2f1d5e46bf2ab5b1aae98a2b1",
+      "id": "D17",
+      "notes": [],
+      "risk_label": "N",
+      "state_kind": "working-tree",
+      "target_commit": "540150863c847e9d2d1b0f52fcb21734e691ef5d"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "8747349175f081417b98490a7898aefb27fd88b1",
+      "diff_sha256": "c0b3faf9dc64515536c72c896317174a0f01bae3a6783dc5bcc39e6060f45b4e",
+      "evidence_inventory": [],
+      "evidence_label": "U",
+      "fixture_sha256": "c21e7340253d79cfb055a98821eb8388979a9e679b257ba6c0fdc42f0520e170",
+      "id": "D18",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "8747349175f081417b98490a7898aefb27fd88b1"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "8747349175f081417b98490a7898aefb27fd88b1",
+      "diff_sha256": "a230191836fe76b0c8847ce8728914d1e5e9ee3d23e5dadfe9ef49b3e5fd7032",
+      "evaluation_clock_at": "2026-11-07T18:29:26.272203+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D19-current/claims.json": "5d9a01021e74330c19219dd842ee66c473e34a2229c92ccbd11debf9c1e48580",
+            ".agentharness/runs/D19-current/m3-binding-v0.json": "973464080c9b0310b1afb8e0d9ddf0b1756ee3f1d9725793d78011414d18bdd4",
+            ".agentharness/runs/D19-current/run.json": "d3c12fb804c62e020224418fdd03ba813c6c8eee66d9fcc779ea426d171719ba",
+            ".agentharness/runs/D19-current/verify-report.json": "665b80f8dfe60336503508f16623657507c8935cf1aedbdb3c5fd581e299b10f"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:26Z",
+          "report_ok": true,
+          "run_id": "D19-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "C",
+      "fixture_sha256": "44c7482d0ba1bd42e73ae363873bf798524c0367541d2693ee1d29d99686fd34",
+      "id": "D19",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "8747349175f081417b98490a7898aefb27fd88b1"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "5fd97a4785620d7db86b2c07030b2ef384fed836",
+      "diff_sha256": "755a25a066b2c9df7241e002697503242cb1cdb0cdaaf567bcbaf5664bbd77b5",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "4d2d2e2374496bca126f4872282d0f70abad4d12fc08c89fa74bc2f664b0fd70",
+      "id": "D20",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "5fd97a4785620d7db86b2c07030b2ef384fed836"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "5fd97a4785620d7db86b2c07030b2ef384fed836",
+      "diff_sha256": "d50866ac78fdf2df1ea2de15bdbd60d0af4c9e5949c17624c748a5e91339d83a",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "46f2c05b56c343ad2393a5411d31ede4d7e9219a625bb292df58ddcf9a2f8454",
+      "id": "D21",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "5fd97a4785620d7db86b2c07030b2ef384fed836"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "64077434e350da16c52ee11e117f79cfb4380ff3",
+      "diff_sha256": "4678c45597bdc46a3765bfada4bc0e376de2e097b1fb21e1abb5d2ecb48cb6ed",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "7c23bd44a621996abb322987d62294b6c33d4c97dbec032dd4eb2672c311820e",
+      "id": "D22",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "64077434e350da16c52ee11e117f79cfb4380ff3"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "64077434e350da16c52ee11e117f79cfb4380ff3",
+      "diff_sha256": "ca00154fe2a9a1fcc34187ec4db2117c3c53be14b68e657fa263a7e7c4e2af45",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "34cd9378cc51a48cc99bbea69a1ce292f8e44a6c3c4305e5e3efe0a4012ed5c6",
+      "id": "D23",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "64077434e350da16c52ee11e117f79cfb4380ff3"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "3fe06a1bb3099a2da5386b22f8b937fa5e032090",
+      "diff_sha256": "fc2379a78435388e90cb8f61fcb1e979d2c919d800ad1e05171e134504533664",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "516bf147ab2dcd70136b702f8e365d449d8fd70629a889fa563800c81efe78bc",
+      "id": "D24",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "3fe06a1bb3099a2da5386b22f8b937fa5e032090"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "3fe06a1bb3099a2da5386b22f8b937fa5e032090",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:29.345722+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D25-current/claims.json": "a900355f8c9d3a9dfe8a317bc19ec0f4164ae8950a50f60038f1446e417a8e64",
+            ".agentharness/runs/D25-current/m3-binding-v0.json": "1f2339969935f4d9d95072135085a8cb83cd0f0a7b76068c6b71ef49aee77f94",
+            ".agentharness/runs/D25-current/run.json": "8c15c9680d2604e1debb497763a20b5a1497b9b14416a1451e12f4190815cb05",
+            ".agentharness/runs/D25-current/verify-report.json": "ce59fa81ae221153a6ea844783bafbcd3aa5ddd109d98bb3ad05302f37b94922"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:29Z",
+          "report_ok": true,
+          "run_id": "D25-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "5a8523c2f916e289f1385da541e0366cf2bc42008e816511abd680c5fd12fd29",
+      "id": "D25",
+      "notes": [
+        "run.json mutated after verify-run"
+      ],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "3fe06a1bb3099a2da5386b22f8b937fa5e032090"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "6ed3604c61dfff161932427b99fcd9c22660da2e",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:30.263734+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D26-current/claims.json": "26b638728a622e8b839ebe8f6a4a3083fdb603d5ad79ad74c1b09154cc3056ab",
+            ".agentharness/runs/D26-current/m3-binding-v0.json": "67f7231867b995dfbe6a80f2ef7b5faf1214d5ee6ac2a95df006bd242702c47c",
+            ".agentharness/runs/D26-current/run.json": "15cc81bbe79c438f1710c6477138785336016fd5b6961fcf62354cb6d573aee9",
+            ".agentharness/runs/D26-current/verify-report.json": "7188c8a030a82c23c8a22363e47fa1d621d943b6ea530c8f7e31c76a382ff633"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:30Z",
+          "report_ok": true,
+          "run_id": "D26-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "cc3bd6cca31b661c6b6b57d75cb021e82b3e8dc7021faa8e821b10d35027316d",
+      "id": "D26",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "6ed3604c61dfff161932427b99fcd9c22660da2e"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "52d9967ec0b5a52f6ece218dc4a4a59b0cf48f58",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-08T19:29:31+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D27-current/claims.json": "fa5c7ecb490401d949e3386e1dfbdbc7a172c748269f757519ea6140de0fe91e",
+            ".agentharness/runs/D27-current/m3-binding-v0.json": "7b50fcbe537b863a9bc5bf8f2d584fb39cdbdcebcd9f2028c62eed05417ad7f2",
+            ".agentharness/runs/D27-current/run.json": "9025b8ad181e95aa07719f41cba3799a79bb90efd5ecd312b3476e29fdf19a5b",
+            ".agentharness/runs/D27-current/verify-report.json": "fc1f2e8973677dffaeeca68c7e5709793506020f23f11343e8b9518eab76d98b"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:31Z",
+          "report_ok": true,
+          "run_id": "D27-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "37280a3dc00cfec5f42ab25be0dd2acd25c47179f5113ebf8b57623a2cfa9eb8",
+      "id": "D27",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "52d9967ec0b5a52f6ece218dc4a4a59b0cf48f58"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "e48103ec801f694555140394ece02d93b9fa640a",
+      "diff_sha256": "70947c0a8d5b33965c47f841ab369432a7ed10e631e40e3b66131f10b4926599",
+      "evaluation_clock_at": "2026-11-07T18:29:32.063074+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D28-current/claims.json": "95ceb3e5797114fc574fe1e934ce6c848c23b2731f70fa977e0b553c2c4375a5",
+            ".agentharness/runs/D28-current/m3-binding-v0.json": "541d7a43423a201b7831c4b7e3630c88f5ab407aa004d2a663099d06abca7f0a",
+            ".agentharness/runs/D28-current/run.json": "dc2c0c4e5f3bf7fe1afa3ebeedec4b8352179f0425315e7b38ec214cb4fe08e2",
+            ".agentharness/runs/D28-current/verify-report.json": "be57f9d26b77670549e54c1130c0743c964b4d06d68c2a95222c2ae7d1b9fc69"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:31Z",
+          "report_ok": true,
+          "run_id": "D28-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "7cd4f48d08170c09342bbc668b41a7f8d0f12f21b14b832ad5d0f72ce7e1b134",
+      "id": "D28",
+      "notes": [
+        "working tree changed after execution; binding is intentionally prechange"
+      ],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "e48103ec801f694555140394ece02d93b9fa640a"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "affffabab6dc931556cbbac9b353241b95f63a59",
+      "diff_sha256": "23c426998d35b30890697fdbb420a9e96969db5372a43b99e271c02759288b10",
+      "evaluation_clock_at": "2026-11-07T18:29:33.447063+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D29-fail/claims.json": "c3335bec06bb78bb8e37977443d0dd4f0fd04c11cb5cdc722a3f4ebd659a4979",
+            ".agentharness/runs/D29-fail/run.json": "610804b4175c95e00196b4f77eaa97d7b80c40aa63f8da9231ed96cc8178476a",
+            ".agentharness/runs/D29-fail/verify-report.json": "46b5248de506165ac49a50f01a62241797c9b2145efd17877639ead52234183d"
+          },
+          "binding_present": false,
+          "claim_status": "unsupported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 1,
+          "finished_at": "2026-11-07T18:29:33Z",
+          "report_ok": false,
+          "run_id": "D29-fail",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        },
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D29-pass/claims.json": "2bcafdc69e0f69edfbb237374e35745acc2d1f805ba575f6b94c1560bcee7f00",
+            ".agentharness/runs/D29-pass/m3-binding-v0.json": "bdc5d2d28b2653c31ff63b81050e901150773a5b9442eaaa04610d184ba8e6d0",
+            ".agentharness/runs/D29-pass/run.json": "d09745e3e672dd046307edd52783aace4d80f5100472e2f4a9b0b71c62d12ea5",
+            ".agentharness/runs/D29-pass/verify-report.json": "e115bd468dc507d6ffe05f94d3fac3130e596b0552e720ea0071ee356e726d5e"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:33Z",
+          "report_ok": true,
+          "run_id": "D29-pass",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "72d7272cc63bf3fcbaaf9e4a09c536e166fc236c4cfb89ae5f722b774c270c30",
+      "id": "D29",
+      "notes": [
+        "opposite outcomes via omitted external environment input; neither run may be promoted to covered"
+      ],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "affffabab6dc931556cbbac9b353241b95f63a59"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "c74efbe319814d82c08535ec3a12240d31eb56e9",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:34.361012+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D30-current/claims.json": "8a7e44057fed0b28894c3f67cee098766140f8344d25f0c9b13c31d058eea542",
+            ".agentharness/runs/D30-current/run.json": "f691d6d12c61ed8a291b64c403ee688396aa2b580ced002231ba2c44d8c15241",
+            ".agentharness/runs/D30-current/verify-report.json": "c0f695e5c42e68222d70f062942a674d8dffe9ad36100e4cfd8fc6049f252b48"
+          },
+          "binding_present": false,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_other.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:34Z",
+          "report_ok": true,
+          "run_id": "D30-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "U",
+      "fixture_sha256": "1d02cb109e606bcf4428f24750c09db6d3e63c410007c919d3612cf3ca9ec504",
+      "id": "D30",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "c74efbe319814d82c08535ec3a12240d31eb56e9"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "f85c30675c5ff06c5f1c01a8264fb657b4d55532",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:35.728976+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D31-current/claims.json": "5945cda0c4d12224e32c805098f3c5c2f3b02bafec5391354556b69a439b2dca",
+            ".agentharness/runs/D31-current/m3-binding-v0.json": "6c489ed6195a889173757a9f97929f3b26fea7b48c16a6e818094607825d5a53",
+            ".agentharness/runs/D31-current/run.json": "8b41f4d2224ef28b117c352a4f4110ab0edb606efe54a264b29c7575bbd25b66",
+            ".agentharness/runs/D31-current/verify-report.json": "b3d1e35a7797d0b8e2f09b741e52219d2dcd626af3ad6e5a0221b8d2caa5cec3"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:35Z",
+          "report_ok": true,
+          "run_id": "D31-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        },
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D31-old/claims.json": "f66ab177115ed66ce7bb0fc4abf01e8585f83131ffbf495d13b60db15ccf77b6",
+            ".agentharness/runs/D31-old/run.json": "a054a65e6b2a0fbb601894f327163f4f66f4b56bd57084fe0aa76d211579a4c1",
+            ".agentharness/runs/D31-old/verify-report.json": "e8802312d554e3b5aa680576b106a07ac69ec8a5a4afe574f62d49a1b14858de"
+          },
+          "binding_present": false,
+          "claim_status": "unsupported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 1,
+          "finished_at": "2026-11-07T18:29:35Z",
+          "report_ok": false,
+          "run_id": "D31-old",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "C",
+      "fixture_sha256": "26759c4323234fbd1118be4d28814094a9f11809a496eb57c61bbd7c9122f915",
+      "id": "D31",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "f85c30675c5ff06c5f1c01a8264fb657b4d55532"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "61b73834d4207c30f8bf83993a2dd2e723af135a",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:29:36.987333+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D32-current/claims.json": "1deceee9108b92f0869259f4863d148fd1a5293d3db842b3bbe198fd18ecf677",
+            ".agentharness/runs/D32-current/m3-binding-v0.json": "7dbda18aaa253690df713394c61abe749f57c4edece33fa833c82a4c70e796a1",
+            ".agentharness/runs/D32-current/run.json": "f8d2bcd5453576d8f18e8a6a5efb76fc2ea7fc1c36ae1ea985ba8ef3dada71fe",
+            ".agentharness/runs/D32-current/verify-report.json": "333e780cf26b3a24c73fc774a8dab92377d6c94d3b7e447cd1b375c45cb15554"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:36Z",
+          "report_ok": true,
+          "run_id": "D32-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        },
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D32-tampered/claims.json": "4cf0447f68d97ed2064b750a4f8675eaf298e5ebf9d12df2925fa09fb45e1026",
+            ".agentharness/runs/D32-tampered/run.json": "579435c3350745aeae35d469d39523fb58af918c61ad6ac827b07d746b7b07ee",
+            ".agentharness/runs/D32-tampered/verify-report.json": "3be24b3f6f6c001638ee8fe146639180d66877a912d583a581b98b7c02151439"
+          },
+          "binding_present": false,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:36Z",
+          "report_ok": true,
+          "run_id": "D32-tampered",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "a7fd3ef75a615503fc11c0b837c538ad7695a72b7dd2f82eb17e1db6fc4c5743",
+      "id": "D32",
+      "notes": [
+        "run.json mutated after verify-run"
+      ],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "61b73834d4207c30f8bf83993a2dd2e723af135a"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "d9f0514dad6f7a29812ee8cd911f7e51b0776035",
+      "diff_sha256": "eeff4f0d297d036c495a6a428ca12a059aa9a61f39f9e04ba170f13d8a4d71b3",
+      "evaluation_clock_at": "2026-11-07T18:29:38.530246+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D33-current/claims.json": "f65ac2a1c8095b52d45b8576405f4d8cb1b68303a2916ff664ef3fce62fa792d",
+            ".agentharness/runs/D33-current/m3-binding-v0.json": "8b25296f77d25a28754ab59c5979969fed74be7223d0b1672e3a568045e102cd",
+            ".agentharness/runs/D33-current/run.json": "6822d3095c80647fe8949dab9725013c9e36ad7d88e43ef57c7bfa3d334b8476",
+            ".agentharness/runs/D33-current/verify-report.json": "81fcbc0b0574d031d847893abfc2de44915a5e77a8d8c4df31191cf28e52d4f3"
+          },
+          "binding_present": true,
+          "claim_status": "inconclusive",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": null,
+          "finished_at": "2026-11-07T18:29:38Z",
+          "report_ok": false,
+          "run_id": "D33-current",
+          "timed_out": true,
+          "truth_source": "none"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "b8a763f9492228dca9ff59ffb7d490a06c294853df38962aa04ad36abd3fea15",
+      "id": "D33",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "d9f0514dad6f7a29812ee8cd911f7e51b0776035"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "97b6925a3eddcc87b8cf0799d0adbeec044e404f",
+      "diff_sha256": "762aec2a82122ef24c8f127bae1e08254acfb51461fa6c1fcbe922ac4bd972c4",
+      "evidence_inventory": [],
+      "evidence_label": "?",
+      "fixture_sha256": "d5f4ff04fb210c5d6b776b3c6913529e2783742788a0d2e014f32568bcd25197",
+      "id": "D34",
+      "notes": [],
+      "risk_label": "A",
+      "state_kind": "working-tree",
+      "target_commit": "97b6925a3eddcc87b8cf0799d0adbeec044e404f"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "cd77b07f08125c4c36a8da4c69de1317194cf8c3",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:23:39+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D35-current/claims.json": "f707d9a59099a1801dfd64ef4b2d62e3006ea7e2abad000f185a825e9b63ae61",
+            ".agentharness/runs/D35-current/m3-binding-v0.json": "28f5a56a5b96594a6f5a64e042a1d545d70961180fe4cfbb6fd96d4336fa3b40",
+            ".agentharness/runs/D35-current/run.json": "ce697811e78dc433eb6240ddc957a1d9b99b6c3409877e2f79c0e7b9146d8d37",
+            ".agentharness/runs/D35-current/verify-report.json": "c6e20d72bdf280999f562697f05df911e645f9ef87d45aadf5bf2eb5cd92d925"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:39Z",
+          "report_ok": true,
+          "run_id": "D35-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "?",
+      "fixture_sha256": "ef14ef2b06cd2ddfb802ad921a729135a98a32da3b282d5744f19f9ab3b4828a",
+      "id": "D35",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "cd77b07f08125c4c36a8da4c69de1317194cf8c3"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "229afba4688008e4015290e3496f5ee6ddab91cc",
+      "diff_sha256": "d6c0639d855c7829255b2918a04a799998c6c88648f3ee5b7c3f53f019f3113d",
+      "evaluation_clock_at": "2026-11-07T18:29:41.171885+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D36-current/claims.json": "6e91180b71f42fae35d8975e835b06475c4fae02a2d2b31feabe62e1db102144",
+            ".agentharness/runs/D36-current/m3-binding-v0.json": "18a62063270b5944f084740429b464b71373714b3c6e7660716e9c7b7a32f679",
+            ".agentharness/runs/D36-current/run.json": "7f4184529feb4835617914e96a4df9d912734c987fc25846a9c7b78696bdfa5d",
+            ".agentharness/runs/D36-current/verify-report.json": "4f798d785dc93a96ecd4094269fc44aa9d955112523504879bceaf60e8099862"
+          },
+          "binding_present": true,
+          "claim_status": "unsupported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 1,
+          "finished_at": "2026-11-07T18:29:40Z",
+          "report_ok": false,
+          "run_id": "D36-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        },
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D36-other-pass/claims.json": "c880631f6f2685b65399b974ac7f69a751cc7eeb3c99bb27041c6c40b66640ea",
+            ".agentharness/runs/D36-other-pass/run.json": "880574bf14014d05f8849a038a75daa6da6da30753b46ca4166e327a590fa5e8",
+            ".agentharness/runs/D36-other-pass/verify-report.json": "9b700c4fd0c1825babcc25e0e199e1dc3bb93629e24c8f2f43553a7d63a8eb74"
+          },
+          "binding_present": false,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_other.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:41Z",
+          "report_ok": true,
+          "run_id": "D36-other-pass",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "F",
+      "fixture_sha256": "c454adc8557820aae65f98e030d4fd954cad839ef9cff40046c2f508006b7331",
+      "id": "D36",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "229afba4688008e4015290e3496f5ee6ddab91cc"
+    },
+    {
+      "approved_mapping_id": "DEP-PEP621-PYTEST-V0",
+      "base_commit": "fbfadf7e972fd23b6e0d9e6852845cbeb6d7a178",
+      "diff_sha256": "bc614f657664aaa73266faa62131c431f217fdabceb0dbb98648b13038a285dc",
+      "evaluation_clock_at": "2026-11-07T18:27:42+00:00",
+      "evidence_inventory": [
+        {
+          "artifact_sha256": {
+            ".agentharness/runs/D37-current/claims.json": "b94b6e52bac53f792fa39356c165b07b986a15e82f801c727782c8f908463075",
+            ".agentharness/runs/D37-current/m3-binding-v0.json": "870df4f9e7e2468e88d242ff3a6a9fbb9dcb90dd08761daaf99a519a0d19f61c",
+            ".agentharness/runs/D37-current/run.json": "ae293233c6333457a094bbd77817fc185cc93b37fa174e3b940047c46f3a128e",
+            ".agentharness/runs/D37-current/verify-report.json": "7da9c196d80d1d295c87ebe3e9b76e6e0b06fa6c32aefb525788135a59fa3685"
+          },
+          "binding_present": true,
+          "claim_status": "supported",
+          "command": "python -m pytest -q tests/test_dep.py",
+          "exit_code": 0,
+          "finished_at": "2026-11-07T18:29:42Z",
+          "report_ok": true,
+          "run_id": "D37-current",
+          "timed_out": false,
+          "truth_source": "reexecuted"
+        }
+      ],
+      "evidence_label": "C",
+      "fixture_sha256": "280e1446c13b9b90e2c225264728e7def0396f705d2c1b50e67a2709937958a8",
+      "id": "D37",
+      "notes": [],
+      "risk_label": "S",
+      "state_kind": "working-tree",
+      "target_commit": "fbfadf7e972fd23b6e0d9e6852845cbeb6d7a178"
+    }
+  ],
+  "schema_version": "m3.dep-ledger.v0"
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "m3.cp3d-preparation.v0",
+  "platform": "linux",
+  "python": "3.12.16",
+  "runs_per_scenario": 30,
+  "scenarios": {
+    "disabled": {
+      "p50_ms": 0.0,
+      "p95_ms": 0.0,
+      "git_calls": [
+        0
+      ],
+      "decision": "disabled"
+    },
+    "no_change": {
+      "p50_ms": 5.849,
+      "p95_ms": 10.57,
+      "git_calls": [
+        3
+      ],
+      "decision": "no_dep_risk"
+    },
+    "equivalent": {
+      "p50_ms": 4.985,
+      "p95_ms": 6.258,
+      "git_calls": [
+        3
+      ],
+      "decision": "no_dep_risk"
+    },
+    "risk_absent": {
+      "p50_ms": 25.116,
+      "p95_ms": 29.037,
+      "git_calls": [
+        14
+      ],
+      "decision": "uncovered"
+    },
+    "risk_covered": {
+      "p50_ms": 30.433,
+      "p95_ms": 35.901,
+      "git_calls": [
+        14
+      ],
+      "decision": "covered"
+    }
+  }
+}

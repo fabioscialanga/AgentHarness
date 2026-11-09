@@ -1,0 +1,56 @@
+{
+  "schema_version": "m3.cp3d-gating-comparison.v0",
+  "platform": "win32",
+  "runs_per_scenario": 30,
+  "scope": "explicit local benchmark, no hook",
+  "scenarios": {
+    "no_change": {
+      "preflight": {
+        "p50_ms": 124.893,
+        "p95_ms": 166.961,
+        "git_calls": [
+          3
+        ]
+      },
+      "direct_detection": {
+        "p50_ms": 254.532,
+        "p95_ms": 317.063,
+        "git_calls": [
+          6
+        ]
+      }
+    },
+    "equivalent": {
+      "preflight": {
+        "p50_ms": 129.584,
+        "p95_ms": 170.63,
+        "git_calls": [
+          3
+        ]
+      },
+      "direct_detection": {
+        "p50_ms": 272.099,
+        "p95_ms": 320.827,
+        "git_calls": [
+          6
+        ]
+      }
+    },
+    "risk": {
+      "preflight": {
+        "p50_ms": 84.54,
+        "p95_ms": 93.922,
+        "git_calls": [
+          2
+        ]
+      },
+      "direct_detection": {
+        "p50_ms": 242.653,
+        "p95_ms": 269.565,
+        "git_calls": [
+          6
+        ]
+      }
+    }
+  }
+}
